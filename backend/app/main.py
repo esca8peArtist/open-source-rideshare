@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import admin, audit, auth, background_checks, chat, device_tokens, drivers, fare_splits, notifications, payments, payouts, pools, promos, recurring_rides, rides, safety, saved_locations, vehicles, waypoints
+from app.api.v1 import admin, audit, auth, background_checks, chat, device_tokens, drivers, fare_splits, notifications, payments, payouts, pools, promos, recurring_rides, rides, safety, saved_locations, tips, vehicles, waypoints
 from app.api import websocket
 from app.config import settings
 from app.services.dispatch_scheduler import start_scheduler, stop_scheduler
@@ -54,6 +54,7 @@ app.include_router(payouts.router, prefix="/api/v1")
 app.include_router(audit.router, prefix="/api/v1")
 app.include_router(background_checks.router, prefix="/api/v1")
 app.include_router(device_tokens.router, prefix="/api/v1")
+app.include_router(tips.router, prefix="/api/v1")
 app.include_router(websocket.router)
 
 
