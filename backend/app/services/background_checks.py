@@ -311,12 +311,69 @@ async def handle_webhook(
 # ---------------------------------------------------------------------------
 
 
+async def _notify_driver_check_result(
+    db: AsyncSession, profile: Any, check: BackgroundCheck
+) -> None:
+    """Send a push + SMS notification to the driver about their background check result.
+
+    Only sends for terminal outcomes the driver needs to act on or celebrate:
+    CLEAR and CONSIDER/SUSPENDED.  Other statuses (CANCELLED, DISPUTE, PENDING)
+    are silently skipped — admin handles those via the dashboard.
+    """
+    from app.models.user import User
+    from app.services.notifications import (
+        Notification,
+        NotificationChannel,
+        NotificationType,
+        send_notification,
+    )
+
+    user_result = await db.execute(select(User).where(User.id == profile.user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        return
+
+    if check.status == BackgroundCheckStatus.CLEAR:
+        title = "Background check approved"
+        body = (
+            "Great news — your background check passed! Complete your remaining "
+            "requirements to start accepting rides."
+        )
+        notification_type = NotificationType.BACKGROUND_CHECK_APPROVED
+    elif check.status in {BackgroundCheckStatus.CONSIDER, BackgroundCheckStatus.SUSPENDED}:
+        title = "Background check requires attention"
+        body = (
+            "Your background check needs review before you can drive. "
+            "Log in for details or contact support with questions."
+        )
+        notification_type = NotificationType.BACKGROUND_CHECK_ACTION_REQUIRED
+    else:
+        return  # CANCELLED, DISPUTE, PENDING — no driver notification
+
+    notification = Notification(
+        user_id=profile.user_id,
+        type=notification_type,
+        title=title,
+        body=body,
+        channels=[NotificationChannel.PUSH, NotificationChannel.SMS],
+        data={"check_id": check.id, "status": check.status.value},
+    )
+    try:
+        await send_notification(notification, db=db, phone=user.phone, email=user.email)
+    except Exception:
+        logger.exception(
+            "Failed to send background check notification to driver profile %d",
+            check.driver_profile_id,
+        )
+
+
 async def _handle_check_completed(db: AsyncSession, check: BackgroundCheck) -> None:
     """Side effects when a background check completes.
 
     - CLEAR: update driver.background_check_status; attempt auto-approve if
       all required documents are also approved.
     - CONSIDER / SUSPENDED: flag driver for admin review.
+    In both cases, notify the driver via push and SMS.
     """
     from app.models.driver import DriverProfile
 
@@ -341,6 +398,8 @@ async def _handle_check_completed(db: AsyncSession, check: BackgroundCheck) -> N
             check.driver_profile_id,
             check.status.value,
         )
+
+    await _notify_driver_check_result(db, profile, check)
 
 
 async def _attempt_auto_approve(

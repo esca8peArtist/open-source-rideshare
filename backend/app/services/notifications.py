@@ -43,6 +43,8 @@ class NotificationType(str, enum.Enum):
     RIDE_REMINDER = "ride_reminder"
     FARE_SPLIT_REQUEST = "fare_split_request"
     PROMO_APPLIED = "promo_applied"
+    BACKGROUND_CHECK_APPROVED = "background_check_approved"
+    BACKGROUND_CHECK_ACTION_REQUIRED = "background_check_action_required"
 
 
 @dataclass

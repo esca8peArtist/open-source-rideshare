@@ -679,6 +679,184 @@ class TestAutoApproveLogic:
 
 
 # ===========================================================================
+# Service tests — background check result notifications
+# ===========================================================================
+
+
+class TestNotifyDriverCheckResult:
+    """Tests for _notify_driver_check_result — driver push/SMS on check completion."""
+
+    def _make_db(self, user=None, profile=None):
+        mock_user = MagicMock()
+        mock_user.phone = "+15550001234"
+        mock_user.email = "driver@example.com"
+        if user is not None:
+            mock_user = user
+
+        db = AsyncMock()
+        user_result = MagicMock()
+        user_result.scalar_one_or_none.return_value = mock_user
+        db.execute = AsyncMock(return_value=user_result)
+        db.flush = AsyncMock()
+        db.add = MagicMock()
+        return db
+
+    @pytest.mark.asyncio
+    async def test_clear_check_sends_approved_notification(self):
+        """CLEAR status sends BACKGROUND_CHECK_APPROVED push + SMS."""
+        from app.services.background_checks import _notify_driver_check_result
+        from app.services.notifications import NotificationType
+
+        check = MagicMock(spec=BackgroundCheck)
+        check.status = BackgroundCheckStatus.CLEAR
+        check.id = 10
+        check.driver_profile_id = 3
+
+        mock_profile = MagicMock()
+        mock_profile.user_id = 50
+
+        db = self._make_db()
+
+        with patch(
+            "app.services.notifications.send_notification",
+            new_callable=AsyncMock,
+        ) as mock_send:
+            await _notify_driver_check_result(db, mock_profile, check)
+
+        mock_send.assert_called_once()
+        notification = mock_send.call_args[0][0]
+        assert notification.type == NotificationType.BACKGROUND_CHECK_APPROVED
+        assert notification.user_id == 50
+        assert "approved" in notification.title.lower()
+
+    @pytest.mark.asyncio
+    async def test_consider_check_sends_action_required_notification(self):
+        """CONSIDER status sends BACKGROUND_CHECK_ACTION_REQUIRED push + SMS."""
+        from app.services.background_checks import _notify_driver_check_result
+        from app.services.notifications import NotificationType
+
+        check = MagicMock(spec=BackgroundCheck)
+        check.status = BackgroundCheckStatus.CONSIDER
+        check.id = 11
+        check.driver_profile_id = 4
+
+        mock_profile = MagicMock()
+        mock_profile.user_id = 51
+
+        db = self._make_db()
+
+        with patch(
+            "app.services.notifications.send_notification",
+            new_callable=AsyncMock,
+        ) as mock_send:
+            await _notify_driver_check_result(db, mock_profile, check)
+
+        mock_send.assert_called_once()
+        notification = mock_send.call_args[0][0]
+        assert notification.type == NotificationType.BACKGROUND_CHECK_ACTION_REQUIRED
+        assert notification.user_id == 51
+
+    @pytest.mark.asyncio
+    async def test_suspended_check_sends_action_required_notification(self):
+        """SUSPENDED status sends BACKGROUND_CHECK_ACTION_REQUIRED push + SMS."""
+        from app.services.background_checks import _notify_driver_check_result
+        from app.services.notifications import NotificationType
+
+        check = MagicMock(spec=BackgroundCheck)
+        check.status = BackgroundCheckStatus.SUSPENDED
+        check.id = 12
+        check.driver_profile_id = 5
+
+        mock_profile = MagicMock()
+        mock_profile.user_id = 52
+
+        db = self._make_db()
+
+        with patch(
+            "app.services.notifications.send_notification",
+            new_callable=AsyncMock,
+        ) as mock_send:
+            await _notify_driver_check_result(db, mock_profile, check)
+
+        mock_send.assert_called_once()
+        notification = mock_send.call_args[0][0]
+        assert notification.type == NotificationType.BACKGROUND_CHECK_ACTION_REQUIRED
+
+    @pytest.mark.asyncio
+    async def test_cancelled_check_sends_no_notification(self):
+        """CANCELLED status does not send any notification (admin handles it)."""
+        from app.services.background_checks import _notify_driver_check_result
+
+        check = MagicMock(spec=BackgroundCheck)
+        check.status = BackgroundCheckStatus.CANCELLED
+        check.id = 13
+        check.driver_profile_id = 6
+
+        mock_profile = MagicMock()
+        mock_profile.user_id = 53
+
+        db = self._make_db()
+
+        with patch(
+            "app.services.notifications.send_notification",
+            new_callable=AsyncMock,
+        ) as mock_send:
+            await _notify_driver_check_result(db, mock_profile, check)
+
+        mock_send.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_user_not_found_skips_notification_gracefully(self):
+        """If the driver's user record is missing, notification is silently skipped."""
+        from app.services.background_checks import _notify_driver_check_result
+
+        check = MagicMock(spec=BackgroundCheck)
+        check.status = BackgroundCheckStatus.CLEAR
+        check.id = 14
+        check.driver_profile_id = 7
+
+        mock_profile = MagicMock()
+        mock_profile.user_id = 999
+
+        db = AsyncMock()
+        missing_result = MagicMock()
+        missing_result.scalar_one_or_none.return_value = None
+        db.execute = AsyncMock(return_value=missing_result)
+
+        with patch(
+            "app.services.notifications.send_notification",
+            new_callable=AsyncMock,
+        ) as mock_send:
+            await _notify_driver_check_result(db, mock_profile, check)
+
+        mock_send.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_notification_includes_check_data(self):
+        """Notification data payload contains check_id and status."""
+        from app.services.background_checks import _notify_driver_check_result
+
+        check = MagicMock(spec=BackgroundCheck)
+        check.status = BackgroundCheckStatus.CLEAR
+        check.id = 42
+        check.driver_profile_id = 8
+
+        mock_profile = MagicMock()
+        mock_profile.user_id = 60
+
+        db = self._make_db()
+
+        with patch(
+            "app.services.notifications.send_notification",
+            new_callable=AsyncMock,
+        ) as mock_send:
+            await _notify_driver_check_result(db, mock_profile, check)
+
+        notification = mock_send.call_args[0][0]
+        assert notification.data == {"check_id": 42, "status": "clear"}
+
+
+# ===========================================================================
 # Endpoint tests
 # ===========================================================================
 
