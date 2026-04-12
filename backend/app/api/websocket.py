@@ -361,6 +361,29 @@ async def driver_ws(websocket: WebSocket):
                 )
                 await websocket.send_json({"type": "location_ack"})
 
+                # Push live ETA to rider if driver has an active ride
+                active_ride_id = data.get("active_ride_id")
+                active_rider_id = data.get("active_rider_id")
+                pickup_lat = data.get("pickup_lat")
+                pickup_lng = data.get("pickup_lng")
+                if active_ride_id and active_rider_id and pickup_lat and pickup_lng:
+                    try:
+                        from app.services.eta import estimate_driver_eta
+                        eta = await estimate_driver_eta(
+                            engine.redis, user_id, pickup_lat, pickup_lng
+                        )
+                        if eta:
+                            await notify_driver_eta(
+                                active_rider_id,
+                                active_ride_id,
+                                eta.eta_minutes,
+                                eta.distance_km,
+                                eta.driver_lat,
+                                eta.driver_lng,
+                            )
+                    except Exception:
+                        pass  # ETA push is best-effort
+
             elif msg_type == "accept_ride":
                 ride_id = data.get("ride_id")
                 if ride_id:
@@ -506,6 +529,26 @@ async def notify_admin_sos(
         "message": message,
     }
     return await manager.broadcast_to_admins(payload)
+
+
+async def notify_driver_eta(
+    rider_user_id: int,
+    ride_id: int,
+    eta_minutes: float,
+    distance_km: float,
+    driver_lat: float,
+    driver_lng: float,
+) -> bool:
+    """Push a live ETA update to the rider."""
+    message = {
+        "type": "driver_eta",
+        "ride_id": ride_id,
+        "eta_minutes": eta_minutes,
+        "distance_km": distance_km,
+        "driver_lat": driver_lat,
+        "driver_lng": driver_lng,
+    }
+    return await manager.send_to_rider(rider_user_id, message)
 
 
 async def notify_ride_status(rider_user_id: int, ride_id: int, status: str, **extra) -> bool:
