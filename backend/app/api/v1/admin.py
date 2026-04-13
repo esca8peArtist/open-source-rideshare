@@ -32,6 +32,8 @@ from app.schemas.admin import (
     AdminDriverResponse,
     AdminFeedbackListResponse,
     AdminFeedbackResponse,
+    AdminNotificationLogEntry,
+    AdminNotificationLogListResponse,
     AdminPaymentResponse,
     AdminRideResponse,
     AdminSOSAlertResponse,
@@ -2001,3 +2003,51 @@ async def get_verification_stats(
         "approved_drivers": approved_drivers,
         "pending_review": by_status.get("pending", 0) + by_status.get("under_review", 0),
     }
+
+
+# ---- Notification Logs ----
+
+
+@router.get("/notification-logs", response_model=AdminNotificationLogListResponse)
+async def list_notification_logs(
+    user_id: int | None = Query(None),
+    notification_type: str | None = Query(None),
+    channel: str | None = Query(None),
+    status: str | None = Query(None),
+    ride_id: int | None = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+) -> AdminNotificationLogListResponse:
+    """List notification logs across all users. Admin only.
+
+    Supports filtering by user, type, channel, delivery status, and ride.
+    Results are ordered newest first.
+    """
+    from app.models.notification import NotificationLog
+
+    query = select(NotificationLog)
+
+    if user_id is not None:
+        query = query.where(NotificationLog.user_id == user_id)
+    if notification_type is not None:
+        query = query.where(NotificationLog.notification_type == notification_type)
+    if channel is not None:
+        query = query.where(NotificationLog.channel == channel)
+    if status is not None:
+        query = query.where(NotificationLog.status == status)
+    if ride_id is not None:
+        query = query.where(NotificationLog.ride_id == ride_id)
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = (await db.execute(count_query)).scalar() or 0
+
+    query = query.order_by(NotificationLog.created_at.desc()).offset(offset).limit(limit)
+    result = await db.execute(query)
+    logs = result.scalars().all()
+
+    return AdminNotificationLogListResponse(
+        logs=[AdminNotificationLogEntry.model_validate(log) for log in logs],
+        total=total,
+    )

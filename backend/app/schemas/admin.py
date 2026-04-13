@@ -334,3 +334,28 @@ class DriverMetrics(BaseModel):
     rides_per_active_driver: float | None = None
     top_drivers: list[TopDriverEntry]
     rating_distribution: dict
+
+
+# ---- Admin Notification Logs ----
+
+
+class AdminNotificationLogEntry(BaseModel):
+    id: int
+    user_id: int
+    notification_type: str
+    channel: str
+    title: str
+    body: str
+    status: str
+    error_message: str | None
+    ride_id: int | None
+    is_read: bool
+    created_at: datetime
+    read_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class AdminNotificationLogListResponse(BaseModel):
+    logs: list[AdminNotificationLogEntry]
+    total: int
