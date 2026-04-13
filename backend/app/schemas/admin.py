@@ -359,3 +359,25 @@ class AdminNotificationLogEntry(BaseModel):
 class AdminNotificationLogListResponse(BaseModel):
     logs: list[AdminNotificationLogEntry]
     total: int
+
+
+class AdminRiderResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    email: str | None = None
+    is_active: bool
+    phone_verified: bool
+    referral_code: str | None = None
+    created_at: datetime
+    total_rides: int = 0
+    completed_rides: int = 0
+    cancelled_rides: int = 0
+    avg_rider_rating: float | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class RidersListResponse(BaseModel):
+    riders: list[AdminRiderResponse]
+    pagination: PaginationResponse

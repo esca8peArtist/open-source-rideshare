@@ -36,6 +36,7 @@ from app.schemas.admin import (
     AdminNotificationLogListResponse,
     AdminPaymentResponse,
     AdminRideResponse,
+    AdminRiderResponse,
     AdminSOSAlertResponse,
     AdminSOSListResponse,
     AdminSOSResolveRequest,
@@ -53,6 +54,7 @@ from app.schemas.admin import (
     RevenueDataPoint,
     RideActivityDataPoint,
     RideMetrics,
+    RidersListResponse,
     RidesListResponse,
     SOSStats,
     SuspendRequest,
@@ -2050,4 +2052,190 @@ async def list_notification_logs(
     return AdminNotificationLogListResponse(
         logs=[AdminNotificationLogEntry.model_validate(log) for log in logs],
         total=total,
+    )
+
+
+# ---- Rider Management ----
+
+def _rider_to_response(
+    user: User,
+    total_rides: int,
+    completed_rides: int,
+    cancelled_rides: int,
+    avg_rider_rating: float | None,
+) -> AdminRiderResponse:
+    return AdminRiderResponse(
+        id=user.id,
+        name=user.name,
+        phone=user.phone,
+        email=user.email,
+        is_active=user.is_active,
+        phone_verified=user.phone_verified,
+        referral_code=user.referral_code,
+        created_at=user.created_at,
+        total_rides=total_rides,
+        completed_rides=completed_rides,
+        cancelled_rides=cancelled_rides,
+        avg_rider_rating=avg_rider_rating,
+    )
+
+
+@router.get("/riders", response_model=RidersListResponse)
+async def list_riders(
+    db: AsyncSession = Depends(get_db),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+    search: str | None = Query(None, description="Filter by name or phone substring"),
+    is_active: bool | None = Query(None, description="Filter by active/suspended status"),
+    sort_by: str = Query("created_at", description="Field to sort by"),
+    sort_dir: str = Query("desc", description="asc or desc"),
+) -> RidersListResponse:
+    """List all riders with optional filters. Admin only."""
+    from app.models.ride import RideStatus
+
+    query = select(User).where(User.role == "rider")
+
+    if search:
+        query = query.where(or_(User.name.ilike(f"%{search}%"), User.phone.ilike(f"%{search}%")))
+    if is_active is not None:
+        query = query.where(User.is_active == is_active)
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = (await db.execute(count_query)).scalar() or 0
+
+    sort_col = {"name": User.name, "created_at": User.created_at, "phone": User.phone}.get(sort_by, User.created_at)
+    if sort_dir == "asc":
+        query = query.order_by(sort_col.asc())
+    else:
+        query = query.order_by(sort_col.desc())
+
+    query = query.offset((page - 1) * per_page).limit(per_page)
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    # Bulk fetch ride stats for all users on this page
+    user_ids = [u.id for u in users]
+    riders_data: list[AdminRiderResponse] = []
+    if user_ids:
+        stats_q = (
+            select(
+                Ride.rider_id,
+                func.count(Ride.id).label("total"),
+                func.sum(case((Ride.status == RideStatus.COMPLETED, 1), else_=0)).label("completed"),
+                func.sum(case((Ride.status == RideStatus.CANCELLED, 1), else_=0)).label("cancelled"),
+            )
+            .where(Ride.rider_id.in_(user_ids))
+            .group_by(Ride.rider_id)
+        )
+        stats_result = await db.execute(stats_q)
+        stats_map = {row.rider_id: row for row in stats_result.all()}
+
+        from app.models.rider_rating import RiderRating
+        rating_q = (
+            select(RiderRating.rider_id, func.avg(RiderRating.rating).label("avg_rating"))
+            .where(RiderRating.rider_id.in_(user_ids))
+            .group_by(RiderRating.rider_id)
+        )
+        rating_result = await db.execute(rating_q)
+        rating_map = {row.rider_id: float(row.avg_rating) for row in rating_result.all()}
+
+        for user in users:
+            row = stats_map.get(user.id)
+            riders_data.append(
+                _rider_to_response(
+                    user,
+                    total_rides=int(row.total) if row else 0,
+                    completed_rides=int(row.completed) if row else 0,
+                    cancelled_rides=int(row.cancelled) if row else 0,
+                    avg_rider_rating=rating_map.get(user.id),
+                )
+            )
+    else:
+        riders_data = []
+
+    return RidersListResponse(
+        riders=riders_data,
+        pagination=PaginationResponse(page=page, per_page=per_page, total=total),
+    )
+
+
+@router.get("/riders/{user_id}", response_model=AdminRiderResponse)
+async def get_rider(user_id: int, db: AsyncSession = Depends(get_db)) -> AdminRiderResponse:
+    """Get a single rider's details and ride statistics. Admin only."""
+    from app.models.ride import RideStatus
+    from app.models.rider_rating import RiderRating
+
+    result = await db.execute(select(User).where(User.id == user_id, User.role == "rider"))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rider not found")
+
+    stats_q = (
+        select(
+            func.count(Ride.id).label("total"),
+            func.sum(case((Ride.status == RideStatus.COMPLETED, 1), else_=0)).label("completed"),
+            func.sum(case((Ride.status == RideStatus.CANCELLED, 1), else_=0)).label("cancelled"),
+        )
+        .where(Ride.rider_id == user_id)
+    )
+    stats_row = (await db.execute(stats_q)).one()
+
+    rating_row = (
+        await db.execute(
+            select(func.avg(RiderRating.rating).label("avg_rating")).where(RiderRating.rider_id == user_id)
+        )
+    ).one()
+    avg_rating = float(rating_row.avg_rating) if rating_row.avg_rating is not None else None
+
+    return _rider_to_response(
+        user,
+        total_rides=int(stats_row.total) if stats_row.total else 0,
+        completed_rides=int(stats_row.completed) if stats_row.completed else 0,
+        cancelled_rides=int(stats_row.cancelled) if stats_row.cancelled else 0,
+        avg_rider_rating=avg_rating,
+    )
+
+
+@router.post("/riders/{user_id}/suspend", status_code=status.HTTP_204_NO_CONTENT)
+async def suspend_rider(
+    user_id: int, body: SuspendRequest, admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db),
+) -> None:
+    """Suspend a rider account. Sets is_active=False. Admin only."""
+    result = await db.execute(select(User).where(User.id == user_id, User.role == "rider"))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rider not found")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Rider is already suspended")
+    user.is_active = False
+    await db.commit()
+
+    from app.services.audit_events import audit_admin_action
+    await audit_admin_action(
+        db, admin_id=admin.id, action="rider_suspended",
+        description=f"Rider user #{user_id} suspended: {body.reason}",
+        target_type="user", target_id=user_id,
+        metadata={"reason": body.reason},
+    )
+
+
+@router.post("/riders/{user_id}/reactivate", status_code=status.HTTP_204_NO_CONTENT)
+async def reactivate_rider(
+    user_id: int, admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db),
+) -> None:
+    """Reactivate a suspended rider account. Sets is_active=True. Admin only."""
+    result = await db.execute(select(User).where(User.id == user_id, User.role == "rider"))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rider not found")
+    if user.is_active:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Rider is already active")
+    user.is_active = True
+    await db.commit()
+
+    from app.services.audit_events import audit_admin_action
+    await audit_admin_action(
+        db, admin_id=admin.id, action="rider_reactivated",
+        description=f"Rider user #{user_id} reactivated",
+        target_type="user", target_id=user_id,
     )
