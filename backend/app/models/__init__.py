@@ -24,3 +24,4 @@ from app.models.driver_availability import DriverSchedule, DriverOnlineStatus  #
 from app.models.driver_insurance import DriverInsuranceDocument, InsuranceExpiryAlert  # noqa: F401
 from app.models.vehicle_inspection import VehicleInspection, VehicleInspectionAlert  # noqa: F401
 from app.models.driver_performance import DriverPerformanceSnapshot, DriverPerformanceAlert  # noqa: F401
+from app.models.complaint import Complaint  # noqa: F401
