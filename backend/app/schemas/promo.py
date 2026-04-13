@@ -89,3 +89,25 @@ class PromoRedemptionResponse(BaseModel):
     ride_id: int | None
     discount_amount: float
     redeemed_at: datetime
+
+
+class PromoTopEntry(BaseModel):
+    promo_code_id: int
+    code: str
+    description: str
+    promo_type: str
+    is_referral: bool
+    redemptions: int
+    total_discount_given: float
+
+
+class PromoStats(BaseModel):
+    period: str
+    total_redemptions: int
+    total_discount_given: float
+    unique_riders_used: int
+    active_promo_count: int
+    referral_redemptions: int
+    non_referral_redemptions: int
+    top_promos_by_usage: list[PromoTopEntry]
+    top_promos_by_discount: list[PromoTopEntry]
