@@ -253,6 +253,7 @@ async def request_ride(
         promo_code_id=promo_code_id,
         promo_discount=promo_discount,
         accessibility_required=req.accessibility_required,
+        vehicle_type_preference=req.vehicle_type_preference,
     )
     db.add(ride)
     await db.commit()
@@ -289,6 +290,7 @@ async def request_ride(
         ride.dropoff_address,
         ride.estimated_fare,
         req.accessibility_required,
+        req.vehicle_type_preference,
     )
 
     return RideResponse(
@@ -310,6 +312,7 @@ async def _match_ride_background(
     dropoff_address: str,
     estimated_fare: float,
     accessibility_required: bool = False,
+    vehicle_type_preference=None,
 ) -> None:
     from app.api.websocket import notify_ride_status, send_ride_offer
     from app.db.database import async_session
@@ -323,14 +326,18 @@ async def _match_ride_background(
             return
 
         candidates = await engine.find_candidates(
-            pickup_lat, pickup_lng, db, accessibility_required=accessibility_required
+            pickup_lat, pickup_lng, db,
+            accessibility_required=accessibility_required,
+            vehicle_type_preference=vehicle_type_preference,
         )
         if not candidates:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
             return
 
         matched = await engine.match_ride(
-            ride, pickup_lat, pickup_lng, db, accessibility_required=accessibility_required
+            ride, pickup_lat, pickup_lng, db,
+            accessibility_required=accessibility_required,
+            vehicle_type_preference=vehicle_type_preference,
         )
         if not matched:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")

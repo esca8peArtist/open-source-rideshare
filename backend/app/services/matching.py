@@ -12,7 +12,7 @@ from app.config import settings
 from app.models.driver import DriverProfile
 from app.models.driver_availability import DriverOnlineStatus, DriverSchedule
 from app.models.ride import Ride, RideStatus
-from app.models.vehicle import Vehicle
+from app.models.vehicle import Vehicle, VehicleServiceCategory
 
 # How old a heartbeat can be before the driver is considered unreachable.
 # Must match HEARTBEAT_STALE_MINUTES in services/driver_availability.py.
@@ -34,6 +34,7 @@ class DriverCandidate:
     total_trips: int
     is_wheelchair_accessible: bool = False
     vehicle_capacity: int = 4
+    vehicle_service_category: VehicleServiceCategory = VehicleServiceCategory.STANDARD
 
 
 class MatchingEngine:
@@ -182,6 +183,7 @@ class MatchingEngine:
         db: AsyncSession,
         accessibility_required: bool = False,
         availability_filter: bool = True,
+        vehicle_type_preference: VehicleServiceCategory | None = None,
     ) -> list[DriverCandidate]:
         """Find and rank driver candidates for a ride request.
 
@@ -198,6 +200,9 @@ class MatchingEngine:
             available according to the DriverOnlineStatus table and any
             configured weekly schedule.  Set to False only for administrative
             or diagnostic purposes.
+        vehicle_type_preference:
+            When set, only drivers whose active vehicle matches this service
+            category are returned.  None means any category is acceptable.
         """
         initial_radius = settings.driver_search_initial_radius_km
         max_radius = settings.driver_search_radius_km
@@ -269,9 +274,18 @@ class MatchingEngine:
             vehicle = active_vehicles.get(p.id)
             is_wav = vehicle.is_wheelchair_accessible if vehicle else False
             capacity = vehicle.capacity if vehicle else 4
+            service_category = (
+                vehicle.service_category
+                if vehicle
+                else VehicleServiceCategory.STANDARD
+            )
 
             # Filter: if accessibility required, skip non-WAV drivers
             if accessibility_required and not is_wav:
+                continue
+
+            # Filter: if a vehicle type preference is set, skip non-matching drivers
+            if vehicle_type_preference is not None and service_category != vehicle_type_preference:
                 continue
 
             candidates.append(
@@ -283,6 +297,7 @@ class MatchingEngine:
                     total_trips=p.total_trips,
                     is_wheelchair_accessible=is_wav,
                     vehicle_capacity=capacity,
+                    vehicle_service_category=service_category,
                 )
             )
 
@@ -352,6 +367,7 @@ class MatchingEngine:
         db: AsyncSession,
         accessibility_required: bool = False,
         availability_filter: bool = True,
+        vehicle_type_preference: VehicleServiceCategory | None = None,
     ) -> DriverCandidate | None:
         candidates = await self.find_candidates(
             pickup_lat,
@@ -359,6 +375,7 @@ class MatchingEngine:
             db,
             accessibility_required=accessibility_required,
             availability_filter=availability_filter,
+            vehicle_type_preference=vehicle_type_preference,
         )
         if not candidates:
             logger.info("No drivers found for ride %d", ride.id)

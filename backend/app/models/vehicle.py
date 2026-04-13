@@ -19,6 +19,19 @@ class VehicleType(str, enum.Enum):
     OTHER = "other"
 
 
+class VehicleServiceCategory(str, enum.Enum):
+    """Service tier a vehicle is registered to offer.
+
+    Riders can optionally filter by service category when requesting a ride.
+    """
+
+    STANDARD = "standard"
+    COMFORT = "comfort"
+    XL = "xl"
+    PREMIUM = "premium"
+    WAV = "wav"  # Wheelchair accessible vehicle
+
+
 class Vehicle(Base):
     __tablename__ = "vehicles"
 
@@ -27,6 +40,9 @@ class Vehicle(Base):
         ForeignKey("driver_profiles.id"), index=True
     )
     vehicle_type: Mapped[VehicleType] = mapped_column(Enum(VehicleType))
+    service_category: Mapped[VehicleServiceCategory] = mapped_column(
+        Enum(VehicleServiceCategory), default=VehicleServiceCategory.STANDARD
+    )
     make: Mapped[str] = mapped_column(String(100))
     model: Mapped[str] = mapped_column(String(100))
     year: Mapped[int]

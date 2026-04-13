@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.models.vehicle import VehicleServiceCategory
+
 
 class LocationPoint(BaseModel):
     lat: float
@@ -69,6 +71,7 @@ class RideRequest(BaseModel):
     dropoff_saved_location_id: int | None = None
     promo_code: str | None = None
     accessibility_required: bool = False
+    vehicle_type_preference: VehicleServiceCategory | None = None
     waypoints: list[WaypointInput] | None = None
 
 
@@ -91,6 +94,7 @@ class RideResponse(BaseModel):
     driver_name: str | None = None
     driver_rating: float | None = None
     vehicle_info: str | None = None
+    vehicle_type_preference: VehicleServiceCategory | None = None
     scheduled_for: datetime | None = None
     requested_at: datetime
     matched_at: datetime | None = None

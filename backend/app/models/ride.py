@@ -6,6 +6,7 @@ from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+from app.models.vehicle import VehicleServiceCategory
 
 
 class RideStatus(str, enum.Enum):
@@ -51,6 +52,9 @@ class Ride(Base):
     is_pool: Mapped[bool] = mapped_column(default=False)
     pool_id: Mapped[int | None] = mapped_column(ForeignKey("ride_pools.id"), nullable=True, index=True)
     accessibility_required: Mapped[bool] = mapped_column(default=False)
+    vehicle_type_preference: Mapped[VehicleServiceCategory | None] = mapped_column(
+        Enum(VehicleServiceCategory), nullable=True
+    )
 
     dispatch_retry_count: Mapped[int] = mapped_column(default=0)
     last_retry_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
