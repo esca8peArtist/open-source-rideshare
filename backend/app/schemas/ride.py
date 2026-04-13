@@ -209,3 +209,19 @@ class RideReceiptResponse(BaseModel):
     # Cooperative info
     cooperative_name: str = "OpenRide"
     currency: str = "USD"
+
+
+class RiderStatsResponse(BaseModel):
+    """Lifetime statistics summary for a rider."""
+
+    total_rides: int
+    completed_rides: int
+    cancelled_rides: int
+    completion_rate_pct: float
+    total_spent_dollars: float
+    avg_fare_dollars: float
+    total_distance_km: float
+    avg_rating_given: float | None
+    tips_given_count: int
+    total_tips_given_dollars: float
+    member_since: datetime | None

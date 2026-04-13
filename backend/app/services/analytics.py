@@ -552,4 +552,74 @@ async def get_admin_tip_stats(
         ],
     }
 
-    return output.getvalue()
+
+# ---------------------------------------------------------------------------
+# Rider lifetime stats
+# ---------------------------------------------------------------------------
+
+
+async def get_rider_stats(
+    db: AsyncSession,
+    rider_id: int,
+    member_since: datetime | None = None,
+) -> dict[str, Any]:
+    """Return lifetime stats for a rider.
+
+    Includes:
+    - total_rides: all rides requested (any status)
+    - completed_rides: COMPLETED status
+    - cancelled_rides: CANCELLED status
+    - completion_rate_pct: completed / total * 100 (0.0 if no rides)
+    - total_spent_dollars: sum of actual_fare for completed rides
+    - avg_fare_dollars: average actual_fare for completed rides
+    - total_distance_km: sum of distance_km for completed rides
+    - avg_rating_given: average driver_rating the rider has given
+    - tips_given_count: number of tips the rider has submitted
+    - total_tips_given_dollars: sum of tip amounts given
+    - member_since: passed in from the User model
+    """
+    # Ride counts
+    all_rides_result = await db.execute(
+        select(Ride).where(Ride.rider_id == rider_id)
+    )
+    all_rides = all_rides_result.scalars().all()
+
+    total_rides = len(all_rides)
+    completed_rides = [r for r in all_rides if r.status == RideStatus.COMPLETED]
+    cancelled_rides = [r for r in all_rides if r.status == RideStatus.CANCELLED]
+
+    completed_count = len(completed_rides)
+    cancelled_count = len(cancelled_rides)
+    completion_rate = round(completed_count / total_rides * 100, 1) if total_rides else 0.0
+
+    total_spent = sum(
+        (r.actual_fare or r.estimated_fare) for r in completed_rides
+    )
+    avg_fare = round(total_spent / completed_count, 2) if completed_count else 0.0
+    total_distance = sum(r.distance_km for r in completed_rides if r.distance_km is not None)
+
+    # Average rating given by this rider to drivers
+    ratings = [r.driver_rating for r in all_rides if r.driver_rating is not None]
+    avg_rating_given = round(sum(ratings) / len(ratings), 2) if ratings else None
+
+    # Tips given by this rider
+    tips_result = await db.execute(
+        select(TipRecord).where(TipRecord.rider_id == rider_id)
+    )
+    tips = tips_result.scalars().all()
+    tips_given_count = len(tips)
+    total_tips_given_cents = sum(t.amount_cents for t in tips)
+
+    return {
+        "total_rides": total_rides,
+        "completed_rides": completed_count,
+        "cancelled_rides": cancelled_count,
+        "completion_rate_pct": completion_rate,
+        "total_spent_dollars": round(total_spent, 2),
+        "avg_fare_dollars": avg_fare,
+        "total_distance_km": round(total_distance, 1),
+        "avg_rating_given": avg_rating_given,
+        "tips_given_count": tips_given_count,
+        "total_tips_given_dollars": round(total_tips_given_cents / 100, 2),
+        "member_since": member_since,
+    }

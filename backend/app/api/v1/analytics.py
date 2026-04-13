@@ -3,6 +3,7 @@
 Rider endpoints (authenticated rider):
   GET /analytics/rider/spending         — spending summary with period filter
   GET /analytics/rider/spending/export  — CSV export of trip history
+  GET /analytics/rider/stats            — lifetime stats summary
 
 Driver endpoints (authenticated driver):
   GET /analytics/driver/tax-summary         — annual earnings summary for 1099 prep
@@ -20,11 +21,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, require_driver
 from app.db.database import get_db
 from app.models.user import User
+from app.schemas.ride import RiderStatsResponse
 from app.services.analytics import (
     export_driver_tax_csv,
     export_rider_spending_csv,
     get_driver_tax_summary,
     get_rider_spending,
+    get_rider_stats,
 )
 
 logger = logging.getLogger(__name__)
@@ -95,6 +98,25 @@ async def export_rider_spending(
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.get(
+    "/rider/stats",
+    response_model=RiderStatsResponse,
+    summary="Get rider lifetime stats",
+    description=(
+        "Returns lifetime ride statistics for the authenticated user. "
+        "Includes total rides, completion rate, total spent, average fare, "
+        "total distance, average rating given to drivers, and tip summary."
+    ),
+)
+async def get_rider_stats_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Lifetime stats summary for the authenticated rider."""
+    stats = await get_rider_stats(db, rider_id=current_user.id, member_since=current_user.created_at)
+    return RiderStatsResponse(**stats)
 
 
 # ---------------------------------------------------------------------------
