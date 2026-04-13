@@ -22,7 +22,7 @@ from app.models.driver import DriverProfile
 from app.models.feedback import Dispute, DisputeStatus, DisputeType, RideFeedback
 from app.models.ride import Ride, RideStatus
 from app.models.safety import SOSAlert, SOSStatus
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.verification import DriverDocument, VerificationStatus
 from app.models.payment import Payment, PaymentStatus, PaymentType
 from app.schemas.feedback import DisputeResolve
@@ -63,6 +63,8 @@ from app.schemas.admin import (
     TopEarnerDriverEntry,
     TopEarnersResponse,
     TopSpenderRiderEntry,
+    UserSearchResponse,
+    UserSearchResult,
 )
 from app.schemas.service_area import (
     ServiceAreaCreate,
@@ -2334,3 +2336,77 @@ async def top_earners(
         ]
 
     return TopEarnersResponse(period=period, role=role, entries=entries)
+
+
+# ---- Unified User Search ----
+
+
+@router.get("/users/search", response_model=UserSearchResponse)
+async def search_users(
+    q: str = Query(..., min_length=1, max_length=200, description="Search query (name, phone, or email)"),
+    role: str = Query("all", pattern="^(all|driver|rider)$", description="Filter by role"),
+    limit: int = Query(20, ge=1, le=100),
+    _admin=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Unified search across riders and drivers by name, phone, or email.
+
+    Admin only. Searches User.name, User.phone, and User.email.
+    Use role=driver or role=rider to narrow results.
+    Returns up to `limit` results (default 20, max 100).
+    """
+    search_term = f"%{q}%"
+    name_match = User.name.ilike(search_term)
+    phone_match = User.phone.ilike(search_term)
+    email_match = User.email.ilike(search_term)
+    text_filter = or_(name_match, phone_match, email_match)
+
+    role_filter_clause = []
+    if role == "driver":
+        role_filter_clause = [User.role == UserRole.DRIVER]
+    elif role == "rider":
+        role_filter_clause = [User.role == UserRole.RIDER]
+
+    users_result = await db.execute(
+        select(User)
+        .where(text_filter, *role_filter_clause)
+        .order_by(User.name.asc())
+        .limit(limit)
+    )
+    users = users_result.scalars().all()
+
+    total = (await db.execute(
+        select(func.count()).select_from(User).where(text_filter, *role_filter_clause)
+    )).scalar() or 0
+
+    # Fetch driver profiles for any driver users
+    driver_user_ids = [u.id for u in users if u.role == UserRole.DRIVER]
+    profiles_by_user: dict[int, DriverProfile] = {}
+    if driver_user_ids:
+        profiles_result = await db.execute(
+            select(DriverProfile).where(DriverProfile.user_id.in_(driver_user_ids))
+        )
+        profiles_by_user = {p.user_id: p for p in profiles_result.scalars().all()}
+
+    results = []
+    for user in users:
+        profile = profiles_by_user.get(user.id)
+        results.append(UserSearchResult(
+            user_id=user.id,
+            name=user.name,
+            phone=user.phone,
+            email=user.email,
+            role=user.role.value,
+            is_active=user.is_active,
+            created_at=user.created_at,
+            driver_is_approved=profile.is_approved if profile else None,
+            driver_total_trips=profile.total_trips if profile else None,
+            driver_rating_avg=profile.rating_avg if profile else None,
+        ))
+
+    return UserSearchResponse(
+        query=q,
+        role_filter=role,
+        results=results,
+        total=total,
+    )

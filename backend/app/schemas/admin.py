@@ -409,3 +409,28 @@ class TopEarnersResponse(BaseModel):
     period: str
     role: str  # "driver" or "rider"
     entries: list[TopEarnerDriverEntry] | list[TopSpenderRiderEntry]
+
+
+class UserSearchResult(BaseModel):
+    """One user in unified admin search results."""
+
+    user_id: int
+    name: str
+    phone: str
+    email: str | None = None
+    role: str  # "rider" or "driver"
+    is_active: bool
+    created_at: datetime
+    # driver-specific fields (None for riders)
+    driver_is_approved: bool | None = None
+    driver_total_trips: int | None = None
+    driver_rating_avg: float | None = None
+
+
+class UserSearchResponse(BaseModel):
+    """Admin unified user search response."""
+
+    query: str
+    role_filter: str  # "all", "driver", or "rider"
+    results: list[UserSearchResult]
+    total: int
