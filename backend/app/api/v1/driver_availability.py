@@ -6,6 +6,8 @@ Driver-facing:
   DELETE /drivers/me/availability/schedule/{slot_id} — remove a slot
   PUT  /drivers/me/availability/online              — go online or offline
   POST /drivers/me/availability/heartbeat           — keep-alive ping
+  POST /drivers/me/availability/break/start         — start a break (pause dispatch)
+  POST /drivers/me/availability/break/end           — end break (resume dispatch)
 
 Admin-facing:
   GET /admin/drivers/availability                   — all drivers + online state
@@ -27,6 +29,7 @@ from app.models.user import User
 from app.schemas.driver_availability import (
     AdminDriverAvailabilityDetail,
     AdminDriverAvailabilityItem,
+    BreakResponse,
     DriverAvailabilityResponse,
     OnlineStatusResponse,
     ScheduleSlotCreate,
@@ -36,11 +39,13 @@ from app.schemas.driver_availability import (
 )
 from app.services.driver_availability import (
     delete_schedule_slot,
+    end_break,
     get_driver_schedule,
     get_online_drivers,
     is_driver_available_now,
     set_driver_online,
     set_schedule_slot,
+    start_break,
     update_heartbeat,
 )
 
@@ -179,6 +184,63 @@ async def send_heartbeat(
 
 
 # ---------------------------------------------------------------------------
+# Break management endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/drivers/me/availability/break/start",
+    response_model=BreakResponse,
+    summary="Start a break — pauses dispatch without going offline",
+)
+async def start_driver_break(
+    user: User = Depends(require_driver),
+    db: AsyncSession = Depends(get_db),
+):
+    """Put the driver on break.
+
+    The driver must be online.  While on break the driver is excluded from
+    ride dispatch but remains in the "online" pool and can end their break
+    at any time.  Idempotent: calling while already on break is safe.
+    """
+    profile = await _get_driver_profile(db, user)
+    try:
+        status_row = await start_break(db, profile.id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        )
+    return BreakResponse.model_validate(status_row)
+
+
+@router.post(
+    "/drivers/me/availability/break/end",
+    response_model=BreakResponse,
+    summary="End a break — resumes dispatch eligibility",
+)
+async def end_driver_break(
+    user: User = Depends(require_driver),
+    db: AsyncSession = Depends(get_db),
+):
+    """End the driver's current break and return to active availability.
+
+    The driver must be online.  Idempotent: calling when not on break is safe.
+    The heartbeat timestamp is refreshed so the driver isn't immediately
+    considered stale by the background sweep.
+    """
+    profile = await _get_driver_profile(db, user)
+    try:
+        status_row = await end_break(db, profile.id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        )
+    return BreakResponse.model_validate(status_row)
+
+
+# ---------------------------------------------------------------------------
 # Admin endpoints
 # ---------------------------------------------------------------------------
 
@@ -203,6 +265,7 @@ async def admin_list_driver_availability(
             AdminDriverAvailabilityItem(
                 driver_id=s.driver_id,
                 is_online=s.is_online,
+                is_on_break=s.is_on_break,
                 went_online_at=s.went_online_at,
                 last_heartbeat=s.last_heartbeat,
                 is_available_now=available,

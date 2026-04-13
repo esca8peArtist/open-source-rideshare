@@ -121,12 +121,25 @@ class WeeklyScheduleResponse(BaseModel):
 
 
 class OnlineStatusResponse(BaseModel):
-    """Current online/offline state for a driver."""
+    """Current online/offline/break state for a driver."""
 
     driver_id: int
     is_online: bool
+    is_on_break: bool = False
     went_online_at: datetime | None
+    break_started_at: datetime | None = None
     last_heartbeat: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class BreakResponse(BaseModel):
+    """Response after starting or ending a break."""
+
+    driver_id: int
+    is_online: bool
+    is_on_break: bool
+    break_started_at: datetime | None
 
     model_config = {"from_attributes": True}
 
@@ -159,6 +172,7 @@ class AdminDriverAvailabilityItem(BaseModel):
 
     driver_id: int
     is_online: bool
+    is_on_break: bool = False
     went_online_at: datetime | None
     last_heartbeat: datetime | None
     is_available_now: bool

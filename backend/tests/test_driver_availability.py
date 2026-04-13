@@ -378,6 +378,7 @@ class TestIsDriverAvailableNow:
     async def test_online_no_schedule_is_available(self):
         status_row = MagicMock()
         status_row.is_online = True
+        status_row.is_on_break = False
 
         # First execute → status, second execute → empty schedule
         result_status = _make_async_result(status_row)
@@ -394,6 +395,7 @@ class TestIsDriverAvailableNow:
     async def test_online_within_schedule_window_is_available(self):
         status_row = MagicMock()
         status_row.is_online = True
+        status_row.is_on_break = False
 
         # Build a slot that spans the whole day so we're always within it.
         slot = MagicMock()

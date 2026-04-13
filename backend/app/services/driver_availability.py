@@ -212,6 +212,63 @@ async def update_heartbeat(
     return status_row
 
 
+async def start_break(
+    db: AsyncSession,
+    driver_id: int,
+) -> "DriverOnlineStatus":
+    """Put a driver on break.
+
+    The driver must be online (is_online=True) to take a break.  If already
+    on break the call is idempotent — the existing break_started_at is
+    preserved.
+
+    Raises ValueError if the driver is not currently online.
+    """
+    result = await db.execute(
+        select(DriverOnlineStatus).where(DriverOnlineStatus.driver_id == driver_id)
+    )
+    status_row = result.scalar_one_or_none()
+
+    if status_row is None or not status_row.is_online:
+        raise ValueError("Driver must be online to start a break.")
+
+    if not status_row.is_on_break:
+        status_row.is_on_break = True
+        status_row.break_started_at = datetime.now(timezone.utc)
+
+    await db.flush()
+    return status_row
+
+
+async def end_break(
+    db: AsyncSession,
+    driver_id: int,
+) -> "DriverOnlineStatus":
+    """End a driver's break and return them to active availability.
+
+    Idempotent: if the driver is not on break, the call succeeds without
+    changing anything.  The driver must be online.
+
+    Raises ValueError if the driver is not currently online.
+    """
+    result = await db.execute(
+        select(DriverOnlineStatus).where(DriverOnlineStatus.driver_id == driver_id)
+    )
+    status_row = result.scalar_one_or_none()
+
+    if status_row is None or not status_row.is_online:
+        raise ValueError("Driver must be online to end a break.")
+
+    if status_row.is_on_break:
+        status_row.is_on_break = False
+        status_row.break_started_at = None
+        # Refresh heartbeat so driver isn't immediately considered stale.
+        status_row.last_heartbeat = datetime.now(timezone.utc)
+
+    await db.flush()
+    return status_row
+
+
 def _heartbeat_is_stale(last_heartbeat: datetime | None) -> bool:
     """Return True if last_heartbeat is older than HEARTBEAT_STALE_MINUTES."""
     if last_heartbeat is None:
@@ -246,6 +303,10 @@ async def is_driver_available_now(
     status_row = result.scalar_one_or_none()
 
     if status_row is None or not status_row.is_online:
+        return False
+
+    # Drivers on break are online but unavailable for dispatch.
+    if status_row.is_on_break:
         return False
 
     # Fetch active schedule slots for today.
