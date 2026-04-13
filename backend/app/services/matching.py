@@ -13,6 +13,10 @@ from app.models.driver import DriverProfile
 from app.models.driver_availability import DriverOnlineStatus, DriverSchedule
 from app.models.ride import Ride, RideStatus
 from app.models.vehicle import Vehicle, VehicleServiceCategory
+from app.services.driver_destination import (
+    dropoff_within_filter,
+    get_active_filters_for_drivers,
+)
 
 # How old a heartbeat can be before the driver is considered unreachable.
 # Must match HEARTBEAT_STALE_MINUTES in services/driver_availability.py.
@@ -184,6 +188,8 @@ class MatchingEngine:
         accessibility_required: bool = False,
         availability_filter: bool = True,
         vehicle_type_preference: VehicleServiceCategory | None = None,
+        dropoff_lat: float | None = None,
+        dropoff_lng: float | None = None,
     ) -> list[DriverCandidate]:
         """Find and rank driver candidates for a ride request.
 
@@ -203,6 +209,10 @@ class MatchingEngine:
         vehicle_type_preference:
             When set, only drivers whose active vehicle matches this service
             category are returned.  None means any category is acceptable.
+        dropoff_lat, dropoff_lng:
+            When provided, drivers with an active destination filter are only
+            returned if the ride's dropoff falls within their filter radius.
+            Drivers without a destination filter are unaffected.
         """
         initial_radius = settings.driver_search_initial_radius_km
         max_radius = settings.driver_search_radius_km
@@ -240,6 +250,28 @@ class MatchingEngine:
                 len(profiles),
                 len(profile_id_set),
             )
+
+        # --- Destination filter: skip drivers whose going-home destination
+        #     doesn't include the ride's dropoff location ---
+        if dropoff_lat is not None and dropoff_lng is not None and profiles:
+            profile_ids_for_dest = [p.id for p in profiles]
+            dest_filters = await get_active_filters_for_drivers(db, profile_ids_for_dest)
+            if dest_filters:
+                filtered_profiles = []
+                for p in profiles:
+                    if p.id in dest_filters:
+                        if dropoff_within_filter(dest_filters[p.id], dropoff_lat, dropoff_lng):
+                            filtered_profiles.append(p)
+                        # else: driver has active filter and dropoff doesn't match — skip
+                    else:
+                        filtered_profiles.append(p)  # no filter → always eligible
+                before = len(profiles)
+                profiles = filtered_profiles
+                logger.debug(
+                    "Destination filter: %d/%d driver profiles remain after destination check",
+                    len(profiles),
+                    before,
+                )
 
         # Load active vehicle info for WAV filtering
         profile_ids = [p.id for p in profiles]
@@ -368,6 +400,8 @@ class MatchingEngine:
         accessibility_required: bool = False,
         availability_filter: bool = True,
         vehicle_type_preference: VehicleServiceCategory | None = None,
+        dropoff_lat: float | None = None,
+        dropoff_lng: float | None = None,
     ) -> DriverCandidate | None:
         candidates = await self.find_candidates(
             pickup_lat,
@@ -376,6 +410,8 @@ class MatchingEngine:
             accessibility_required=accessibility_required,
             availability_filter=availability_filter,
             vehicle_type_preference=vehicle_type_preference,
+            dropoff_lat=dropoff_lat,
+            dropoff_lng=dropoff_lng,
         )
         if not candidates:
             logger.info("No drivers found for ride %d", ride.id)

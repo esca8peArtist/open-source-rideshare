@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import admin, admin_financials, analytics, audit, auth, background_checks, chat, complaints, device_tokens, driver_availability, driver_documents, driver_insurance, driver_onboarding, driver_performance, drivers, fare_splits, incentives, lost_found, notification_preferences, notifications, payments, payouts, pools, promos, recurring_rides, ride_preferences, rider_ratings, rides, safety, saved_locations, tips, vehicle_inspection, vehicles, waypoints
+from app.api.v1 import admin, admin_financials, analytics, audit, auth, background_checks, chat, complaints, device_tokens, driver_availability, driver_destination, driver_documents, driver_insurance, driver_onboarding, driver_performance, drivers, fare_splits, incentives, lost_found, notification_preferences, notifications, payments, payouts, pools, promos, recurring_rides, ride_preferences, rider_ratings, rides, safety, saved_locations, tips, vehicle_inspection, vehicles, waypoints
 from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api import websocket
@@ -61,6 +61,7 @@ app.include_router(incentives.router, prefix="/api/v1")
 app.include_router(rider_ratings.router, prefix="/api/v1")
 app.include_router(notification_preferences.router, prefix="/api/v1")
 app.include_router(driver_availability.router, prefix="/api/v1")
+app.include_router(driver_destination.router, prefix="/api/v1")
 app.include_router(driver_insurance.router, prefix="/api/v1")
 app.include_router(vehicle_inspection.router, prefix="/api/v1")
 app.include_router(driver_documents.router, prefix="/api/v1")
