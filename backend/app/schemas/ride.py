@@ -27,6 +27,8 @@ class FareBreakdownResponse(BaseModel):
     multiplier_label: str | None = None
     demand_multiplier: float = 1.0
     demand_label: str | None = None
+    surge_multiplier: float = 1.0
+    surge_label: str | None = None
     subtotal: float
     platform_fee: float = 0.0
     total: float

@@ -15,6 +15,8 @@ class FareBreakdown:
     multiplier_label: str | None
     demand_multiplier: float
     demand_label: str | None
+    surge_multiplier: float
+    surge_label: str | None
     subtotal: float
     platform_fee: float
     total: float
@@ -93,6 +95,8 @@ def calculate_fare_breakdown(
     at_time: datetime | None = None,
     demand_multiplier: float = 1.0,
     demand_label: str | None = None,
+    surge_multiplier: float = 1.0,
+    surge_label: str | None = None,
 ) -> FareBreakdown:
     """Full fare calculation with breakdown.
 
@@ -103,6 +107,9 @@ def calculate_fare_breakdown(
                  Defaults to current UTC time.
         demand_multiplier: Supply/demand-based multiplier (1.0 = no adjustment).
         demand_label: Human-readable explanation of demand pricing.
+        surge_multiplier: Admin-defined geographic surge zone multiplier.
+                          Displayed separately in the breakdown for transparency.
+        surge_label: Human-readable label for the surge zone (e.g. "Downtown Core").
     """
     params = get_pricing_params()
     base = params["base_fare"]
@@ -113,8 +120,8 @@ def calculate_fare_breakdown(
         at_time = datetime.now(timezone.utc)
     multiplier, multiplier_label = _resolve_time_multiplier(at_time)
 
-    # Both multipliers stack: time-of-day * demand
-    combined_multiplier = multiplier * demand_multiplier
+    # All three multipliers stack: time-of-day * demand * surge zone
+    combined_multiplier = multiplier * demand_multiplier * surge_multiplier
     subtotal = (base + distance_component + time_component) * combined_multiplier
     subtotal = max(subtotal, params["minimum_fare"])
 
@@ -129,6 +136,8 @@ def calculate_fare_breakdown(
         multiplier_label=multiplier_label,
         demand_multiplier=demand_multiplier,
         demand_label=demand_label,
+        surge_multiplier=surge_multiplier,
+        surge_label=surge_label,
         subtotal=round(subtotal, 2),
         platform_fee=round(platform_fee, 2),
         total=round(total, 2),

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import admin, admin_financials, analytics, audit, auth, background_checks, chat, complaints, device_tokens, driver_availability, driver_documents, driver_insurance, driver_onboarding, driver_performance, drivers, fare_splits, incentives, lost_found, notification_preferences, notifications, payments, payouts, pools, promos, recurring_rides, ride_preferences, rider_ratings, rides, safety, saved_locations, tips, vehicle_inspection, vehicles, waypoints
+from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, public_router as surge_zones_public_router
 from app.api import websocket
 from app.config import settings
 from app.services.dispatch_scheduler import start_scheduler, stop_scheduler
@@ -69,6 +70,8 @@ app.include_router(analytics.router, prefix="/api/v1")
 app.include_router(admin_financials.router, prefix="/api/v1")
 app.include_router(ride_preferences.router, prefix="/api/v1")
 app.include_router(complaints.router, prefix="/api/v1")
+app.include_router(surge_zones_admin_router, prefix="/api/v1")
+app.include_router(surge_zones_public_router, prefix="/api/v1")
 app.include_router(websocket.router)
 
 
