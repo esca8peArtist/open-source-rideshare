@@ -60,6 +60,9 @@ from app.schemas.admin import (
     SuspendRequest,
     TimeMultiplierSchedule,
     TopDriverEntry,
+    TopEarnerDriverEntry,
+    TopEarnersResponse,
+    TopSpenderRiderEntry,
 )
 from app.schemas.service_area import (
     ServiceAreaCreate,
@@ -2239,3 +2242,95 @@ async def reactivate_rider(
         description=f"Rider user #{user_id} reactivated",
         target_type="user", target_id=user_id,
     )
+
+
+# ---- Top Earners / Spenders Leaderboard ----
+
+
+@router.get("/stats/top-earners", response_model=TopEarnersResponse)
+async def top_earners(
+    role: str = Query("driver", pattern="^(driver|rider)$", description="driver or rider"),
+    period: str = Query("month", pattern="^(week|month|year|all)$"),
+    limit: int = Query(10, ge=1, le=50),
+    _admin=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Top drivers by earnings or top riders by spending for a given period.
+
+    Admin only.
+
+    For role=driver: ranks drivers by sum of actual_fare on completed rides.
+    For role=rider: ranks riders by sum of actual_fare on completed rides they took.
+    Returns up to `limit` entries (default 10, max 50).
+    """
+    now = datetime.now(timezone.utc)
+    if period == "week":
+        start = now - timedelta(days=7)
+    elif period == "month":
+        start = now - timedelta(days=30)
+    elif period == "year":
+        start = now - timedelta(days=365)
+    else:
+        start = datetime(2000, 1, 1, tzinfo=timezone.utc)
+
+    base_filter = [
+        Ride.status == RideStatus.COMPLETED,
+        Ride.completed_at >= start,
+    ]
+
+    if role == "driver":
+        group_col = Ride.driver_id
+        id_label = "user_id"
+        base_filter.append(Ride.driver_id.isnot(None))
+    else:
+        group_col = Ride.rider_id
+        id_label = "user_id"
+
+    fare_expr = func.coalesce(Ride.actual_fare, Ride.estimated_fare)
+
+    rows_result = await db.execute(
+        select(
+            group_col.label("user_id"),
+            func.count().label("completed_trips"),
+            func.sum(fare_expr).label("total_earned"),
+            func.avg(fare_expr).label("avg_fare"),
+        )
+        .where(*base_filter)
+        .group_by(group_col)
+        .order_by(func.sum(fare_expr).desc())
+        .limit(limit)
+    )
+    rows = rows_result.all()
+
+    user_ids = [r.user_id for r in rows]
+    users_by_id: dict[int, User] = {}
+    if user_ids:
+        users_result = await db.execute(
+            select(User).where(User.id.in_(user_ids))
+        )
+        users_by_id = {u.id: u for u in users_result.scalars().all()}
+
+    if role == "driver":
+        entries = [
+            TopEarnerDriverEntry(
+                driver_id=row.user_id,
+                driver_name=users_by_id[row.user_id].name if row.user_id in users_by_id else "Unknown",
+                completed_trips=row.completed_trips,
+                total_earned_dollars=round(float(row.total_earned or 0), 2),
+                avg_fare_dollars=round(float(row.avg_fare or 0), 2),
+            )
+            for row in rows
+        ]
+    else:
+        entries = [
+            TopSpenderRiderEntry(
+                rider_id=row.user_id,
+                rider_name=users_by_id[row.user_id].name if row.user_id in users_by_id else "Unknown",
+                completed_trips=row.completed_trips,
+                total_spent_dollars=round(float(row.total_earned or 0), 2),
+                avg_fare_dollars=round(float(row.avg_fare or 0), 2),
+            )
+            for row in rows
+        ]
+
+    return TopEarnersResponse(period=period, role=role, entries=entries)

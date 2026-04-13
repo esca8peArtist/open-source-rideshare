@@ -381,3 +381,31 @@ class AdminRiderResponse(BaseModel):
 class RidersListResponse(BaseModel):
     riders: list[AdminRiderResponse]
     pagination: PaginationResponse
+
+
+class TopEarnerDriverEntry(BaseModel):
+    """One driver in the top-earners leaderboard."""
+
+    driver_id: int
+    driver_name: str
+    completed_trips: int
+    total_earned_dollars: float
+    avg_fare_dollars: float
+
+
+class TopSpenderRiderEntry(BaseModel):
+    """One rider in the top-spenders leaderboard."""
+
+    rider_id: int
+    rider_name: str
+    completed_trips: int
+    total_spent_dollars: float
+    avg_fare_dollars: float
+
+
+class TopEarnersResponse(BaseModel):
+    """Admin leaderboard: top drivers by earnings or top riders by spending."""
+
+    period: str
+    role: str  # "driver" or "rider"
+    entries: list[TopEarnerDriverEntry] | list[TopSpenderRiderEntry]
