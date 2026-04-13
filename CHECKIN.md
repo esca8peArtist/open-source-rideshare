@@ -6,6 +6,55 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feat/background-checks-firebase-push — driver availability integrated into ride matching
+
+**Branch:** `feature/background-checks-firebase-push`
+**Author:** thorn
+**Date:** 2026-04-13
+
+**Summary:**
+Integrates the driver availability and scheduling system (added in a previous session) into
+the ride matching/dispatch engine. When a ride request is processed, the matching engine now
+filters candidates to only include drivers who are genuinely reachable: online flag set,
+heartbeat within 15 minutes, and within a scheduled availability window (or no schedule at all
+per the opt-in model).
+
+**Files changed:**
+- `backend/app/services/matching.py` — new imports (DriverOnlineStatus, DriverSchedule,
+  datetime utilities); new `_HEARTBEAT_STALE_MINUTES` constant; new private method
+  `_get_availability_eligible_driver_ids` that does a 2-query bulk DB pre-filter
+  (status+heartbeat in one query, schedule slots in a second); `find_candidates` gains
+  `availability_filter: bool = True` parameter that gates the pre-filter; `match_ride`
+  threads `availability_filter` through to `find_candidates`
+- `backend/tests/test_matching_availability.py` — 20 unit tests (22 collected, 2 DB-skipped):
+  covers online/offline, stale heartbeat, no-schedule opt-in, inside/outside window,
+  multi-slot scenarios, filter bypass, empty input, null heartbeat, boundary heartbeat,
+  find_candidates and match_ride integration
+
+**Key design decisions:**
+- Two-query bulk approach: one SELECT on driver_online_status (filters is_online + heartbeat
+  stale threshold at DB level), one SELECT on driver_schedules (bulk for all candidate
+  driver_ids). Schedule window check runs in Python. This avoids N+1 queries.
+- `availability_filter=False` bypasses all DB availability checks for admin/diagnostic use.
+- A TODO comment in the code identifies the path to a fully DB-level implementation (DB view
+  or materialized table) for very large driver pools.
+- The 15-minute stale threshold in matching.py is documented to match the value in
+  `services/driver_availability.py` (which uses 5 minutes for its own display logic).
+  The matching engine uses 15 minutes to be more tolerant of temporary connection loss.
+
+**Test results:** 20 passed, 2 skipped (PostgreSQL integration tests); 1994 existing tests
+unaffected.
+
+**Review notes:**
+- The `availability_filter` param is additive and backward compatible — callers that don't
+  pass it get the new filtering behavior (default True), which is the correct production
+  default.
+- A future improvement: when `find_candidates` expands the search radius in its retry loop,
+  it could optionally re-run the availability filter only for newly added candidates rather
+  than the full set. This is a performance micro-optimization, not a correctness issue.
+
+---
+
 ### feat/background-checks-firebase-push — driver tipping system
 
 **Branch:** `feature/background-checks-firebase-push`
