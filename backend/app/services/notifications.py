@@ -100,6 +100,28 @@ async def send_notification(
     for channel in notification.channels:
         success = False
 
+        # Check per-user, per-type, per-channel preference before dispatching.
+        # SOS_ALERT bypasses all preferences — safety-critical notifications
+        # must always be delivered regardless of user opt-out settings.
+        if db and notification.type != NotificationType.SOS_ALERT:
+            try:
+                from app.services.notification_preferences import is_channel_enabled
+                if not await is_channel_enabled(db, notification.user_id, notification.type.value, channel.value):
+                    logger.info(
+                        "NOTIFICATION [%s] to user %d via %s: skipped (user preference)",
+                        notification.type.value,
+                        notification.user_id,
+                        channel.value,
+                    )
+                    if db:
+                        await _persist_log(db, notification, channel, False)
+                    continue
+            except Exception:
+                logger.debug(
+                    "Could not check notification preferences for user %d; proceeding",
+                    notification.user_id,
+                )
+
         if channel == NotificationChannel.SMS:
             success = await send_sms(notification, phone or "")
         elif channel == NotificationChannel.EMAIL:
