@@ -21,3 +21,4 @@ from app.models.tip import TipRecord  # noqa: F401
 from app.models.incentive import DriverIncentiveProgress, IncentiveProgram  # noqa: F401
 from app.models.rider_rating import RiderRating  # noqa: F401
 from app.models.driver_availability import DriverSchedule, DriverOnlineStatus  # noqa: F401
+from app.models.driver_insurance import DriverInsuranceDocument, InsuranceExpiryAlert  # noqa: F401
