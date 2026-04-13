@@ -19,3 +19,4 @@ from app.models.background_check import BackgroundCheck  # noqa: F401
 from app.models.device_token import DeviceToken  # noqa: F401
 from app.models.tip import TipRecord  # noqa: F401
 from app.models.incentive import DriverIncentiveProgress, IncentiveProgram  # noqa: F401
+from app.models.rider_rating import RiderRating  # noqa: F401
