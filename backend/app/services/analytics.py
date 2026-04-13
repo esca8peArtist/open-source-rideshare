@@ -441,3 +441,115 @@ async def export_driver_tax_csv(
         ])
 
     return output.getvalue()
+
+
+# ---------------------------------------------------------------------------
+# Tip analytics
+# ---------------------------------------------------------------------------
+
+
+async def get_driver_tip_summary(
+    db: AsyncSession,
+    driver_id: int,
+    period: str,
+) -> dict[str, Any]:
+    """Return tip earnings summary for a driver over the given period.
+
+    period must be one of: week, month, year, all.
+
+    Returns a dict matching TipSummaryResponse schema fields.
+    """
+    start, end = _period_bounds(period)
+
+    result = await db.execute(
+        select(TipRecord).where(
+            TipRecord.driver_id == driver_id,
+            TipRecord.created_at >= start,
+            TipRecord.created_at <= end,
+        )
+    )
+    tips = result.scalars().all()
+
+    status_counts: dict[str, int] = {"completed": 0, "pending": 0, "failed": 0, "refunded": 0}
+    total_cents = 0
+    for tip in tips:
+        total_cents += tip.amount_cents
+        status_key = tip.status.value if hasattr(tip.status, "value") else str(tip.status)
+        if status_key in status_counts:
+            status_counts[status_key] += 1
+
+    tip_count = len(tips)
+    avg_tip_cents = (total_cents // tip_count) if tip_count else 0
+
+    return {
+        "period": period,
+        "total_cents": total_cents,
+        "total_dollars": round(total_cents / 100, 2),
+        "tip_count": tip_count,
+        "avg_tip_cents": avg_tip_cents,
+        "avg_tip_dollars": round(avg_tip_cents / 100, 2),
+        "status_breakdown": status_counts,
+    }
+
+
+async def get_admin_tip_stats(
+    db: AsyncSession,
+    period: str,
+) -> dict[str, Any]:
+    """Return platform-wide tip analytics for the given period.
+
+    period must be one of: week, month, year, all.
+
+    Returns a dict matching AdminTipStatsResponse schema fields.
+    """
+    start, end = _period_bounds(period)
+
+    result = await db.execute(
+        select(TipRecord).where(
+            TipRecord.created_at >= start,
+            TipRecord.created_at <= end,
+        )
+    )
+    tips = result.scalars().all()
+
+    total_cents = sum(t.amount_cents for t in tips)
+    tip_count = len(tips)
+    avg_tip_cents = (total_cents // tip_count) if tip_count else 0
+
+    unique_drivers = len({t.driver_id for t in tips})
+    unique_riders = len({t.rider_id for t in tips})
+
+    # Build per-driver totals for top-10 list
+    driver_totals: dict[int, dict[str, int]] = {}
+    for tip in tips:
+        entry = driver_totals.setdefault(tip.driver_id, {"tip_count": 0, "total_cents": 0})
+        entry["tip_count"] += 1
+        entry["total_cents"] += tip.amount_cents
+
+    top_drivers = sorted(
+        driver_totals.items(),
+        key=lambda x: x[1]["total_cents"],
+        reverse=True,
+    )[:10]
+
+    return {
+        "period": period,
+        "total_cents": total_cents,
+        "total_dollars": round(total_cents / 100, 2),
+        "tip_count": tip_count,
+        "avg_tip_cents": avg_tip_cents,
+        "avg_tip_dollars": round(avg_tip_cents / 100, 2),
+        "unique_drivers_tipped": unique_drivers,
+        "unique_riders_who_tipped": unique_riders,
+        "top_tipped_drivers": [
+            {
+                "driver_id": driver_id,
+                "tip_count": stats["tip_count"],
+                "total_cents": stats["total_cents"],
+                "total_dollars": round(stats["total_cents"] / 100, 2),
+            }
+            for driver_id, stats in top_drivers
+        ],
+    }
+
+    return output.getvalue()

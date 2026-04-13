@@ -31,3 +31,47 @@ class TipResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class TipStatusBreakdown(BaseModel):
+    """Tip count grouped by status."""
+
+    completed: int = 0
+    pending: int = 0
+    failed: int = 0
+    refunded: int = 0
+
+
+class TipSummaryResponse(BaseModel):
+    """Driver's personal tip earnings summary for a given period."""
+
+    period: str
+    total_cents: int
+    total_dollars: float
+    tip_count: int
+    avg_tip_cents: int
+    avg_tip_dollars: float
+    status_breakdown: TipStatusBreakdown
+
+
+class TopTippedDriver(BaseModel):
+    """One entry in the admin top-tipped-drivers list."""
+
+    driver_id: int
+    tip_count: int
+    total_cents: int
+    total_dollars: float
+
+
+class AdminTipStatsResponse(BaseModel):
+    """Platform-wide tip analytics for a given period."""
+
+    period: str
+    total_cents: int
+    total_dollars: float
+    tip_count: int
+    avg_tip_cents: int
+    avg_tip_dollars: float
+    unique_drivers_tipped: int
+    unique_riders_who_tipped: int
+    top_tipped_drivers: list[TopTippedDriver]

@@ -1,13 +1,16 @@
 """Tips API — rider-to-driver tip endpoints.
 
-POST /rides/{ride_id}/tip      — rider submits a tip for a completed ride
-GET  /rides/{ride_id}/tip      — rider or driver fetches tip for a ride
-GET  /drivers/me/tips          — driver views their tip history (paginated)
-GET  /admin/tips               — admin lists all tips with optional filters
+POST /rides/{ride_id}/tip          — rider submits a tip for a completed ride
+GET  /rides/{ride_id}/tip          — rider or driver fetches tip for a ride
+GET  /drivers/me/tips              — driver views their tip history (paginated)
+GET  /drivers/me/tips/summary      — driver tip earnings summary by period
+GET  /admin/tips                   — admin lists all tips with optional filters
+GET  /admin/tips/stats             — admin platform-wide tip analytics
 """
 
 import logging
 from datetime import date
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import and_, select
@@ -18,7 +21,8 @@ from app.db.database import get_db
 from app.models.ride import Ride
 from app.models.tip import TipRecord, TipStatus
 from app.models.user import User, UserRole
-from app.schemas.tip import TipRequest, TipResponse
+from app.schemas.tip import AdminTipStatsResponse, TipRequest, TipResponse, TipStatusBreakdown, TipSummaryResponse
+from app.services.analytics import get_admin_tip_stats, get_driver_tip_summary
 from app.services.tips import TipError, submit_tip
 
 logger = logging.getLogger(__name__)
@@ -108,6 +112,70 @@ async def list_my_tips(
         .offset(offset)
     )
     return result.scalars().all()
+
+
+@router.get("/drivers/me/tips/summary", response_model=TipSummaryResponse)
+async def get_my_tip_summary(
+    period: Literal["week", "month", "year", "all"] = Query("month", description="Aggregation period"),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return tip earnings summary for the authenticated driver.
+
+    Requires driver role.
+
+    Returns aggregated totals for the selected period:
+    - total_cents / total_dollars: sum of all tip amounts
+    - tip_count: number of tips received
+    - avg_tip_cents / avg_tip_dollars: mean tip value
+    - status_breakdown: counts by tip status (completed/pending/failed/refunded)
+    """
+    if user.role != UserRole.DRIVER:
+        raise HTTPException(status_code=403, detail="Driver access required")
+
+    summary = await get_driver_tip_summary(db, driver_id=user.id, period=period)
+    return TipSummaryResponse(
+        period=summary["period"],
+        total_cents=summary["total_cents"],
+        total_dollars=summary["total_dollars"],
+        tip_count=summary["tip_count"],
+        avg_tip_cents=summary["avg_tip_cents"],
+        avg_tip_dollars=summary["avg_tip_dollars"],
+        status_breakdown=TipStatusBreakdown(**summary["status_breakdown"]),
+    )
+
+
+@router.get("/admin/tips/stats", response_model=AdminTipStatsResponse)
+async def admin_tip_stats(
+    period: Literal["week", "month", "year", "all"] = Query("month", description="Aggregation period"),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Platform-wide tip analytics for the given period.
+
+    Admin only.
+
+    Returns:
+    - total_cents / total_dollars: platform tip revenue
+    - tip_count: number of tips in period
+    - avg_tip_cents / avg_tip_dollars: platform mean tip
+    - unique_drivers_tipped: how many distinct drivers received tips
+    - unique_riders_who_tipped: how many distinct riders sent tips
+    - top_tipped_drivers: up to 10 drivers ranked by total tip income
+    """
+    stats = await get_admin_tip_stats(db, period=period)
+    from app.schemas.tip import TopTippedDriver
+    return AdminTipStatsResponse(
+        period=stats["period"],
+        total_cents=stats["total_cents"],
+        total_dollars=stats["total_dollars"],
+        tip_count=stats["tip_count"],
+        avg_tip_cents=stats["avg_tip_cents"],
+        avg_tip_dollars=stats["avg_tip_dollars"],
+        unique_drivers_tipped=stats["unique_drivers_tipped"],
+        unique_riders_who_tipped=stats["unique_riders_who_tipped"],
+        top_tipped_drivers=[TopTippedDriver(**d) for d in stats["top_tipped_drivers"]],
+    )
 
 
 @router.get("/admin/tips", response_model=list[TipResponse])
