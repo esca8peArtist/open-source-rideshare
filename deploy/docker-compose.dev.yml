@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: openride
+      POSTGRES_PASSWORD: openride
+      POSTGRES_DB: openride
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  osrm:
+    image: osrm/osrm-backend:latest
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./osrm:/data
+    # Before first run, download and prepare OSM data:
+    #   wget https://download.geofabrik.de/north-america/us/california-latest.osm.pbf -O deploy/osrm/map.osm.pbf
+    #   docker run --rm -v ./deploy/osrm:/data osrm/osrm-backend osrm-extract -p /opt/car.lua /data/map.osm.pbf
+    #   docker run --rm -v ./deploy/osrm:/data osrm/osrm-backend osrm-partition /data/map.osrm
+    #   docker run --rm -v ./deploy/osrm:/data osrm/osrm-backend osrm-customize /data/map.osrm
+    command: osrm-routed --algorithm mld /data/map.osrm
+
+volumes:
+  pgdata:

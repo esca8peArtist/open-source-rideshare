@@ -1,0 +1,13 @@
+# OpenRide reverse proxy configuration
+# Replace yourdomain.com with your actual domain
+# Caddy automatically provisions TLS via Let's Encrypt
+
+api.yourdomain.com {
+    reverse_proxy api:8000
+}
+
+admin.yourdomain.com {
+    root * /srv/admin
+    file_server
+    try_files {path} /index.html
+}
