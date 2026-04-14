@@ -47,6 +47,8 @@ def _make_ride(
     cancelled_at=None,
     dispatch_retry_count=0,
     last_retry_at=None,
+    driver_arrived_at=None,
+    wait_time_fee=0.0,
 ):
     ride = MagicMock(spec=Ride)
     ride.id = ride_id
@@ -59,6 +61,7 @@ def _make_ride(
     ride.actual_fare = actual_fare
     ride.requested_at = requested_at or datetime(2026, 4, 12, tzinfo=timezone.utc)
     ride.matched_at = matched_at
+    ride.driver_arrived_at = driver_arrived_at
     ride.started_at = started_at
     ride.completed_at = completed_at
     ride.tip_amount = tip_amount
@@ -68,6 +71,7 @@ def _make_ride(
     ride.cancelled_at = cancelled_at
     ride.dispatch_retry_count = dispatch_retry_count
     ride.last_retry_at = last_retry_at
+    ride.wait_time_fee = wait_time_fee
     return ride
 
 
@@ -394,7 +398,8 @@ class TestDriverArrived:
         db = _mock_db(scalar_return=ride)
 
         result = await driver_arrived(ride_id=1, driver=driver, db=db)
-        assert result == {"status": "arrived"}
+        assert result["status"] == "arrived"
+        assert "driver_arrived_at" in result
         assert ride.status == RideStatus.ARRIVED
 
     @pytest.mark.asyncio
@@ -475,7 +480,9 @@ class TestCompleteRide:
         db.execute.side_effect = [ride_result, profile_result]
 
         result = await complete_ride(ride_id=1, driver=driver, db=db)
-        assert result == {"status": "completed", "fare": 15.50}
+        assert result["status"] == "completed"
+        assert result["fare"] == 15.50
+        assert result["wait_time_fee"] == 0.0
         assert ride.status == RideStatus.COMPLETED
         assert ride.actual_fare == 15.50
         assert profile.total_trips == 51

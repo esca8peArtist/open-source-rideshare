@@ -45,9 +45,12 @@ class Ride(Base):
 
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     matched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    driver_arrived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    wait_time_fee: Mapped[float] = mapped_column(default=0.0)
 
     is_pool: Mapped[bool] = mapped_column(default=False)
     pool_id: Mapped[int | None] = mapped_column(ForeignKey("ride_pools.id"), nullable=True, index=True)
