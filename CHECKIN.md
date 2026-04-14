@@ -8,25 +8,25 @@
 
 ## Since Last Check-in
 
-**Period**: April 14, 2026
-**Session**: 115
+**Period**: April 15, 2026
+**Session**: 127
 
-### Accomplished (Session 115)
+### Accomplished (Session 127)
 
-#### open-source-rideshare — Surge Zone Auto-Tuning COMPLETE (commit `908432e`)
-Data-driven multiplier recommendations for active surge zones, connecting the demand analytics system to the surge zone config:
-- `GET /admin/surge-zones/auto-tune` — read-only preview of recommendations
-- `POST /admin/surge-zones/auto-tune/apply` — write actionable adjustments (optional `zone_ids` filter to apply selectively)
-- **Algorithm**: compares zone's time-window average rides/hr vs. platform average:
-  - ratio ≥ 2.0 → +0.20 (very high demand window)
-  - ratio ≥ 1.5 → +0.10 (elevated demand window)
-  - ratio ≤ 0.5 → −0.10 (low demand window)
-  - otherwise → no_change; clamped to [1.0, 10.0]
-  - zones with < `min_sample_size` rides → `insufficient_data` (conservative, no change)
-- Handles same-day, overnight, and no-time-window zones correctly
-- Admin reviews preview before committing — apply is a separate intentional step
-- 50 unit tests (helpers, service, schemas, endpoints)
-- **Total: 3,016 tests passing** (up from 2,966), 0 failing
+#### open-source-rideshare — Rider Fare Dispute & Refund System COMPLETE (commit `bd40069`)
+Riders can now dispute a completed ride's fare; admins review and issue refunds:
+- **`POST /riders/me/rides/{ride_id}/disputes`** — submit dispute with category, description, disputed amount
+- **`GET /riders/me/disputes`** — paginated list with optional status filter
+- **`GET /riders/me/disputes/{id}`** — dispute detail
+- **`DELETE /riders/me/disputes/{id}`** — withdraw a pending dispute
+- **`GET /admin/fare-disputes`** — all disputes, paginated + filterable by status
+- **`GET /admin/fare-disputes/summary`** — aggregate stats (counts by status, total refunded, avg disputed amount)
+- **`GET /admin/fare-disputes/{id}`** — admin detail view (includes stripe_refund_id, reviewer)
+- **`POST /admin/fare-disputes/{id}/review`** — approve (full refund) / partial / deny + notes
+- **Dispute categories**: overcharge, incorrect_route, incomplete_ride, unauthorized_charge, wait_time_fee, surge_pricing, other
+- **Rules**: completed rides only; disputed_amount ≤ actual_fare; one active dispute per ride; APPROVED/PARTIAL require refund_amount; terminal disputes cannot be re-reviewed
+- Migration `n1o2p3q4r5s6_add_fare_disputes`: `fare_disputes` table + 4 indexes
+- 44 unit tests; **Total: 3,543 tests passing** (up from 3,499)
 
 ---
 
@@ -42,7 +42,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push**
-`feature/driver-revenue-projections` now includes: driver revenue projections, driver expense tracking, admin ride export, admin trip heatmap, driver performance trends, platform admin config API, demand-by-hour analytics, rider busy hours indicator, surge zone auto-tuning (**3,016 tests**). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
+`feature/corporate-business-accounts` now includes all prior features + **scheduled rides** + **corporate accounts** + **fare disputes & refunds** (**3,543 tests passing**). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -52,12 +52,46 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature — driver earnings summary report or zone boundary suggestions from heatmap clusters
+3. **open-source-rideshare**: Push PR or continue with next feature
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
 
 ### History
+
+#### Accomplished (Session 126)
+- **open-source-rideshare**: Corporate/Business Accounts COMPLETE (commit `aa9ac92`). Companies create accounts with per-ride/monthly limits, invite employees, employees use corporate billing on rides. 9 admin endpoints + 2 rider endpoints. 75 unit tests. Total: 3,499 passing.
+
+#### Accomplished (Session 125)
+- **open-source-rideshare**: Scheduled Rides COMPLETE (commit `e956cf2`). POST/GET/DELETE /riders/me/scheduled-rides, driver accept/decline, admin overview. 63 unit tests. Total: 3,424 passing.
+
+#### Accomplished (Session 123)
+- **open-source-rideshare**: Surge Price Lock COMPLETE (commit `0dbf3c3`). POST/GET/DELETE /riders/me/surge-lock; riders lock current demand multiplier for 5 min before booking; single-use per rider; lock consumed on ride creation. 36 unit tests. Total: 3,323 passing.
+
+#### Accomplished (Session 122)
+- **open-source-rideshare**: Driver Wait Time Billing COMPLETE (commit `a2e894c`). driver_arrived_at stamped on /arrived; GET /rides/{id}/wait-time live status (elapsed, grace remaining, $0.25/min fee, no-show flag); wait_time_fee auto-added to actual_fare on /complete. 30 unit tests. Total: 3,284 passing.
+
+#### Accomplished (Session 121)
+- **open-source-rideshare**: Driver Career Tier System COMPLETE (commit `000ffcf`). Bronze/Silver/Gold/Platinum tiers from lifetime rides/rating/acceptance. GET /drivers/me/tier + POST refresh + admin endpoints. 38 unit tests. Total: 3,257 passing.
+
+#### Accomplished (Session 120)
+- **open-source-rideshare**: Driver Earnings Goals COMPLETE (commit `ee7ecb2`). GET /drivers/me/earnings-goal returns live progress (current_earnings, percentage, on_track, remaining); PUT upserts goal; DELETE removes. 37 unit tests. Total: 3,219 passing.
+- INBOX: User asked to reduce Discord notifications to ~2hr cadence only.
+
+#### Accomplished (Session 119)
+- **open-source-rideshare**: Driver Referral Program COMPLETE (commit `424f107`). GET /drivers/me/referral (code + summary), POST /drivers/me/referral/apply, GET /drivers/me/referral/referred, GET /admin/referrals/stats. 38 unit tests. Total: 3,182 passing.
+
+#### Accomplished (Session 118)
+- **open-source-rideshare**: Admin Bulk Notifications COMPLETE (commit `d61c5f5`). POST /admin/notifications/broadcast — sends platform-wide notifications to all/riders/drivers; push/sms/email channels; BroadcastRecord persists every broadcast; audit-logged. GET /broadcasts (paginated history) + GET /broadcasts/{id}. 34 unit tests. Total: 3,144 passing.
+
+#### Accomplished (Session 117)
+- **open-source-rideshare**: Zone Boundary Suggestions COMPLETE (commit `5ee482a`). GET /admin/surge-zones/suggestions — greedy BFS clustering on trip heatmap; outputs center_lat/lon, radius, multiplier 1.2–2.0, confidence, overlap detection. 49 unit tests. Total: 3,110 passing.
+
+#### Accomplished (Session 116)
+- **open-source-rideshare**: Driver Earnings P&L Summary COMPLETE (commit `e8af5e5`). GET /drivers/me/earnings-summary — consolidated P&L combining ride earnings (gross - fees + tips) with expense log. Flexible date range; weekly/monthly breakdown. 45 unit tests. Total: 3,061 passing.
+
+#### Accomplished (Session 115)
+- **open-source-rideshare**: Surge Zone Auto-Tuning COMPLETE (commit `908432e`). GET /admin/surge-zones/auto-tune (preview) + POST /admin/surge-zones/auto-tune/apply. Algorithm: demand_ratio >= 2.0 → +0.20, >= 1.5 → +0.10, <= 0.5 → -0.10, else no_change; clamped to [1.0, 10.0]. 50 unit tests. Total: 3,016 passing.
 
 #### Accomplished (Session 114)
 - **open-source-rideshare**: Rider Busy Hours Indicator COMPLETE (commit `ae2e408`). `GET /api/v1/rides/busy-hours` — 24 hourly slots with demand_level (low/medium/high/peak), typical_wait_minutes, is_current_hour. Demand classified relative to peak-hour volume. Optional day_of_week filter. 27 unit + 16 integration tests. Total: 2,966 passing.

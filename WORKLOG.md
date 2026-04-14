@@ -4,6 +4,148 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 121 — 2026-04-14
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,219 tests passing; selected Driver Career Tier System as next feature
+
+### open-source-rideshare — Driver Career Tier System COMPLETE (commit 000ffcf)
+- New model: `app/models/driver_tier.py`
+  - DriverCareerTier — one row per driver (unique FK to driver_profiles.id)
+  - CareerTierLevel enum: BRONZE | SILVER | GOLD | PLATINUM
+  - Stores: current_tier, previous_tier, tier_since, evaluated_at
+  - Metric snapshot at eval time: snapshot_rides, snapshot_rating, snapshot_acceptance_rate
+- New schema: `app/schemas/driver_tier.py`
+  - TierBenefits — dispatch_priority, earnings_bonus_pct, badge, perks list
+  - NextTierProgress — next_tier + rides/rating/acceptance needed vs required
+  - DriverCareerTierResponse — full response with benefits + next-tier progress
+  - AdminTierDistributionResponse — aggregate counts per tier
+- New service: `app/services/driver_tiers.py`
+  - `calculate_tier(rides, rating, acceptance_rate)` — pure function, thresholds: Silver=50/4.5/80%, Gold=200/4.7/85%, Platinum=500/4.8/90%
+  - `get_tier_benefits(tier)` — benefits: Bronze=0%, Silver=2%, Gold=5%, Platinum=10% bonus + dispatch priority
+  - `get_next_tier_progress(...)` — progress to next tier with gaps on each metric
+  - `get_driver_career_tier(db, id)` — fetch or auto-create BRONZE row
+  - `refresh_driver_tier(db, id)` — recalculate and update; returns (row, tier_changed)
+  - `get_tier_distribution(db)` — admin aggregate
+- New router: `app/api/v1/driver_tiers.py`
+  - GET  /drivers/me/tier — current tier + benefits + next-tier progress
+  - POST /drivers/me/tier/refresh — recalculate from current profile stats
+  - GET  /admin/drivers/tier-distribution — aggregate counts per tier
+  - POST /admin/drivers/{driver_id}/tier/refresh — admin manual refresh
+- Modified: `app/models/__init__.py`, `app/main.py` — registered model + router
+- 38 unit tests pass, 0 failing
+- **Total: 3,257 tests passing** (up from 3,219), 706 skipped, 0 failing
+
+## Session 120 — 2026-04-14
+
+### Orient
+- INBOX: 1 item — user wants fewer Discord notifications (only ~2hr cadence, not per-session)
+  - Processed: cleared INBOX, noted feedback, will limit Discord pings going forward
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no autonomous dev work
+- mfg-farm: awaiting user decision on commission vs build route
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 3,182 tests; next feature selected: Driver Availability Windows
+
+### open-source-rideshare — Driver Earnings Goals COMPLETE (commit ee7ecb2)
+- New model: `app/models/driver_earnings_goal.py`
+  - DriverEarningsGoal — one row per driver (unique FK to driver_profiles.id)
+  - GoalPeriodType enum: DAILY | WEEKLY
+  - target_amount: float ($1–$2,000 enforced at schema layer)
+- New schema: `app/schemas/driver_earnings_goal.py`
+  - EarningsGoalRequest (period_type, target_amount with gt=0, le=2000)
+  - EarningsGoalResponse (stored goal without progress)
+  - EarningsGoalProgressResponse (goal + live progress fields)
+- New service: `app/services/driver_earnings_goals.py`
+  - `get_goal` — fetch current goal or None
+  - `set_goal` — upsert (create or update in-place)
+  - `delete_goal` — remove goal; returns bool indicating whether row existed
+  - `_fetch_period_earnings` — queries rides + payments + tips for current period
+  - `get_goal_progress` — assembles full progress response with on_track calculation
+  - `_current_period` — returns (period_start, period_end) for daily or weekly period
+  - `_period_elapsed_fraction` — elapsed / total days for pace calculation
+- New router: `app/api/v1/driver_earnings_goals.py`
+  - GET  /drivers/me/earnings-goal — live progress (404 if no goal set)
+  - PUT  /drivers/me/earnings-goal — create or update goal
+  - DELETE /drivers/me/earnings-goal — remove goal (404 if none)
+- Modified: `app/main.py` — registered driver_earnings_goals router
+- 37 unit tests pass, 0 failing
+- **Total: 3,219 tests passing** (up from 3,182), 697 skipped, 0 failing
+
+## Session 119 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,144 tests passing; selected driver referral program feature
+
+### open-source-rideshare — Driver Referral Program COMPLETE (commit 424f107)
+- New model: `app/models/driver_referral.py`
+  - DriverReferralCode — one unique 8-char alphanumeric code per driver (generated on demand)
+  - DriverReferral — referral record with PENDING→QUALIFIED→BONUS_PAID lifecycle
+  - Qualification threshold: 10 rides; bonus: $50; duplicate prevention; own-code guard
+- New schema: `app/schemas/driver_referral.py`
+  - ApplyReferralRequest (code, stripped+uppercased on validation)
+  - ApplyReferralResponse, ReferralCodeResponse, ReferralItem, ReferralListResponse, AdminReferralStats
+- New service: `app/services/driver_referrals.py`
+  - `get_or_create_referral_code` — lazy code generation with collision-safe uniqueness loop
+  - `apply_referral_code` — validates code, prevents self-referral and duplicate use
+  - `record_ride_completion` — increments rides_completed, transitions to QUALIFIED at threshold
+  - `get_referral_summary` — driver's code + aggregate pending/qualified/paid counts + bonus total
+  - `get_my_referrals` — paginated list of referred drivers, newest-first
+  - `get_admin_stats` — platform-wide aggregate: codes issued, referral counts, bonus paid total
+- New router: `app/api/v1/driver_referrals.py`
+  - GET  /drivers/me/referral — code + summary (driver only)
+  - POST /drivers/me/referral/apply — apply referral code (driver only, once per driver)
+  - GET  /drivers/me/referral/referred — paginated referred list (driver only)
+  - GET  /admin/referrals/stats — admin stats (admin only)
+- Modified: `app/main.py` — registered driver_referrals router
+- 38 unit tests pass, 6 integration tests skip (no test DB, consistent with project pattern)
+- **Total: 3,182 tests passing** (up from 3,144), 697 skipped, 0 failing
+
+---
+
+## Session 118 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,110 tests passing; selected admin bulk notifications feature
+
+### open-source-rideshare — Admin Bulk Notifications COMPLETE (commit d61c5f5)
+- New schema: `app/schemas/bulk_notification.py`
+  - BroadcastTarget enum (all/riders/drivers)
+  - BulkNotificationRequest — target, title (max 255), body (max 2000), channels (validated subset of push/sms/email), notification_type
+  - BulkNotificationResult — broadcast_id, target, title, recipient_count, sent_count, failed_count, created_at
+  - BroadcastListItem — same fields + admin_id
+- New model: `app/models/broadcast.py`
+  - BroadcastRecord (broadcast_records table) — admin_id FK, target, title, body, channels (comma-separated), recipient_count, sent_count, failed_count, created_at
+- New service: `app/services/bulk_notifications.py`
+  - `get_broadcast_recipients(db, target)` — queries active users filtered by role
+  - `send_bulk_notification(db, admin_id, req)` — creates record, sends via existing send_notification(), counts sent/failed, logs admin audit action
+  - `list_broadcasts(db, limit, offset)` — newest-first ordered list of BroadcastRecord
+- New router: `app/api/v1/bulk_notifications.py`
+  - POST /admin/notifications/broadcast (admin only, 201)
+  - GET /admin/notifications/broadcasts (admin only, paginated)
+  - GET /admin/notifications/broadcasts/{id} (admin only, 404 on miss)
+- Modified: `app/services/notifications.py` — added PLATFORM_ANNOUNCEMENT to NotificationType enum
+- Modified: `app/main.py` — registered bulk_notifications router
+- 34 unit tests (11 integration tests skip — no test DB, consistent with project pattern)
+- **Total: 3,144 tests passing** (up from 3,110), 691 skipped, 0 failing
+
+---
+
 ## Session 115 — 2026-04-14
 
 ### Orient
@@ -4908,3 +5050,389 @@ Root cause: `!checkin` reads `## Since Last Check-in` from CHECKIN.md. Orchestra
 - CHECKIN.md updated with full accomplishments
 - INBOX cleared
 - Committing final CHECKIN update
+
+---
+
+## Session 116 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs (STOCKBOT_API_KEY not in env) — no dev work
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,016 tests passing; selected driver earnings P&L summary feature
+
+### open-source-rideshare — Driver Earnings Summary (P&L Report) — IN PROGRESS
+Feature: GET /drivers/me/earnings-summary
+- Combines actual ride earnings (gross - platform fees + tips) with actual expenses
+- Net profit = net_ride_earnings - total_expenses
+- Flexible date range (default: current month to today)
+- Optional breakdown param: none/weekly/monthly — sub-period partition
+- Genuinely new: distinct from tax summary (annual only, no expenses), projections (future), expense summary (expenses only)
+
+### open-source-rideshare — Driver Earnings P&L Summary COMPLETE (commit e8af5e5)
+- New schema: `app/schemas/driver_earnings_summary.py`
+  - BreakdownInterval enum: none/weekly/monthly
+  - IncomeBreakdown — gross_fares, platform_fees, tips, net_ride_earnings, rides_completed
+  - ExpenseSummary — total_expenses, deductible_total, categories[]
+  - PeriodBreakdown — full P&L for one sub-period (weekly/monthly window)
+  - EarningsSummaryResponse — top-level response combining income + expenses + net_profit + optional periods[]
+- New service: `app/services/driver_earnings_summary.py`
+  - Single bulk fetch for the period avoids N+1 in breakdown path
+  - _week_ranges(start, end) → list of (start, end) calendar-week windows
+  - _month_ranges(start, end) → list of (start, end) calendar-month windows
+  - _rides_in_window / _expenses_in_window — sub-period partition using in-memory filter
+  - _aggregate_rides — gross fares, fees (from payment records), tips, net
+  - _aggregate_expenses — per-category totals, grand total, deductible total
+  - get_driver_earnings_summary(db, driver_id, start_date, end_date, breakdown)
+- New endpoint: `app/api/v1/driver_earnings_summary.py`
+  - GET /drivers/me/earnings-summary
+  - Auth: require_driver (driver-scoped; riders → 403)
+  - Params: start_date (default: 1st of current month), end_date (default: today), breakdown (default: none)
+  - 422 when start_date > end_date, or breakdown is an invalid value
+- 45 unit tests passing; 11 integration tests skip (no test DB on Pi)
+- **Total: 3,061 tests passing** (up from 3,016), 0 failing
+
+---
+
+## Session 117 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: still blocked on STOCKBOT_API_KEY — no dev work
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,061 tests passing; selected zone boundary suggestions from heatmap clusters
+
+### open-source-rideshare — Zone Boundary Suggestions from Heatmap Clusters — IN PROGRESS
+Feature: GET /admin/surge-zones/suggestions
+- Analyzes ride demand heatmap data to suggest new surge zone boundaries
+- Uses clustering of high-demand grid cells to propose bounding boxes / zones
+- Admins can review suggestions and apply via existing surge-zone creation endpoints
+
+### open-source-rideshare — Zone Boundary Suggestions COMPLETE (commit 5ee482a)
+- New schema: `app/schemas/surge_zone_suggestions.py`
+  - ZoneSuggestion: suggestion_id, center_lat/lon, radius_km, suggested_multiplier,
+    cell_count, total_activity, avg_fare, confidence (0–1), reason, overlaps_existing_zone,
+    overlapping_zone_name
+  - ZoneSuggestionsFilters + ZoneSuggestionsResponse
+- New service: `app/services/surge_zone_suggestions.py`
+  - Pure helpers (all testable without DB): _haversine, _cell_half_size_km,
+    _cluster_cells (greedy BFS), _compute_weighted_centroid, _compute_radius,
+    _compute_avg_fare, _suggest_multiplier, _check_overlaps
+  - get_zone_boundary_suggestions: fetches heatmap, clusters cells within
+    cluster_radius_km using BFS, computes weighted centroids + radii, suggests
+    multipliers 1.2–2.0 by relative demand, flags overlap with existing zones
+- Endpoint: GET /admin/surge-zones/suggestions (admin-only, read-only)
+  - Params: start_date, end_date, min_activity (default 5), precision (default 2),
+    cluster_radius_km (default 2.0), min_cells (default 2), max_suggestions (default 10)
+  - 422 when start_date > end_date
+  - Wired into existing admin_router before /{zone_id} literal-path conflict
+- 49 unit tests; **Total: 3,110 tests passing** (up from 3,061), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated with full accomplishments
+
+---
+
+## Session 122 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on STOCKBOT_API_KEY — no dev work
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,257 tests passing; selected driver wait time billing feature
+
+### open-source-rideshare — Driver Wait Time Billing — IN PROGRESS
+Feature: stamp driver_arrived_at on /arrived; GET /rides/{id}/wait-time; auto-add wait fee to actual_fare on complete
+- Add driver_arrived_at + wait_time_fee columns to Ride model + migration
+- New service: wait_time.py — pure calculate_wait_fee, get_wait_time_status
+- Update rides.py /arrived to stamp driver_arrived_at
+- Add GET /rides/{id}/wait-time endpoint (driver or rider can check)
+- Update /complete to apply wait fee to actual_fare
+
+### open-source-rideshare — Driver Wait Time Billing COMPLETE (commit a2e894c)
+- New model fields: `driver_arrived_at` (DateTime nullable) + `wait_time_fee` (Float default 0.0) on Ride
+- Migration: `i1j2k3l4m5n6_add_wait_time_billing.py`
+- New service: `app/services/wait_time.py`
+  - Constants: WAIT_GRACE_SECONDS=120, WAIT_RATE_PER_MIN=$0.25/min, MAX_WAIT_MINUTES=10
+  - `calculate_wait_fee(driver_arrived_at, now)` → WaitTimeCalc (pure, no DB)
+  - `compute_final_wait_fee(driver_arrived_at, ride_started_at)` → float for fare finalization
+- New schema: `app/schemas/wait_time.py` — WaitTimeStatusResponse
+- Updated rides.py:
+  - `POST /rides/{id}/arrived` — now stamps driver_arrived_at, returns it in response
+  - New `GET /rides/{id}/wait-time` — live status (elapsed, grace remaining, accrued fee, is_no_show); accessible by driver or rider; 409 if driver not yet arrived; uses started_at as reference for completed rides
+  - `POST /rides/{id}/complete` — computes wait_time_fee via compute_final_wait_fee, adds to actual_fare, returns wait_time_fee in response
+- 30 unit tests; **Total: 3,284 tests passing** (up from 3,257), 0 failing on my code
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 123 — 2026-04-14
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: blocked on STOCKBOT_API_KEY — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,284 tests passing; selecting next feature
+
+### open-source-rideshare — Surge Price Lock — IN PROGRESS
+Feature: riders lock current surge multiplier for 5 minutes before booking
+- POST /riders/me/surge-lock — create/replace lock at given pickup location
+- GET  /riders/me/surge-lock — get active lock + seconds remaining
+- DELETE /riders/me/surge-lock — cancel active lock
+- Ride booking integration: consumes active lock and applies locked multiplier
+- New: model, schema, service, router, migration, tests
+
+### open-source-rideshare — Surge Price Lock COMPLETE (commit 0dbf3c3)
+- New model: `app/models/surge_price_lock.py`
+  - SurgePriceLock: rider_id, pickup_lat/lon, pickup_address, locked_multiplier
+  - Lifecycle: locked_at, expires_at (locked_at + 5 min), used_at (set on booking), cancelled_at
+  - FK to users (rider) and rides (ride that consumed the lock)
+- New schema: `app/schemas/surge_price_lock.py`
+  - SurgePriceLockRequest — pickup coords + optional address
+  - SurgePriceLockResponse — full lock state + seconds_remaining + is_active
+  - SurgePriceLockCancelResponse — cancelled bool + message
+- New service: `app/services/surge_price_lock.py`
+  - Pure: is_lock_active, seconds_remaining, build_response — no I/O
+  - Async: get_active_lock, create_lock (auto-cancels existing), cancel_lock, consume_lock
+  - LOCK_DURATION_MINUTES = 5
+- New router: `app/api/v1/surge_price_lock.py`
+  - POST /riders/me/surge-lock — create/replace lock (resolves demand multiplier from Redis)
+  - GET  /riders/me/surge-lock — get active lock + seconds_remaining (404 if none)
+  - DELETE /riders/me/surge-lock — cancel active lock (404 if none)
+- Ride booking integration (rides.py request_ride):
+  - Checks for active lock before demand pricing call
+  - Uses locked_multiplier as effective_multiplier if lock is active
+  - Labels fare as "Locked surge ×X.XX" for transparency
+  - Consumes lock after ride creation (single-use)
+- Migration: j1k2l3m4n5o6_add_surge_price_locks
+- 36 unit tests; **Total: 3,323 tests passing** (up from 3,284), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 124 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on STOCKBOT_API_KEY — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,323 tests passing; selecting next feature
+
+### open-source-rideshare — Rider Membership Plans — IN PROGRESS
+Feature: monthly subscription plans (analogous to Uber One / Lyft Pink)
+- POST /riders/me/membership — subscribe to a plan (basic/premium)
+- GET  /riders/me/membership — get active subscription status
+- DELETE /riders/me/membership — cancel subscription
+- Admin: GET /admin/memberships — list all memberships with plan distribution stats
+- Ride booking integration: apply fare discount + surge cap based on active plan
+- Plans: basic ($9.99/mo, 10% discount, surge ≤2.0x), premium ($19.99/mo, 20% discount, surge ≤1.5x, priority matching)
+- New: model, migration, schema, service, router, tests
+
+### open-source-rideshare — Rider Membership Plans COMPLETE (commit 8a0bb51)
+- New model: `app/models/rider_membership.py`
+  - RiderMembership: rider_id, plan (basic/premium), status (active/cancelled/expired)
+  - Billing period: started_at, expires_at (30-day rolling)
+  - Plan params snapshotted: monthly_price, fare_discount_pct, surge_cap_multiplier, priority_matching
+  - cancelled_at: set on cancel, expires_at NOT moved — benefits valid until end of period
+- Migration: `k1l2m3n4o5p6_add_rider_memberships.py`
+- New schema: `app/schemas/rider_membership.py`
+  - PlanDetails (static plan description), RiderMembershipSubscribeRequest
+  - RiderMembershipResponse (benefits_active computed field), RiderMembershipCancelResponse
+  - AdminMembershipSummary (counts by plan + MRR estimate)
+- New service: `app/services/rider_membership.py`
+  - Plan catalogue: basic ($9.99, 10%, 2.0× cap), premium ($19.99, 20%, 1.5× cap + priority)
+  - Pure: benefits_active, apply_membership_discount, apply_surge_cap, get_active_benefits
+  - Async: get_active_membership, subscribe (idempotent; auto-cancels prior plan on switch), cancel_membership, get_admin_summary
+- New router: `app/api/v1/rider_memberships.py`
+  - GET /riders/me/membership/plans — no auth required
+  - POST /riders/me/membership — subscribe; idempotent same plan, switches plan with immediate cancel
+  - GET /riders/me/membership — 404 if no active membership
+  - DELETE /riders/me/membership — cancel; message includes benefits_valid_until
+  - GET /admin/memberships — admin-only; counts + MRR estimate
+- Ride booking integration (rides.py):
+  - get_active_membership + get_active_benefits called before fare calc
+  - Surge cap applied after price-lock resolution (min of effective_multiplier, cap)
+  - Fare discount applied after surge, before promo code
+  - Surge label annotated when cap is applied
+- 49 unit tests; **Total: 3,372 tests passing** (up from 3,323), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 125 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on STOCKBOT_API_KEY — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,372 tests passing; selecting next feature → **Scheduled Rides**
+
+### open-source-rideshare — Scheduled Rides — IN PROGRESS
+Feature: riders book rides in advance for a specific future date/time
+- POST   /riders/me/scheduled-rides          — create a scheduled ride
+- GET    /riders/me/scheduled-rides          — list rider's scheduled rides
+- GET    /riders/me/scheduled-rides/{id}     — get single scheduled ride
+- DELETE /riders/me/scheduled-rides/{id}     — cancel a scheduled ride
+- GET    /drivers/me/scheduled-rides         — driver sees assigned scheduled rides
+- POST   /drivers/me/scheduled-rides/{id}/accept  — driver accepts assignment
+- POST   /drivers/me/scheduled-rides/{id}/decline — driver declines (ride returned to pending)
+- GET    /admin/scheduled-rides              — admin overview with filtering
+- New: model, migration, schema, service, router, ~45 unit tests
+
+### open-source-rideshare — Scheduled Rides COMPLETE (commit e956cf2)
+- New model: `app/models/scheduled_ride.py`
+  - ScheduledRide: rider_id, driver_id (nullable), pickup/dropoff lat+lon+address
+  - scheduled_for: future UTC datetime for pickup
+  - estimated_fare: float (nullable, snapshotted at booking time)
+  - notes: rider notes to driver (flight number, terminal, etc.)
+  - Status enum: PENDING / DRIVER_ASSIGNED / IN_PROGRESS / COMPLETED / CANCELLED
+  - CancelledBy enum: RIDER / DRIVER / ADMIN
+  - decline_count: int (incremented each time a driver declines)
+  - ride_id: FK to Ride (set when dispatched)
+  - Timestamps: created_at, accepted_at, completed_at, cancelled_at
+- Migration: `l1m2n3o4p5q6_add_scheduled_rides`
+- New schema: `app/schemas/scheduled_ride.py`
+  - ScheduledRideCreateRequest — pickup/dropoff, scheduled_for (≥30min, ≤30 days), fare, notes
+  - ScheduledRideResponse — full booking detail
+  - ScheduledRideListResponse — paginated with total/page/page_size
+  - ScheduledRideAcceptResponse / DeclineResponse / CancelResponse
+  - AdminScheduledRideSummary — status counts
+- New service: `app/services/scheduled_ride.py`
+  - Pure: validate_scheduled_for, is_cancellable, is_acceptable_by_driver, is_declinable_by_driver
+  - Async: create, get, list_rider, list_driver, accept, decline, cancel, get_admin_summary
+  - Policy: MIN_ADVANCE_MINUTES=30, MAX_ADVANCE_DAYS=30, DEFAULT_PAGE_SIZE=20
+- New router: `app/api/v1/scheduled_rides.py`
+  - POST   /riders/me/scheduled-rides          — create (validates timing)
+  - GET    /riders/me/scheduled-rides          — list with ?status filter + pagination
+  - GET    /riders/me/scheduled-rides/{id}     — ownership-checked single booking
+  - DELETE /riders/me/scheduled-rides/{id}     — cancel (pending/driver_assigned only)
+  - GET    /drivers/me/scheduled-rides         — pending pool + assigned rides
+  - POST   /drivers/me/scheduled-rides/{id}/accept  — claim pending booking
+  - POST   /drivers/me/scheduled-rides/{id}/decline — release to pending pool
+  - GET    /admin/scheduled-rides              — admin full list with status filter
+  - GET    /admin/scheduled-rides/summary      — aggregate status counts
+- 63 unit tests; **Total: 3,424 tests passing** (up from 3,372), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 126 — 2026-04-14
+
+### Orient
+- INBOX: empty
+- BLOCKED: no active blocks
+- stockbot: blocked on STOCKBOT_API_KEY — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 3,424 tests passing; selecting next feature → **Corporate/Business Accounts**
+
+### open-source-rideshare — Corporate/Business Accounts — IN PROGRESS
+Feature: companies create corporate accounts, invite employees, employees use corporate billing for rides
+- POST   /admin/corporate-accounts                      — create account
+- GET    /admin/corporate-accounts                      — list all
+- GET    /admin/corporate-accounts/{id}                 — account detail + stats
+- PATCH  /admin/corporate-accounts/{id}                 — update (limit, status, name)
+- POST   /admin/corporate-accounts/{id}/members         — add employee by user_id (creates pending membership)
+- DELETE /admin/corporate-accounts/{id}/members/{uid}   — remove employee
+- GET    /admin/corporate-accounts/{id}/members         — list employees
+- GET    /admin/corporate-accounts/{id}/rides           — ride history for account
+- GET    /admin/corporate-accounts/{id}/spend-summary   — monthly spend breakdown
+- GET    /riders/me/corporate-memberships               — my memberships
+- POST   /riders/me/corporate-memberships/{id}/activate — accept invite
+- New: CorporateAccount model, CorporateMembership model, migration, schema, service, router, ~45 unit tests
+
+### open-source-rideshare — Corporate/Business Accounts COMPLETE (commit aa9ac92)
+- New model: `app/models/corporate_account.py`
+  - CorporateAccount: company_name, billing_email, monthly_limit, per_ride_limit, is_active
+  - current_month_spend + current_month (auto-resets on month rollover), total_spend
+  - CorporateMembership: account_id + user_id (unique pair), status enum (PENDING/ACTIVE/SUSPENDED/REMOVED)
+  - per-employee monthly_limit
+- Migration: `m1n2o3p4q5r6_add_corporate_accounts` — 2 new tables + nullable FK on rides
+- New schema: `app/schemas/corporate_account.py` — create/update/response, invite, spend summary
+- New service: `app/services/corporate_accounts.py`
+  - validate_corporate_billing: checks membership active, per-ride limit, monthly limit
+  - record_corporate_spend: increments spend + auto-resets monthly counter on rollover
+  - Full CRUD for accounts + memberships, list_account_rides, get_spend_summary
+- New router: `app/api/v1/corporate_accounts.py`
+  - POST   /corporate-accounts/admin            — create account
+  - GET    /corporate-accounts/admin            — list accounts (?active_only)
+  - GET    /corporate-accounts/admin/{id}       — detail + member count + stats
+  - PATCH  /corporate-accounts/admin/{id}       — update name/email/limits/status
+  - POST   /corporate-accounts/admin/{id}/members        — invite employee
+  - DELETE /corporate-accounts/admin/{id}/members/{uid}  — remove employee
+  - GET    /corporate-accounts/admin/{id}/members        — list employees
+  - GET    /corporate-accounts/admin/{id}/rides           — paginated ride history
+  - GET    /corporate-accounts/admin/{id}/spend-summary   — 12-month spend breakdown
+  - GET    /corporate-accounts/riders/me/memberships      — rider's memberships
+  - POST   /corporate-accounts/riders/me/memberships/{id}/activate — accept invite
+- Ride integration: `use_corporate_billing: bool` on RideRequest; validate + record spend on complete
+- 75 unit tests; **Total: 3,499 tests passing** (up from 3,424), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 127 — 2026-04-15
+
+### Orient
+- INBOX: empty
+- BLOCKED: no active blocks
+- stockbot: still blocked on STOCKBOT_API_KEY
+- mfg-farm: awaiting user decision — no autonomous work
+- open-source-rideshare: 3,499 tests passing; selecting next feature → **Rider Fare Dispute & Refund System**
+
+### open-source-rideshare — Fare Dispute & Refund System — IN PROGRESS
+Feature: riders can dispute a completed ride's fare; admins review and issue refunds.
+- POST   /riders/me/rides/{ride_id}/disputes      — submit dispute
+- GET    /riders/me/disputes                       — list my disputes (paginated)
+- GET    /riders/me/disputes/{id}                  — single dispute detail
+- DELETE /riders/me/disputes/{id}                  — withdraw pending dispute
+- GET    /admin/fare-disputes                       — all disputes w/ filters
+- GET    /admin/fare-disputes/summary               — aggregate stats
+- GET    /admin/fare-disputes/{id}                  — detail
+- POST   /admin/fare-disputes/{id}/review           — approve/deny/partial + refund_amount + notes
+
+### open-source-rideshare — Fare Dispute & Refund System COMPLETE (commit bd40069)
+- New model: `app/models/fare_dispute.py`
+  - FareDispute: ride_id, rider_id, category, description, disputed_amount, status
+  - Admin fields: reviewed_by_admin_id, admin_notes, refund_amount, stripe_refund_id, resolved_at
+  - DisputeCategory: overcharge/incorrect_route/incomplete_ride/unauthorized_charge/wait_time_fee/surge_pricing/other
+  - DisputeStatus: pending/under_review/approved/partial/denied/withdrawn
+  - TERMINAL_STATUSES and REFUND_STATUSES constants
+- Migration: `n1o2p3q4r5s6_add_fare_disputes` — 1 table, 4 indexes
+- New schema: `app/schemas/fare_dispute.py` — create/review requests, rider/admin responses, summary
+- New service: `app/services/fare_disputes.py`
+  - Validation: only completed rides, disputed_amount ≤ actual_fare, one active dispute per ride
+  - create_dispute, get_dispute_for_rider, list_rider_disputes, withdraw_dispute
+  - get_dispute, list_all_disputes, admin_review_dispute, get_dispute_summary
+- New router: `app/api/v1/fare_disputes.py`
+  - POST   /riders/me/rides/{ride_id}/disputes      — submit dispute
+  - GET    /riders/me/disputes                       — list (paginated, ?status filter)
+  - GET    /riders/me/disputes/{id}                  — single detail
+  - DELETE /riders/me/disputes/{id}                  — withdraw pending dispute
+  - GET    /admin/fare-disputes/summary               — aggregate stats
+  - GET    /admin/fare-disputes                       — all disputes (paginated, filterable)
+  - GET    /admin/fare-disputes/{id}                  — admin detail
+  - POST   /admin/fare-disputes/{id}/review           — approve/partial/deny + refund_amount + notes
+- 44 unit tests; **Total: 3,543 tests passing** (up from 3,499), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
