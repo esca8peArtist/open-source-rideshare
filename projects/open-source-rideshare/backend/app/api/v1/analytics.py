@@ -1,4 +1,4 @@
-"""Analytics API — rider spending and driver tax summary.
+"""Analytics API — rider spending, driver tax summary, and driver revenue projections.
 
 Rider endpoints (authenticated rider):
   GET /analytics/rider/spending         — spending summary with period filter
@@ -6,8 +6,10 @@ Rider endpoints (authenticated rider):
   GET /analytics/rider/stats            — lifetime stats summary
 
 Driver endpoints (authenticated driver):
-  GET /analytics/driver/tax-summary         — annual earnings summary for 1099 prep
-  GET /analytics/driver/tax-summary/export  — CSV export of annual rides
+  GET /analytics/driver/tax-summary              — annual earnings summary for 1099 prep
+  GET /analytics/driver/tax-summary/export       — CSV export of annual rides
+  GET /drivers/me/revenue-projections            — personalized revenue projection
+  GET /drivers/me/earnings-comparison            — compare driver vs. platform averages
 """
 from __future__ import annotations
 
@@ -21,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user, require_driver
 from app.db.database import get_db
 from app.models.user import User
+from app.schemas.driver_revenue import EarningsComparisonResponse, RevenueProjectionResponse
 from app.schemas.ride import RiderStatsResponse
 from app.services.analytics import (
     export_driver_tax_csv,
@@ -28,6 +31,10 @@ from app.services.analytics import (
     get_driver_tax_summary,
     get_rider_spending,
     get_rider_stats,
+)
+from app.services.driver_revenue import (
+    get_driver_earnings_comparison,
+    get_driver_revenue_projection,
 )
 
 logger = logging.getLogger(__name__)
@@ -180,3 +187,91 @@ async def export_driver_tax_summary(
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+# ---------------------------------------------------------------------------
+# Driver revenue projection and earnings comparison
+# ---------------------------------------------------------------------------
+
+_VALID_PROJECTION_PERIODS = {"week", "month", "quarter"}
+_VALID_SCENARIOS = {"conservative", "moderate", "optimistic"}
+
+
+@router.get(
+    "/drivers/me/revenue-projections",
+    response_model=RevenueProjectionResponse,
+    summary="Get driver revenue projection",
+    description=(
+        "Returns a personalized revenue projection for the authenticated driver "
+        "based on their last 30 days of completed rides. "
+        "The `period` parameter controls the projection window "
+        "(week = 7 days, month = 30 days, quarter = 90 days). "
+        "The `scenario` parameter applies a multiplier: "
+        "conservative (0.8x), moderate (1.0x), optimistic (1.25x). "
+        "Drivers with fewer than 5 completed rides receive a projection based on "
+        "platform-wide averages with ``is_new_driver_estimate: true``."
+    ),
+)
+async def get_revenue_projection(
+    period: str = Query(
+        "month",
+        description="Projection window: week | month | quarter",
+    ),
+    scenario: str = Query(
+        "moderate",
+        description="Earnings scenario: conservative | moderate | optimistic",
+    ),
+    current_user: User = Depends(require_driver),
+    db: AsyncSession = Depends(get_db),
+):
+    """Personalized revenue projection for the authenticated driver."""
+    from fastapi import HTTPException
+
+    if period not in _VALID_PROJECTION_PERIODS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid period '{period}'. Must be one of: week, month, quarter",
+        )
+    if scenario not in _VALID_SCENARIOS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid scenario '{scenario}'. Must be one of: conservative, moderate, optimistic",
+        )
+    result = await get_driver_revenue_projection(
+        db, driver_id=current_user.id, period=period, scenario=scenario
+    )
+    return RevenueProjectionResponse(**result)
+
+
+@router.get(
+    "/drivers/me/earnings-comparison",
+    response_model=EarningsComparisonResponse,
+    summary="Compare driver earnings against platform averages",
+    description=(
+        "Returns the authenticated driver's earnings metrics side-by-side with "
+        "platform-wide averages for the same period, along with the driver's "
+        "percentile ranking across all active drivers. "
+        "The `period` parameter controls the comparison window "
+        "(week = 7 days, month = 30 days, quarter = 90 days)."
+    ),
+)
+async def get_earnings_comparison(
+    period: str = Query(
+        "month",
+        description="Comparison window: week | month | quarter",
+    ),
+    current_user: User = Depends(require_driver),
+    db: AsyncSession = Depends(get_db),
+):
+    """Earnings comparison vs. platform averages for the authenticated driver."""
+    from fastapi import HTTPException
+
+    if period not in _VALID_PROJECTION_PERIODS:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid period '{period}'. Must be one of: week, month, quarter",
+        )
+    result = await get_driver_earnings_comparison(
+        db, driver_id=current_user.id, period=period
+    )
+    return EarningsComparisonResponse(**result)
