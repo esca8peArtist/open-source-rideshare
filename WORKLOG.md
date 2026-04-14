@@ -5436,3 +5436,49 @@ Feature: riders can dispute a completed ride's fare; admins review and issue ref
 #### Session end
 - PROJECTS.md updated
 - CHECKIN.md updated
+
+## Session 128 — 2026-04-15
+
+### Orient
+- INBOX: empty
+- BLOCKED: no active blocks
+- stockbot: still blocked on STOCKBOT_API_KEY / user sharing cycle logs
+- mfg-farm: awaiting user decision — no autonomous work
+- open-source-rideshare: 3,543 tests passing; selected **Driver/Rider Blocklist System**
+
+### open-source-rideshare — Driver/Rider Blocklist System — IN PROGRESS
+Feature: both riders and drivers can block specific counterparties from future matching.
+- GET    /users/me/blocklist                   — list blocked users (paginated, ?offset&limit)
+- POST   /users/me/blocklist                   — block a user
+- DELETE /users/me/blocklist/{blocked_user_id} — unblock a user
+- GET    /admin/blocklist                      — all block pairs (admin, paginated)
+
+### open-source-rideshare — Driver/Rider Blocklist System COMPLETE (commit 85834f9)
+- New model: `app/models/blocklist.py`
+  - UserBlocklist: blocker_id, blocked_id, reason, created_at
+  - UniqueConstraint on (blocker_id, blocked_id)
+  - MAX_BLOCKLIST_SIZE = 50 constant
+- Migration: `o1p2q3r4s5t6_add_user_blocklist` — 1 table, 2 indexes, unique pair constraint
+- New schema: `app/schemas/blocklist.py` — BlockUserRequest (reason max 500 chars), BlocklistEntryResponse, AdminBlocklistEntryResponse
+- New service: `app/services/blocklist.py`
+  - block_user: validates self-block, duplicate, limit; adds entry
+  - unblock_user: deletes row, returns True/False
+  - list_blocklist: paginated list for a blocker
+  - get_block_entry: fetch single pair
+  - get_blocked_user_ids: set of IDs the user has blocked
+  - get_blocker_user_ids: set of IDs that have blocked the user
+  - list_all_blocks: admin paginated list
+- New router: `app/api/v1/blocklist.py` (3 user endpoints + 1 admin endpoint)
+- Matching engine integration (`app/services/matching.py`):
+  - find_candidates() accepts rider_user_id; fetches blocked/blocker sets and filters candidates
+  - match_ride() threads rider_user_id through to find_candidates()
+  - Both directions checked: rider-blocked drivers AND drivers-who-blocked-rider excluded
+- Updated callers:
+  - app/api/v1/rides.py: _match_ride_background passes rider_user_id
+  - app/services/dispatch_scheduler.py: both find_candidates + match_ride calls pass rider_user_id
+- Registered blocklist.router in app/main.py
+- 34 unit tests; **Total: 3,577 tests passing** (up from 3,543), 0 failing (3 pre-existing flaky tests remain)
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated

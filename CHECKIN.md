@@ -9,24 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Session**: 127
+**Session**: 128
 
-### Accomplished (Session 127)
+### Accomplished (Session 128)
 
-#### open-source-rideshare — Rider Fare Dispute & Refund System COMPLETE (commit `bd40069`)
-Riders can now dispute a completed ride's fare; admins review and issue refunds:
-- **`POST /riders/me/rides/{ride_id}/disputes`** — submit dispute with category, description, disputed amount
-- **`GET /riders/me/disputes`** — paginated list with optional status filter
-- **`GET /riders/me/disputes/{id}`** — dispute detail
-- **`DELETE /riders/me/disputes/{id}`** — withdraw a pending dispute
-- **`GET /admin/fare-disputes`** — all disputes, paginated + filterable by status
-- **`GET /admin/fare-disputes/summary`** — aggregate stats (counts by status, total refunded, avg disputed amount)
-- **`GET /admin/fare-disputes/{id}`** — admin detail view (includes stripe_refund_id, reviewer)
-- **`POST /admin/fare-disputes/{id}/review`** — approve (full refund) / partial / deny + notes
-- **Dispute categories**: overcharge, incorrect_route, incomplete_ride, unauthorized_charge, wait_time_fee, surge_pricing, other
-- **Rules**: completed rides only; disputed_amount ≤ actual_fare; one active dispute per ride; APPROVED/PARTIAL require refund_amount; terminal disputes cannot be re-reviewed
-- Migration `n1o2p3q4r5s6_add_fare_disputes`: `fare_disputes` table + 4 indexes
-- 44 unit tests; **Total: 3,543 tests passing** (up from 3,499)
+#### open-source-rideshare — Driver/Rider Blocklist System COMPLETE (commit `85834f9`)
+Either party (rider or driver) can now block specific counterparties from future matching:
+- **`GET /users/me/blocklist`** — paginated list of users I've blocked
+- **`POST /users/me/blocklist`** — block a user (optional reason, max 500 chars)
+- **`DELETE /users/me/blocklist/{blocked_user_id}`** — unblock a user
+- **`GET /admin/blocklist`** — admin view of all block pairs
+- **Rules**: max 50 blocked users/account; cannot block yourself; no duplicate blocks
+- **Matching engine**: both directions checked at match time — rider-blocked drivers AND drivers-who-blocked-rider are excluded from `find_candidates()`
+- Both `_match_ride_background` (realtime) and `dispatch_scheduler` (scheduled/retry dispatch) pass `rider_user_id` for blocklist filtering
+- Migration `o1p2q3r4s5t6_add_user_blocklist`: `user_blocklist` table + 2 indexes + unique pair constraint
+- 34 unit tests; **Total: 3,577 tests passing** (up from 3,543)
 
 ---
 
@@ -57,7 +54,12 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 
 ---
 
+---
+
 ### History
+
+#### Accomplished (Session 127)
+- **open-source-rideshare**: Rider Fare Dispute & Refund System COMPLETE (commit `bd40069`). Riders submit fare disputes on completed rides; admins approve/partial/deny with refund amounts. 8 endpoints (4 rider, 4 admin). 44 unit tests. Total: 3,543 passing.
 
 #### Accomplished (Session 126)
 - **open-source-rideshare**: Corporate/Business Accounts COMPLETE (commit `aa9ac92`). Companies create accounts with per-ride/monthly limits, invite employees, employees use corporate billing on rides. 9 admin endpoints + 2 rider endpoints. 75 unit tests. Total: 3,499 passing.
