@@ -5,6 +5,7 @@ Admin endpoints (require admin auth):
   GET    /admin/surge-zones                    — list all zones
   GET    /admin/surge-zones/auto-tune          — preview multiplier recommendations
   POST   /admin/surge-zones/auto-tune/apply    — apply multiplier recommendations
+  GET    /admin/surge-zones/suggestions        — propose new zone boundaries from heatmap clusters
   GET    /admin/surge-zones/{id}               — get single zone
   PUT    /admin/surge-zones/{id}               — update zone
   DELETE /admin/surge-zones/{id}               — hard-delete zone
@@ -17,8 +18,9 @@ Public endpoint (no auth required):
 from __future__ import annotations
 
 import uuid
+from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_admin
@@ -37,10 +39,12 @@ from app.schemas.surge_zone_autotune import (
     AutoTuneApplyResponse,
     AutoTunePreviewResponse,
 )
+from app.schemas.surge_zone_suggestions import ZoneSuggestionsResponse
 from app.services.surge_zone_autotune import (
     apply_auto_tune_recommendations,
     compute_auto_tune_recommendations,
 )
+from app.services.surge_zone_suggestions import get_zone_boundary_suggestions
 from app.services.surge_zones import (
     create_zone,
     delete_zone,
@@ -194,6 +198,63 @@ async def apply_auto_tune(
         zone_ids=body.zone_ids,
         lookback_days=lookback_days,
         min_sample_size=min_sample_size,
+    )
+
+
+@admin_router.get("/suggestions", response_model=ZoneSuggestionsResponse)
+async def get_zone_suggestions(
+    start_date: date | None = Query(
+        None, description="Inclusive start date filter (YYYY-MM-DD) on ride requested_at"
+    ),
+    end_date: date | None = Query(
+        None, description="Inclusive end date filter (YYYY-MM-DD) on ride requested_at"
+    ),
+    min_activity: int = Query(
+        5, ge=1, description="Minimum total activity (pickups + dropoffs) for a heatmap cell to be clustered"
+    ),
+    precision: int = Query(
+        2, ge=1, le=4, description="Heatmap grid precision (1–4 decimal places; default 2 ≈ 1.1 km cells)"
+    ),
+    cluster_radius_km: float = Query(
+        2.0, gt=0.0, description="Maximum km between two cells to be considered neighbours in the same cluster"
+    ),
+    min_cells: int = Query(
+        2, ge=1, description="Minimum heatmap cells a cluster must have to produce a suggestion"
+    ),
+    max_suggestions: int = Query(
+        10, ge=1, le=50, description="Maximum number of zone suggestions to return"
+    ),
+    db: AsyncSession = Depends(get_db),
+) -> ZoneSuggestionsResponse:
+    """Propose new surge zone boundaries derived from heatmap demand clusters.
+
+    Analyses trip heatmap data to identify geographic clusters of high
+    pickup/dropoff activity and suggests circle-shaped zone boundaries that
+    an admin can review and apply via the zone creation endpoint.
+
+    Each suggestion includes:
+    - Activity-weighted centroid (center_lat / center_lon)
+    - Suggested radius that covers all cluster cells
+    - Suggested starting multiplier scaled by demand density
+    - Confidence score relative to the busiest cluster
+    - Overlap flag if the centroid falls inside an existing active zone
+
+    This is a read-only preview — no zones are created or modified.
+    """
+    if start_date is not None and end_date is not None and end_date < start_date:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="end_date must be on or after start_date",
+        )
+    return await get_zone_boundary_suggestions(
+        db,
+        start_date=start_date,
+        end_date=end_date,
+        min_activity=min_activity,
+        precision=precision,
+        cluster_radius_km=cluster_radius_km,
+        min_cells=min_cells,
+        max_suggestions=max_suggestions,
     )
 
 
