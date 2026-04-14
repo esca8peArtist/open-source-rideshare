@@ -4,6 +4,40 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 107 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- stockbot: blocked — user needs to share cycle logs; no dev work available
+- resistance-research: verified `national-security-evidence.md` (648 lines) IS the Domain 19 deepening — was committed before domain-XX naming convention adopted; updating PROJECTS.md to 22/22 complete
+- mfg-farm: market research done (861 lines); next is full business plan
+- open-source-rideshare: 2,769 tests passing; driver revenue projections selected as next feature
+- Launched mfg-farm business plan agent + rideshare driver revenue projections agent in parallel
+
+### resistance-research — Domain deepening library COMPLETE (22/22)
+- Confirmed `national-security-evidence.md` (648 lines, committed `4045559`) is Domain 19 deepening
+- File covers: Pentagon audit failures (7 consecutive), AUMF expansion legal chain, Section 702 + EO 12333 surveillance architecture, veteran suicide data (22/day myth vs. 16.8 current + post-9/11 cohort), PACT Act backlog, nuclear modernization ($1.7T), Leahy Law enforcement failures, climate-as-security (DoD base vulnerability data), SolarWinds/cyber gap, diplomacy gap (State/USAID $58B vs. DoD $886B), USAID 2025 decimation
+- PROJECTS.md updated to reflect 22/22 complete
+
+### mfg-farm — Comprehensive Business Plan COMPLETE
+- 1,002 lines: `projects/mfg-farm/business-plan.md`
+- 5-product launch catalog with sequenced rollout: ModRun cable management (month 1) → Drift flexi animals (month 2) → planters (month 5) → pet memorials (month 6) → GearStation gaming organizer (month 9)
+- Full cost breakdowns: filament g × $/kg + packaging + Etsy 3-component fees + shipping; price floors algebraically derived
+- Design strategy: commission cable family ($200–350) + first flexi creatures ($300–600) while learning Fusion 360/Blender in parallel; transition to in-house by month 5–6
+- Machine milestones with payback periods: P1S at $2,500/mo (19-day payback), xTool S1 laser at $3–5K/mo (2-month payback), resin at $5–8K/mo as separate operational model
+- 90-day launch checklist; risk matrix with 6 risks ranked by severity (including false DMCA by competitors)
+- Committed `b651e0a`
+
+### open-source-rideshare — Driver Revenue Projections COMPLETE
+- New service: `app/services/driver_revenue.py` — `get_driver_revenue_projection()` (last 30 days history → extrapolate to period × scenario multiplier; new-driver baseline < 5 rides); `get_driver_earnings_comparison()` (percentile rank vs. all platform drivers, avoids N+1 with bulk tip fetch)
+- New schemas: `app/schemas/driver_revenue.py` — `RevenueProjectionResponse`, `EarningsComparisonResponse` + nested models
+- New endpoints in `app/api/v1/analytics.py`:
+  - `GET /api/v1/analytics/drivers/me/revenue-projections` (params: period, scenario; driver-only auth)
+  - `GET /api/v1/analytics/drivers/me/earnings-comparison` (param: period; driver-only auth)
+- 48 new tests: 33 unit + 15 API integration (follow existing skip-without-live-DB pattern); 33 net passing
+- **Total: 2,802 tests passing** (up from 2,769)
+- Branch: `feature/driver-revenue-projections`; committed `61beb3d`; PR description in rideshare CHECKIN.md
+
 ## Session 102 — 2026-04-13
 
 ### Orient

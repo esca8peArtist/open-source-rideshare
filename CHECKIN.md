@@ -9,60 +9,67 @@
 ## Since Last Check-in
 
 **Period**: April 14, 2026
-**Sessions run**: 105–106
+**Session**: 107
 
-### Accomplished (Session 106)
+### Accomplished (Session 107)
 
-#### Discord bot investigation — stale status updates
-Root cause identified and fixed. The `!checkin` command reads `## Since Last Check-in` from CHECKIN.md. The orchestrator was writing WORKLOG entries but not consistently archiving and replacing the CHECKIN section. Sessions 105 committed PROJECTS/WORKLOG updates but left CHECKIN's "Since Last Check-in" stuck on Session 104 content. Fix: CHECKIN.md now properly archived and replaced this session; going forward each session will write a fresh section. No code change needed in the bot itself — the issue was the orchestrator workflow, not the bot.
+#### resistance-research — Domain Deepening Library COMPLETE (22/22)
+Confirmed `national-security-evidence.md` (648 lines, committed `4045559`) is the Domain 19 deepening — written in April 2026 before the `domain-XX-name.md` naming convention was adopted, but same depth and format. Covers: Pentagon 7-consecutive-audit failure, AUMF expansion legal chain (2020 Soleimani as illustration), Section 702 + EO 12333 surveillance architecture, veteran suicide data (22/day myth vs. 16.8 current, post-9/11 cohort killed 4× by suicide vs. combat), PACT Act 2.4M claim backlog, nuclear modernization $1.7T cost escalation, Leahy Law enforcement failures (Saudi Yemen), DoD climate base vulnerability, SolarWinds/cyber gap, diplomacy gap (State/USAID $58B vs. DoD $886B), USAID 2025 decimation. PROJECTS.md updated to 22/22.
 
-#### mfg-farm — Market Research COMPLETE
-- **861 lines**: `projects/mfg-farm/market-research.md`
-- **Top product picks** (by net margin, automation score): cable management (68% margin, 9/10 automation), articulated flexi animals (AMS multi-color advantage, 20,000+ unit proven demand), vase-mode planters (fastest print per dollar, zero post-processing), pet memorials (highest margins 68–78%), gaming desk organizers (Amazon-primary, PETG, two-tone premium)
-- **Critical Etsy policy note**: June 10, 2025 policy update bans sales of prints based on third-party STL files — even commercially licensed ones. All designs must be original. This is an existential constraint on the business model.
-- **Platform fee reality**: Etsy's effective rate on a $25 sale is ~16.8% + 15% Offsite Ads on referred sales = 30%+ burden on some sales. Amazon Handmade 15% flat. Fee table and break-even analysis included.
-- **Machine sequencing**: Next printer → Bambu P1S (~$699–949, same AMS, lower cost than X1C). Resin at $3K+/mo revenue milestone. Laser cutter at $5–8K/mo as complementary line (6–8 week ROI on engraving).
-- **IP risk**: Nintendo, Disney, Games Workshop, Hasbro all actively enforce. Multiple DMCA = permanent ban. All designs must be original.
+#### mfg-farm — Comprehensive Business Plan COMPLETE
+- **1,002 lines**: `projects/mfg-farm/business-plan.md`
+- **5-product launch catalog** (sequenced rollout): ModRun cable management (month 1, 9/10 automation, 68% net margin) → Drift flexi animals (month 2, AMS multi-color, Etsy review velocity) → planters (month 5, vase-mode, zero post-processing) → pet memorials (month 6, 68–78% margins) → GearStation gaming organizer (month 9, PETG, Amazon-primary)
+- **Full cost model**: filament g × bulk $/kg + packaging + Etsy 3-component fees (listing $0.20 + transaction 6.5% + payment 3% + $0.25) + shipping; price floors algebraically derived
+- **Design strategy**: commission cable family ($200–350) + first flexi creatures ($300–600) while learning Fusion 360 in parallel; transition in-house by month 5–6. Parametric memorial generator (OpenSCAD/Fusion 360) flagged as highest-leverage early automation
+- **Machine milestones**: P1S at $2,500/mo trigger (19-day payback); xTool S1 laser at $3–5K/mo (2-month payback from cutting boards alone); resin at $5–8K/mo as separate operational model
+- **90-day launch checklist** + 6-risk matrix (including false DMCA counter-notice strategy via $65 US Copyright registration)
+- Committed `b651e0a`
 
-#### resistance-research — Domain 5 Fiscal Reform and Tax Policy COMPLETE
-- **~450 lines**: `projects/resistance-research/domain-deepening/domain-05-fiscal-reform.md`
-- **Core finding**: In 2018, the 400 wealthiest families paid a lower effective all-in rate (23%) than the bottom 50% (24.2%) — first time in data back to 1960
-- **Three structural mechanisms**: (1) buy-borrow-die — stepped-up basis costs $40–50B/yr; (2) corporate offshore profit shifting — $200–250B/yr base erosion; (3) CAMT raised $572M vs $35B projection in 2024 (2% of expected) due to depreciation carveouts
-- **IRS collapse**: IRA's $80B rescinded to $38B; $1.3B already collected from high-income targets before rescission; $200B annual enforcement revenue lost at 5:1 ROI
-- **Direct File ended**: Nov 2025, 94% user satisfaction, killed under industry lobbying pressure. Sweden files 74% of returns via SMS.
-- **Norway wealth tax update**: 30 emigrations from 2022 rate increase, but total revenue rose 34B kroner (2025) vs 27B (2022) — broad base outgrows high-net-worth emigration
-- **Reform revenue**: $400–600B/yr near-term (stepped-up basis, GILTI, CAMT fix, IRS, FTT, carbon); +$150–250B medium-term (wealth tax, estate reform). US at 25.6% tax-to-GDP vs 34.1% OECD average = $2.3T gap.
-- **Deepening library: 21 of 22 domains complete. Remaining: Domain 19 (National Security/Foreign Policy)**
-- Committed `2a1cac2`
+#### open-source-rideshare — Driver Revenue Projections COMPLETE
+- `app/services/driver_revenue.py`: pure service logic — last 30 days history → extrapolate × scenario multiplier; new-driver baseline (< 5 rides) uses platform averages; percentile rank vs. all active drivers (bulk tip fetch, no N+1)
+- `app/schemas/driver_revenue.py`: `RevenueProjectionResponse`, `EarningsComparisonResponse` + nested models
+- 2 new endpoints in `app/api/v1/analytics.py`:
+  - `GET /api/v1/analytics/drivers/me/revenue-projections` (params: period week/month/quarter; scenario conservative/moderate/optimistic)
+  - `GET /api/v1/analytics/drivers/me/earnings-comparison` (percentile rank vs. all platform drivers)
+- 48 tests: 33 unit + 15 API integration; 33 net new passing
+- **Total: 2,802 tests passing** (up from 2,769)
+- Branch: `feature/driver-revenue-projections`; committed `61beb3d`
 
 ---
 
 ### Needs Your Input
 
-**Discord bot showing stale status updates**
-Root cause identified: The `!checkin` command reads the `## Since Last Check-in` section from CHECKIN.md. The orchestrator was not properly archiving and replacing this section at the end of each session — it wrote to the WORKLOG but didn't always replace the "Since Last Check-in" block, so the bot kept surfacing the same Session 104 content across multiple sessions.
+**mfg-farm — Business plan is ready; next action is your call**
+The full business plan is at `projects/mfg-farm/business-plan.md`. To launch, the first concrete step is getting original cable management designs — either:
+- **Commission route**: Post on Fiverr/Upwork for a cable management parametric family ($200–350, own the STLs outright). Fastest path to sellable product.
+- **Build route**: Start Fusion 360 learning path (free for hobbyists). Slower but builds the design capability that drives long-term margin.
+Read the business plan and decide. Drop the direction in INBOX.md and the orchestrator will set up the next operational steps.
 
-Fix applied this session: The "Since Last Check-in" section is now properly archived to History and replaced with current session content. This should resolve repeated updates going forward.
+**Stockbot — paper trading cycle logs (ongoing)**
+Paper trading has been live since April 14 (first market open). The orchestrator still cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
-If `!status` also showed stale content, it reads the last 20 lines of WORKLOG.md — if no WORKLOG entry was added for a session, the tail doesn't change. Session 106 adds a proper WORKLOG entry.
+**Resistance-research — April 17/20 events (imminent)**
+The April 17 stay expiry and April 20 CAPE/Abrego Garcia briefing deadlines are now past (or imminent). If you have outcomes or news, drop them in INBOX.md — the orchestrator will write a monitoring brief.
 
-**Stockbot — paper trading cycle logs**
-Paper trading has been live since April 14 (first market open). The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. To assess model performance, either: (a) share cycle log output in INBOX.md, or (b) screenshot the Trading page at `http://127.0.0.1:8000` and drop path in INBOX.
-
-**Resistance-research — April 17/20 events**
-Today is April 14. The April 17 stay expiry and April 20 CAPE/Abrego Garcia briefing deadlines are imminent. If you have outcomes or news updates, drop them in INBOX.md and the next session will write a monitoring brief.
+**open-source-rideshare — PR ready to push**
+`feature/driver-revenue-projections` is committed locally. Push it and open a PR when ready. SSH key is confirmed present on the Pi (resolved block from Session 104).
 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **mfg-farm**: Market research underway this session — review findings and decide product focus.
-2. **resistance-research**: Domain 5 (Fiscal Reform) deepening underway this session — 21/22 done after.
-3. **stockbot**: Share cycle logs or Trading page screenshot to unblock model performance assessment.
-4. **open-source-rideshare**: 2,769 tests passing — next candidates: trip demand heatmap, driver revenue projections, platform admin config API.
+1. **mfg-farm**: User decides commission vs. build route for cable management designs → set up operational checklist
+2. **stockbot**: Share cycle logs to unblock model performance assessment
+3. **open-source-rideshare**: Push `feature/driver-revenue-projections` PR; next feature candidates: trip demand heatmap, platform admin config API
+4. **resistance-research**: 22/22 complete — quality review pass or publication-ready formatting of `democratic-renewal-proposal.md`
 
 ---
 
 ### History
+
+#### Accomplished (Sessions 105–106)
+- **mfg-farm**: Market research COMPLETE (861 lines) — top picks: cable management, flexi animals, planters, pet memorials, gaming organizers. Etsy June 2025 policy (original designs only) documented as existential constraint. Machine sequencing, fee reality, IP risk analysis.
+- **resistance-research**: Domain 5 Fiscal Reform COMPLETE (~450 lines) — 400 wealthiest families pay lower effective rate than bottom 50%; buy-borrow-die ($40–50B/yr); corporate offshore shifting ($200–250B/yr); IRS enforcement $200B/yr lost; Direct File killed at 94% satisfaction; Norway wealth tax evidence. 21/22 deepening library.
+- **Discord bot stale status fix**: Root cause identified — CHECKIN.md "Since Last Check-in" was not being archived/replaced consistently. Fixed in Session 106.
 
 #### Accomplished (Sessions 104–105)
 - **resistance-research**: Domain 9 Federalism & Local Democracy deepened (340 lines) — Shelby County § 4(b) mechanism, polling place closures by state, Birmingham wage preemption full litigation arc, Illinois 6,963-unit fragmentation, NPVIC 209 EVs, Swiss/German/Spain/Canada fiscal federalism. 20/22 deepening library.
