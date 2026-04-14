@@ -1,6 +1,6 @@
 # Democratic Renewal: An Integrated Proposal for Structural Reform
 
-**April 2026** *(Updated April 11, 2026: Domains 10-15 added — Education, Healthcare, Infrastructure, Housing, Criminal Justice & Policing, and Environment & Climate; Domain 6 expanded with emergency docket reform and court order enforcement architecture; Domain 7 expanded with government data weaponization prohibition; Domain 8 deepened with press freedom protections and additional evidence; implementation timeline updated; cross-domain synthesis added showing reinforcing dynamics between all domains; Domain 1e expanded with governance prerequisites and "Who Is a Voter?" analysis from remote voting research; Domain 4b connected to voting technology identity infrastructure findings and DOGE data weaponization risks; cross-domain synthesis extended with voting technology lesson; April 11 update: Domains 16-17 added — Immigration & Citizenship, Labor & Employment; Domain 9 deepened with preemption reform, interstate compacts, and additional evidence; cross-domain synthesis expanded with Immigration-Democracy and Labor-Democracy loops; implementation timeline updated for all 17 domains. April 11 update: Domains 18-19 added — Social Safety Net, National Security & Foreign Policy; cross-domain synthesis expanded with Social Safety Net-Democracy and Security-Democracy loops (10 total); implementation timeline updated for all 19 domains. April 11 update: Section 5.5 added — International Benchmarks and Fiscal Analysis, mapping each domain to countries that have implemented comparable reforms with measured outcomes, cost estimates, and summary fiscal analysis showing $500-800B/year investment offset by internal revenue mechanisms and avoided costs of inaction. April 11 update: Domain 1e updated with comprehensive cryptographic voting systems analysis — maturity spectrum from production-ready (RLAs, ElectionGuard) to unsolved (coercion resistance at scale), three-layer verification model (paper + E2E-V + RLA), post-quantum migration path, and updated implementation roadmap. Domain 16d expanded with algorithmic decision-making analysis — ICM/FALCON/ImmigrationOS specifications, NIST facial recognition bias data, ISAP electronic monitoring, algorithmic impact assessment requirements modeled on EU AI Act and Canada's AIA, with litigation references including Gonzalez v. ICE. April 11 update: Domain 20 added — Economic Concentration and Antitrust; five reform areas covering competition standard reform, structural breakups, monopsony protections, enforcement funding, and corporate democratic accountability; cross-domain synthesis expanded with Corporate Power-Democracy loop (11 total); implementation timeline updated for all 20 domains; international benchmarks and fiscal analysis updated. April 11 update: Domain 21 added — Data Privacy and Digital Surveillance; five reform areas covering comprehensive federal privacy legislation, warrantless surveillance prohibition, biometric surveillance regulation, institutional oversight infrastructure, and digital rights protection for democratic participation; cross-domain synthesis expanded with Surveillance-Democracy loop (12 total); implementation timeline updated for all 21 domains; international benchmarks and fiscal analysis updated. April 12 update: Domains 7-8 deepened to match later-domain evidence standard — Domain 7 expanded with detailed problem analysis (immigration enforcement data, surveillance expansion, criminalization of dissent, press freedom collapse), international benchmarks from France, Germany, South Korea, Canada, UK, EU, and Brazil for all subsections, fiscal estimates throughout, and new subsection 7f (right to protest and peaceful assembly, preempting state anti-protest laws, modeled on Germany's Article 8 and South Korea's Constitutional Court jurisprudence); Domain 8 expanded with local news collapse data (2,900+ closures, 57% newsroom employment decline, fiscal costs), algorithmic amplification evidence, media consolidation analysis, international benchmarks from BBC/ARD-ZDF/Nordic subsidies/DSA/Sweden's 1766 Freedom of the Press Act, fiscal estimates throughout, and new subsection 8e (media literacy education modeled on Finland's K-12 program); implementation timeline and international benchmarks updated for both domains. April 12 update: Domains 2-3 deepened to match later-domain evidence standard — Domain 2 expanded with detailed problem analysis (Schedule F scope, DOGE impact data, IG gutting timeline), new subsection 2e (federal ethics and conflict-of-interest reform), international benchmarks from UK, Germany, Japan, South Korea, Australia, Hong Kong, and France, and fiscal estimates for all subsections; Domain 3 expanded with participation crisis data, trust collapse evidence, new subsection 3d (civic infrastructure and community organizing support modeled on Danish folkehøjskoler and German political foundations), expanded evidence for 3a-3c including Belgium's permanent citizens' assembly and Barcelona's Decidim platform, and fiscal estimates; implementation timeline and international benchmarks updated for both domains. April 12 update: Domain 22 added — Reparations and Racial Justice; five reform areas covering federal reparations commission (HR 40 with BRAC-model binding recommendations), $200B Community Reinvestment and Restoration Fund for formerly redlined census tracts, baby bonds and targeted homeownership support to close the racial wealth gap, strengthened federal civil rights enforcement (VRA restoration, DOJ tripling, disparate impact codification, algorithmic discrimination ban, federal racial equity office), and national truth and accountability commission; cross-domain synthesis expanded with Racial Justice-Democracy loop (13 total); implementation timeline updated for all 22 domains; international benchmarks and fiscal analysis updated with Germany Holocaust reparations, South Africa TRC, Canada residential schools settlement, New Zealand Treaty of Waitangi, CARICOM, California task force, and Evanston/Asheville municipal models; summary fiscal analysis updated to $650-1,000B/year. April 12 update: Domains 4, 5, 9 deepened to match later-domain evidence standard — Domain 4 expanded with detailed problem analysis (11.5B hours annual paperwork, $80-100B unclaimed benefits, $247B improper payments, 12,000+ legacy IT systems, digital exclusion), new evidence and international benchmarks for all subsections (Estonia X-Road 1.5B queries/year, UK GDS 80-90% cost reduction, South Korea Government 3.0 $32B economic value, India Aadhaar $300B direct transfers, Singapore SingPass, Denmark Borger.dk, Brazil Portal da Transparência 20% corruption reduction, Georgia CPI improvement 124th→51st, South Korea KONEPS $110B transparent procurement), and fiscal estimates throughout ($2-4B/year investment, $55-80B/year return, 30-50x ROI); Domain 5 expanded with detailed problem analysis (tax gap $688B, ProPublica "buy, borrow, die" 3.4% billionaire effective rate, corporate rate erosion, wealth concentration as democratic threat — top 1% hold 32% of wealth), new subsections deepened with evidence and international benchmarks (Japan nenmatsu chōsei, South Korea Hometax, Australia/Denmark/Norway capital gains taxation, 1986 Tax Reform Act precedent, Sweden $130/ton carbon tax, Canada federal carbon backstop with household rebate, Singapore leasehold system, Harrisburg split-rate results, OECD Pillar Two, EU ATAD, Australia MAAL), and fiscal estimates for all subsections (total revenue potential $610-890B/year); Domain 9 expanded with detailed problem analysis (94 restrictive voting laws in 29 states post-Shelby County, 500+ state preemption instances, 90,000 local government units, interstate coordination gap), new evidence and international benchmarks for all subsections (Switzerland 26 cantons/Articles 7-36 rights floor, Germany Basic Law Article 28/Experimentierklausel, EU subsidiarity Article 5/yellow card, Brazil 1988 constitutional municipal autonomy, Canada asymmetric federalism, Finland experimental legislation, RGGI 50%+ emissions reduction/$7.4B investment, Barcelona municipalism, Bloomberg What Works Cities), and fiscal estimates throughout ($1-2B/year investment); international benchmarks section (5.5) updated for all three domains; executive summary updated. April 12 update: Domain 10 deepened to match later-domain evidence standard — fiscal impact estimates added to subsections 10a through 10e (per-pupil equalization $30-50B/year, civics reform $200-500M/year, teacher compensation $15-25B/year, debt-free college $80-90B/year, lifelong learning $13-26B/year); new subsection 10f added — Universal Pre-K and Early Childhood Education, covering federally funded universal pre-K for all 3-4 year olds and subsidized childcare for ages 0-2, with evidence from Perry Preschool ($12.90/dollar return), Abecedarian Project, and Heckman synthesis ($7-13/dollar ROI — highest documented return in social science), international precedents from France (école maternelle, 99% enrollment, 0.5% GDP cost), Germany, Nordic countries, and Canada's $10/day childcare program, and fiscal estimates ($55-85B/year net for pre-K + childcare after consolidation); Section 5.5 Domain 10 entry updated with pre-K international evidence and revised total ($163-226B/year). April 12 update: Domains 11-15 deepened to full evidence standard — inline fiscal impact estimates added to all subsections (11a-11e, 12a-12e, 13a-13e, 14a-14e, 15a-15e); two new subsections added: 11f (Dental, Vision, and Long-Term Care — dental/vision Medicare expansion $35-55B/year, long-term care public benefit $50-100B/year net new, modeled on Germany's Pflegeversicherung and Japan's kaigo hoken) and 14f (Police Use of Force Standards and De-escalation Training — federal use of force standards, de-escalation training mandate, behavioral health co-response dispatch, Camden NJ model, $10-14B/year investment per RAND de-escalation evidence); Section 5.5 entries for Domains 11-15 updated with enhanced detail and subsection-level fiscal breakdowns. Key fiscal findings: Domain 11 net positive (drug price savings $270-480B/year and admin simplification $55-77B/year offset all investments); Domain 13 self-financing (anti-speculation revenue $50-75B/year covers all housing investments); Domain 14 5-8x ROI (decarceration saves $100-130B/year); Domain 15 leverages carbon tax revenue 4-10x.)*
+*Last updated: April 2026*
 
 *A synthesis of the Resistance Research Archive: 160+ movement case studies, six governance models, five tax models, voting technology analysis, crisis assessment, and litigation tracking. This document integrates those threads into a single actionable framework.*
 
@@ -97,7 +97,7 @@ The U.S. electoral system produces uncompetitive races, suppresses political div
 
 ### Proposed Reforms
 
-**1a. Multi-member districts with proportional representation for the U.S. House.**
+**1a: Multi-member districts with proportional representation for the U.S. House.**
 
 Replace 435 single-member districts with approximately 100-150 multi-member districts of 3-5 seats each, elected by proportional representation (specifically, single transferable vote or mixed-member proportional). This eliminates gerrymandering as a mathematical possibility — you cannot gerrymander a multi-member proportional district. It creates competitive races in every district. It allows political diversity beyond two parties. And it ensures that Congress reflects the actual distribution of voter preferences.
 
@@ -105,7 +105,7 @@ Replace 435 single-member districts with approximately 100-150 multi-member dist
 
 *Implementation pathway*: This requires only a federal statute. The current single-member district mandate is statutory (the Uniform Congressional District Act of 1967), not constitutional. Congress can change it by majority vote. Maine and Alaska have already adopted ranked-choice voting for federal races — partial steps toward proportional representation.
 
-**1b. Independent redistricting commissions for all remaining single-member elections.**
+**1b: Independent redistricting commissions for all remaining single-member elections.**
 
 For Senate races (which cannot be proportional by design) and for any House seats that remain single-member during a transition period, mandate independent redistricting commissions using criteria-based mapping (compactness, communities of interest, competitive balance) with no partisan input.
 
@@ -113,7 +113,7 @@ For Senate races (which cannot be proportional by design) and for any House seat
 
 *Implementation pathway*: State ballot initiatives in states that allow them. Federal legislation (the For the People Act included redistricting commission provisions). Court challenges to extreme partisan gerrymanders under state constitutions.
 
-**1c. Ranked-choice voting for all single-winner elections.**
+**1c: Ranked-choice voting for all single-winner elections.**
 
 For Senate, gubernatorial, and presidential races (which are inherently single-winner), implement ranked-choice voting (instant-runoff). This eliminates the "spoiler effect," allows voters to express genuine preferences without strategic voting, reduces negative campaigning (candidates benefit from being voters' second choice), and ensures winners have majority support.
 
@@ -121,7 +121,7 @@ For Senate, gubernatorial, and presidential races (which are inherently single-w
 
 *Implementation pathway*: State legislation or ballot initiatives. No federal action required for state races. For federal races, states can implement RCV under their Article I authority to regulate the "time, place, and manner" of elections.
 
-**1d. Campaign finance reform.**
+**1d: Campaign finance reform.**
 
 Public financing of elections through a small-donor matching system (6:1 or higher match for donations under $200), combined with mandatory disclosure of all political spending above $1,000 and a constitutional amendment to overturn Citizens United.
 
@@ -133,7 +133,7 @@ Public financing of elections through a small-donor matching system (6:1 or high
 
 *Evidence companion: `domain-deepening/domain-02-campaign-finance.md` — full evidence library for the campaign finance crisis and reform tools. Covers the Buckley→Citizens United→McCutcheon legal chain; 2024 spending data ($15.9B total, $1.9B dark money record, 100 billionaire families = 1-in-6 dollars); 501(c)(4)/(c)(6) dark money mechanics and FEC enforcement deadlock; small-dollar public financing evidence from NYC, Seattle, Connecticut, Arizona, and Maine; Gilens and Page (2014) and Bartels (2008) donor-class capture findings; and international benchmarks from Canada, Germany, France, and the UK.*
 
-**1e. Voting infrastructure: in-person improvements now, remote voting as a long-term aspiration contingent on institutional repair.**
+**1e: Voting infrastructure: in-person improvements now, remote voting as a long-term aspiration contingent on institutional repair.**
 
 The research in `remote-electronic-voting-research.md` is unambiguous: no currently deployed technology makes fully remote electronic voting secure enough for binding public elections. The technical barriers — uncontrolled endpoints, coercion resistance, voter authentication, scalable attack surfaces, denial of service, and the absence of a paper audit trail — are deeply intertwined, and several may be fundamentally unsolvable without infrastructure that does not yet exist. Blockchain does not help (the Oxford Journal of Cybersecurity's 2021 assessment: "going from bad to worse").
 
@@ -188,7 +188,7 @@ The professional civil service, independent agencies, and inspector general syst
 
 ### Proposed Reforms
 
-**2a. Constitutional civil service protections.**
+**2a: Constitutional civil service protections.**
 
 Elevate core civil service protections from statute to constitutional status. Specifically: merit-based hiring for all positions below the most senior political appointments (approximately 4,000 positions, compared to the 50,000+ that Schedule F targeted), protection from removal without cause documented in writing and subject to independent review, and prohibition on political interference in enforcement decisions by regulatory agencies.
 
@@ -198,7 +198,7 @@ Elevate core civil service protections from statute to constitutional status. Sp
 
 *Implementation pathway*: Federal statute for immediate protections (strengthening the Hatch Act, reversing Schedule F, codifying independent agency heads' removal protections, establishing a statutory right of action for wrongfully terminated career officials). Constitutional amendment for permanent protection is a longer-term project but should be part of any comprehensive reform agenda. Estimated cost: negligible — protecting existing positions costs less than the constant churn of firing and rehiring.
 
-**2b. Independent agency structural safeguards.**
+**2b: Independent agency structural safeguards.**
 
 For agencies whose independence is critical — Federal Reserve, FTC, FCC, SEC, EPA, CFPB, NLRB, EEOC, MSPB — establish by statute: fixed-term leadership (7-9 years, non-renewable, staggered), removal only for cause documented in writing and subject to judicial review, protected budget floors that cannot be zeroed out by executive action (indexed to GDP or agency caseload), and mandatory Senate confirmation with professional qualification requirements that include minimum years of relevant experience.
 
@@ -208,7 +208,7 @@ For agencies whose independence is critical — Federal Reserve, FTC, FCC, SEC, 
 
 *Implementation pathway*: Federal statute. The Supreme Court's recent skepticism toward agency independence (Seila Law v. CFPB) is a barrier — which is itself an argument for court reform (Domain 6). In the interim, structural safeguards can be designed to survive current doctrine by using for-cause removal standards that the Court has not yet struck down.
 
-**2c. Inspector general independence.**
+**2c: Inspector general independence.**
 
 Restore and strengthen inspector general protections: removal only for cause with 30-day congressional notification and written justification, protected budgets indexed to the budgets of the agencies they oversee (minimum 0.5% of agency budget), mandatory publication of all IG reports within 60 days of completion, and prohibition on agency heads restricting IG access to personnel, documents, or facilities. Create a Council of Inspectors General with independent investigative authority, its own legal counsel, and a budget that cannot be defunded or dissolved by the executive.
 
@@ -218,7 +218,7 @@ Restore and strengthen inspector general protections: removal only for cause wit
 
 *Implementation pathway*: Federal statute (Inspector General Independence Act). The political case is strong — IG independence polls well because it is framed as anti-waste, anti-fraud, and anti-corruption. Estimated annual cost of strengthened IG infrastructure: $500 million. Estimated annual return in identified savings: $7-10 billion minimum.
 
-**2d. Anti-corruption architecture.**
+**2d: Anti-corruption architecture.**
 
 Establish an independent federal anti-corruption agency with its own prosecutorial authority, subpoena power, and protected funding. The agency would investigate corruption by officials in all three branches, with leadership selected by a bipartisan commission including retired federal judges, and removable only by a two-thirds vote of the Senate.
 
@@ -228,7 +228,7 @@ Establish an independent federal anti-corruption agency with its own prosecutori
 
 *Implementation pathway*: Federal statute. Estimated annual budget: $200-300 million (comparable to the NACC). The political challenge is that the people who must pass the law are the people the agency would oversee — which is why anti-corruption agencies are typically established during windows of reform following scandal or democratic crisis. The current crisis may provide exactly that window.
 
-**2e. Federal ethics and conflict of interest reform.**
+**2e: Federal ethics and conflict of interest reform.**
 
 Strengthen ethics requirements for all senior government officials: mandatory public financial disclosure with real-time updates (not annual filings), mandatory divestiture of conflicting financial interests (not blind trusts, which are routinely circumvented), a 5-year post-government lobbying ban (currently 1-2 years depending on position), prohibition on immediate family members of senior officials receiving government contracts, and mandatory tax return disclosure for all candidates for federal office.
 
@@ -262,7 +262,7 @@ American democracy offers citizens one meaningful input: a vote every two to fou
 
 ### Proposed Reforms
 
-**3a. Citizens' Assemblies — advisory, with a pathway to binding authority.**
+**3a: Citizens' Assemblies — advisory, with a pathway to binding authority.**
 
 Establish Citizens' Assemblies at federal and state levels, composed of 100-300 randomly selected citizens (stratified to match demographic profiles by age, gender, race, income, geography, and education), serving 18-month terms with generous compensation ($75,000 annualized, equivalent to median household income), supported by professional secretariats with access to expert briefings, independent research staff, and dedicated legal counsel.
 
@@ -276,7 +276,7 @@ Pathway to binding authority: After a demonstrated track record (5-10 years), le
 
 *Implementation pathway*: An advisory Citizens' Assembly requires only an executive order or federal statute. No constitutional amendment needed to begin. Estimated annual cost at federal level: $50-75 million (secretariat, compensation for 150-300 members, research staff, expert witnesses, facilities). For comparison, Congress costs approximately $5 billion annually to operate.
 
-**3b. Participatory budgeting.**
+**3b: Participatory budgeting.**
 
 Allocate 10-20% of discretionary federal community development spending to participatory budgeting, where citizens directly decide how funds are spent. At the municipal level, expand participatory budgeting programs (already operating in New York, Chicago, Boston, Seattle, and dozens of other cities) with federal matching funds. Establish a Federal Participatory Budgeting Office to provide technical assistance, evaluation frameworks, and best-practice guidance to localities.
 
@@ -286,7 +286,7 @@ Allocate 10-20% of discretionary federal community development spending to parti
 
 *Implementation pathway*: Federal statute establishing matching funds for municipal participatory budgeting programs, conditional on meeting inclusion standards (multilingual access, accessibility, outreach to historically excluded communities). Phase 1: pilot in 50 cities with demonstrated capacity. Phase 2: expand to all cities over 50,000 population. Estimated federal cost: $1-2 billion annually in matching funds, with local governments contributing equal amounts.
 
-**3c. Digital deliberation infrastructure.**
+**3c: Digital deliberation infrastructure.**
 
 Deploy Pol.is-style deliberation platforms for major regulatory decisions, modeled on Taiwan's vTaiwan process. Pol.is uses machine learning to identify opinion clusters and surface areas of agreement — rather than polarizing debates into binary yes/no positions. Taiwan used these tools to resolve the Uber regulatory dispute with 200,000+ participants, producing consensus-based regulation that satisfied both drivers and riders. Taiwan has since applied vTaiwan and its successor Join platform to dozens of national policy issues with 80% resulting in actionable government response. The platform's key insight is that showing people where they agree, rather than where they disagree, shifts deliberation from adversarial to collaborative.
 
@@ -294,7 +294,7 @@ Deploy Pol.is-style deliberation platforms for major regulatory decisions, model
 
 *Implementation pathway*: Administrative action. Federal agencies can adopt deliberation tools for notice-and-comment rulemaking under existing authority, replacing the current system where 94% of substantive comments come from corporate interests. The technology is open-source and production-ready. Estimated cost: $20-50 million annually for platform operation, moderation, and multilingual support at federal scale — less than 0.001% of the federal budget for a fundamental improvement in democratic input quality.
 
-**3d. Civic infrastructure and community organizing support.**
+**3d: Civic infrastructure and community organizing support.**
 
 Establish a Federal Civic Infrastructure Fund that provides sustained, non-partisan funding for the organizational capacity that democratic participation requires: community organizing training, civic leadership development, voter education, and democratic skills building (deliberation, evidence evaluation, collaborative problem-solving). Fund through a combination of federal appropriation and a small surcharge on political advertising (connecting to Domain 8's media reforms).
 
@@ -326,7 +326,7 @@ The U.S. government operates on fragmented, aging technology infrastructure that
 
 ### Proposed Reforms
 
-**4a. Open government data APIs.**
+**4a: Open government data APIs.**
 
 Mandate that all non-personal government data be published as real-time, machine-readable APIs. Every government dataset — budget expenditures, grant awards, regulatory actions, environmental data, economic statistics — available in standardized formats that citizens, journalists, researchers, and civil society can use. Establish a Federal Data Standards Office to define and enforce interoperability requirements across all agencies, with authority to block system procurement that does not meet open-data standards.
 
@@ -338,7 +338,7 @@ Mandate that all non-personal government data be published as real-time, machine
 
 *Fiscal impact*: Federal Data Standards Office and API infrastructure: $300-500M/year. This is offset many times over: eliminating data incompatibility between federal agencies saves an estimated $2-4B/year in redundant data collection and reconciliation (GAO estimate). The economic value of open government data to the private sector, researchers, and civic organizations — estimated at $100-200B/year for the U.S. (extrapolating from EU and South Korean analyses) — dwarfs the investment.
 
-**4b. Digital identity with privacy protections.**
+**4b: Digital identity with privacy protections.**
 
 Pilot a national digital identity system based on W3C Decentralized Identifier (DID) standards, with selective disclosure (prove you are over 18 without revealing your birthdate; prove citizenship without revealing your address). The system must have offline and in-person fallbacks for the 13% of Americans who lack home broadband and the 22% of seniors who do not use the internet. The system must be operated by an independent authority with constitutionally modeled protections — not a cabinet department that changes with administrations.
 
@@ -350,7 +350,7 @@ Pilot a national digital identity system based on W3C Decentralized Identifier (
 
 *Fiscal impact*: Digital identity infrastructure development and pilot: $2-4B over 5 years. Annual operating cost at scale: $500M-1B/year. The return is substantial: identity fraud costs the U.S. economy an estimated $56 billion annually (Javelin Strategy, 2023); the IRS estimated $5.7 billion in identity-theft-related tax fraud in FY2023 alone. Streamlined identity verification across government services would save an estimated $10-15B/year in duplicated verification costs, fraud prevention, and reduced improper payments. Estonia's digital identity system generates estimated savings of 2% of GDP annually — equivalent to $500B/year if replicated at U.S. scale, though significant adjustments for scale and complexity would be required.
 
-**4c. Transparent public finance ledger.**
+**4c: Transparent public finance ledger.**
 
 Every government transaction — tax collection, transfer payment, contract award, salary — published to a public, searchable, machine-readable ledger within 24 hours. Not a blockchain (too complex, too slow); an append-only, cryptographically signed log with independent audit. The ledger should be searchable by vendor, agency, program, and geographic area, with anomaly detection that flags unusual patterns for public review.
 
@@ -362,7 +362,7 @@ Every government transaction — tax collection, transfer payment, contract awar
 
 *Fiscal impact*: Ledger infrastructure development and maintenance: $200-400M/year. The return is enormous: reducing improper payments by even 10% (a conservative estimate given the Brazilian and Georgian evidence) saves $25 billion annually. Independent academic analysis of Brazil's transparency portal estimated a return of $33 for every $1 invested in transparency infrastructure. GAO's existing work on improper payments suggests that better data visibility alone — before any enforcement action — reduces error rates by 15-25%.
 
-**4d. Automated service delivery.**
+**4d: Automated service delivery.**
 
 Implement the "once only" principle: government cannot ask citizens for information it already holds. If you register a new business, you are not asked for your name, address, and tax number — the system already has them. Proactively identify benefit eligibility and deliver benefits without requiring application. Establish a Federal Digital Services Agency (modeled on GDS and Estonia's Information System Authority) with authority to redesign cross-agency service delivery around citizen needs rather than departmental structures.
 
@@ -398,7 +398,7 @@ The U.S. fiscal system is broken in ways that compound every other structural pr
 
 ### Proposed Reforms
 
-**5a. Pre-populated tax returns (immediate).**
+**5a: Pre-populated tax returns (immediate).**
 
 The IRS already has the data — employer wage reports, bank interest statements, broker 1099s — to compute most citizens' tax obligations. Pre-populate returns and send them to citizens for review and approval, as Sweden, Denmark, Estonia, and the UK already do. For approximately 85-90% of citizens, the annual "filing" becomes a 5-minute review of a pre-computed statement.
 
@@ -408,7 +408,7 @@ The IRS already has the data — employer wage reports, bank interest statements
 
 *Fiscal impact*: IRS system development for pre-populated returns: $500M-1B one-time investment, $100-200M/year ongoing. The return: American taxpayers would save an estimated 4-5 billion hours annually and $200-300 billion in compliance costs (approximately 50-75% of total compliance burden falls on returns that could be pre-populated). IRS processing costs would decrease as error rates decline — pre-populated returns in Sweden and Denmark have error rates under 2%, compared to approximately 21% for self-prepared U.S. returns. The compliance cost savings alone represent a 200-300x return on the technology investment.
 
-**5b. Simplified tax code: all income is income.**
+**5b: Simplified tax code: all income is income.**
 
 Eliminate the distinction between wages, dividends, capital gains, carried interest, and other income sources. Apply a single progressive rate schedule to all income, including unrealized gains at death (eliminating the stepped-up basis). Eliminate most deductions except: basic personal exemption, refundable childcare credit, refundable healthcare credit, refundable education credit, and charitable giving deduction capped at 25% of income. Tax unrealized capital gains above $100 million annually (targeting the "buy, borrow, die" strategy directly).
 
@@ -422,7 +422,7 @@ This directly addresses the "buy, borrow, die" avoidance strategy documented by 
 
 *Fiscal impact*: Equalizing capital gains and ordinary income rates: $130-180B/year in additional revenue. Eliminating stepped-up basis: $40-50B/year. Unrealized gains tax on holdings above $100M: $50-80B/year (Treasury estimate for the Biden administration's proposed billionaire minimum tax). Deduction simplification: $100-200B/year from closing loopholes that disproportionately benefit high earners. Total revenue potential: $320-510B/year — enough to fund a substantial share of the public investments across all 22 domains.
 
-**5c. Land value tax pilot.**
+**5c: Land value tax pilot.**
 
 Implement a land value tax at 1-2% on commercial and high-value residential land, phased in over 10-15 years with transition credits for current owners. LVT is the least economically distorting tax — because land supply is fixed, taxing it does not reduce supply or discourage productive activity. It is also the most evasion-resistant: land cannot be hidden offshore or concealed in shell companies. LVT encourages productive use of land (penalizing speculation and vacant lot banking) while reducing the tax burden on improvements (which discourages construction under the current property tax system).
 
@@ -434,7 +434,7 @@ Implement a land value tax at 1-2% on commercial and high-value residential land
 
 *Fiscal impact*: A 1% federal LVT on commercial and high-value residential land (above $2M per parcel) would generate an estimated $100-200B/year in revenue (based on total U.S. land value of approximately $25-30 trillion, with a substantial fraction in commercial and high-value residential parcels). Municipal LVT adoption would reduce local reliance on property taxes that penalize construction, with estimated efficiency gains of $20-40B/year from reduced speculation and increased productive land use. The transition cost (credits for current owners to smooth phase-in) would reduce initial revenue by 30-50% during the 10-15 year phase-in period.
 
-**5d. Carbon tax with citizen dividend.**
+**5d: Carbon tax with citizen dividend.**
 
 Tax CO2 emissions at $100/ton, with 100% of revenue returned as an equal per-person citizen dividend ($500-700 per person annually at initial rates). Revenue-neutral for the median citizen; progressive because the wealthy emit more but receive the same dividend. The price signal internalizes the externality of carbon emissions — currently estimated at $51/ton by the EPA's social cost of carbon, though recent research suggests $185/ton or higher (Rennert et al., Nature, 2022).
 
@@ -446,7 +446,7 @@ Tax CO2 emissions at $100/ton, with 100% of revenue returned as an equal per-per
 
 *Fiscal impact*: At $100/ton on approximately 5 billion metric tons of U.S. CO2 emissions, gross revenue would be approximately $500B/year. With 100% returned as citizen dividend: approximately $1,500 per person ($6,000 for a family of four) at initial rates. As emissions decline (the intended effect), revenue and dividends decline proportionally — but the economic benefit of avoided climate damage ($185/ton social cost × emissions reduced) far exceeds the declining revenue. The economic cost of carbon pricing is estimated at 0.1-0.5% of GDP (Metcalf, 2019) — a fraction of the estimated 2-10% of GDP in annual climate damage costs by 2050 under a no-pricing scenario (Hsiang et al., Science, 2017).
 
-**5e. Close offshore loopholes: extend global financial reporting.**
+**5e: Close offshore loopholes: extend global financial reporting.**
 
 Extend FATCA-style reporting requirements globally, coordinated with the OECD global minimum corporate tax framework (Pillar Two). Require mandatory financial account reporting from all institutions managing assets of U.S. taxpayers, including beneficial ownership disclosure for all entities. Implement the Corporate Transparency Act's beneficial ownership registry with adequate enforcement resources and extend it to trusts and other vehicles commonly used for tax avoidance. Establish automatic information exchange with all jurisdictions (expanding beyond FATCA's existing 113 partner countries) and impose withholding penalties on financial flows to non-cooperating jurisdictions.
 
@@ -476,7 +476,7 @@ The federal judiciary has been the most effective brake on the most extreme exec
 
 ### Proposed Reforms
 
-**6a. Supreme Court term limits.**
+**6a: Supreme Court term limits.**
 
 Replace life tenure with 18-year non-renewable terms, with one vacancy occurring every two years. This is the single most widely supported court reform among legal scholars across the ideological spectrum. It depoliticizes individual appointments (every president gets the same number), reduces the stakes of any single vacancy, ensures the court reflects evolving legal thought, and eliminates the incentive to appoint young ideologues who will serve for decades.
 
@@ -484,21 +484,21 @@ Replace life tenure with 18-year non-renewable terms, with one vacancy occurring
 
 *Implementation pathway*: There is a credible legal argument that term limits can be implemented by statute (justices rotate to senior status on lower courts after 18 years, retaining their Article III commission). The alternative is constitutional amendment. The Presidential Commission on the Supreme Court (2021) found term limits to be the reform with the broadest scholarly support.
 
-**6b. Enforcement mechanisms for court orders.**
+**6b: Enforcement mechanisms for court orders.**
 
 Establish statutory mechanisms for enforcing court orders against the executive branch. Options include: automatic appropriation freezes for agencies in contempt of court, mandatory special counsel appointment when the executive defies a court order, and state attorney general standing to enforce federal court orders when the federal executive will not.
 
 *Evidence*: The litigation tracker documents multiple cases where the administration has defied court orders — in immigration enforcement (CASA v. DHS, Ramirez Ovando v. Noem), in facility construction (Maryland v. Noem), and in data privacy. The existing enforcement mechanism depends on executive cooperation, creating a circular dependency that a defiant executive can exploit.
 
-**6c. Judicial ethics enforcement.**
+**6c: Judicial ethics enforcement.**
 
 Establish an independent inspector general for the federal judiciary with authority to investigate ethics complaints, require financial disclosure, and refer findings for disciplinary action. Current judicial ethics enforcement is self-policing — a structural conflict of interest.
 
-**6d. Court expansion.**
+**6d: Court expansion.**
 
 Expand the lower federal courts to match caseload (which has tripled since the last major expansion in 1990). For the Supreme Court, expansion is a political lever: the threat of expansion may be necessary to check a supermajority that is functionally unaccountable.
 
-**6e. Emergency docket (shadow docket) reform.**
+**6e: Emergency docket (shadow docket) reform.**
 
 The Supreme Court's emergency docket — colloquially the "shadow docket" — has become a primary mechanism for executive power consolidation. Historically reserved for genuinely urgent procedural matters, it has been transformed into a substantive decision-making channel where the Court grants or denies emergency relief on contested constitutional questions without full briefing, oral argument, or written opinions.
 
@@ -514,7 +514,7 @@ Reforms:
 
 *Implementation pathway*: Congressional statute regulating Supreme Court procedure (Congress has this authority under Article III, Section 2). The Judiciary Act has been amended many times. The political obstacle is that any reform will be framed as an attack on judicial independence by those who benefit from the current arrangement — but the reform actually restores judicial deliberation by requiring the Court to do its job (full briefing, written opinions) rather than governing by fiat.
 
-**6f. Court order enforcement architecture.**
+**6f: Court order enforcement architecture.**
 
 The current enforcement mechanism for federal court orders depends entirely on executive branch cooperation — creating a circular dependency that a defiant executive exploits. The litigation tracker documents at least four cases (CASA v. DHS, Ramirez Ovando v. Noem, Maryland v. Noem, and the DOGE data access cases) where the administration has defied, circumvented, or slow-walked compliance with federal court orders.
 
@@ -550,7 +550,7 @@ The current crisis has produced the most severe erosion of civil liberties in th
 
 ### Proposed Reforms
 
-**7a. Constitutional floor for executive power.**
+**7a: Constitutional floor for executive power.**
 
 Codify (by statute, with constitutional amendment as the goal) explicit limits on executive emergency powers: mandatory congressional reauthorization of any emergency declaration after 30 days, prohibition on using emergency powers to redirect appropriated funds, prohibition on deploying military forces domestically without explicit congressional authorization, and automatic sunset of all emergency declarations after 180 days unless renewed by a two-thirds vote of both chambers.
 
@@ -560,7 +560,7 @@ Codify (by statute, with constitutional amendment as the goal) explicit limits o
 
 *Fiscal impact*: Negligible direct cost. The indirect fiscal impact of unconstrained emergency powers is substantial — the diversion of $3.6 billion in military construction funds for border wall construction (2019) and the freezing of $49 billion in federal grants (2025) demonstrate that emergency powers have become a mechanism for unilateral fiscal policy. Constraining this power protects congressional appropriations authority.
 
-**7b. Immigration enforcement standards.**
+**7b: Immigration enforcement standards.**
 
 Codify Fourth Amendment protections in immigration enforcement: warrants required for all arrests except at the border itself, probable cause determinations required for detention, right to counsel in all immigration proceedings, and mandatory judicial review within 48 hours of detention. Prohibit internal agency memos from establishing enforcement policies that bypass the Administrative Procedure Act's notice-and-comment requirements. Mandate body cameras for all immigration enforcement operations with retention requirements and civilian oversight review.
 
@@ -572,7 +572,7 @@ Codify Fourth Amendment protections in immigration enforcement: warrants require
 
 *Fiscal impact*: Right to counsel in immigration proceedings costs an estimated $1.5-2.5B/year — but the Vera Institute's SAFE Network data shows that represented individuals are 5x more likely to be granted relief, dramatically reducing the cost of wrongful deportation (estimated at $10,000-50,000 per case in transportation, diplomatic, and legal costs when reversed). Body camera programs: $200-400M/year. Net savings from reduced litigation costs (the government lost 700+ cases in 2025-2026): substantial.
 
-**7c. Privacy rights and anti-surveillance safeguards.**
+**7c: Privacy rights and anti-surveillance safeguards.**
 
 Enact comprehensive federal privacy legislation: right to know what data the government holds about you, right to correct errors, right to see who accessed your data and why, prohibition on bulk surveillance without individualized warrants, mandatory data minimization for all government data collection, and a warrant requirement for all government purchases of commercially available personal data (closing the "data broker loophole" that circumvents the Fourth Amendment).
 
@@ -582,7 +582,7 @@ Enact comprehensive federal privacy legislation: right to know what data the gov
 
 *Fiscal impact*: Federal privacy enforcement infrastructure (modeled on EU data protection authorities): $500M-1B/year. The FTC's current privacy enforcement budget is approximately $50M — a fraction of what is needed. Revenue from privacy violation penalties (EU DPAs collected €4.5B in GDPR fines in 2023) would partially offset enforcement costs.
 
-**7d. Whistleblower protection.**
+**7d: Whistleblower protection.**
 
 Strengthen whistleblower protections for federal employees who document and expose illegal orders: legal defense funds, financial support during retaliation proceedings, accelerated judicial review of retaliation claims (within 90 days), burden-shifting (once a prima facie case of retaliation is established, the burden shifts to the agency to prove the action was not retaliatory), and protection for national security whistleblowers who currently fall outside the Whistleblower Protection Act.
 
@@ -592,7 +592,7 @@ Strengthen whistleblower protections for federal employees who document and expo
 
 *Fiscal impact*: Expanded whistleblower protection infrastructure (MSPB staffing, legal defense fund, financial support): $200-400M/year. Return: the False Claims Act qui tam provisions — a form of whistleblower incentive — have recovered over $72 billion since 1986, making whistleblower protection one of the highest-ROI government investments.
 
-**7e. Prohibition on weaponization of government data for partisan purposes.**
+**7e: Prohibition on weaponization of government data for partisan purposes.**
 
 Establish by statute that government data collected for administrative purposes (tax records, benefits enrollment, immigration records, census data) cannot be accessed, shared, or used for electoral or partisan political purposes. Violations are a federal felony. Create an independent Data Protection Authority with audit power over all government data access, including access by temporary or embedded personnel (such as the DOGE model of embedding political operatives in agencies).
 
@@ -604,7 +604,7 @@ Establish by statute that government data collected for administrative purposes 
 
 *Fiscal impact*: Independent Data Protection Authority: $300-500M/year (comparable to the EU model, adjusted for scale). Revenue from enforcement penalties and deterrence of fraud enabled by data misuse would offset. The DOGE data breach alone — if the compromised Social Security data is used for identity theft — could cost affected individuals and the government billions in remediation.
 
-**7f. Right to protest and peaceful assembly.**
+**7f: Right to protest and peaceful assembly.**
 
 Establish by federal statute an affirmative right to protest and peaceful assembly on public property, preempting state laws that criminalize protected First Amendment activity. Specifically: prohibit felony penalties for peaceful protest, prohibit civil immunity for violence against protesters, prohibit "critical infrastructure" trespass laws that define public roads and sidewalks as protected infrastructure during protests, require law enforcement to facilitate (not suppress) peaceful assembly, prohibit kettling and mass arrest tactics that do not distinguish between lawful and unlawful conduct, and mandate de-escalation protocols for all law enforcement interactions with protesters.
 
@@ -638,7 +638,7 @@ The United States faces an information ecosystem crisis that threatens the found
 
 ### Proposed Reforms
 
-**8a. Public interest media funding.**
+**8a: Public interest media funding.**
 
 Establish a federal public interest media endowment (modeled on the BBC's license fee or the Australian Broadcasting Corporation's government funding) that provides sustained, independent funding for nonprofit local journalism, investigative reporting, and civic information infrastructure. Annual funding of $5-10 billion (approximately $15-30 per citizen) would transform the information landscape. Funding should be allocated through an independent board with fixed terms, bipartisan appointment, and a statutory prohibition on editorial interference — modeled on the insulation mechanisms recommended for independent agencies in Domain 2.
 
@@ -648,7 +648,7 @@ Establish a federal public interest media endowment (modeled on the BBC's licens
 
 *Fiscal impact*: $5-7B/year at BBC-equivalent per-capita spending ($15-20 per citizen). Current U.S. public media funding (CPB: $535M/year) is the lowest per-capita public media investment in the OECD — less than $2 per citizen compared to the UK's $70, Germany's $95, and the Nordic average of $60-80. The cost of the information vacuum is already being paid: $650M/year in higher municipal borrowing costs (Brookings), billions in undetected government waste (University of Chicago), and incalculable democratic costs from uninformed electorates.
 
-**8b. Platform accountability.**
+**8b: Platform accountability.**
 
 Require algorithmic transparency from platforms above 50 million U.S. users: mandatory disclosure of recommendation algorithms, independent auditing of algorithmic amplification effects, prohibition on algorithmic targeting of political content to minors, and mandatory "chronological feed" option for all users. Require platforms to provide researcher access to data on content distribution and amplification patterns, with appropriate privacy protections. Establish a Digital Platform Accountability Office within the FTC with dedicated staffing and expertise.
 
@@ -660,7 +660,7 @@ Require algorithmic transparency from platforms above 50 million U.S. users: man
 
 *Fiscal impact*: Digital Platform Accountability Office: $200-400M/year (comparable to the EU's DSA enforcement infrastructure). Revenue from platform accountability fines (the EU has assessed potential penalties in the billions under the DSA) would offset. The societal cost of unregulated algorithmic amplification — measured in political polarization, mental health impacts ($11B/year estimated cost for adolescent mental health effects alone, per the Surgeon General's 2023 advisory), and democratic erosion — dwarfs the regulatory investment.
 
-**8c. Civic information infrastructure.**
+**8c: Civic information infrastructure.**
 
 Fund the development of community information networks — local group chats, email lists, community radio, digital town squares — that provide reliable local information when national media is compromised. This is information infrastructure, not content regulation. The goal is resilient local information flows that survive the failure of any single platform or media outlet. Establish a Community Information Fund ($500M/year) for grants to local civic technology projects, community radio stations, and neighborhood information networks.
 
@@ -670,7 +670,7 @@ Fund the development of community information networks — local group chats, em
 
 *Fiscal impact*: Community Information Fund: $500M/year. Community radio infrastructure: $100M/year. Digital civic infrastructure (open-source platforms, hosting, maintenance): $50-100M/year. Total: $650-700M/year — approximately $2 per citizen annually. The return is measured in civic engagement, government accountability, and community resilience rather than direct fiscal savings.
 
-**8d. Press freedom protections.**
+**8d: Press freedom protections.**
 
 Establish by statute a federal shield law protecting journalists from compelled disclosure of sources, with narrow exceptions only for imminent physical harm. Criminalize the use of federal resources to surveil, intimidate, or retaliate against journalists. Create an independent press freedom ombudsman with authority to investigate complaints, publish findings, and refer cases for prosecution. Mandate that all federal law enforcement agencies adopt specific protocols for interactions with journalists at protests and public events, including a prohibition on targeting press equipment and a requirement for designated press liaisons at major events.
 
@@ -680,7 +680,7 @@ Establish by statute a federal shield law protecting journalists from compelled 
 
 *Fiscal impact*: Press freedom ombudsman office: $20-50M/year. Law enforcement press interaction training: $30-50M/year through DOJ grants. The fiscal return of press freedom — measured in corruption deterred, government accountability maintained, and informed democratic participation enabled — is incalculable. The empirical evidence cited in 8a (higher borrowing costs, increased waste, lower turnout) demonstrates the measurable costs when press freedom erodes.
 
-**8e. Media literacy and critical thinking education.**
+**8e: Media literacy and critical thinking education.**
 
 Mandate and fund media literacy education in all federally funded schools, starting in elementary school and continuing through secondary education. Curriculum should cover: identifying reliable sources, understanding algorithmic curation, recognizing disinformation techniques, distinguishing news from opinion, understanding media ownership and business models, and developing habits of verification before sharing. Fund teacher training, curriculum development, and ongoing assessment of media literacy outcomes. Connect to the civic education reforms in Domain 10.
 
@@ -712,7 +712,7 @@ American federalism is simultaneously a strength (distributed power, policy expe
 
 ### Proposed Reforms
 
-**9a. Subsidiarity principle with a non-derogable rights floor.**
+**9a: Subsidiarity principle with a non-derogable rights floor.**
 
 Codify the principle that decisions should be made at the lowest effective level of government, with a constitutional rights floor that no state or local government can fall below. States retain autonomy on education, healthcare delivery, infrastructure, and economic development. They cannot opt out of equal protection, due process, voting rights, civil liberties, or minimum labor and environmental standards. The rights floor should be enforceable through private right of action in federal court — citizens should not depend on DOJ enforcement alone, which is vulnerable to political capture.
 
@@ -724,7 +724,7 @@ Codify the principle that decisions should be made at the lowest effective level
 
 *Fiscal impact*: Negligible direct federal cost — the reform primarily constrains state action. Federal enforcement infrastructure (expanded DOJ Civil Rights Division, plus the racial equity office proposed in Domain 22d): $300-500M/year, funded through existing enforcement budgets. The fiscal return is in avoided costs: states that suppress voting rights and civil liberties impose costs on the federal system through increased litigation ($500M+ annually in voting rights litigation alone), reduced economic participation, and diminished tax revenue from excluded populations.
 
-**9b. State-level laboratories of democracy.**
+**9b: State-level laboratories of democracy.**
 
 Encourage states to serve as testing grounds for structural reforms: proportional representation, citizens' assemblies, digital government, participatory budgeting, LVT pilots, ranked-choice voting. Establish a Federal Democratic Innovation Fund that provides matching grants (2:1 federal-to-state) for states that adopt evidence-based democratic innovations, with independent evaluation and public reporting of results. Success at state level creates demonstration effects that build federal momentum.
 
@@ -736,7 +736,7 @@ Encourage states to serve as testing grounds for structural reforms: proportiona
 
 *Fiscal impact*: Democratic Innovation Fund: $500M-1B/year. The return is structural rather than fiscal: each successful state-level innovation builds the evidence base and political constituency for national adoption. Oregon's automatic voter registration, for example, has added over 500,000 new registrants and is estimated to have increased turnout by 4-6% — with effectively zero ongoing cost after implementation. The cumulative fiscal impact of democratic innovations (reduced corruption from participatory budgeting, more responsive fiscal policy from better representation, efficiency gains from digital government) is estimated at multiples of the investment, though precise estimates depend on adoption rates.
 
-**9c. Municipal reform pathways.**
+**9c: Municipal reform pathways.**
 
 Many of the most impactful reforms — participatory budgeting, citizens' assemblies, open government data, digital services, ranked-choice voting — can be implemented at the municipal level without state or federal action. A coordinated movement of municipal reform creates facts on the ground that change what voters consider possible. Establish a National Municipal Innovation Network (modeled on the Bloomberg Philanthropies' What Works Cities program) to provide technical assistance, evaluation frameworks, and peer learning for cities implementing democratic innovations.
 
@@ -748,7 +748,7 @@ Many of the most impactful reforms — participatory budgeting, citizens' assemb
 
 *Fiscal impact*: National Municipal Innovation Network: $200M/year. The return: cities that adopt evidence-based governance practices consistently show improved service delivery, reduced costs, and higher civic engagement. New York City's participatory budgeting program allocated $300M+ through direct citizen votes, with independent evaluation showing high participation in low-income communities and spending decisions that better reflect community priorities than traditional budgeting. The overall fiscal impact of municipal innovation is multiplicative — each successful model reduces the political and technical cost of adoption for the next city.
 
-**9d. Federal preemption reform.**
+**9d: Federal preemption reform.**
 
 Establish clear principles for when the federal government may preempt state law, and — equally important — when it may not. Currently, federal preemption operates inconsistently: Congress preempts state consumer protection laws that exceed federal standards (benefiting industry) while allowing states to fall below federal labor, environmental, and civil rights standards (also benefiting industry). Reform should follow a one-way ratchet principle: states may exceed federal protections but may not fall below them. Federal legislation should include express preemption clauses rather than relying on implied preemption, and courts should apply a presumption against preemption in cases involving traditional state police powers.
 
@@ -762,7 +762,7 @@ Prohibit state preemption of local authority on core governance issues. A growin
 
 *Fiscal impact*: Negligible direct federal cost — the reform is primarily structural. The economic impact of reversing preemption is substantial: restoring local minimum wage authority alone would benefit an estimated 3-5 million workers and increase annual wages by $1.5-3B (EPI estimate). Local paid leave policies, where preempted, would cover an estimated 4 million additional workers. The democratic cost of preemption — measured in reduced civic engagement, lower trust in government, and suppressed policy innovation — is difficult to quantify but significant.
 
-**9e. Interstate compact frameworks for regional challenges.**
+**9e: Interstate compact frameworks for regional challenges.**
 
 Facilitate interstate compacts — constitutionally authorized agreements between states — as a mechanism for addressing challenges that cross state lines but do not require federal legislation. Priority areas: regional water management (already partially addressed by existing compacts but inadequate for climate change), multistate carbon markets (the Regional Greenhouse Gas Initiative model), cross-border transit authorities, interstate professional licensing reciprocity, and coordinated emergency management.
 
@@ -796,7 +796,7 @@ The American public education system is failing its democratic function. Public 
 
 ### Proposed Reforms
 
-**10a. Weighted per-pupil funding with federal equalization.**
+**10a: Weighted per-pupil funding with federal equalization.**
 
 Replace the property-tax-based funding model with a national weighted per-pupil formula that guarantees a funded floor for every student, with additional weights for poverty, English language learners, special education, and rural isolation. Federal equalization transfers supplement state funding so that the poorest districts receive at minimum the national median per-pupil expenditure.
 
@@ -806,7 +806,7 @@ Replace the property-tax-based funding model with a national weighted per-pupil 
 
 *Fiscal impact*: Closing the per-pupil spending gap for the bottom quartile of districts to the national median requires approximately $30–50B in new annual federal investment — the primary cost driver in the total Domain 10 investment (Section 5.5). New Jersey's Abbott equalization, which mandated comparable per-pupil funding for the 31 poorest districts, produced measurable gains in 4th grade reading and graduation rates over 20 years at a cost of roughly $2-3B in additional state appropriation per year. Georgetown's Center on Education and the Workforce estimates each one-percentage-point increase in high school graduation rates adds $90B in lifetime earnings for affected cohorts — the equity argument and the fiscal argument are identical.
 
-**10b. Universal civics education: K-12 civic learning requirement.**
+**10b: Universal civics education: K-12 civic learning requirement.**
 
 Mandate at least one semester of civics in middle school and one year in high school for all public schools receiving federal funding. Curriculum must include: structure of government at all levels, how laws and budgets are made, the Bill of Rights and its application, media literacy and source evaluation, history of democratic movements and civil rights, and structured deliberation (based on Deliberative Polling methodology). Assessment should emphasize evidence evaluation and argumentation, not rote memorization of dates.
 
@@ -816,7 +816,7 @@ Mandate at least one semester of civics in middle school and one year in high sc
 
 *Fiscal impact*: Civics curriculum reform has negligible capital cost — it requires curriculum development, assessment infrastructure, and teacher professional development, not new facilities or staff. Federal implementation cost: $200–500M/year. The civic returns are not easily quantified in dollars, but CIRCLE (Center for Information and Research on Civic Learning and Engagement) finds that youth voters who received sustained civic education participate at 15-20 percentage points higher rates than those who did not — and the demographic most concentrated in low-performing schools (low-income, communities of color) has the most to gain from this equalizer.
 
-**10c. Teacher compensation and professional autonomy.**
+**10c: Teacher compensation and professional autonomy.**
 
 Establish a federal teacher minimum salary of $60,000 (indexed to inflation and adjusted for regional cost of living), funded through the equalization mechanism in 10a. Forgive remaining student debt for teachers who complete 5 years in high-need schools. Eliminate state legislation that micromanages curriculum content (book bans, topic restrictions) by tying federal education funding to professional autonomy standards: teachers, not legislators, determine pedagogical methods and materials within board-approved curriculum frameworks.
 
@@ -824,7 +824,7 @@ Establish a federal teacher minimum salary of $60,000 (indexed to inflation and 
 
 *Fiscal impact*: Supplementing teacher salaries to a federal minimum of $60,000 (most states would need $5,000–$20,000/teacher added) and funding NHSC-style debt forgiveness for high-need school placements would require $15–25B annually in federal matching investment. The alternative is not cheap — districts currently spend $20,000–30,000 per vacancy on substitutes, emergency hiring, and recruitment in shortage areas, and the quality cost of below-median-performing teachers is estimated by Hanushek and Rivkin at $250,000 in reduced lifetime earnings per classroom of students over a career. Hanushek and Woessmann's cross-country analysis finds that moving to selective teacher recruitment (Finland's model) narrows student achievement gaps by approximately 20 percentage points across two decades — a gain valued at trillions in human capital.
 
-**10d. Debt-free public higher education.**
+**10d: Debt-free public higher education.**
 
 Make tuition at public two-year and four-year colleges free for families earning under $125,000 (indexed to inflation), covering approximately 80% of American families. Fund through federal-state cost sharing (federal government covers 75%, states cover 25%, conditional on states maintaining current per-student funding levels to prevent cost-shifting). Expand Pell Grants to cover living expenses for low-income students, since tuition is only one barrier to access.
 
@@ -834,7 +834,7 @@ Make tuition at public two-year and four-year colleges free for families earning
 
 *Fiscal impact*: The Department of Education estimates free public tuition for families under $125,000 at $80–90B/year in federal-state investment (consistent with Section 5.5). This figure is partially offset by: increased lifetime tax revenue from higher educational attainment (Georgetown estimates $450,000 in additional federal tax revenue per bachelor's degree holder over a lifetime); reduced dependence on for-profit colleges (which cost federal loan programs $15-20B/year in defaults on degrees with poor labor market outcomes); and the macro return from a more educated workforce — Goldin and Katz (Harvard) estimate that each additional year of average educational attainment raises annual GDP by approximately 0.4%. Germany's free tuition reform (2014) increased enrollment 12% within three years with no measurable quality decline. The $1.77T existing student debt burden is being partially discharged through default and forgiveness programs regardless — front-loading free tuition stops the hemorrhage before it starts.
 
-**10e. Lifelong learning infrastructure.**
+**10e: Lifelong learning infrastructure.**
 
 Establish a federal Right to Learn account: every citizen receives $5,000 in lifetime learning credits (replenished on a 10-year cycle), usable for accredited education, vocational training, professional certification, or apprenticeships at any age. Credits are portable across states and institutions. The aim is to decouple education from the front-loaded 18-22 model and recognize that technological change and economic restructuring require continuous skill development.
 
@@ -842,7 +842,7 @@ Establish a federal Right to Learn account: every citizen receives $5,000 in lif
 
 *Fiscal impact*: A $5,000/decade universal credit for all working-age adults, with observed uptake rates from comparable programs (10–20% annual utilization in Singapore and France), would produce annual expenditures of $13–26B. The McKinsey Global Institute estimates $550B/year in foregone productivity from skills mismatch in the U.S. workforce — workers in declining industries without the retraining pathways needed to transition to growing ones. U.S. Trade Adjustment Assistance evaluation data finds that workers who complete targeted retraining programs achieve 25–50% wage increases, with returns that exceed program costs within 3-5 years. The Right to Learn account is the infrastructure piece that makes lifelong skill adaptation a practical reality rather than an aspiration.
 
-**10f. Universal pre-K and early childhood education.**
+**10f: Universal pre-K and early childhood education.**
 
 Establish federally funded, universal public pre-K for all 3- and 4-year-olds, available five full school days per week, staffed by teachers with bachelor's degrees in early childhood education compensated at K-12 salary parity. Operate through both public schools and community-based providers (Head Start, child care centers, nonprofit providers) with common quality standards and public oversight. Simultaneously expand subsidized childcare for children 0-2 through reformed Child Care and Development grants, with sliding-scale family contributions capped at 7% of income — the threshold at which childcare cost hardship is effectively eliminated in peer countries.
 
@@ -874,7 +874,7 @@ The United States spends more on healthcare than any other nation — $4.5 trill
 
 ### Proposed Reforms
 
-**11a. Universal coverage through a public option with all-payer rate setting.**
+**11a: Universal coverage through a public option with all-payer rate setting.**
 
 Establish a public health insurance plan available to every American, funded through progressive premiums (income-based), with zero premiums for families under 200% of the federal poverty level. The public option competes with private insurance but has built-in advantages: no marketing costs, no profit extraction, and the ability to negotiate rates. Simultaneously, implement all-payer rate setting: all insurers (public and private) pay the same negotiated rate for each procedure, eliminating the cost-shifting and price opacity that define the current system.
 
@@ -884,7 +884,7 @@ Establish a public health insurance plan available to every American, funded thr
 
 *Fiscal impact*: A U.S. public option modeled on Germany's system would require $150–200B/year in premium subsidies for zero-premium low-income enrollees, offset by administrative savings from all-payer rate setting ($100–200B/year per RAND/Commonwealth Fund estimates). The 2019 JAMA study estimated $628B/year in savings from administrative simplification to Canadian levels — the public option + all-payer framework captures roughly one-third of this through standardized contracting and reduced insurer overhead. Net fiscal position: approximately cost-neutral in year 1, with $50–100B/year in net public savings by year 5 as enrollment grows and administrative efficiency improves.
 
-**11b. Negotiated drug pricing and patent reform.**
+**11b: Negotiated drug pricing and patent reform.**
 
 Extend Medicare drug price negotiation to all drugs (not just 10, as under the IRA), and apply negotiated prices to all payers (public and private). Cap annual out-of-pocket prescription costs at $2,000. Reform patent law to prohibit evergreening (minor modifications that extend monopoly pricing without meaningful therapeutic improvement). Require that drugs developed with significant public funding (NIH-funded basic research) include a reasonable pricing clause in the license.
 
@@ -894,7 +894,7 @@ Extend Medicare drug price negotiation to all drugs (not just 10, as under the I
 
 *Fiscal impact*: The IRA's limited drug negotiation saves $10B/year (CBO: $100B/10 years for 10 drugs). Full extension to all drugs and all payers: $300–500B/year in savings, based on the 2.56x average U.S. price premium over 32 OECD comparator countries. Annual out-of-pocket cap at $2,000 costs $20–30B/year in additional federal subsidies. Evergreening prohibition: estimated $8–15B/year in savings as brand-name monopolies shorten. Total net impact of full drug pricing reform: $270–480B/year in savings across public and private payers — making this the single highest-value reform in the healthcare domain.
 
-**11c. Primary care and rural health infrastructure.**
+**11c: Primary care and rural health infrastructure.**
 
 Establish a National Health Service Corps expansion that fully funds medical education (tuition, living expenses) for physicians, nurse practitioners, and physician assistants who commit to 10 years of practice in underserved areas (rural counties, low-income urban areas, tribal lands). Fund community health centers as the primary care backbone for underserved populations, targeting one federally qualified health center per 15,000 people in designated shortage areas. Establish telehealth as a permanent, fully reimbursed modality (not a pandemic exception) to extend specialist access to rural areas.
 
@@ -902,7 +902,7 @@ Establish a National Health Service Corps expansion that fully funds medical edu
 
 *Fiscal impact*: Full NHSC expansion — loan repayment and stipends for physicians and nurse practitioners committing to shortage-area practice: $8–12B/year. Fully funded medical education for NHSC-committed clinicians (forgivable tuition + living expenses): $5–10B/year. FQHC network expansion to one federally qualified health center per 15,000 shortage-area residents (current: approximately 1 per 30,000): $10–18B/year in additional operating grants and construction funding. Permanent telehealth reimbursement parity and infrastructure: $3–5B/year. Total: $26–45B/year. Against this investment, rural healthcare deserts currently generate an estimated $6,000 in excess annual healthcare spending per rural resident through delayed care, emergency substitution, and higher mortality — affecting 60+ million rural Americans. The preventive return alone exceeds the investment.
 
-**11d. Administrative simplification.**
+**11d: Administrative simplification.**
 
 Mandate standardized billing codes, universal claims forms, and automated prior authorization across all payers. Establish a national patient identifier (linked to the digital identity infrastructure in Domain 4) to eliminate the fragmented medical record system that causes an estimated 250,000 deaths annually from medical errors (per Johns Hopkins, many attributable to information gaps). Require real-time price transparency: patients must be able to see the actual price they will pay for any non-emergency procedure before agreeing to it, with prices published in machine-readable format.
 
@@ -910,7 +910,7 @@ Mandate standardized billing codes, universal claims forms, and automated prior 
 
 *Fiscal impact*: Universal prior authorization automation: $31B/year in savings (CAQH index, confirmed by CMS implementation data). Universal electronic billing standards: $13–25B/year in savings (CMS estimates; the ACA's partial standards saved $3–5B/year — full implementation recovers 3–5x). National patient identifier enabling coordinated care: $10–20B/year in reduced duplicate testing, redundant imaging, and medical error costs (Johns Hopkins estimates 250,000 annual preventable deaths from information gaps; reducing this 50% at average hospitalization cost avoids $10–20B/year). Real-time price transparency implementation: $500M–1B/year in federal administration. Total administrative simplification savings: $55–77B/year — recoverable without reducing a single clinical service, and achievable through regulatory mandates rather than new program spending.
 
-**11e. Mental health parity and integration.**
+**11e: Mental health parity and integration.**
 
 Enforce genuine mental health parity: mental health and substance use treatment must be covered at the same level as physical health, with the same network adequacy requirements, the same prior authorization standards, and the same out-of-pocket cost structure. Integrate behavioral health into primary care through the Collaborative Care Model (psychiatric consultant embedded in primary care practice), which has been shown in 90+ randomized controlled trials to improve depression outcomes by 50% compared to usual care while reducing total healthcare costs.
 
@@ -918,7 +918,7 @@ Enforce genuine mental health parity: mental health and substance use treatment 
 
 *Fiscal impact*: Genuine parity enforcement — federal agency ramp-up and state enforcement grants: $500M–1B/year. Collaborative Care Model integration into primary care practices nationally: $10–15B/year in adjusted federal reimbursement. U.S.-scale equivalent of IAPT (evidence-based therapy accessible within 6 weeks for all who need it): $20–35B/year. Net of reduced emergency department utilization, reduced hospitalization, and productivity restoration, the investment is more than offset: NAMI estimates $193B/year in lost earnings from untreated mental illness; NIH data shows $500B/year in excess healthcare costs associated with undertreated behavioral health conditions. A 3–5x return on evidence-based mental health investment has been documented across multiple health economics studies.
 
-**11f. Dental, vision, and long-term care.**
+**11f: Dental, vision, and long-term care.**
 
 The three largest gaps in the U.S. healthcare system — areas where the market has systematically failed and where the public option as described in 11a leaves significant unmet need — are dental care, vision care, and long-term care for older and disabled Americans.
 
@@ -954,7 +954,7 @@ The American Society of Civil Engineers grades U.S. infrastructure at C- overall
 
 ### Proposed Reforms
 
-**12a. Universal broadband as a regulated utility.**
+**12a: Universal broadband as a regulated utility.**
 
 Classify broadband internet as essential infrastructure and regulate it accordingly. Establish a federal broadband standard (100/100 Mbps symmetric) and fund last-mile deployment to all unserved and underserved areas through a combination of federal grants, municipal broadband authorization, and open-access fiber mandates (where public funding builds the fiber, multiple ISPs can offer service over it). Prohibit state laws that prevent municipalities from building their own broadband networks (currently 18 states restrict municipal broadband).
 
@@ -962,7 +962,7 @@ Classify broadband internet as essential infrastructure and regulate it accordin
 
 *Fiscal impact*: The FCC's Broadband Equity, Access, and Deployment (BEAD) program allocates $42.5B for last-mile deployment — roughly half the estimated $65–100B needed for full universal coverage. Ongoing low-income access subsidies (Affordable Connectivity Program–equivalent): $5–8B/year. Economic return: universal broadband generates an estimated $9.1B/year in productivity from reduced commuting and remote work expansion (Brookings), $6.3B/year in additional federal and state tax revenue, and $5–10B/year in healthcare savings through telehealth substitution. The 15–16 million students without reliable connectivity during pandemic remote learning represent a generational educational loss whose economic cost exceeds the capital investment. 10-year economic return on broadband universalization: $150–200B against a $65–100B capital outlay.
 
-**12b. Energy grid modernization and resilience.**
+**12b: Energy grid modernization and resilience.**
 
 Fund a 10-year, $400 billion federal grid modernization program focused on three objectives: (1) transmission capacity expansion to connect renewable generation zones to population centers, (2) grid hardening against extreme weather (undergrounding vulnerable lines, upgrading substations, deploying microgrids for critical facilities), and (3) distributed energy resource integration (standardized interconnection rules for rooftop solar, battery storage, and vehicle-to-grid). Establish regional grid reliability standards with enforceable consequences for failure. Consolidate ERCOT (Texas) into the national interconnection to prevent isolated grid collapse.
 
@@ -970,7 +970,7 @@ Fund a 10-year, $400 billion federal grid modernization program focused on three
 
 *Fiscal impact*: DOE estimates full grid modernization to support a clean energy economy requires $400–600B in total investment, at a 10-year pace of $40–60B/year in federal and private capital combined. Private investment leveraged through regulatory certainty is estimated at 3–5x the federal share, so federal spending of $12–20B/year can drive $40–60B/year total. The February 2021 Texas grid failure alone cost $195B — a single unmitigated event exceeding 10 years of preventive grid investment at current federal levels. Annual avoided disaster costs from grid hardening (extreme weather, wildfire, cyberattack): estimated $30–50B/year by FEMA and DOE modeling. Transmission expansion enabling renewable integration would reduce electricity costs by $100B/year across the U.S. economy by unlocking the lowest-cost renewable generation zones (NREL estimates, 2023).
 
-**12c. Water infrastructure renewal with environmental justice priority.**
+**12c: Water infrastructure renewal with environmental justice priority.**
 
 Mandate and fully fund lead service line replacement nationally within 10 years (estimated $45-60 billion). Establish a federal Water Infrastructure Trust Fund, modeled on the Highway Trust Fund, providing predictable long-term funding for water and wastewater systems. Prioritize investment by environmental justice criteria: communities with the longest history of contamination, lowest income, and least capacity to self-fund receive funding first. Strengthen EPA enforcement authority for Safe Drinking Water Act violations, including the ability to intervene in state-managed systems that fail to protect public health.
 
@@ -978,7 +978,7 @@ Mandate and fully fund lead service line replacement nationally within 10 years 
 
 *Fiscal impact*: Lead service line replacement nationwide: $45–60B total (EPA estimate), at a 10-year pace of $4.5–6B/year. Federal Water Infrastructure Trust Fund to address the $625B EPA-identified backlog over 20 years: $31–50B/year. The 2021 Infrastructure Investment and Jobs Act provided $55B for water infrastructure — important but addressing roughly 10% of identified need. Economic return: the World Bank estimates water and sanitation infrastructure investment returns $4.30 for every dollar invested through reduced disease burden, increased productivity, and avoided emergency costs. The Flint water crisis generated $600M in federal remediation costs alone for a city of 95,000 — scaling that emergency response cost to 6–10 million homes still connected to lead pipes illustrates the compounding fiscal logic of prevention over crisis response.
 
-**12d. Public transit investment and intercity rail.**
+**12d: Public transit investment and intercity rail.**
 
 Establish a federal transit operating funding program (currently, federal transit funding is almost exclusively for capital, not operations — the opposite of what most systems need). Fund intercity passenger rail expansion, prioritizing corridors where rail is competitive with driving (100-500 mile city pairs). Adopt complete streets standards for all federally funded road projects, requiring safe infrastructure for pedestrians, cyclists, and transit users, not only cars.
 
@@ -986,7 +986,7 @@ Establish a federal transit operating funding program (currently, federal transi
 
 *Fiscal impact*: Federal transit operating funding (currently near-zero — federal transit dollars are almost exclusively capital): $15–25B/year to provide the operating subsidies that make transit financially sustainable for systems outside the Northeast. Intercity rail expansion (10 highest-priority 100–500 mile corridors): $50–75B in capital over 10 years = $5–8B/year. Complete streets retrofit for federally funded road projects: 10–15% cost premium on applicable new projects ≈ $4–6B/year near-term. Americans currently spend $12,295/year on average on transportation — predominantly on car ownership forced by transit absence. Each household that reduces car dependency by 50% through transit access saves $6,000/year; at 10 million households shifting, aggregate savings of $60B/year are generated in private economic value that more than offsets the public investment.
 
-**12e. Maintenance-first federal funding reform.**
+**12e: Maintenance-first federal funding reform.**
 
 Restructure federal infrastructure funding to prioritize maintenance and repair of existing assets over new construction. Currently, political incentives favor ribbon-cutting on new projects while existing infrastructure deteriorates — the "infrastructure maintenance gap" is a well-documented phenomenon across transportation, water, and public buildings. Require that state and local recipients of federal infrastructure funding demonstrate adequate maintenance spending on existing assets before qualifying for new construction grants. Establish a National Infrastructure Assessment (modeled on the UK's NIA) to provide independent, evidence-based priority-setting for federal infrastructure investment.
 
@@ -1014,7 +1014,7 @@ Housing in the United States has become simultaneously the largest household exp
 
 ### Proposed Reforms
 
-**13a. Federal zoning reform and housing production incentives.**
+**13a: Federal zoning reform and housing production incentives.**
 
 Condition federal transportation and community development funding on zoning reform: jurisdictions that maintain single-family-only zoning, excessive parking minimums, or minimum lot sizes that functionally exclude affordable housing forfeit a share of federal funding. Provide bonus funding for jurisdictions that legalize accessory dwelling units, allow by-right multifamily development near transit, eliminate parking minimums, and streamline permitting. The goal is not federal zoning (land use remains local) but using federal spending power to overcome the local political economy that makes exclusionary zoning self-perpetuating.
 
@@ -1022,7 +1022,7 @@ Condition federal transportation and community development funding on zoning ref
 
 *Fiscal impact*: Federal zoning reform is achieved through incentive-based conditions on existing federal grants — near-zero in new federal spending ($1–3B/year in conditional grant mechanics). The economic leverage is transformative: a 2019 Chang-Tai Hsieh and Enrico Moretti study estimated that relaxing zoning restrictions in New York, San Francisco, and San Jose to the U.S. median level would increase GDP by 8.9% ($2T+ in 2024 terms) through labor reallocation to more productive cities. A conservative 20–25% realization of this potential nationally through zoning reform represents $400–500B/year in annual economic gain — the highest return-on-federal-spending in the entire housing domain, achieved through regulatory reform rather than direct expenditure.
 
-**13b. Social housing development.**
+**13b: Social housing development.**
 
 Establish a federal social housing program that funds construction and acquisition of permanently affordable, publicly or community-owned housing. Unlike project-based Section 8 (which subsidizes private landlords) or LIHTC (which generates tax credits for investors), social housing retains public ownership permanently — the unit never converts to market rate. Fund through a dedicated revenue stream (options include a real estate transfer tax on transactions above $5 million, a vacant property surcharge, or allocation from the general fund). Target 500,000 new social housing units in the first decade, with mixed-income design (not concentrated poverty).
 
@@ -1030,7 +1030,7 @@ Establish a federal social housing program that funds construction and acquisiti
 
 *Fiscal impact*: 500,000 new social housing units over 10 years at $300K average construction cost (land-efficient urban parcels): $150B total = $15B/year. Land acquisition is offset by eminent domain of vacant properties, land bank programs, and conversion of post-pandemic commercial vacancies (estimated 400–500M sq ft of underutilized office space in major cities, convertible at $50–150K per unit). Federal financing at 3–4% (below market rate, through HUD bond authority) saves $50–70B over 30-year terms compared to private financing. Vienna's model demonstrates long-run sustainability: social housing operates at near-zero net federal cost after construction because rents cover operating expenses while remaining 30–50% below market. The U.S. currently spends $55B/year on housing assistance programs; social housing construction builds permanent supply rather than subsidizing market rents in perpetuity.
 
-**13c. Tenant protection standards.**
+**13c: Tenant protection standards.**
 
 Establish federal minimum tenant protections: just-cause eviction (landlords must state a legally recognized reason), right to legal counsel in eviction proceedings, 90-day notice for lease non-renewals, anti-retaliation protections for tenants who report code violations, and rent transparency (landlords must disclose the previous tenant's rent). States can exceed these minimums but cannot fall below them. Fund a national tenant legal aid program to address the representation gap — in most jurisdictions, landlords have attorneys in over 80% of eviction cases while tenants have counsel in under 10%.
 
@@ -1038,7 +1038,7 @@ Establish federal minimum tenant protections: just-cause eviction (landlords mus
 
 *Fiscal impact*: Federal minimum tenant protection standards — state enforcement grants and federal administration: $500M–1B/year. National tenant legal aid program: $2–4B/year. Against this investment, evictions cost the economy $8–12B/year in emergency shelter costs, lost productivity, and health consequences. NYC's right-to-counsel program spends $166M/year and produces $320M/year in avoided shelter costs — a $154M/year net surplus for a single city. Nationwide: $3–5B/year in program investment against $6–10B/year in avoided downstream costs, with substantial additional value from improved housing stability for children (each stable year of housing improves school performance outcomes measurably, per Harvard Opportunity Insights research).
 
-**13d. Housing First for homelessness.**
+**13d: Housing First for homelessness.**
 
 Adopt Housing First as the federal standard for homelessness funding — permanent housing placement first, then voluntary supportive services, rather than requiring sobriety, treatment compliance, or shelter stays as preconditions. Convert federal homelessness spending from the current crisis-management model (emergency shelters, transitional housing with high barriers) to a permanent supportive housing model. Fund acquisition and conversion of underutilized commercial properties (post-pandemic office vacancies) into supportive housing units.
 
@@ -1046,7 +1046,7 @@ Adopt Housing First as the federal standard for homelessness funding — permane
 
 *Fiscal impact*: Federal Housing First conversion for all 653,000+ homeless Americans: $3–5B/year at $18,000/unit/year (national supportive housing cost benchmark, inclusive of support services). Against the status quo cost: $40,000–$100,000 per homeless person per year in emergency room visits, incarceration, shelter stays, and crisis services (Lewin Group and Dennis Culhane research). Net savings: $22,000–$82,000 per housed person annually = $14–53B/year nationally. Post-pandemic office and hotel vacancy conversion can reduce land and construction costs substantially; several cities have acquired commercial buildings at $50–100K per converted unit, well below new construction costs. Housing First is the clearest example in this proposal of a reform that saves more than it costs in the year of implementation.
 
-**13e. Anti-speculation measures.**
+**13e: Anti-speculation measures.**
 
 Impose a progressive surcharge on residential properties beyond a primary residence and one additional property (scaling from 1% to 5% of assessed value for portfolios of 10+ properties). Eliminate 1031 exchange eligibility for residential properties. Require institutional investors to disclose all residential property holdings. Grant municipalities explicit authority to regulate short-term rentals (some states currently preempt local STR regulation). Reform the mortgage interest deduction to a flat credit capped at the median home price, eliminating the current regressive structure that subsidizes mansions while providing nothing to renters.
 
@@ -1078,7 +1078,7 @@ The United States incarcerates more people than any other country on Earth — a
 
 ### Proposed Reforms
 
-**14a. End qualified immunity and establish police accountability.**
+**14a: End qualified immunity and establish police accountability.**
 
 Replace qualified immunity with a statutory framework for law enforcement civil liability. Officers carry professional liability insurance (funded initially through department budgets, with individual premiums adjusting based on complaint and claims history — mirroring the malpractice insurance model used in medicine). Establish a national police misconduct registry (the NDI — National Decertification Index — exists but participation is voluntary and incomplete; make reporting mandatory for all agencies receiving federal funding). Require all law enforcement agencies to report use-of-force incidents to a federal database (the FBI's National Use-of-Force Data Collection is currently voluntary, with only 60% of agencies reporting). Create an independent federal investigation authority for law enforcement killings and serious use-of-force incidents — removing the inherent conflict of interest when local prosecutors investigate the officers they work with daily.
 
@@ -1088,7 +1088,7 @@ Replace qualified immunity with a statutory framework for law enforcement civil 
 
 *Fiscal impact*: Professional liability insurance for officers: approximately $1,500–3,000/officer/year based on medical malpractice analogues for high-risk professions, totaling $1.5–3B/year nationally for 700,000+ officers — funded through department budgets and adjusting over time as individual risk profiles change behavior. National misconduct registry and use-of-force database: $200–300M/year. Independent investigation authority: $300–500M/year. Current cost of misconduct without these mechanisms: the ACLU estimates $3.2B/year in police misconduct settlements nationally; city insurance costs from police liability are rising 20–30%/year. A federal accountability infrastructure costing $2–4B/year prevents multiples of that in settlement costs, litigation, and the civic trust destruction that costs cities in ways impossible to quantify but empirically documented in reduced civic participation, business disinvestment, and reduced cooperation with law enforcement.
 
-**14b. Sentencing reform and decarceration.**
+**14b: Sentencing reform and decarceration.**
 
 Eliminate federal mandatory minimum sentences for nonviolent drug offenses. Reduce maximum sentences across the federal code to align with international norms (most European democracies cap ordinary offenses at 15-20 years; the U.S. routinely imposes sentences of 30, 40, or 50+ years). Make the First Step Act's sentencing reductions retroactive for all eligible federal prisoners. Establish a federal sentence review mechanism allowing resentencing petitions after 15 years served, with a presumption of release for prisoners over 50 who have served 15+ years (elderly prisoners pose negligible public safety risk and cost 2-3 times more to incarcerate due to healthcare). Eliminate the federal sentencing disparity between crack and powder cocaine (reduced from 100:1 to 18:1 by the Fair Sentencing Act of 2010, but the disparity — which was the single largest driver of racial disparity in federal sentencing — should be 1:1). Fund public defender offices at parity with prosecution (the Sixth Amendment guarantees counsel, but average public defender caseloads exceed 400 felonies per attorney per year — far beyond the 150 recommended by the ABA).
 
@@ -1098,7 +1098,7 @@ Eliminate federal mandatory minimum sentences for nonviolent drug offenses. Redu
 
 *Fiscal impact*: Federal mandatory minimum elimination and sentencing reform: Bureau of Prisons saves $8–12B/year from reduced federal prison population (BOP per-prisoner cost $40,000–60,000/year; full sentencing reform legislation is estimated to reduce the federal prison population by 30,000–50,000 over 10 years). State-level decarceration to OECD median incarceration rate: saves $100–130B/year nationally in incarceration costs (Vera Institute: total U.S. incarceration spending $182B/year; reducing the U.S. incarceration rate from 531 to the OECD median ~150 per 100,000 requires releasing approximately 1 million people at an average cost saving of $50,000/year). Public defender parity with prosecution spending: $4–6B/year additional investment — with documented returns including higher acquittal rates for the innocent, reduced wrongful conviction costs (an estimated $1–2M in litigation and settlement per wrongful conviction), and shorter sentences that reduce mass incarceration costs. Net fiscal case: even accounting for full investment in defender parity and transition costs, decarceration is one of the highest-ROI reforms available.
 
-**14c. Abolish cash bail and reform pretrial detention.**
+**14c: Abolish cash bail and reform pretrial detention.**
 
 Replace cash bail with a system based on risk assessment and release conditions. The default for nonviolent offenses is release on personal recognizance with appropriate conditions (check-ins, electronic monitoring for flight risk). Preventive detention is available for genuinely dangerous individuals, determined by judicial hearing within 48 hours with counsel present — but detention is based on evidence of danger, not inability to pay. Eliminate commercial bail bonds (the U.S. and the Philippines are the only countries that allow for-profit bail bonding). Fund pretrial services agencies to provide supervision, reminder systems, and support services that ensure court appearance without incarceration.
 
@@ -1108,7 +1108,7 @@ Replace cash bail with a system based on risk assessment and release conditions.
 
 *Fiscal impact*: Cash bail abolition is fiscally neutral to positive: the $14B/year commercial bail industry's revenue is replaced by savings in pretrial detention costs (estimated $14B/year nationally for detained-but-presumed-innocent individuals). Pretrial services agencies providing supervision, reminder systems, and support: $1–2B/year nationally for the full pretrial population. New Jersey's 5-year implementation results: approximately $300M/year in detention savings for a single state of 9 million people — projecting to $5–8B/year in net national savings while maintaining equal court appearance rates (89%) and equal public safety outcomes.
 
-**14d. End private prisons and for-profit detention.**
+**14d: End private prisons and for-profit detention.**
 
 Prohibit federal contracts with private prison and detention operators. Phase out existing contracts over 3 years as contracts expire. Prohibit states from contracting with private prison operators as a condition of federal criminal justice funding. Ban private operation of immigration detention facilities. The profit motive in incarceration creates a structural incentive to increase and extend imprisonment — private prison companies lobby for longer sentences, harsher immigration enforcement, and opposition to reform. CoreCivic and GEO Group, the two largest private prison operators, spent a combined $25 million on lobbying and campaign contributions between 2010 and 2024.
 
@@ -1118,7 +1118,7 @@ Prohibit federal contracts with private prison and detention operators. Phase ou
 
 *Fiscal impact*: Phase-out of federal and state private prison contracts requires no net new cost — public prison capacity must be maintained or built, but public facilities have lower operating costs per prisoner: the DOJ Inspector General's 2016 report found federal private prisons cost 8–14% more per prisoner than comparable public facilities when controlling for population risk. Eliminating private immigration detention (approximately 30,000–45,000 daily detained): $1.5–2B/year in current private detention contracts; replacement through public or non-profit facilities is estimated at equivalent or lower per-diem. The additional fiscal consideration: CoreCivic and GEO Group spent $25M in lobbying and campaign contributions 2010–2024 specifically to maintain and expand incarceration — an ongoing political cost that distorts policy toward greater detention regardless of public safety outcomes.
 
-**14e. Restore voting rights and support reentry.**
+**14e: Restore voting rights and support reentry.**
 
 Automatically restore federal voting rights upon release from incarceration (not upon completion of parole or probation — release from prison). Prohibit states from conditioning voting rights on payment of fines, fees, or restitution (which functions as a modern poll tax, as the Eleventh Circuit recognized in Jones v. Governor of Florida). Fund comprehensive reentry programs: transitional housing, job training and placement, substance abuse treatment, mental health services, identification document assistance, and record expungement for eligible offenses. Ban the box on federal employment applications (delay criminal history inquiry until after a conditional offer). Incentivize states to adopt automatic expungement for completed sentences on nonviolent offenses.
 
@@ -1128,7 +1128,7 @@ Automatically restore federal voting rights upon release from incarceration (not
 
 *Fiscal impact*: Federal voting rights restoration: near-zero direct cost — administrative modification to federal election law. DOJ Voting Section support for state-level restoration advocacy and litigation: $200–500M/year. Comprehensive reentry programs — transitional housing, job training, ID documents, substance use treatment, record expungement: $5–8B/year nationally. Return: Vera Institute data shows reentry investment returns $4–10 for every dollar through reduced recidivism costs ($35,000–60,000/year per avoided reincarceration), increased tax revenue from employed formerly incarcerated people, and reduced reliance on public assistance. Automatic expungement (Michigan, Pennsylvania model) costs $50–100 per case to administer and generates an estimated $15,000/year in additional earnings per expungee (Bushway/Weisberg research). The civic reintegration effect is also documented: people who vote are 30–50% less likely to reoffend (American Civil Liberties Union, 2017), suggesting voting rights restoration itself is a reentry tool.
 
-**14f. Police use of force standards and de-escalation training.**
+**14f: Police use of force standards and de-escalation training.**
 
 The five preceding subsections address accountability, sentencing, bail, private prisons, and civic reintegration — but leave a gap at the operational core: what standards govern police use of force, and what training equips officers to de-escalate rather than escalate? The United States has no federal use of force standard. Most agencies use a "reasonable officer" standard derived from Graham v. Connor (1989), which has been interpreted to give officers broad latitude. The result: U.S. police kill approximately 1,100–1,200 people per year, compared to Germany (8–12 annually, pop. 84M), the UK (fewer than 5, pop. 68M), and Australia (approximately 20, pop. 26M). Militarized tactics, inadequate de-escalation training, and the absence of national standards contribute to a use-of-force rate with no parallel in the democratic world.
 
@@ -1156,7 +1156,7 @@ The structural failure is threefold: (1) regulatory capture by the fossil fuel i
 
 ### Proposed Reforms
 
-**15a. Restore and strengthen environmental regulatory capacity**
+**15a: Restore and strengthen environmental regulatory capacity**
 
 Codify EPA's authority to regulate greenhouse gas emissions by statute — removing dependence on executive interpretation of the Clean Air Act that can be reversed every four years. Establish emissions reduction targets in law: 50% reduction from 2005 levels by 2035, net-zero by 2050, aligned with 1.5°C pathway. Restore and protect scientific advisory committees with statutory independence — committee members removable only for cause, with Senate confirmation for lead positions.
 
@@ -1166,7 +1166,7 @@ Rebuild NOAA as an independent scientific agency with statutory protections agai
 
 *Fiscal impact*: EPA reconstruction to full operational and enforcement capacity: $4–6B/year above current post-2025 funding levels. NOAA expansion to $8–10B/year (from current ~$6.3B): $1.7–3.7B/year additional. Total regulatory capacity restoration: $6–10B/year. Return: EPA's own retrospective analysis of the Clean Air Act found $30 in economic benefits per dollar of compliance cost — the highest documented benefit-to-cost ratio of any domestic federal regulatory program. Greenhouse gas regulations aligned with a 50%-by-2035 pathway avoid $190B/year in climate-related damages by 2030 (EPA modeling of mortality, agricultural loss, infrastructure damage, and extreme weather). The 2025 cost of NOAA weather forecasting capability degradation: impossible to fully quantify, but disruption to the National Weather Service warning system during a major hurricane season alone would cost more than the entire NOAA budget in excess mortality and uninsured property losses.
 
-**15b. Environmental justice as a binding legal framework**
+**15b: Environmental justice as a binding legal framework**
 
 Elevate environmental justice from executive order (Clinton's EO 12898, subsequently rescinded and restored multiple times) to statutory right. Establish a federal environmental justice standard: no community shall bear pollution burdens more than 20% above the national average, with binding enforcement and a private right of action. Require cumulative impact assessment for all new permitting — not just individual facility review, but assessment of total pollution burden on affected communities.
 
@@ -1176,7 +1176,7 @@ Create an Environmental Justice Mapping and Enforcement Office with independent 
 
 *Fiscal impact*: Environmental Justice Enforcement Office (independent agency with permitting authority, community monitoring grants, legal staff): $500M–1B/year. Community-based environmental monitoring network: $300–500M/year. Cumulative impact assessment requirements: $200–400M/year in additional federal regulatory administration. Avoided health costs from pollution reduction in overburdened communities: EPA's EJScreen tool identifies census tracts where diesel particulate alone causes $1,800–7,000/person/year in mortality and morbidity costs; across 5,000+ overburdened tracts averaging 5,000 residents, addressable excess harm exceeds $45–175B/year. The Navajo Nation's $17.8B uranium cleanup illustrates the compounding cost of delayed remediation: cleanup costs are orders of magnitude higher than prevention costs, and the burden falls on federal taxpayers who benefited none from the original extraction.
 
-**15c. Clean energy transition with worker protection**
+**15c: Clean energy transition with worker protection**
 
 Establish a federal clean energy standard requiring 80% clean electricity by 2035 and 100% by 2045, with interim milestones and enforcement. Accelerate permitting for renewable energy and transmission infrastructure — the current 4-7 year average permitting timeline for transmission lines is incompatible with climate timelines. Create a Federal Transmission Authority with eminent domain authority for interstate transmission, modeled on the Interstate Highway System's construction authority.
 
@@ -1188,7 +1188,7 @@ Establish a national climate bank (Green Bank) capitalized at $100 billion to pr
 
 *Fiscal impact*: Federal clean energy standard (regulatory framework + enforcement): $500M–1B/year. Federal Transmission Authority and permitting reform implementation: $2–4B/year. Green Bank capitalization: $10B/year for 10 years, leveraging 5–10x private investment = $50–100B/year total annual clean energy financing at scale (Connecticut Green Bank achieves $8 private per $1 public). Just transition for fossil fuel workers: $2–4B/year for 100% wage replacement during retraining for approximately 40,000 annual coal/oil/gas job losses — modeled on Germany's €40B for 40,000 workers over 18 years. Solar and wind LCOE has fallen 89% and 69% respectively since 2010; every year of transition delay forfeits additional cost reductions and cedes clean energy manufacturing leadership. The Goldman Sachs analysis of the IRA estimated it would leverage $3T in private investment over 10 years from $369B in public provisions — a 8:1 ratio that makes clean energy transition among the most capital-efficient federal investments available.
 
-**15d. Public lands protection and ecological restoration**
+**15d: Public lands protection and ecological restoration**
 
 Establish a permanent moratorium on new fossil fuel leasing on federal public lands and waters. Current federal fossil fuel production accounts for approximately 25% of U.S. emissions — continued expansion is incompatible with any credible climate pathway. Honor existing lease obligations but prohibit extensions and new issuance.
 
@@ -1200,7 +1200,7 @@ Codify tribal co-management of federal lands with significant cultural and ecolo
 
 *Fiscal impact*: Moratorium on new federal fossil fuel leases: near-zero direct cost; opportunity cost of foregone new lease revenue approximately $3–5B/year (existing leases honored, revenue stream preserved). National ecological restoration program at $20B/year: return from ecosystem services — the USDA Natural Resources Conservation Service estimates $200–500/acre/year in natural capital value (flood control, water purification, carbon sequestration, pollination, biodiversity). At 60 million acres of restored forestland and wetland: $12–30B/year in ecosystem services. Carbon sequestration value: 500–800 million metric tons CO2/year at $50–100/ton social cost of carbon = $25–80B/year in avoided climate costs. Employment: 200,000–350,000 direct jobs at approximately $50,000/year average compensation. Tribal co-management agreements: $500M–1B/year — generating irreplaceable ecological knowledge and preventing destruction of ecosystems that cost orders of magnitude more to remediate than to protect.
 
-**15e. Climate adaptation and resilience**
+**15e: Climate adaptation and resilience**
 
 Establish a national climate adaptation strategy with binding standards for infrastructure, land use, and emergency preparedness. Require climate risk disclosure for all federally funded infrastructure — no federal dollars for construction in 100-year flood plains without explicit climate-adjusted risk assessment and adaptation measures.
 
@@ -1224,7 +1224,7 @@ The structural failures are: (1) immigration enforcement operates outside the pr
 
 ### Proposed Reforms
 
-**16a. End mass detention; transition to community-based alternatives.**
+**16a: End mass detention; transition to community-based alternatives.**
 
 Replace the current detention-first model with a community-based supervision system. Research consistently shows that community-based alternatives — case management, check-ins, GPS monitoring where necessary — achieve 99% appearance rates at court hearings at a fraction of the cost ($4.50/day vs. $150-$300/day for detention). Detention should be limited to individuals who pose a demonstrated flight risk or public safety threat, determined by a hearing before an independent immigration judge within 48 hours.
 
@@ -1232,7 +1232,7 @@ Prohibit the use of private for-profit facilities for any immigration detention.
 
 *Evidence*: The Alternatives to Detention (ATD) program's own data shows 99% court appearance rates. The Vera Institute's evaluation of community supervision models found comparable compliance at 1/30th the cost. Sweden, Germany, and Canada all operate immigration systems with minimal detention and higher compliance rates. The GAO and DHS OIG have documented systematic failures in detention oversight — deaths in custody averaging 8-12 per year, medical neglect, sexual assault, and solitary confinement used as punishment — that demonstrate the current model cannot be reformed from within.
 
-**16b. Independent immigration courts.**
+**16b: Independent immigration courts.**
 
 Remove immigration courts from the Department of Justice and establish them as an independent Article I court, modeled on the U.S. Tax Court or the Federal Circuit's Bankruptcy Appellate Panels. Immigration judges currently serve at the pleasure of the Attorney General — who is simultaneously the chief law enforcement officer prosecuting the cases these judges hear. This structural conflict of interest has been documented by the National Association of Immigration Judges, which has sought independence for decades.
 
@@ -1240,7 +1240,7 @@ Independent immigration courts would have: fixed-term appointments with removal 
 
 *Evidence*: The American Bar Association, the Federal Bar Association, and the NAIJ have all endorsed Article I immigration court reform. Canada's Immigration and Refugee Board operates as an independent quasi-judicial tribunal with significantly higher due process standards. The current backlog exceeds 3.5 million cases — a direct consequence of inadequate judicial resources and political interference in case adjudication.
 
-**16c. Comprehensive immigration reform with realistic pathways.**
+**16c: Comprehensive immigration reform with realistic pathways.**
 
 Establish a 10-year pathway to permanent legal status for the 11+ million undocumented residents who have been living and working in the United States, with citizenship eligibility at year 13. Requirements: continuous U.S. presence, background check, tax compliance (including back taxes), English and civics requirements. No one should be required to leave the country and "get in line" — there is no functional line to get in. The family-based visa backlog for some countries exceeds 20 years. The employment-based system caps entire countries at 7% regardless of demand, creating absurdities like a 150-year wait for Indian nationals in the EB-2 category.
 
@@ -1248,7 +1248,7 @@ Reform the legal immigration system: eliminate per-country caps, expand employme
 
 *Evidence*: The CBO scored comprehensive immigration reform (the 2013 Senate bill) as reducing the federal deficit by $197 billion over 10 years and $700 billion over 20 years. Legalization of the undocumented population would increase GDP by an estimated $1.2 trillion over 10 years (Center for American Progress). The economic evidence is unambiguous: immigration reform is fiscally positive. The 1986 Immigration Reform and Control Act (IRCA) legalized 2.7 million people and produced no adverse employment effects for native-born workers.
 
-**16d. Dismantle the surveillance-enforcement complex.**
+**16d: Dismantle the surveillance-enforcement complex.**
 
 Prohibit the use of immigration databases for purposes other than immigration processing. The DOGE-era integration of NUMIDENT (Social Security), SAVE, ELIS, and state DMV databases into a unified surveillance system has created an infrastructure for mass targeting that persists regardless of which administration controls it. Require warrants for ICE enforcement actions (currently, ICE operates primarily on administrative warrants signed by ICE supervisors, not judicial warrants). Prohibit 287(g) agreements and other programs that deputize local law enforcement as immigration agents — these programs have been shown to reduce crime reporting in immigrant communities, making everyone less safe.
 
@@ -1258,7 +1258,7 @@ Require mandatory Algorithmic Impact Assessments for all immigration enforcement
 
 *Evidence*: Studies in multiple jurisdictions show that 287(g) and Secure Communities programs reduce crime reporting by Latino residents (Insecure Communities report, 2013). The National Academy of Sciences found no evidence that immigration enforcement reduces crime. The ACLU's investigation of Palantir's ICE contracts documented systematic privacy violations and lack of oversight. Sanctuary city policies — which limit local cooperation with federal immigration enforcement — are associated with lower crime rates and higher economic output. Gonzalez v. ICE (filed 2024) is the first federal class action directly challenging algorithmic due process in immigration detention. The EU AI Act (2024) classifies immigration AI as "high risk" requiring bias testing, transparency, and human oversight — demonstrating that regulation is feasible.
 
-**16e. Protect birthright citizenship and naturalization rights.**
+**16e: Protect birthright citizenship and naturalization rights.**
 
 Codify the Fourteenth Amendment's birthright citizenship guarantee by statute, creating a private right of action against any federal or state official who denies citizenship based on parents' immigration status. The current executive order attempting to end birthright citizenship has been enjoined by multiple courts but will reach the Supreme Court — statutory reinforcement provides a legislative backstop.
 
@@ -1282,19 +1282,19 @@ The labor crisis is also a democratic crisis. The decline of organized labor rem
 
 ### Proposed Reforms
 
-**17a. Sectoral bargaining.**
+**17a: Sectoral bargaining.**
 
 Establish a sectoral bargaining system where wage and benefit standards are negotiated industry-wide rather than workplace-by-workplace. Under the current enterprise bargaining model, workers must organize each individual employer — a process that takes years, faces systematic employer opposition (documented in 41.5% of organizing campaigns according to the EPI), and produces a fragmented patchwork of contracts. Sectoral bargaining sets minimum standards for entire industries through negotiation between worker representatives and employer associations, overseen by a government-appointed tripartite board.
 
 *Evidence*: Nearly every wealthy democracy except the United States uses some form of sectoral or multi-employer bargaining. Germany's sectoral system covers 44% of workers (down from 80% but still far above U.S. levels). France's extension mechanism makes negotiated agreements binding on all employers in a sector, covering 98% of workers. Australia's Fair Work Commission sets industry-specific minimum standards. Nordic countries achieve the world's lowest inequality and highest quality of life through sectoral bargaining with 65-90% coverage. The Clean Slate for Worker Power project (Harvard/Roosevelt) proposed a detailed U.S. sectoral bargaining framework in 2023.
 
-**17b. Federal minimum wage indexed to productivity.**
+**17b: Federal minimum wage indexed to productivity.**
 
 Set the federal minimum wage at $17/hour immediately (reflecting inflation since the last increase), then index it to median wage growth so it never falls behind again. Establish a separate tipped minimum wage at the full minimum (eliminating the $2.13 sub-minimum that has remained unchanged since 1991). Index all thresholds to the Bureau of Labor Statistics' Employment Cost Index, with automatic annual adjustments requiring no congressional action.
 
 *Evidence*: Decades of minimum wage research — including the landmark Card and Krueger studies and subsequent replications across hundreds of state and local minimum wage increases — consistently find that moderate minimum wage increases do not reduce employment. States that have raised their minimums above the federal level (Washington, California, Massachusetts) have not experienced the job losses predicted by opponents. The $7.25 federal minimum has lost 30% of its real value since 2009; a worker earning it full-time makes $15,080/year, well below the poverty line for a family of two.
 
-**17c. Worker classification and gig economy protections.**
+**17c: Worker classification and gig economy protections.**
 
 Codify the ABC test for worker classification at the federal level: a worker is an employee unless the employer proves (A) the worker is free from control and direction, (B) the work is outside the employer's usual business, and (C) the worker has an independent business in the same trade. This addresses the systematic misclassification that denies protections to an estimated 10-30% of the workforce.
 
@@ -1302,7 +1302,7 @@ For platform workers (rideshare, delivery, task-based apps), establish a portabl
 
 *Evidence*: California's AB5 adopted the ABC test in 2019 (later partially rolled back by Proposition 22, which is itself under legal challenge). The European Union's Platform Workers Directive (2024) established a presumption of employment for platform workers across all member states. The ILO estimates that 12.5% of the global workforce is now in platform or gig arrangements — this is not a niche problem. Washington state's 2022 legislation created a portable benefits system for rideshare drivers that provides minimum earnings, paid sick time, and workers' compensation without requiring employment classification.
 
-**17d. Strengthen the right to organize.**
+**17d: Strengthen the right to organize.**
 
 Pass a comprehensive labor law reform bill modeled on the PRO Act: prohibit captive audience meetings, establish card check recognition (majority sign-up), impose meaningful penalties for unfair labor practices (current penalties are trivial — back pay minus interim earnings, often years after the violation), ban permanent striker replacements, override state right-to-work laws, and extend NLRA coverage to agricultural and domestic workers (who were excluded from the original 1935 Act in a racially motivated compromise).
 
@@ -1310,7 +1310,7 @@ Fund the NLRB at levels adequate to process elections within 30 days and adjudic
 
 *Evidence*: The Wagner Act of 1935 produced the fastest growth in union membership in U.S. history — from 11% to 35% within 15 years — and coincided with the greatest period of shared prosperity in American history. The Taft-Hartley Act of 1947 and subsequent legal erosion reversed these gains. Countries with strong labor law enforcement (Germany, Scandinavia, Canada) have lower inequality, higher median wages, stronger safety nets, and more resilient democracies. The correlation between union decline and democratic vulnerability is not coincidental — organized labor is a structural check on oligarchic power.
 
-**17e. Workplace safety, paid leave, and economic security.**
+**17e: Workplace safety, paid leave, and economic security.**
 
 Rebuild OSHA: double the number of inspectors to reach the ILO-recommended ratio of 1 inspector per 10,000 workers (currently 1:80,000+), increase penalties to levels that actually deter violations, and extend coverage to public-sector workers in all states (currently excluded in 24 states). Mandate that OSHA develop standards for heat exposure, workplace violence, and ergonomic hazards — areas where rulemaking has been delayed for decades.
 
@@ -1332,7 +1332,7 @@ The administrative burden itself is a policy choice. Eligible families spend an 
 
 ### Proposed Reforms
 
-**18a. Universal child benefit and childcare guarantee.**
+**18a: Universal child benefit and childcare guarantee.**
 
 Replace the current Child Tax Credit — which phases in with income and excludes the poorest families — with a universal child allowance of $300/month per child ($3,600/year), paid monthly, with no phase-in and no income test at the bottom. The 2021 expanded CTC demonstrated proof of concept: it reduced child poverty by 46% in six months, cut food insufficiency by 26%, and cost $105 billion annually. The current CTC costs $120 billion but excludes the 19 million children in families too poor to receive the full credit.
 
@@ -1340,7 +1340,7 @@ Establish a federal childcare guarantee: no family pays more than 7% of income f
 
 *Evidence*: Canada's Canada Child Benefit (2016) reduced child poverty by 30% within two years. Australia, the UK, Germany, France, and every Nordic country provide universal or near-universal child benefits. The 2021 U.S. expanded CTC produced the fastest reduction in child poverty in recorded history. Québec's $7/day childcare program increased maternal labor force participation by 8 percentage points within five years and generated more tax revenue than it cost.
 
-**18b. Guaranteed minimum income floor.**
+**18b: Guaranteed minimum income floor.**
 
 Establish a federal guaranteed minimum income replacing the patchwork of TANF, SSI, and General Assistance with a single cash transfer that guarantees no American falls below 125% of the federal poverty line ($19,088 for an individual, $39,000 for a family of four in 2024 dollars). The benefit phases out gradually — at a 30% rate — eliminating the welfare cliff and ensuring work always increases total income. Consolidate the application process through the digital government infrastructure in Domain 4: one application, one verification, automatic enrollment where possible using existing tax data.
 
@@ -1348,7 +1348,7 @@ This is not Universal Basic Income — it is a guaranteed floor, targeted at tho
 
 *Evidence*: Stockton's SEED program ($500/month to 125 randomly selected residents, 2019-2021) found recipients were more likely to find full-time employment (from 28% to 40%), had reduced income volatility, and reported improved mental health. Finland's basic income experiment (2017-2018) found no reduction in employment and significant improvements in wellbeing. Canada's Mincome experiment (1974-1979) found minimal work disincentive and significant reductions in hospitalization, domestic violence, and high school dropout rates. TANF's block grant structure has allowed states to divert funds away from cash assistance — in some states, less than 10% of TANF funds reach families as cash.
 
-**18c. Food security as a right.**
+**18c: Food security as a right.**
 
 Increase SNAP maximum benefits by 30% (the Thrifty Food Plan revision initiated in 2021 increased benefits by 21% — the first substantive increase since 1975 — but the benefit level still assumes cooking time and kitchen access that many recipients lack). Eliminate the 3-month time limit for able-bodied adults without dependents, which removes food assistance from people who are working but cannot find sufficient hours, are between jobs, or face barriers to employment that do not meet the narrow disability definition. Establish universal free school meals — permanently extending the pandemic-era policy that 10 states have now adopted independently — and Summer EBT for all children in participating households.
 
@@ -1356,7 +1356,7 @@ Index SNAP benefits to the Low-Cost Food Plan rather than the Thrifty Food Plan,
 
 *Evidence*: SNAP is the most effective anti-poverty program in the U.S. after Social Security, lifting 3.4 million people out of poverty in 2022. Every $1 in SNAP spending generates $1.50-$1.80 in economic activity. Universal free school meals in California and Maine reduced absenteeism and eliminated the stigma of means-tested lunch programs. The drug felony SNAP ban — affecting an estimated 300,000 people — has no evidence of deterring drug use and significant evidence of increasing food insecurity and recidivism.
 
-**18d. Unemployment insurance modernization.**
+**18d: Unemployment insurance modernization.**
 
 Establish a federal floor for unemployment insurance: minimum 26 weeks of benefits at 60% of prior wages (up to a cap of $1,000/week). Currently, 12 states provide fewer than 26 weeks, and Florida's maximum benefit is $275/week for 12 weeks — designed to discourage claims rather than support workers. Create automatic extended benefits that trigger when state unemployment exceeds 6.5%, eliminating the political negotiation that delayed pandemic UI extensions and let benefits lapse during the 2008 recession. Extend coverage to gig workers, independent contractors, and part-time workers who currently lack UI eligibility despite paying into the system through alternative work arrangements that Domain 17's worker classification reforms will address.
 
@@ -1364,7 +1364,7 @@ Modernize state UI technology: 25+ states still run their UI systems on COBOL ma
 
 *Evidence*: During the pandemic, the $600/week federal supplement reduced poverty among unemployed workers by 47%. States with more generous UI benefits have faster economic recoveries from recessions because benefits are spent immediately in local economies. Germany's Kurzarbeit (short-time work) system, which subsidizes reduced hours rather than full layoffs, preserved 2.2 million jobs during the pandemic at lower cost than the U.S. approach — a model for automatic stabilizers that prevent unemployment rather than merely compensating for it.
 
-**18e. Disability benefits reform.**
+**18e: Disability benefits reform.**
 
 Increase SSI benefits to at least 100% of the federal poverty line (currently 75%) and index to inflation annually. Eliminate the $2,000 asset limit for SSI recipients — a limit that has not been adjusted since 1989 and forces disabled Americans to remain in poverty to keep their benefits. The asset limit prevents saving for emergencies, homeownership, or retirement, trapping disabled people in permanent economic precarity. Raise the limit to $10,000 immediately and eliminate it within five years.
 
@@ -1388,7 +1388,7 @@ The current crisis has compounded these problems. The administration has withdra
 
 ### Proposed Reforms
 
-**19a. War powers restoration and military authorization reform.**
+**19a: War powers restoration and military authorization reform.**
 
 Repeal the 2001 and 2002 AUMFs and replace them with a framework that requires specific, time-limited, geographically bounded authorizations for the use of military force. No authorization may exceed two years without re-vote. The president retains the constitutional authority to respond to imminent attacks, but must seek congressional authorization within 48 hours and cease operations within 60 days without it — restoring the War Powers Resolution's original intent, which every president since Nixon has treated as advisory.
 
@@ -1396,7 +1396,7 @@ Establish automatic sunset provisions: any military deployment not reauthorized 
 
 *Evidence*: The 2001 AUMF — a 60-word authorization passed three days after 9/11 — has been cited to justify military operations in Afghanistan, Iraq, Syria, Yemen, Somalia, Libya, Niger, and at least 14 other countries. Congress has not voted to authorize most of these operations. The founders explicitly assigned war-declaration power to Congress (Article I, Section 8) because they understood that concentrating war authority in the executive invited perpetual conflict. Every other established democracy requires legislative authorization for military operations beyond immediate self-defense.
 
-**19b. Defense spending accountability and reallocation.**
+**19b: Defense spending accountability and reallocation.**
 
 Require the Department of Defense to pass a clean financial audit within five years or face automatic 1% annual budget reductions until compliance is achieved. The Pentagon has received $8.5 trillion in appropriations since 2001; its six consecutive audit failures mean that no one — including the Pentagon itself — can account for how this money was spent. No other federal agency operates without financial accountability on this scale.
 
@@ -1406,7 +1406,7 @@ Cap arms sales to countries designated by the State Department as having serious
 
 *Evidence*: The F-35 program alone is projected to cost $1.7 trillion over its lifetime — more than the annual GDP of Canada. The Government Accountability Office identified $233 billion in potential annual savings from eliminating duplicative programs and addressing audit failures. Japan spends 1.2% of GDP on defense and has the world's fourth-strongest military; the U.S. spends 3.4%. The BRAC process successfully closed 350 installations and saved $12 billion annually, demonstrating that independent commission approaches can overcome congressional earmark protection of military spending.
 
-**19c. Intelligence oversight and civil liberties protection.**
+**19c: Intelligence oversight and civil liberties protection.**
 
 Strengthen the Intelligence Community Inspector General with independent budget authority and subpoena power, not subject to Director of National Intelligence override. Require annual public reporting on the scope and scale of domestic surveillance programs, including the number of Americans whose communications are collected under Section 702, Executive Order 12333, and related authorities. The current system relies on a FISA Court that approved 99.97% of surveillance requests between 1979 and 2019 — a rubber stamp, not an independent check.
 
@@ -1414,7 +1414,7 @@ Establish a permanent independent privacy board (replacing the moribund Privacy 
 
 *Evidence*: The Snowden disclosures (2013) revealed that the NSA collected metadata on virtually all domestic phone calls, operated a program (PRISM) accessing data from major tech companies, and systematically exceeded the legal limits of its surveillance authority. Subsequent reforms (USA FREEDOM Act) were minimal. The Church Committee investigations (1975-1976) documented systematic FBI and CIA abuses — surveillance of civil rights leaders, infiltration of antiwar groups, assassination plots — and produced reforms that have since eroded. The pattern is clear: intelligence capabilities expand during perceived crises, oversight atrophies, abuses occur, scandals produce reforms, and the cycle repeats. Structural independence — not periodic scandal-driven reform — is the only durable solution.
 
-**19d. Veterans' services and transition support.**
+**19d: Veterans' services and transition support.**
 
 Fund the VA healthcare system at levels adequate to meet the 30-day access standard for all appointments — primary care, mental health, and specialty care. Currently, the VA serves 9.1 million veterans but faces staffing shortages of 43,000+ positions. Establish a veteran mental health crisis system: same-day access for acute mental health needs, embedded counselors at all VA facilities, and expanded outreach to the 60% of veterans with mental health needs who do not currently use VA services.
 
@@ -1424,7 +1424,7 @@ Create a comprehensive military-to-civilian transition program: job placement se
 
 *Evidence*: The VA healthcare system, when adequately funded, consistently outperforms private healthcare on quality metrics — higher patient satisfaction, better chronic disease management, lower infection rates. The problem is not the model but the funding. Countries with universal healthcare (UK, Canada, Australia) integrate veteran care into the public system rather than maintaining a parallel system, reducing administrative costs and stigma. The PACT Act (2022) expanded toxic exposure coverage but implementation has been slow — 45% of eligible claims remain unprocessed. Veteran suicide correlates with social isolation, housing instability, and untreated mental health conditions — all addressable through the material conditions reforms in Domains 11, 13, and 18.
 
-**19e. Diplomacy-first foreign policy and multilateral re-engagement.**
+**19e: Diplomacy-first foreign policy and multilateral re-engagement.**
 
 Triple State Department and USAID funding over ten years (from $58B to $174B), still less than 20% of the defense budget, to rebuild diplomatic capacity that has been systematically defunded since 2017. Restore and expand participation in multilateral institutions — the Paris Agreement, WHO, UN Human Rights Council, International Criminal Court — that the U.S. has alternately joined, withdrawn from, and rejoined across administrations. Establish by statute that withdrawal from international agreements requires Senate consent (matching the constitutional requirement for ratification), preventing unilateral executive withdrawal.
 
@@ -1454,7 +1454,7 @@ The antitrust enforcement apparatus, meanwhile, has been deliberately weakened. 
 
 ### Proposed Reforms
 
-**20a. Restore competition as a structural principle — replace the consumer welfare standard.**
+**20a: Restore competition as a structural principle — replace the consumer welfare standard.**
 
 Enact a federal competition statute that restores the original goals of the Sherman Act and Clayton Act: preventing the accumulation of private economic power that threatens democratic governance, worker welfare, supplier independence, innovation, and market openness — not merely short-term consumer prices. Specifically:
 
@@ -1467,7 +1467,7 @@ Enact a federal competition statute that restores the original goals of the Sher
 
 *Implementation pathway*: Federal statute. No constitutional barrier — Congress has plenary authority over interstate commerce.
 
-**20b. Break up existing monopolies in critical sectors.**
+**20b: Break up existing monopolies in critical sectors.**
 
 Where market concentration has already reached levels incompatible with competitive markets and democratic governance, mandate structural separation:
 
@@ -1480,7 +1480,7 @@ Where market concentration has already reached levels incompatible with competit
 
 *Implementation pathway*: FTC/DOJ enforcement actions under existing authority for some breakups; new federal statute for structural separation mandates and sector-specific caps.
 
-**20c. Empower workers and suppliers against concentrated buyers.**
+**20c: Empower workers and suppliers against concentrated buyers.**
 
 Monopsony — buyer-side market power — suppresses wages, squeezes suppliers, and extracts value from communities. Reforms:
 
@@ -1492,7 +1492,7 @@ Monopsony — buyer-side market power — suppresses wages, squeezes suppliers, 
 
 *Implementation pathway*: Federal statute and FTC rulemaking.
 
-**20d. Fund enforcement — antitrust agencies at scale.**
+**20d: Fund enforcement — antitrust agencies at scale.**
 
 The FTC and DOJ Antitrust Division cannot enforce competition law with current resources. Triple their combined budgets (from approximately $800M to $2.4B) and:
 
@@ -1505,7 +1505,7 @@ The FTC and DOJ Antitrust Division cannot enforce competition law with current r
 
 *Implementation pathway*: Federal appropriation. Institutional restructuring by executive action within existing agencies.
 
-**20e. Democratic accountability for corporate power.**
+**20e: Democratic accountability for corporate power.**
 
 Corporate governance reforms that address the political power of concentrated firms:
 
@@ -1540,7 +1540,7 @@ The United States has no comprehensive federal privacy law. It is the only major
 
 ### Proposed Reforms
 
-**21a. Enact comprehensive federal privacy legislation — a U.S. Data Rights Act.**
+**21a: Enact comprehensive federal privacy legislation — a U.S. Data Rights Act.**
 
 Establish enforceable data rights for all Americans, superseding the patchwork of state laws with a federal floor that states may exceed but not fall below. Core provisions:
 
@@ -1554,7 +1554,7 @@ Establish enforceable data rights for all Americans, superseding the patchwork o
 
 *Implementation pathway*: Federal statute. The American Data Privacy and Protection Act (ADPPA) passed the House Energy and Commerce Committee with bipartisan support in 2022 before stalling due to preemption disagreements with California — a solvable legislative design problem using the floor-not-ceiling approach.
 
-**21b. Prohibit warrantless government access to personal data — close the third-party doctrine loophole.**
+**21b: Prohibit warrantless government access to personal data — close the third-party doctrine loophole.**
 
 The Fourth Amendment prohibits unreasonable searches, but the "third-party doctrine" (Smith v. Maryland, 1979; United States v. Miller, 1976) holds that information voluntarily shared with third parties carries no reasonable expectation of privacy. This doctrine was established before the internet, before smartphones, before location tracking — when "third-party information" meant bank records and phone numbers dialed, not a comprehensive record of every movement, communication, relationship, and transaction. Carpenter v. United States (2018) narrowed the doctrine for cell-site location data, but the ruling was deliberately limited. Reforms:
 
@@ -1565,7 +1565,7 @@ The Fourth Amendment prohibits unreasonable searches, but the "third-party doctr
 
 *Implementation pathway*: Federal statute for data broker purchases and Section 702 reform. Constitutional litigation to update the third-party doctrine. Long-term: constitutional amendment establishing a right to informational privacy.
 
-**21c. Regulate facial recognition and biometric surveillance.**
+**21c: Regulate facial recognition and biometric surveillance.**
 
 Biometric data — facial geometry, fingerprints, iris scans, gait patterns, voiceprints — is unique because it cannot be changed. A compromised password can be reset; a compromised facial template is permanent. Reforms:
 
@@ -1578,7 +1578,7 @@ Biometric data — facial geometry, fingerprints, iris scans, gait patterns, voi
 
 *Implementation pathway*: Federal statute. Executive order for immediate moratorium on federal agency use pending legislation.
 
-**21d. Establish institutional infrastructure for privacy and surveillance oversight.**
+**21d: Establish institutional infrastructure for privacy and surveillance oversight.**
 
 Privacy protection requires institutional capacity, not just statutory rights. Current oversight institutions are inadequate:
 
@@ -1589,7 +1589,7 @@ Privacy protection requires institutional capacity, not just statutory rights. C
 
 *Implementation pathway*: Federal statute for the Data Protection Agency and PCLOB reform. Executive order for the Digital Rights Ombudsman and algorithmic impact assessments.
 
-**21e. Protect digital rights in the context of democratic participation.**
+**21e: Protect digital rights in the context of democratic participation.**
 
 Surveillance and data collection specifically threaten democratic processes:
 
@@ -1624,7 +1624,7 @@ The United States was built on 246 years of chattel slavery (1619–1865), follo
 
 ### Proposed Reforms
 
-**22a. Establish a federal reparations commission with binding authority — implement HR 40 and beyond.**
+**22a: Establish a federal reparations commission with binding authority — implement HR 40 and beyond.**
 
 HR 40, the Commission to Study and Develop Reparation Proposals for African Americans, has been introduced in every Congress since 1989 (originally by Representative John Conyers, now by Representative Sheila Jackson Lee). It has never received a floor vote. The commission should be established with:
 
@@ -1635,7 +1635,7 @@ HR 40, the Commission to Study and Develop Reparation Proposals for African Amer
 
 *Implementation pathway*: Federal statute. HR 40 as the legislative vehicle, amended to include binding recommendation provisions.
 
-**22b. Targeted community investment in historically redlined and disinvested neighborhoods — a $200B Community Reinvestment and Restoration Fund.**
+**22b: Targeted community investment in historically redlined and disinvested neighborhoods — a $200B Community Reinvestment and Restoration Fund.**
 
 The damage from redlining, urban renewal, highway construction through Black neighborhoods, and decades of disinvestment is geographically identifiable. The HOLC maps exist. The census data exists. The health disparities, environmental burden, infrastructure deficits, and wealth gaps are measurable block by block. Targeted reinvestment should follow the damage:
 
@@ -1647,7 +1647,7 @@ The damage from redlining, urban renewal, highway construction through Black nei
 
 *Implementation pathway*: Federal statute and appropriation. Modeled on the Community Development Block Grant program but with targeted geographic eligibility, larger scale, and community governance.
 
-**22c. Close the racial wealth gap through baby bonds, targeted homeownership support, and inheritance reform.**
+**22c: Close the racial wealth gap through baby bonds, targeted homeownership support, and inheritance reform.**
 
 The wealth gap cannot be closed by income alone — it is a stock problem (accumulated assets) not a flow problem (current earnings). Reforms must directly address asset accumulation:
 
@@ -1659,7 +1659,7 @@ The wealth gap cannot be closed by income alone — it is a stock problem (accum
 
 *Implementation pathway*: Federal statute for baby bonds and homeownership grants. Estate tax reform via budget reconciliation.
 
-**22d. Strengthen federal civil rights enforcement — rebuild and expand the infrastructure of anti-discrimination law.**
+**22d: Strengthen federal civil rights enforcement — rebuild and expand the infrastructure of anti-discrimination law.**
 
 The formal legal architecture of civil rights has been systematically weakened by court decisions, underfunding, and administrative neglect:
 
@@ -1673,7 +1673,7 @@ The formal legal architecture of civil rights has been systematically weakened b
 
 *Implementation pathway*: Federal statute for VRA restoration, disparate impact codification, and algorithmic discrimination ban. Appropriation for DOJ and racial equity office. Executive order for racial impact assessment pending statutory authorization.
 
-**22e. Establish a national truth, accountability, and reconciliation process.**
+**22e: Establish a national truth, accountability, and reconciliation process.**
 
 The United States has never formally acknowledged the systematic nature of racial harm — not slavery alone, but the continuous chain from slavery through Reconstruction's failure, through Jim Crow, through redlining, through mass incarceration, through contemporary structural racism. Without acknowledgment, the structural reforms in 22a–22d operate in a political environment where the harm they address is contested or denied:
 
@@ -2282,7 +2282,7 @@ This proposal synthesizes findings from the following documents, each of which g
 
 **For policy development**: Each reform in Part II is specified at sufficient detail to begin drafting legislation or executive orders. The from-scratch-design document provides deeper technical specifications for the governance, tax, and technology components.
 
-## 5.4 Cross-Domain Synthesis: How the Twenty Domains Reinforce Each Other
+## 5.4 Cross-Domain Synthesis: How the Twenty-Two Domains Reinforce Each Other
 
 The twenty-two domains are not a list. They are a system. The proposal's power comes not from any individual reform but from the reinforcing dynamics between them. This section maps the major feedback loops — the mechanisms by which progress in one domain accelerates progress in others, and the reasons piecemeal reform consistently underperforms.
 
@@ -2568,6 +2568,11 @@ These five changes, implemented over five years, would constitute the most signi
 The window is open. The tools exist. The evidence base is extensive. The question that remains is the same one that has faced every generation confronting democratic crisis: whether enough people will choose to act while action is still possible.
 
 ---
+
+## Appendix: Revision History
+
+- **April 11, 2026 (initial multi-domain build)**: Domains 1-9 established as core framework; Domains 10-15 added (Education, Healthcare, Infrastructure, Housing, Criminal Justice & Policing, Environment & Climate); Domains 16-17 added (Immigration & Citizenship, Labor & Employment); Domains 18-19 added (Social Safety Net, National Security & Foreign Policy); Domain 20 added (Economic Concentration and Antitrust); Domain 21 added (Data Privacy and Digital Surveillance); Section 5.5 added (International Benchmarks and Fiscal Analysis); implementation timeline updated throughout; cross-domain synthesis expanded to 12 feedback loops.
+- **April 12, 2026 (evidence deepening pass)**: Domain 22 added (Reparations and Racial Justice); cross-domain synthesis expanded to 13 feedback loops; Domains 2-3, 4, 5, 7-8, 9, 10, 11-15 deepened to match evidence standard of later domains — inline fiscal estimates added throughout, international benchmarks added or expanded for all subsections, new subsections added (2e, 3d, 7f, 8e, 10f, 11f, 14f); summary fiscal analysis updated to $650-1,000B/year investment range; cryptographic voting systems analysis in Domain 1e expanded with maturity spectrum and post-quantum migration path; Domain 16d expanded with algorithmic immigration enforcement analysis.
 
 *This document synthesizes research conducted March-April 2026 as part of the Resistance Research Archive. All claims are grounded in the detailed research documents referenced throughout. Quantitative estimates are based on published research and government sources and should be treated as indicative rather than precise. The proposal represents a synthesis of available evidence; reasonable people can and will reach different conclusions about priorities and sequencing.*
 
