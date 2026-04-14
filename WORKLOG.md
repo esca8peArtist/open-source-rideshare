@@ -4,6 +4,39 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 108 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: still blocked — user needs to share cycle logs; no dev work available
+- mfg-farm: awaiting user decision (commission vs. build design route); no autonomous work
+- resistance-research: 22/22 domain deepening complete; next is quality review/synthesis on democratic-renewal-proposal.md
+- open-source-rideshare: 2,802 tests passing; planning driver expense tracking feature (complement to existing driver tax summary)
+- Launching resistance-research quality review agent + rideshare expense tracking in parallel
+
+### resistance-research — Quality Review Pass COMPLETE (commit ee5aa5b)
+- 9 targeted edits to `democratic-renewal-proposal.md` — no restructuring, evidence dropped into existing thin sections
+- Domain 1 (Electoral): fixed wrong-frame turnout stats → registration gap (40M unregistered); AVR + weekday voting data
+- Domain 2d/2e (Anti-Corruption): CPI trajectory 16th→29th, tariff-trading scandal (NANC 73% vs S&P 61%, 50+ members), dark money $1.9B near 400× pre-Citizens United
+- Domain 5 (Fiscal): U.S. at 25.6% GDP = lowest-taxed G7, OBBB/GILTI→NCTI ~12.6% below Pillar Two 15% floor
+- Domain 6 (Judicial): V-Dem 0.75→0.57 (24% drop, largest for any consolidated democracy), WJP 112th/143, 564 judge threats FY2025
+- Domain 15 (Environment): EPA civil referrals 40 vs. 186 Obama peak (78% decline), 1,155 scientists targeted for layoff
+- Domain 17 (Labor): BLS 2024 union density 6.0%/10.0%, productivity-pay gap data (108.1%/93.2% pre-1973 vs. 59.7%/15.8% post-1979)
+- Domain 22 (Reparations): GI Bill exclusion (2 of 3,229 VA home loans in Mississippi), FHA 1938 explicit racial language, $16T GDP loss (Citigroup)
+- `executive-summary.md` synced with all updates
+- Committed ee5aa5b
+
+### open-source-rideshare — Driver Expense Tracking COMPLETE
+- New model: `app/models/driver_expense.py` — DriverExpense (id, driver_id FK, category enum × 7, amount Numeric(10,2), description, expense_date, is_deductible, created_at; 3 indexes)
+- New schemas: `app/schemas/driver_expense.py` — ExpenseCreate, ExpenseResponse, CategoryBreakdown, ExpenseSummaryResponse
+- New service: `app/services/driver_expense.py` — create_expense, get_expenses, delete_expense, get_expense_summary (all async, scoped to driver_id)
+- New router: `app/api/v1/driver_expenses.py` — 4 endpoints (POST create, GET list with filters, GET summary, DELETE); all require_driver-gated
+- Migration: `h1i2j3k4l5m6_add_driver_expenses.py` — creates driver_expenses table + expensecategory enum; revises g1h2i3j4k5l6
+- Registered in app/main.py
+- 52 tests: 26 unit (AsyncMock) + 26 integration (skip-without-live-DB pattern)
+- **Total: 2,828 tests passing** (up from 2,802), 491 skipped, 0 failing
+
 ## Session 107 — 2026-04-14
 
 ### Orient

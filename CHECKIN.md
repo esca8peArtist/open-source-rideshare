@@ -9,31 +9,30 @@
 ## Since Last Check-in
 
 **Period**: April 14, 2026
-**Session**: 107
+**Session**: 108
 
-### Accomplished (Session 107)
+### Accomplished (Session 108)
 
-#### resistance-research — Domain Deepening Library COMPLETE (22/22)
-Confirmed `national-security-evidence.md` (648 lines, committed `4045559`) is the Domain 19 deepening — written in April 2026 before the `domain-XX-name.md` naming convention was adopted, but same depth and format. Covers: Pentagon 7-consecutive-audit failure, AUMF expansion legal chain (2020 Soleimani as illustration), Section 702 + EO 12333 surveillance architecture, veteran suicide data (22/day myth vs. 16.8 current, post-9/11 cohort killed 4× by suicide vs. combat), PACT Act 2.4M claim backlog, nuclear modernization $1.7T cost escalation, Leahy Law enforcement failures (Saudi Yemen), DoD climate base vulnerability, SolarWinds/cyber gap, diplomacy gap (State/USAID $58B vs. DoD $886B), USAID 2025 decimation. PROJECTS.md updated to 22/22.
+#### resistance-research — Quality Review Pass COMPLETE (commit `ee5aa5b`)
+9 targeted edits to `democratic-renewal-proposal.md` — no restructuring, evidence dropped into existing thin sections to close gaps between the 22 domain-deepening files and the main proposal:
+- **Domain 1 (Electoral)**: Fixed wrong-frame turnout stats → registration gap (40M unregistered Americans; among registered voters U.S. turnout was 94% in 2020). AVR and weekday voting evidence added.
+- **Domain 2 (Anti-Corruption)**: CPI trajectory (16th/2001→29th/2024), tariff-trading scandal (NANC ETF 73% vs S&P 61%, 50+ members, 2,000+ trades during tariff formulation), STOCK Act structural weakness, emoluments crisis.
+- **Domain 5 (Fiscal)**: U.S. at 25.6% GDP = lowest-taxed G7 nation, OBBB/GILTI→NCTI ~12.6% effective (below Pillar Two 15% floor), OECD January 2026 deal comparison.
+- **Domain 6 (Judicial)**: V-Dem score 0.75→0.57 (24% drop — largest for any consolidated democracy, same autocratizing category as Hungary), WJP 112th/143, 564 judge threats FY2025 with documented incidents (McConnell swatting, Bondi misconduct complaint).
+- **Domain 15 (Environment)**: EPA civil referrals 40 vs. 186 Obama peak (78% decline), 28 completed enforcement actions vs. 81 Biden (65% collapse), 1,155 scientists targeted for layoff.
+- **Domain 17 (Labor)**: BLS 2024 union density 6.0%/10.0%; productivity-pay gap (108.1%/93.2% pre-1973 vs. 59.7%/15.8% post-1979); IMF deunionization-inequality finding.
+- **Domain 22 (Reparations)**: GI Bill exclusion (2 of 3,229 VA home loans in Mississippi; $180K/veteran calculation); FHA 1938 explicit racial language; urban renewal 1.36M displaced; Citigroup $16T GDP loss figure.
+- `executive-summary.md` synced with all updates.
 
-#### mfg-farm — Comprehensive Business Plan COMPLETE
-- **1,002 lines**: `projects/mfg-farm/business-plan.md`
-- **5-product launch catalog** (sequenced rollout): ModRun cable management (month 1, 9/10 automation, 68% net margin) → Drift flexi animals (month 2, AMS multi-color, Etsy review velocity) → planters (month 5, vase-mode, zero post-processing) → pet memorials (month 6, 68–78% margins) → GearStation gaming organizer (month 9, PETG, Amazon-primary)
-- **Full cost model**: filament g × bulk $/kg + packaging + Etsy 3-component fees (listing $0.20 + transaction 6.5% + payment 3% + $0.25) + shipping; price floors algebraically derived
-- **Design strategy**: commission cable family ($200–350) + first flexi creatures ($300–600) while learning Fusion 360 in parallel; transition in-house by month 5–6. Parametric memorial generator (OpenSCAD/Fusion 360) flagged as highest-leverage early automation
-- **Machine milestones**: P1S at $2,500/mo trigger (19-day payback); xTool S1 laser at $3–5K/mo (2-month payback from cutting boards alone); resin at $5–8K/mo as separate operational model
-- **90-day launch checklist** + 6-risk matrix (including false DMCA counter-notice strategy via $65 US Copyright registration)
-- Committed `b651e0a`
-
-#### open-source-rideshare — Driver Revenue Projections COMPLETE
-- `app/services/driver_revenue.py`: pure service logic — last 30 days history → extrapolate × scenario multiplier; new-driver baseline (< 5 rides) uses platform averages; percentile rank vs. all active drivers (bulk tip fetch, no N+1)
-- `app/schemas/driver_revenue.py`: `RevenueProjectionResponse`, `EarningsComparisonResponse` + nested models
-- 2 new endpoints in `app/api/v1/analytics.py`:
-  - `GET /api/v1/analytics/drivers/me/revenue-projections` (params: period week/month/quarter; scenario conservative/moderate/optimistic)
-  - `GET /api/v1/analytics/drivers/me/earnings-comparison` (percentile rank vs. all platform drivers)
-- 48 tests: 33 unit + 15 API integration; 33 net new passing
-- **Total: 2,802 tests passing** (up from 2,769)
-- Branch: `feature/driver-revenue-projections`; committed `61beb3d`
+#### open-source-rideshare — Driver Expense Tracking COMPLETE
+Completes the driver financial tools suite (joins tax summary, tip summary, earnings comparison).
+- `app/models/driver_expense.py`: DriverExpense model — id, driver_id FK, category (7-value enum: mileage/fuel/vehicle_maintenance/phone/tolls/insurance/other), amount Numeric(10,2), description, expense_date (Date), is_deductible, created_at; 3 indexes
+- `app/schemas/driver_expense.py`: ExpenseCreate, ExpenseResponse, CategoryBreakdown, ExpenseSummaryResponse
+- `app/services/driver_expense.py`: create_expense, get_expenses, delete_expense, get_expense_summary (all async, scoped to driver_id)
+- `app/api/v1/driver_expenses.py`: 4 endpoints — POST create (201), GET list with date-range + category filter, GET summary by category (declared before `{expense_id}` to avoid routing conflict), DELETE (204); all require_driver-gated
+- Alembic migration `h1i2j3k4l5m6_add_driver_expenses.py` — creates table + expensecategory enum; revises g1h2i3j4k5l6
+- 52 tests: 26 unit (AsyncMock) + 26 integration (skip-without-live-DB)
+- **Total: 2,828 tests passing** (up from 2,802), 491 skipped, 0 failing
 
 ---
 
@@ -48,23 +47,25 @@ Read the business plan and decide. Drop the direction in INBOX.md and the orches
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading has been live since April 14 (first market open). The orchestrator still cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
-**Resistance-research — April 17/20 events (imminent)**
-The April 17 stay expiry and April 20 CAPE/Abrego Garcia briefing deadlines are now past (or imminent). If you have outcomes or news, drop them in INBOX.md — the orchestrator will write a monitoring brief.
-
 **open-source-rideshare — PR ready to push**
-`feature/driver-revenue-projections` is committed locally. Push it and open a PR when ready. SSH key is confirmed present on the Pi (resolved block from Session 104).
+`feature/driver-revenue-projections` now includes driver revenue projections AND driver expense tracking (2,828 tests). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **mfg-farm**: User decides commission vs. build route for cable management designs → set up operational checklist
+1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Push `feature/driver-revenue-projections` PR; next feature candidates: trip demand heatmap, platform admin config API
-4. **resistance-research**: 22/22 complete — quality review pass or publication-ready formatting of `democratic-renewal-proposal.md`
+3. **open-source-rideshare**: Next feature — trip demand heatmap, platform admin config API, or admin trip export/reporting
+4. **resistance-research**: Publication-ready formatting pass on `democratic-renewal-proposal.md` — proposal is now evidence-dense and coverage-complete
 
 ---
 
 ### History
+
+#### Accomplished (Session 107)
+- **resistance-research**: Domain Deepening Library COMPLETE (22/22). Confirmed `national-security-evidence.md` (648 lines) as Domain 19 deepening. Committed `4045559`.
+- **mfg-farm**: Comprehensive Business Plan COMPLETE (1,002 lines) — 5-product launch catalog, full cost model, design strategy, machine milestones, 90-day checklist, 6-risk matrix. Committed `b651e0a`.
+- **open-source-rideshare**: Driver Revenue Projections + Earnings Comparison (48 tests; 2,802 total). Committed `61beb3d`.
 
 #### Accomplished (Sessions 105–106)
 - **mfg-farm**: Market research COMPLETE (861 lines) — top picks: cable management, flexi animals, planters, pet memorials, gaming organizers. Etsy June 2025 policy (original designs only) documented as existential constraint. Machine sequencing, fee reality, IP risk analysis.
