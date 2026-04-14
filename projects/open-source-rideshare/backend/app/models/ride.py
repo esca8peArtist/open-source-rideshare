@@ -75,5 +75,10 @@ class Ride(Base):
     driver_rating: Mapped[int | None] = mapped_column(nullable=True)
     cancellation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # Optional corporate account billing — set when a rider uses company billing
+    corporate_account_id: Mapped[int | None] = mapped_column(
+        ForeignKey("corporate_accounts.id"), nullable=True, index=True
+    )
+
     rider = relationship("User", foreign_keys=[rider_id], backref="rides_as_rider")
     driver = relationship("User", foreign_keys=[driver_id], backref="rides_as_driver")

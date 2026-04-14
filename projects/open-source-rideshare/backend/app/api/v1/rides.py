@@ -294,6 +294,18 @@ async def request_ride(
             promo_discount = validation.discount
             promo_code_id = validation.promo_code_id
 
+    # Validate corporate billing if requested
+    corporate_account_id: int | None = None
+    if req.use_corporate_billing:
+        from app.services.corporate_accounts import validate_corporate_billing
+        try:
+            corp_account, _corp_membership = await validate_corporate_billing(
+                user.id, round(fare - promo_discount, 2), db
+            )
+            corporate_account_id = corp_account.id
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
     ride = Ride(
         rider_id=user.id,
         status=RideStatus.REQUESTED,
@@ -308,6 +320,7 @@ async def request_ride(
         promo_discount=promo_discount,
         accessibility_required=req.accessibility_required,
         vehicle_type_preference=req.vehicle_type_preference,
+        corporate_account_id=corporate_account_id,
     )
     db.add(ride)
     await db.commit()
@@ -1017,6 +1030,11 @@ async def complete_ride(
         db, ride_id=ride.id, driver_id=driver.id,
         rider_id=ride.rider_id, fare=ride.actual_fare,
     )
+
+    # Record spend on the corporate account if this was a corporate-billed ride
+    if ride.corporate_account_id is not None:
+        from app.services.corporate_accounts import record_corporate_spend
+        await record_corporate_spend(ride.corporate_account_id, ride.actual_fare, db)
 
     return {"status": "completed", "fare": ride.actual_fare, "wait_time_fee": ride.wait_time_fee}
 

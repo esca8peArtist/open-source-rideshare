@@ -72,6 +72,7 @@ def _make_ride(
     ride.dispatch_retry_count = dispatch_retry_count
     ride.last_retry_at = last_retry_at
     ride.wait_time_fee = wait_time_fee
+    ride.corporate_account_id = None
     return ride
 
 

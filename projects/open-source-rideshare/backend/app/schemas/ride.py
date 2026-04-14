@@ -75,6 +75,7 @@ class RideRequest(BaseModel):
     accessibility_required: bool = False
     vehicle_type_preference: VehicleServiceCategory | None = None
     waypoints: list[WaypointInput] | None = None
+    use_corporate_billing: bool = False
 
 
 class ScheduleRideRequest(BaseModel):
@@ -102,6 +103,7 @@ class RideResponse(BaseModel):
     matched_at: datetime | None = None
     started_at: datetime | None = None
     completed_at: datetime | None = None
+    corporate_account_id: int | None = None
 
     model_config = {"from_attributes": True}
 
