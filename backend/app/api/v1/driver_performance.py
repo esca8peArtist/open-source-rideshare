@@ -32,10 +32,12 @@ from app.schemas.driver_performance import (
     DriverPerformanceAlertResponse,
     DriverPerformanceSnapshotResponse,
     DriverScorecardResponse,
+    PerformanceTrendsResponse,
 )
 from app.services.driver_performance import (
     bulk_recalculate_all_drivers,
     get_current_snapshot,
+    get_performance_trends,
     get_snapshot_history,
 )
 
@@ -82,6 +84,45 @@ async def get_my_performance_history(
     """Return up to the last 52 weekly performance snapshots for the authenticated driver."""
     snapshots = await get_snapshot_history(db, driver_id=user.id, limit=limit)
     return snapshots
+
+
+@router.get(
+    "/drivers/{driver_id}/performance/trends",
+    response_model=PerformanceTrendsResponse,
+    summary="Get week-over-week performance trends for a driver",
+)
+async def get_driver_performance_trends(
+    driver_id: int,
+    weeks: int = Query(12, ge=1, le=52, description="Number of weekly snapshots to include"),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return week-over-week performance trend data for a driver.
+
+    **Access control**: A driver may only request their own trends.  Admins
+    may request trends for any driver.
+
+    The ``periods`` list is ordered oldest-to-newest so that chart libraries
+    can render it left-to-right without additional client-side processing.
+    Each period includes delta fields showing the change vs. the prior period;
+    all delta fields are ``null`` for the first (oldest) period returned.
+    """
+    if user.role.value == "admin":
+        pass  # admin may access any driver
+    elif user.role.value == "driver" and user.id == driver_id:
+        pass  # driver accessing their own trends
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have permission to view this driver's performance trends.",
+        )
+
+    periods = await get_performance_trends(db, driver_id=driver_id, weeks=weeks)
+    return PerformanceTrendsResponse(
+        driver_id=driver_id,
+        weeks_requested=weeks,
+        periods=periods,
+    )
 
 
 # ---------------------------------------------------------------------------
