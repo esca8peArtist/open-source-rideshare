@@ -27,3 +27,4 @@ from app.models.driver_performance import DriverPerformanceSnapshot, DriverPerfo
 from app.models.complaint import Complaint  # noqa: F401
 from app.models.platform_config import PlatformConfig  # noqa: F401
 from app.models.driver_tier import DriverCareerTier  # noqa: F401
+from app.models.surge_price_lock import SurgePriceLock  # noqa: F401

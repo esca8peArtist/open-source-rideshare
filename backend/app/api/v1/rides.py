@@ -224,16 +224,32 @@ async def request_ride(
     except RoutingError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
+    # Check for an active surge price lock — use locked multiplier if present
+    from app.services.surge_price_lock import consume_lock, get_active_lock
+
+    active_surge_lock = await get_active_lock(db, user.id)
+
     # Record demand and calculate fare with demand multiplier
     try:
         redis_client = await get_redis()
         await record_demand(redis_client, pickup.lat, pickup.lng)
         demand = await get_demand_info(redis_client, pickup.lat, pickup.lng)
+        # Apply locked multiplier when the rider has an active price lock.
+        effective_multiplier = (
+            active_surge_lock.locked_multiplier
+            if active_surge_lock is not None
+            else demand.multiplier
+        )
+        effective_label = (
+            f"Locked surge ×{active_surge_lock.locked_multiplier:.2f}"
+            if active_surge_lock is not None
+            else demand.explanation
+        )
         bd = calculate_fare_breakdown(
             route["distance_km"],
             route["duration_min"],
-            demand_multiplier=demand.multiplier,
-            demand_label=demand.explanation,
+            demand_multiplier=effective_multiplier,
+            demand_label=effective_label,
         )
         fare = bd.total
     except Exception:
@@ -276,6 +292,11 @@ async def request_ride(
             user.id,
             [wp.model_dump() for wp in waypoint_inputs],
         )
+
+    # Consume the surge price lock (if one was active) so it cannot be reused.
+    if active_surge_lock is not None:
+        await consume_lock(db, active_surge_lock, ride.id)
+        await db.commit()
 
     # Record promo redemption if a promo was applied
     if promo_code_id:
