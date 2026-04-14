@@ -372,6 +372,64 @@ def _current_period() -> tuple[date, date]:
     return monday, sunday
 
 
+async def get_performance_trends(
+    db: AsyncSession,
+    driver_id: int,
+    weeks: int = 12,
+) -> list[dict]:
+    """Return snapshot history with week-over-week delta fields, oldest-first.
+
+    Calls :func:`get_snapshot_history` to retrieve the most-recent ``weeks``
+    snapshots (which are returned newest-first by the query), reverses them to
+    chronological order, then computes three delta fields for each period:
+
+    - ``score_delta``      — change in ``performance_score`` vs. previous period
+    - ``rating_delta``     — change in ``average_rider_rating`` vs. previous period
+    - ``acceptance_delta`` — change in ``acceptance_rate`` vs. previous period
+
+    All delta fields are ``None`` for the first (oldest) period.
+    """
+    snapshots = await get_snapshot_history(db, driver_id=driver_id, limit=weeks)
+    # Service returns newest-first; reverse to chronological (oldest-first).
+    snapshots = list(reversed(snapshots))
+
+    periods: list[dict] = []
+    for i, snap in enumerate(snapshots):
+        prev = snapshots[i - 1] if i > 0 else None
+
+        score_delta = (
+            round(snap.performance_score - prev.performance_score, 4) if prev is not None else None
+        )
+        rating_delta = (
+            round(snap.average_rider_rating - prev.average_rider_rating, 4)
+            if prev is not None
+            else None
+        )
+        acceptance_delta = (
+            round(snap.acceptance_rate - prev.acceptance_rate, 4) if prev is not None else None
+        )
+
+        periods.append(
+            {
+                "period_start": snap.period_start,
+                "period_end": snap.period_end,
+                "performance_score": snap.performance_score,
+                "score_tier": snap.score_tier,
+                "acceptance_rate": snap.acceptance_rate,
+                "completion_rate": snap.completion_rate,
+                "cancellation_rate": snap.cancellation_rate,
+                "average_rider_rating": snap.average_rider_rating,
+                "total_rides_completed": snap.total_rides_completed,
+                "total_rides_offered": snap.total_rides_offered,
+                "score_delta": score_delta,
+                "rating_delta": rating_delta,
+                "acceptance_delta": acceptance_delta,
+            }
+        )
+
+    return periods
+
+
 async def bulk_recalculate_all_drivers(db: AsyncSession) -> dict[str, Any]:
     """Recalculate snapshots for all active drivers for the current period.
 

@@ -127,3 +127,46 @@ class DriverPerformanceAlertResponse(BaseModel):
     resolved_at: datetime | None
 
     model_config = {"from_attributes": True}
+
+
+class PerformanceTrendPeriod(BaseModel):
+    """One weekly period in a driver's performance trend series.
+
+    Delta fields compare each metric to the previous period.  The first
+    period in the series (oldest) always has ``None`` for all delta fields
+    because there is no earlier period to compare against.
+    """
+
+    period_start: date
+    period_end: date
+    performance_score: float
+    score_tier: str
+    acceptance_rate: float
+    completion_rate: float
+    cancellation_rate: float
+    average_rider_rating: float
+    total_rides_completed: int
+    total_rides_offered: int
+
+    # Week-over-week deltas (None for the first period)
+    score_delta: float | None = Field(
+        None, description="Change in performance_score vs. previous period"
+    )
+    rating_delta: float | None = Field(
+        None, description="Change in average_rider_rating vs. previous period"
+    )
+    acceptance_delta: float | None = Field(
+        None, description="Change in acceptance_rate vs. previous period"
+    )
+
+
+class PerformanceTrendsResponse(BaseModel):
+    """Response envelope for the driver performance trends endpoint.
+
+    ``periods`` is ordered oldest-first so that time-series charts can
+    render left-to-right without client-side reversal.
+    """
+
+    driver_id: int
+    weeks_requested: int
+    periods: list[PerformanceTrendPeriod]

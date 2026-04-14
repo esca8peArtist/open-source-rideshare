@@ -6,6 +6,62 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/driver-revenue-projections — driver revenue projections and earnings comparison
+
+**Branch:** `feature/driver-revenue-projections`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-14
+
+**Summary:**
+Adds two new authenticated driver endpoints to help drivers understand their earning
+potential and how they compare to the rest of the platform.
+
+`GET /api/v1/analytics/drivers/me/revenue-projections` returns a personalized earnings
+projection for the next week, month, or quarter with conservative/moderate/optimistic
+scenario multipliers. Drivers with fewer than 5 completed rides receive a projection
+built from platform-wide averages with `is_new_driver_estimate: true` so they can
+always see a useful estimate from their first session.
+
+`GET /api/v1/analytics/drivers/me/earnings-comparison` shows how a driver's metrics
+(rides, gross earnings, tips, completion rate) compare against platform averages for the
+same period and provides a percentile rank across all active drivers.
+
+**Files changed:**
+- `backend/app/services/driver_revenue.py` — pure business logic; no FastAPI imports;
+  contains `get_driver_revenue_projection`, `get_driver_earnings_comparison`, and
+  internal helpers (`_fetch_driver_rides`, `_fetch_tips_for_rides`,
+  `_fetch_platform_fees_for_rides`, `_build_projection`, `_percentile`)
+- `backend/app/schemas/driver_revenue.py` — Pydantic schemas:
+  `RevenueProjectionResponse`, `EarningsComparisonResponse`, and constituent models
+- `backend/app/api/v1/analytics.py` — two new endpoints added to the existing analytics
+  router; input validation raises 422 for unrecognised period/scenario values
+- `backend/tests/test_driver_revenue_projections.py` — 48 tests (33 unit via AsyncMock,
+  15 integration that run when the test DB is available)
+
+**Key design decisions:**
+- New-driver threshold (< 5 rides) uses named constants so it is easy to tune.
+- Platform fee percentage is derived from the actual `payments.platform_fee` column when
+  records exist, falling back to the `DEFAULT_PLATFORM_FEE_PCT = 0.12` constant.
+- The bulk-tip approach in earnings comparison avoids N+1 queries by loading all tips for
+  the period in a single query and distributing them by `ride.driver_id`.
+- `_percentile` counts values strictly below, which is the standard "exclusive"
+  percentile rank (consistent with how sports/academic rankings work).
+- `avg_hourly_rate` uses net earnings (after fee deduction) and falls back to the
+  platform-average ride duration when `duration_min` is absent from ride records.
+
+**Test results:** 33 unit tests pass; 15 integration tests skip without test DB.
+Full suite: 2802 passed, 465 skipped — no regressions against prior 2769 baseline.
+
+**Review notes:**
+- The earnings comparison completion rate percentile uses platform constant `0.91` for
+  the comparison distribution since we don't fetch per-driver cancelled-ride counts for
+  all drivers in this query. A future improvement could add a subquery or a materialized
+  view for per-driver completion rates across the period.
+- Projection notes are hardcoded strings. If the platform grows multi-language support,
+  these should be moved to a translations layer.
+
+---
+
 ### feat/background-checks-firebase-push — driver availability integrated into ride matching
 
 **Branch:** `feature/background-checks-firebase-push`

@@ -38,6 +38,14 @@ from app.schemas.feedback import (
 from app.services.cancellation import evaluate_cancellation
 from app.services.payments import create_cancellation_payment_intent
 from app.services.geocoding import GeocodingError, geocode, reverse_geocode
+from app.services.wait_time import (
+    WAIT_GRACE_SECONDS,
+    WAIT_RATE_PER_MIN,
+    MAX_WAIT_MINUTES,
+    calculate_wait_fee,
+    compute_final_wait_fee,
+)
+from app.schemas.wait_time import WaitTimeStatusResponse
 from app.services.service_areas import validate_ride_locations
 from app.services.matching import get_matching_engine, get_redis
 from app.services.pricing import calculate_fare, calculate_fare_breakdown
@@ -216,16 +224,32 @@ async def request_ride(
     except RoutingError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
+    # Check for an active surge price lock — use locked multiplier if present
+    from app.services.surge_price_lock import consume_lock, get_active_lock
+
+    active_surge_lock = await get_active_lock(db, user.id)
+
     # Record demand and calculate fare with demand multiplier
     try:
         redis_client = await get_redis()
         await record_demand(redis_client, pickup.lat, pickup.lng)
         demand = await get_demand_info(redis_client, pickup.lat, pickup.lng)
+        # Apply locked multiplier when the rider has an active price lock.
+        effective_multiplier = (
+            active_surge_lock.locked_multiplier
+            if active_surge_lock is not None
+            else demand.multiplier
+        )
+        effective_label = (
+            f"Locked surge ×{active_surge_lock.locked_multiplier:.2f}"
+            if active_surge_lock is not None
+            else demand.explanation
+        )
         bd = calculate_fare_breakdown(
             route["distance_km"],
             route["duration_min"],
-            demand_multiplier=demand.multiplier,
-            demand_label=demand.explanation,
+            demand_multiplier=effective_multiplier,
+            demand_label=effective_label,
         )
         fare = bd.total
     except Exception:
@@ -268,6 +292,11 @@ async def request_ride(
             user.id,
             [wp.model_dump() for wp in waypoint_inputs],
         )
+
+    # Consume the surge price lock (if one was active) so it cannot be reused.
+    if active_surge_lock is not None:
+        await consume_lock(db, active_surge_lock, ride.id)
+        await db.commit()
 
     # Record promo redemption if a promo was applied
     if promo_code_id:
@@ -826,6 +855,7 @@ async def driver_arrived(
         raise HTTPException(status_code=409, detail="Must be en-route before arriving")
 
     ride.status = RideStatus.ARRIVED
+    ride.driver_arrived_at = datetime.now(timezone.utc)
     await db.commit()
 
     from app.api.websocket import notify_ride_status
@@ -834,7 +864,59 @@ async def driver_arrived(
     from app.services.notification_events import notify_driver_arrived
     await notify_driver_arrived(db, rider_id=ride.rider_id, ride_id=ride.id)
 
-    return {"status": "arrived"}
+    return {"status": "arrived", "driver_arrived_at": ride.driver_arrived_at}
+
+
+@router.get("/{ride_id}/wait-time", response_model=WaitTimeStatusResponse)
+async def get_wait_time_status(
+    ride_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return live wait time status for a ride in ARRIVED state.
+
+    Both the assigned driver and the rider for this ride may call this
+    endpoint.  Returns elapsed time, grace period remaining, accrued fee,
+    and whether the rider qualifies as a no-show.
+    """
+    result = await db.execute(select(Ride).where(Ride.id == ride_id))
+    ride = result.scalar_one_or_none()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    # Only the ride's driver or rider may query wait time.
+    if user.id not in (ride.rider_id, ride.driver_id):
+        raise HTTPException(status_code=403, detail="Not your ride")
+
+    if ride.driver_arrived_at is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Driver has not yet marked arrival for this ride",
+        )
+
+    if ride.status not in (RideStatus.ARRIVED, RideStatus.IN_PROGRESS, RideStatus.COMPLETED):
+        raise HTTPException(
+            status_code=409,
+            detail="Wait time is only available once the driver has arrived",
+        )
+
+    # For completed/in-progress rides, calculate fee as of start time (not now).
+    reference = ride.started_at if ride.started_at is not None else None
+    calc = calculate_wait_fee(ride.driver_arrived_at, now=reference)
+
+    return WaitTimeStatusResponse(
+        ride_id=ride_id,
+        driver_arrived_at=ride.driver_arrived_at,
+        elapsed_seconds=calc.elapsed_seconds,
+        elapsed_minutes=calc.elapsed_minutes,
+        grace_seconds_remaining=calc.grace_seconds_remaining,
+        billable_minutes=calc.billable_minutes,
+        accrued_fee=calc.accrued_fee,
+        wait_rate_per_min=WAIT_RATE_PER_MIN,
+        grace_seconds=WAIT_GRACE_SECONDS,
+        max_wait_minutes=MAX_WAIT_MINUTES,
+        is_no_show=calc.is_no_show,
+    )
 
 
 @router.post("/{ride_id}/start")
@@ -875,7 +957,11 @@ async def complete_ride(
 
     ride.status = RideStatus.COMPLETED
     ride.completed_at = datetime.now(timezone.utc)
-    ride.actual_fare = ride.estimated_fare
+
+    # Add any accrued wait time fee to the fare.
+    wait_fee = compute_final_wait_fee(ride.driver_arrived_at, ride.started_at)
+    ride.wait_time_fee = wait_fee
+    ride.actual_fare = round(ride.estimated_fare + wait_fee, 2)
 
     # Increment driver's total_trips
     profile_result = await db.execute(
@@ -902,7 +988,7 @@ async def complete_ride(
         rider_id=ride.rider_id, fare=ride.actual_fare,
     )
 
-    return {"status": "completed", "fare": ride.actual_fare}
+    return {"status": "completed", "fare": ride.actual_fare, "wait_time_fee": ride.wait_time_fee}
 
 
 @router.post("/{ride_id}/cancel", response_model=CancelResponse)

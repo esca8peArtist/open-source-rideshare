@@ -45,6 +45,7 @@ class NotificationType(str, enum.Enum):
     PROMO_APPLIED = "promo_applied"
     BACKGROUND_CHECK_APPROVED = "background_check_approved"
     BACKGROUND_CHECK_ACTION_REQUIRED = "background_check_action_required"
+    PLATFORM_ANNOUNCEMENT = "platform_announcement"
 
 
 @dataclass

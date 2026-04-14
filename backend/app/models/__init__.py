@@ -25,3 +25,6 @@ from app.models.driver_insurance import DriverInsuranceDocument, InsuranceExpiry
 from app.models.vehicle_inspection import VehicleInspection, VehicleInspectionAlert  # noqa: F401
 from app.models.driver_performance import DriverPerformanceSnapshot, DriverPerformanceAlert  # noqa: F401
 from app.models.complaint import Complaint  # noqa: F401
+from app.models.platform_config import PlatformConfig  # noqa: F401
+from app.models.driver_tier import DriverCareerTier  # noqa: F401
+from app.models.surge_price_lock import SurgePriceLock  # noqa: F401
