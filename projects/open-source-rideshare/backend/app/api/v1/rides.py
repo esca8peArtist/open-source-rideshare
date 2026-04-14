@@ -229,6 +229,17 @@ async def request_ride(
 
     active_surge_lock = await get_active_lock(db, user.id)
 
+    # Check for an active membership — used for surge cap + fare discount
+    from app.services.rider_membership import (
+        apply_membership_discount,
+        apply_surge_cap,
+        get_active_benefits,
+        get_active_membership,
+    )
+
+    active_membership = await get_active_membership(db, user.id)
+    membership_benefits = get_active_benefits(active_membership)
+
     # Record demand and calculate fare with demand multiplier
     try:
         redis_client = await get_redis()
@@ -245,6 +256,18 @@ async def request_ride(
             if active_surge_lock is not None
             else demand.explanation
         )
+        # Apply membership surge cap (after price lock resolution so the lock
+        # cannot circumvent the cap, and the cap cannot exceed the locked rate).
+        if membership_benefits is not None:
+            capped_multiplier = apply_surge_cap(
+                effective_multiplier, membership_benefits.surge_cap_multiplier
+            )
+            if capped_multiplier < effective_multiplier:
+                effective_multiplier = capped_multiplier
+                effective_label = (
+                    f"{effective_label} (capped ×{membership_benefits.surge_cap_multiplier:.1f} "
+                    f"by {membership_benefits.plan.value} membership)"
+                )
         bd = calculate_fare_breakdown(
             route["distance_km"],
             route["duration_min"],
@@ -254,6 +277,13 @@ async def request_ride(
         fare = bd.total
     except Exception:
         fare = calculate_fare(route["distance_km"], route["duration_min"])
+
+    # Apply membership fare discount (applied after surge cap, before promo).
+    membership_discount = 0.0
+    if membership_benefits is not None and membership_benefits.fare_discount_pct > 0:
+        discounted = apply_membership_discount(fare, membership_benefits.fare_discount_pct)
+        membership_discount = round(fare - discounted, 2)
+        fare = discounted
 
     # Validate and apply promo code if provided
     promo_discount = 0.0
