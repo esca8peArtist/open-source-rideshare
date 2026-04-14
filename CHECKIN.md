@@ -9,28 +9,20 @@
 ## Since Last Check-in
 
 **Period**: April 14, 2026
-**Session**: 109
+**Session**: 111
 
-### Accomplished (Session 109)
+### Accomplished (Session 111)
 
-#### resistance-research — Publication-Ready Formatting Pass COMPLETE (commit `b467e0b`)
-`democratic-renewal-proposal.md` is now clean enough to share externally:
-- Removed 1,200+ word internal development changelog from document header; replaced with `*Last updated: April 2026*`
-- Added `## Appendix: Revision History` at end with two-bullet summary of major additions
-- Fixed section 5.4 title: "How the Twenty Domains Reinforce Each Other" → "How the Twenty-Two Domains Reinforce Each Other"
-- Standardized 113 subheadings from dot format (`**Na. Heading.**`) to colon format (`**Na: Heading.**`) across all 22 domains
-- "How to Read This Document" already correctly referenced 22 domains — no change needed
-
-**The democratic renewal proposal is now evidence-dense, coverage-complete (22 domains), and publication-ready.** You can share it with a journalist, policy person, or civic organizer as-is. If you want a PDF or formatted version, let me know.
-
-#### open-source-rideshare — Admin Ride Export COMPLETE (commit `28a70be`)
-New compliance/operations endpoint for admins to download ride data:
-- `GET /api/v1/admin/rides/export` — StreamingResponse CSV, admin-auth gated
-- Filters: `start_date`, `end_date`, `status`, `driver_id`
-- 15-column CSV: ride_id, created_at, status, driver_id, driver_name, rider_id, rider_name, pickup_address, dropoff_address, distance_miles, fare_amount, currency, payment_status, surge_multiplier, vehicle_type
-- Service layer: joins Driver+User for names, Payment table for payment_status, km→miles conversion
-- 53 tests: 25 unit + 28 integration (skip-without-live-DB)
-- **Total: 2,853 tests passing** (up from 2,828), 519 skipped, 0 failing
+#### open-source-rideshare — Driver Performance Trends COMPLETE (commit `f3a7125`)
+New endpoint for chart-ready week-over-week driver performance trend data:
+- `GET /api/v1/drivers/{driver_id}/performance/trends` — auth-gated (driver: own only, admin: any)
+- Query param `weeks` (1–52, default 12) controls history depth
+- Response ordered oldest-to-newest — naturally left-to-right for charting
+- Three delta fields per period: `score_delta`, `rating_delta`, `acceptance_delta` — all `null` for the first period, numeric for subsequent periods
+- New service function `get_performance_trends()` in `app/services/driver_performance.py`
+- New schemas `PerformanceTrendPeriod` and `PerformanceTrendsResponse` in `app/schemas/driver_performance.py`
+- 18 unit tests + 15 integration (skip-without-live-DB)
+- **Total: 2,891 tests passing** (up from 2,873), 574 skipped, 0 failing
 
 ---
 
@@ -40,32 +32,39 @@ New compliance/operations endpoint for admins to download ride data:
 The full business plan is at `projects/mfg-farm/business-plan.md`. To launch, the first concrete step is getting original cable management designs — either:
 - **Commission route**: Post on Fiverr/Upwork for a cable management parametric family ($200–350, own the STLs outright). Fastest path to sellable product.
 - **Build route**: Start Fusion 360 learning path (free for hobbyists). Slower but builds the design capability that drives long-term margin.
-Read the business plan and decide. Drop the direction in INBOX.md and the orchestrator will set up the next operational steps.
+Drop the direction in INBOX.md and the orchestrator will set up the next operational steps.
 
 **Stockbot — paper trading cycle logs (ongoing)**
-Paper trading has been live since April 14 (first market open). The orchestrator still cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
+Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push**
-`feature/driver-revenue-projections` now includes: driver revenue projections, driver expense tracking, and admin ride export (2,853 tests). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
+`feature/driver-revenue-projections` now includes: driver revenue projections, driver expense tracking, admin ride export, admin trip heatmap, and driver performance trends (2,891 tests). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
 
 **resistance-research — proposal is done; what next?**
-The `democratic-renewal-proposal.md` is publication-ready. Options:
-- Share as-is (it's a clean Markdown file)
-- Convert to PDF (I can help format for PDF export)
-- No further action — file it and move on
-Let me know if you want anything done with it.
+`democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
 
 ---
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature — driver trip heatmap data endpoint, platform admin config API, or driver performance trend over time
+3. **open-source-rideshare**: Next feature — platform admin config API, rider demand heatmap by time-of-day, or surge zone auto-tuning based on heatmap data
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
 
 ### History
+
+#### Accomplished (Session 110)
+- **open-source-rideshare**: Admin Trip Heatmap COMPLETE (commit `93ce85a`) — `GET /api/v1/admin/analytics/trip-heatmap`; precision param (1–4); pickup + dropoff aggregation merged by grid cell; sorted by total_activity descending. 20 unit + 27 integration tests. Total: 2,873 passing.
+
+---
+
+#### Accomplished (Sessions 109)
+- **resistance-research**: Publication-ready formatting pass COMPLETE — removed 1,200+ word changelog, added revision history appendix, fixed "Twenty Domains" → "Twenty-Two Domains", standardized 113 subheadings. Commit `b467e0b`.
+- **open-source-rideshare**: Admin ride export COMPLETE — `GET /api/v1/admin/rides/export`, 15-column CSV, StreamingResponse, admin-auth gated, 53 tests. Total 2,853 passing. Commit `28a70be`.
+
+---
 
 #### Accomplished (Session 108)
 - **resistance-research**: Quality review pass COMPLETE — 9 targeted edits to `democratic-renewal-proposal.md` (Domain 1 registration gap, Domain 2 CPI/tariff-trading, Domain 5 lowest-taxed G7, Domain 6 V-Dem/judge threats, Domain 15 EPA collapse, Domain 17 union density/pay gap, Domain 22 GI Bill/FHA). `executive-summary.md` synced. Commit `ee5aa5b`.

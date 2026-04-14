@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-14 (Session 109)
+> **Last updated by**: orchestrator on 2026-04-14 (Session 111)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 109: **Admin ride export COMPLETE** (commit `28a70be`). GET /api/v1/admin/rides/export — CSV download of ride data filterable by start_date, end_date, status, driver_id. 15-column CSV (ride_id, created_at, status, driver names, rider name, addresses, distance_miles, fare, payment_status, vehicle_type). StreamingResponse, admin-auth gated. 53 tests. **Total: 2,853 tests passing** (2,828 before this session). Branch: `feature/driver-revenue-projections`. Features included: matching engine, payments (Stripe), dynamic pricing, geocoding, auth, safety (SOS), notifications (Twilio/SendGrid/FCM), driver tools (insurance, inspection, license, onboarding, performance, destination filter, revenue projections, expense tracking, tips), rider tools (rating system, spending analytics, saved locations, fare splits, recurring rides, waypoints), admin tools (financial reconciliation, ride export, notification log, rider management, promo analytics, user search, leaderboard, complaints/disputes), surge zones + waitlist, vehicle preferences, pooling, in-app chat, audit logging, background checks, incentives. Both Flutter apps have full user flows. **Next**: Continued admin tooling or driver/rider analytics; PR push when user ready.
+**Current focus**: Session 111: **Driver performance trends COMPLETE** (commit `f3a7125`). GET /api/v1/drivers/{driver_id}/performance/trends — time-series of weekly performance snapshots with week-over-week deltas (score_delta, rating_delta, acceptance_delta). Ordered oldest-to-newest for charting. Driver: own-only access; admin: any driver. `weeks` param (1–52, default 12). 18 unit + 15 integration tests. **Total: 2,891 tests passing** (2,873 before this session). Branch: `feature/driver-revenue-projections`. Features included: matching engine, payments (Stripe), dynamic pricing, geocoding, auth, safety (SOS), notifications (Twilio/SendGrid/FCM), driver tools (insurance, inspection, license, onboarding, performance + trends, destination filter, revenue projections, expense tracking, tips), rider tools (rating system, spending analytics, saved locations, fare splits, recurring rides, waypoints), admin tools (financial reconciliation, ride export, notification log, rider management, promo analytics, user search, leaderboard, complaints/disputes, trip heatmap), surge zones + waitlist, vehicle preferences, pooling, in-app chat, audit logging, background checks, incentives. Both Flutter apps have full user flows. **Next**: Platform admin config API, rider demand heatmap by time-of-day, or surge zone auto-tuning; PR push when user ready.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

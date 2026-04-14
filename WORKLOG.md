@@ -4,6 +4,47 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 111 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on user sharing cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 2,873 tests passing; selected driver performance trends feature
+
+### open-source-rideshare — Driver Performance Trends COMPLETE (commit f3a7125)
+- New service function: `get_performance_trends(db, driver_id, weeks)` in `app/services/driver_performance.py`
+  - Calls `get_snapshot_history()`, reverses to chronological order, computes deltas
+  - Delta fields: `score_delta`, `rating_delta`, `acceptance_delta` (None for first period)
+- New schemas: `PerformanceTrendPeriod`, `PerformanceTrendsResponse` in `app/schemas/driver_performance.py`
+- New endpoint: `GET /api/v1/drivers/{driver_id}/performance/trends`
+  - Driver-auth: drivers can only access their own trends; admins can access any driver
+  - Query param: `weeks` (1–52, default 12)
+  - Response: periods list ordered oldest-to-newest with week-over-week delta fields
+  - Router already registered in main.py — no changes needed
+- 18 unit tests + 15 integration tests in `tests/test_driver_performance_trends.py` and `tests/integration/test_driver_performance_trends.py`
+- **Total: 2,891 tests passing** (up from 2,873), 574 skipped, 0 failing
+
+## Session 110 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on user sharing cycle logs — no dev work available
+- mfg-farm: awaiting user decision (commission vs. build route) — no autonomous work
+- resistance-research: publication-ready — no further autonomous work
+- open-source-rideshare: 2,853 tests passing; selected trip heatmap feature
+
+### open-source-rideshare — Admin Trip Heatmap COMPLETE (commit 93ce85a)
+- New schema: `app/schemas/trip_heatmap.py` — HeatmapCell (lat, lng, pickup_count, dropoff_count, total_activity, avg_fare), HeatmapFilters, HeatmapResponse
+- New service: `app/services/trip_heatmap.py` — `get_trip_heatmap()` runs two grouped PostGIS queries (pickup + dropoff aggregations), merges by (lat, lng) cell key, sorts by total_activity descending
+- New router: `app/api/v1/trip_heatmap.py` — `GET /admin/analytics/trip-heatmap`; admin-auth gated; params: start_date, end_date, precision (1-4, default 2), status (default: completed), min_activity (default: 1)
+- Registered in app/main.py
+- 20 unit tests (AsyncMock) + 27 integration tests (skip-without-live-DB)
+- **Total: 2,873 tests passing** (up from 2,853), 546 skipped, 0 failing
+
 ## Session 109 — 2026-04-14
 
 ### Orient
