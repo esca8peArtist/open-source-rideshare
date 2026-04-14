@@ -401,6 +401,7 @@ async def _match_ride_background(
             pickup_lat, pickup_lng, db,
             accessibility_required=accessibility_required,
             vehicle_type_preference=vehicle_type_preference,
+            rider_user_id=rider_user_id,
         )
         if not candidates:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
@@ -410,6 +411,7 @@ async def _match_ride_background(
             ride, pickup_lat, pickup_lng, db,
             accessibility_required=accessibility_required,
             vehicle_type_preference=vehicle_type_preference,
+            rider_user_id=rider_user_id,
         )
         if not matched:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")

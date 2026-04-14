@@ -84,12 +84,13 @@ async def dispatch_due_rides(*, now: datetime | None = None) -> int:
                 engine = await get_matching_engine()
                 candidates = await engine.find_candidates(
                     ride.pickup_location, ride.pickup_location, db,
+                    rider_user_id=ride.rider_id,
                 )
                 if not candidates:
                     await notify_ride_status(ride.rider_id, ride.id, "no_drivers")
                     continue
 
-                matched = await engine.match_ride(ride, 0, 0, db)
+                matched = await engine.match_ride(ride, 0, 0, db, rider_user_id=ride.rider_id)
                 if not matched:
                     await notify_ride_status(ride.rider_id, ride.id, "no_drivers")
                     continue
@@ -196,6 +197,7 @@ async def retry_unmatched_rides(*, now: datetime | None = None) -> int:
                 engine = await get_matching_engine()
                 candidates = await engine.find_candidates(
                     ride.pickup_location, ride.pickup_location, db,
+                    rider_user_id=ride.rider_id,
                 )
                 if not candidates:
                     await notify_ride_status(
@@ -205,7 +207,7 @@ async def retry_unmatched_rides(*, now: datetime | None = None) -> int:
                     )
                     continue
 
-                matched = await engine.match_ride(ride, 0, 0, db)
+                matched = await engine.match_ride(ride, 0, 0, db, rider_user_id=ride.rider_id)
                 if not matched:
                     await notify_ride_status(
                         ride.rider_id, ride.id, "retry_no_drivers",

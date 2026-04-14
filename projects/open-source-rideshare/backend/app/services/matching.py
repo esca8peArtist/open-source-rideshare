@@ -13,6 +13,7 @@ from app.models.driver import DriverProfile
 from app.models.driver_availability import DriverOnlineStatus, DriverSchedule
 from app.models.ride import Ride, RideStatus
 from app.models.vehicle import Vehicle, VehicleServiceCategory
+from app.services.blocklist import get_blocked_user_ids, get_blocker_user_ids
 from app.services.driver_destination import (
     dropoff_within_filter,
     get_active_filters_for_drivers,
@@ -190,6 +191,7 @@ class MatchingEngine:
         vehicle_type_preference: VehicleServiceCategory | None = None,
         dropoff_lat: float | None = None,
         dropoff_lng: float | None = None,
+        rider_user_id: int | None = None,
     ) -> list[DriverCandidate]:
         """Find and rank driver candidates for a ride request.
 
@@ -213,6 +215,9 @@ class MatchingEngine:
             When provided, drivers with an active destination filter are only
             returned if the ride's dropoff falls within their filter radius.
             Drivers without a destination filter are unaffected.
+        rider_user_id:
+            When provided, applies blocklist filtering: excludes drivers that
+            the rider has blocked, and drivers that have blocked the rider.
         """
         initial_radius = settings.driver_search_initial_radius_km
         max_radius = settings.driver_search_radius_km
@@ -333,6 +338,22 @@ class MatchingEngine:
                 )
             )
 
+        # --- Blocklist filter: exclude drivers the rider has blocked and drivers
+        #     who have blocked the rider (checked in both directions) ---
+        if rider_user_id is not None and candidates:
+            rider_blocked = await get_blocked_user_ids(rider_user_id, db)
+            blocked_rider = await get_blocker_user_ids(rider_user_id, db)
+            excluded = rider_blocked | blocked_rider
+            if excluded:
+                before = len(candidates)
+                candidates = [c for c in candidates if c.user_id not in excluded]
+                logger.debug(
+                    "Blocklist filter: %d/%d driver candidates removed for rider user_id=%d",
+                    before - len(candidates),
+                    before,
+                    rider_user_id,
+                )
+
         candidates.sort(key=lambda c: (c.distance_km, -c.rating_avg))
         return candidates
 
@@ -402,6 +423,7 @@ class MatchingEngine:
         vehicle_type_preference: VehicleServiceCategory | None = None,
         dropoff_lat: float | None = None,
         dropoff_lng: float | None = None,
+        rider_user_id: int | None = None,
     ) -> DriverCandidate | None:
         candidates = await self.find_candidates(
             pickup_lat,
@@ -412,6 +434,7 @@ class MatchingEngine:
             vehicle_type_preference=vehicle_type_preference,
             dropoff_lat=dropoff_lat,
             dropoff_lng=dropoff_lng,
+            rider_user_id=rider_user_id,
         )
         if not candidates:
             logger.info("No drivers found for ride %d", ride.id)
