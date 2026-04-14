@@ -4,6 +4,116 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 115 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 2,966 tests passing; selected surge zone auto-tuning feature
+
+### open-source-rideshare — Surge Zone Auto-Tuning COMPLETE (commit 908432e)
+- New schema: `app/schemas/surge_zone_autotune.py`
+  - AutoTuneAction enum (increase/decrease/no_change/insufficient_data)
+  - SurgeZoneRecommendation — per-zone recommendation with demand_ratio, zone_window_avg_rides, platform_avg_rides, recommendation_reason, data_points
+  - AutoTunePreviewResponse — full preview: recommendations, per-action counts, generated_at, lookback_days, min_sample_size
+  - AutoTuneApplyRequest — optional zone_ids filter (null = apply all actionable)
+  - AutoTuneApplyDetail — per-zone apply/skip result
+  - AutoTuneApplyResponse — applied, skipped, details, generated_at
+- New service: `app/services/surge_zone_autotune.py`
+  - `_get_active_hours(start, end)` — maps time window to list of hour ints; handles same-day, overnight, and degenerate (start==end) windows
+  - `_clamp_multiplier(value)` — clamps to [1.0, 10.0], rounds to 2dp
+  - `_recommend_multiplier(current, demand_ratio)` — ratio >= 2.0 → +0.20, >= 1.5 → +0.10, <= 0.5 → -0.10, else no_change
+  - `_build_reason(...)` — human-readable rationale string
+  - `compute_auto_tune_recommendations(db, lookback_days=30, min_sample_size=10)` — read-only; calls get_demand_by_hour then builds per-zone recommendations
+  - `apply_auto_tune_recommendations(db, zone_ids=None, ...)` — recomputes preview and writes increase/decrease changes to DB
+- New endpoints in `app/api/v1/surge_zones.py`:
+  - GET  /admin/surge-zones/auto-tune — preview (read-only, no DB writes)
+  - POST /admin/surge-zones/auto-tune/apply — apply actionable recommendations; zone_ids filter optional
+  - Both placed BEFORE /{zone_id} parameterised routes to avoid routing ambiguity
+- 50 unit tests across: _get_active_hours (8), _clamp_multiplier (6), _recommend_multiplier (10), compute_auto_tune_recommendations (10), apply_auto_tune_recommendations (5), schemas (7), endpoints (4)
+- **Total: 3,016 tests passing** (up from 2,966), 669 skipped, 0 failing
+
+---
+
+## Session 114 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 2,939 tests passing; selected rider busy hours indicator feature
+
+### open-source-rideshare — Rider Busy Hours Indicator COMPLETE (commit ae2e408)
+- New schema: `app/schemas/busy_hours.py` — DemandLevel enum (low/medium/high/peak), BusyHourSlot (hour, hour_label, demand_level, typical_wait_minutes, is_current_hour), BusyHoursResponse (24 slots, peak_hour, current_hour, current_demand_level, day_of_week)
+- New service: `app/services/busy_hours.py` — get_busy_hours()
+  - Wraps get_demand_by_hour(); strips admin-only fields (fare breakdown, completion rates)
+  - Classifies each hour relative to peak: >=75% peak, >=40% high, >=15% medium, else low
+  - Adds is_current_hour flag; computes current_demand_level for current UTC hour
+  - Optional day_of_week filter passed through to demand query
+- New router: `app/api/v1/busy_hours.py` — GET /api/v1/rides/busy-hours
+  - Auth: any authenticated user (rider, driver, admin)
+  - Query param: day_of_week (0=Sunday…6=Saturday, optional)
+  - Response: BusyHoursResponse with rider-friendly demand levels
+- Registered in main.py
+- 27 unit tests (9 classifier + 18 service) + 16 integration tests (skip without live DB)
+- **Total: 2,966 tests passing** (up from 2,939), 669 skipped, 0 failing
+
+## Session 113 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on cycle logs — no dev work available
+- mfg-farm: awaiting user decision — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 2,919 tests passing; selected demand-by-hour analytics feature
+
+### open-source-rideshare — Demand-By-Hour Analytics COMPLETE (commit ef08aa8)
+- New schema: `app/schemas/demand_heatmap.py` — DemandHourSlot (hour, hour_label, total_rides, completed_rides, cancelled_rides, avg_fare, avg_wait_minutes), DemandByHourFilters, DemandByHourResponse
+- New service: `app/services/demand_heatmap.py` — get_demand_by_hour()
+  - Single SQL query: EXTRACT(hour) group-by with conditional SUMs for status breakdown
+  - EXTRACT(epoch, matched_at - requested_at)/60 for avg wait time
+  - Optional filters: start_date, end_date, day_of_week (PostgreSQL DOW 0=Sunday…6=Saturday)
+  - Always produces all 24 slots; hours missing from DB get zero-count placeholders
+  - peak_hour = slot with highest total_rides (None if no rides)
+- New router: `app/api/v1/demand_heatmap.py` — GET /admin/analytics/demand-by-hour
+  - Admin-gated; validates end_date >= start_date; day_of_week clamped 0–6 by Query(ge=0,le=6)
+- Registered in main.py
+- 20 unit tests + 25 integration tests
+- **Total: 2,939 tests passing** (up from 2,919), 519 skipped, 0 failing
+
+## Session 112 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on user sharing cycle logs — no dev work available
+- mfg-farm: awaiting user decision (commission vs. build route) — no autonomous work
+- resistance-research: publication-ready — no autonomous work
+- open-source-rideshare: 2,891 tests passing; selected platform admin config API feature
+
+### open-source-rideshare — Platform Admin Config API COMPLETE (commit aec6101)
+- New model: `app/models/platform_config.py` — PlatformConfig table (key, category, value_type, value, label, description, updated_at, updated_by_id)
+- 6 config categories: pricing, operations, safety, features, notifications, matching
+- 5 value types: string, float, int, bool, json — stored as Text, parsed at read time
+- New service: `app/services/platform_config.py` — seed_default_config(), get_all_config(), get_config_entry(), update_config_entry(), bulk_update_config()
+  - 21 seeded defaults drawn from settings.py (pricing rates, radii, timeouts, feature flags, notification flags)
+  - update_config_entry() validates value type before write, then audit-logs the change via log_event()
+  - bulk_update_config() is best-effort: per-key failures reported without rolling back successful updates
+- New router: `app/api/v1/platform_config.py` — 4 admin-gated endpoints
+  - GET  /api/v1/admin/config              — list all (?category= filter); typed_value cast per value_type
+  - GET  /api/v1/admin/config/{key}        — single entry; 404 if missing
+  - PUT  /api/v1/admin/config/{key}        — update + type-validate + audit log; 422 on bad type
+  - POST /api/v1/admin/config/bulk         — bulk update; 422 on empty list; per-key results
+- Registered in main.py; PlatformConfig added to models/__init__.py
+- 28 unit tests + 30 integration tests (skip-without-live-DB)
+- **Total: 2,919 tests passing** (up from 2,891), 495 skipped, 0 failing
+
 ## Session 111 — 2026-04-14
 
 ### Orient

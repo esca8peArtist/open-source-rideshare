@@ -9,20 +9,24 @@
 ## Since Last Check-in
 
 **Period**: April 14, 2026
-**Session**: 111
+**Session**: 115
 
-### Accomplished (Session 111)
+### Accomplished (Session 115)
 
-#### open-source-rideshare — Driver Performance Trends COMPLETE (commit `f3a7125`)
-New endpoint for chart-ready week-over-week driver performance trend data:
-- `GET /api/v1/drivers/{driver_id}/performance/trends` — auth-gated (driver: own only, admin: any)
-- Query param `weeks` (1–52, default 12) controls history depth
-- Response ordered oldest-to-newest — naturally left-to-right for charting
-- Three delta fields per period: `score_delta`, `rating_delta`, `acceptance_delta` — all `null` for the first period, numeric for subsequent periods
-- New service function `get_performance_trends()` in `app/services/driver_performance.py`
-- New schemas `PerformanceTrendPeriod` and `PerformanceTrendsResponse` in `app/schemas/driver_performance.py`
-- 18 unit tests + 15 integration (skip-without-live-DB)
-- **Total: 2,891 tests passing** (up from 2,873), 574 skipped, 0 failing
+#### open-source-rideshare — Surge Zone Auto-Tuning COMPLETE (commit `908432e`)
+Data-driven multiplier recommendations for active surge zones, connecting the demand analytics system to the surge zone config:
+- `GET /admin/surge-zones/auto-tune` — read-only preview of recommendations
+- `POST /admin/surge-zones/auto-tune/apply` — write actionable adjustments (optional `zone_ids` filter to apply selectively)
+- **Algorithm**: compares zone's time-window average rides/hr vs. platform average:
+  - ratio ≥ 2.0 → +0.20 (very high demand window)
+  - ratio ≥ 1.5 → +0.10 (elevated demand window)
+  - ratio ≤ 0.5 → −0.10 (low demand window)
+  - otherwise → no_change; clamped to [1.0, 10.0]
+  - zones with < `min_sample_size` rides → `insufficient_data` (conservative, no change)
+- Handles same-day, overnight, and no-time-window zones correctly
+- Admin reviews preview before committing — apply is a separate intentional step
+- 50 unit tests (helpers, service, schemas, endpoints)
+- **Total: 3,016 tests passing** (up from 2,966), 0 failing
 
 ---
 
@@ -38,7 +42,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push**
-`feature/driver-revenue-projections` now includes: driver revenue projections, driver expense tracking, admin ride export, admin trip heatmap, and driver performance trends (2,891 tests). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
+`feature/driver-revenue-projections` now includes: driver revenue projections, driver expense tracking, admin ride export, admin trip heatmap, driver performance trends, platform admin config API, demand-by-hour analytics, rider busy hours indicator, surge zone auto-tuning (**3,016 tests**). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -48,8 +52,24 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature — platform admin config API, rider demand heatmap by time-of-day, or surge zone auto-tuning based on heatmap data
+3. **open-source-rideshare**: Next feature — driver earnings summary report or zone boundary suggestions from heatmap clusters
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
+
+---
+
+### History
+
+#### Accomplished (Session 114)
+- **open-source-rideshare**: Rider Busy Hours Indicator COMPLETE (commit `ae2e408`). `GET /api/v1/rides/busy-hours` — 24 hourly slots with demand_level (low/medium/high/peak), typical_wait_minutes, is_current_hour. Demand classified relative to peak-hour volume. Optional day_of_week filter. 27 unit + 16 integration tests. Total: 2,966 passing.
+
+#### Accomplished (Session 113)
+- **open-source-rideshare**: Demand-By-Hour Analytics COMPLETE (commit `ef08aa8`). Admin endpoint `GET /api/v1/admin/analytics/demand-by-hour` — 24 hourly slots with total/completed/cancelled rides, avg fare, avg wait. Filters: start_date, end_date, day_of_week. 20 unit + 25 integration tests. Total: 2,939 passing.
+
+#### Accomplished (Session 112)
+- **open-source-rideshare**: Platform Admin Config API COMPLETE (commit `aec6101`). Database-backed key/value config store; 6 categories, 5 value types; 21 seeded defaults; 4 admin endpoints with audit trail. 28 unit + 30 integration tests. Total: 2,919 passing.
+
+#### Accomplished (Session 111)
+- **open-source-rideshare**: Driver Performance Trends COMPLETE (commit `f3a7125`) — `GET /api/v1/drivers/{driver_id}/performance/trends`; weeks param 1–52; delta fields null on first period, numeric thereafter; oldest-to-newest ordering. 18 unit + 15 integration tests. Total: 2,891 passing.
 
 ---
 
