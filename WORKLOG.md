@@ -5482,3 +5482,50 @@ Feature: both riders and drivers can block specific counterparties from future m
 #### Session end
 - PROJECTS.md updated
 - CHECKIN.md updated
+
+## Session 129 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: still blocked on STOCKBOT_API_KEY / user sharing cycle logs
+- mfg-farm: awaiting user decision — no autonomous work
+- open-source-rideshare: 3,577 tests passing; selected **Driver Subscription / Flat-Fee Plan**
+
+### open-source-rideshare — Driver Subscription Plan — IN PROGRESS
+Feature: drivers opt into a weekly ($49) or monthly ($149) flat-fee subscription instead of 15% per-ride commission. While subscribed, commission_pct = 0%.
+
+### open-source-rideshare — Driver Subscription Plan COMPLETE (commit 479219c)
+- New model: `app/models/driver_subscription.py`
+  - DriverSubscription: driver_id, plan, status, started_at, expires_at, price, commission_pct, auto_renew, stripe_subscription_id, cancelled_at
+  - DriverSubscriptionPlan enum: weekly | monthly
+  - DriverSubscriptionStatus enum: active | cancelled | expired
+  - PLAN_DETAILS: weekly=$49/7d, monthly=$149/30d
+  - STANDARD_COMMISSION_PCT = 15.0
+- Migration: `p1q2r3s4t5u6_add_driver_subscriptions` — 1 table, 3 indexes
+- New schema: `app/schemas/driver_subscription.py` — SubscribeRequest, UpdateSubscriptionRequest, PlanDetails, DriverSubscriptionResponse, AdminDriverSubscriptionResponse, SubscriptionStatsResponse, get_all_plan_details()
+- New service: `app/services/driver_subscriptions.py`
+  - subscribe: creates subscription, validates no duplicate active sub
+  - cancel_subscription: sets status=cancelled, auto_renew=False, cancelled_at=now
+  - update_auto_renew: updates flag on active sub
+  - expire_subscriptions: bulk-expire past-due active subs (scheduler hook)
+  - get_active_subscription: finds unexpired active sub for driver
+  - get_driver_commission_pct: 0.0 if subscribed, 15.0 otherwise
+  - list_driver_subscriptions: paginated full history per driver
+  - list_all_subscriptions: admin paginated list w/ status/plan filters
+  - get_subscription_stats: aggregate counts + revenue by plan/status
+- New router: `app/api/v1/driver_subscriptions.py`
+  - GET    /driver-subscriptions/plans            — public plan catalogue
+  - GET    /drivers/me/subscription               — active sub (404 if none)
+  - GET    /drivers/me/subscriptions              — full history
+  - POST   /drivers/me/subscription               — subscribe
+  - PATCH  /drivers/me/subscription               — update auto_renew
+  - DELETE /drivers/me/subscription               — cancel active sub
+  - GET    /admin/driver-subscriptions/stats      — aggregate stats
+  - GET    /admin/driver-subscriptions            — all subs (paginated, filterable)
+- 49 unit tests; **Total: 3,626 tests passing** (up from 3,577), 0 failing
+
+#### Session end
+- GitHub push blocked: SSH key `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`; commit is local only
+- PROJECTS.md updated
+- CHECKIN.md updated

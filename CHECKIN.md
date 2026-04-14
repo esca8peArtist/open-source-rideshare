@@ -9,21 +9,24 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Session**: 128
+**Session**: 129
 
-### Accomplished (Session 128)
+### Accomplished (Session 129)
 
-#### open-source-rideshare — Driver/Rider Blocklist System COMPLETE (commit `85834f9`)
-Either party (rider or driver) can now block specific counterparties from future matching:
-- **`GET /users/me/blocklist`** — paginated list of users I've blocked
-- **`POST /users/me/blocklist`** — block a user (optional reason, max 500 chars)
-- **`DELETE /users/me/blocklist/{blocked_user_id}`** — unblock a user
-- **`GET /admin/blocklist`** — admin view of all block pairs
-- **Rules**: max 50 blocked users/account; cannot block yourself; no duplicate blocks
-- **Matching engine**: both directions checked at match time — rider-blocked drivers AND drivers-who-blocked-rider are excluded from `find_candidates()`
-- Both `_match_ride_background` (realtime) and `dispatch_scheduler` (scheduled/retry dispatch) pass `rider_user_id` for blocklist filtering
-- Migration `o1p2q3r4s5t6_add_user_blocklist`: `user_blocklist` table + 2 indexes + unique pair constraint
-- 34 unit tests; **Total: 3,577 tests passing** (up from 3,543)
+#### open-source-rideshare — Driver Subscription / Flat-Fee Plan COMPLETE (commit `479219c`)
+Drivers can now opt into a flat-fee subscription instead of paying 15% per-ride commission:
+- **`GET /driver-subscriptions/plans`** — public plan catalogue (weekly $49, monthly $149)
+- **`GET /drivers/me/subscription`** — active subscription or 404
+- **`GET /drivers/me/subscriptions`** — full subscription history
+- **`POST /drivers/me/subscription`** — subscribe to weekly or monthly plan
+- **`PATCH /drivers/me/subscription`** — update auto-renew flag
+- **`DELETE /drivers/me/subscription`** — cancel (benefits valid until period end)
+- **`GET /admin/driver-subscriptions/stats`** — counts + revenue by plan/status
+- **`GET /admin/driver-subscriptions`** — all subscriptions (paginated, filterable by status/plan)
+- **Rules**: one active subscription per driver; cancellation sets status=cancelled but period benefits remain; commission_pct=0.0 while active vs. 15.0% standard
+- Migration `p1q2r3s4t5u6_add_driver_subscriptions`: `driver_subscriptions` table + 3 indexes
+- 49 unit tests; **Total: 3,626 tests passing** (up from 3,577)
+- **Note**: GitHub push blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ---
 
@@ -38,8 +41,8 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
-**open-source-rideshare — PR ready to push**
-`feature/corporate-business-accounts` now includes all prior features + **scheduled rides** + **corporate accounts** + **fare disputes & refunds** (**3,543 tests passing**). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
+**open-source-rideshare — PR ready to push + SSH key issue**
+`feature/corporate-business-accounts` now includes all features through Session 129 (3,626 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -49,7 +52,7 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Push PR or continue with next feature
+3. **open-source-rideshare**: Resolve SSH push or continue with next feature
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
@@ -57,6 +60,9 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ---
 
 ### History
+
+#### Accomplished (Session 128)
+- **open-source-rideshare**: Driver/Rider Blocklist System COMPLETE (commit `85834f9`). Either party can block specific counterparties; matching engine checks both directions. 4 endpoints. 34 tests. Total: 3,577 passing.
 
 #### Accomplished (Session 127)
 - **open-source-rideshare**: Rider Fare Dispute & Refund System COMPLETE (commit `bd40069`). Riders submit fare disputes on completed rides; admins approve/partial/deny with refund amounts. 8 endpoints (4 rider, 4 admin). 44 unit tests. Total: 3,543 passing.
