@@ -9,30 +9,28 @@
 ## Since Last Check-in
 
 **Period**: April 14, 2026
-**Session**: 108
+**Session**: 109
 
-### Accomplished (Session 108)
+### Accomplished (Session 109)
 
-#### resistance-research — Quality Review Pass COMPLETE (commit `ee5aa5b`)
-9 targeted edits to `democratic-renewal-proposal.md` — no restructuring, evidence dropped into existing thin sections to close gaps between the 22 domain-deepening files and the main proposal:
-- **Domain 1 (Electoral)**: Fixed wrong-frame turnout stats → registration gap (40M unregistered Americans; among registered voters U.S. turnout was 94% in 2020). AVR and weekday voting evidence added.
-- **Domain 2 (Anti-Corruption)**: CPI trajectory (16th/2001→29th/2024), tariff-trading scandal (NANC ETF 73% vs S&P 61%, 50+ members, 2,000+ trades during tariff formulation), STOCK Act structural weakness, emoluments crisis.
-- **Domain 5 (Fiscal)**: U.S. at 25.6% GDP = lowest-taxed G7 nation, OBBB/GILTI→NCTI ~12.6% effective (below Pillar Two 15% floor), OECD January 2026 deal comparison.
-- **Domain 6 (Judicial)**: V-Dem score 0.75→0.57 (24% drop — largest for any consolidated democracy, same autocratizing category as Hungary), WJP 112th/143, 564 judge threats FY2025 with documented incidents (McConnell swatting, Bondi misconduct complaint).
-- **Domain 15 (Environment)**: EPA civil referrals 40 vs. 186 Obama peak (78% decline), 28 completed enforcement actions vs. 81 Biden (65% collapse), 1,155 scientists targeted for layoff.
-- **Domain 17 (Labor)**: BLS 2024 union density 6.0%/10.0%; productivity-pay gap (108.1%/93.2% pre-1973 vs. 59.7%/15.8% post-1979); IMF deunionization-inequality finding.
-- **Domain 22 (Reparations)**: GI Bill exclusion (2 of 3,229 VA home loans in Mississippi; $180K/veteran calculation); FHA 1938 explicit racial language; urban renewal 1.36M displaced; Citigroup $16T GDP loss figure.
-- `executive-summary.md` synced with all updates.
+#### resistance-research — Publication-Ready Formatting Pass COMPLETE (commit `b467e0b`)
+`democratic-renewal-proposal.md` is now clean enough to share externally:
+- Removed 1,200+ word internal development changelog from document header; replaced with `*Last updated: April 2026*`
+- Added `## Appendix: Revision History` at end with two-bullet summary of major additions
+- Fixed section 5.4 title: "How the Twenty Domains Reinforce Each Other" → "How the Twenty-Two Domains Reinforce Each Other"
+- Standardized 113 subheadings from dot format (`**Na. Heading.**`) to colon format (`**Na: Heading.**`) across all 22 domains
+- "How to Read This Document" already correctly referenced 22 domains — no change needed
 
-#### open-source-rideshare — Driver Expense Tracking COMPLETE
-Completes the driver financial tools suite (joins tax summary, tip summary, earnings comparison).
-- `app/models/driver_expense.py`: DriverExpense model — id, driver_id FK, category (7-value enum: mileage/fuel/vehicle_maintenance/phone/tolls/insurance/other), amount Numeric(10,2), description, expense_date (Date), is_deductible, created_at; 3 indexes
-- `app/schemas/driver_expense.py`: ExpenseCreate, ExpenseResponse, CategoryBreakdown, ExpenseSummaryResponse
-- `app/services/driver_expense.py`: create_expense, get_expenses, delete_expense, get_expense_summary (all async, scoped to driver_id)
-- `app/api/v1/driver_expenses.py`: 4 endpoints — POST create (201), GET list with date-range + category filter, GET summary by category (declared before `{expense_id}` to avoid routing conflict), DELETE (204); all require_driver-gated
-- Alembic migration `h1i2j3k4l5m6_add_driver_expenses.py` — creates table + expensecategory enum; revises g1h2i3j4k5l6
-- 52 tests: 26 unit (AsyncMock) + 26 integration (skip-without-live-DB)
-- **Total: 2,828 tests passing** (up from 2,802), 491 skipped, 0 failing
+**The democratic renewal proposal is now evidence-dense, coverage-complete (22 domains), and publication-ready.** You can share it with a journalist, policy person, or civic organizer as-is. If you want a PDF or formatted version, let me know.
+
+#### open-source-rideshare — Admin Ride Export COMPLETE (commit `28a70be`)
+New compliance/operations endpoint for admins to download ride data:
+- `GET /api/v1/admin/rides/export` — StreamingResponse CSV, admin-auth gated
+- Filters: `start_date`, `end_date`, `status`, `driver_id`
+- 15-column CSV: ride_id, created_at, status, driver_id, driver_name, rider_id, rider_name, pickup_address, dropoff_address, distance_miles, fare_amount, currency, payment_status, surge_multiplier, vehicle_type
+- Service layer: joins Driver+User for names, Payment table for payment_status, km→miles conversion
+- 53 tests: 25 unit + 28 integration (skip-without-live-DB)
+- **Total: 2,853 tests passing** (up from 2,828), 519 skipped, 0 failing
 
 ---
 
@@ -48,19 +46,32 @@ Read the business plan and decide. Drop the direction in INBOX.md and the orches
 Paper trading has been live since April 14 (first market open). The orchestrator still cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push**
-`feature/driver-revenue-projections` now includes driver revenue projections AND driver expense tracking (2,828 tests). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
+`feature/driver-revenue-projections` now includes: driver revenue projections, driver expense tracking, and admin ride export (2,853 tests). Push the branch and open a PR when ready. SSH key confirmed present on Pi.
+
+**resistance-research — proposal is done; what next?**
+The `democratic-renewal-proposal.md` is publication-ready. Options:
+- Share as-is (it's a clean Markdown file)
+- Convert to PDF (I can help format for PDF export)
+- No further action — file it and move on
+Let me know if you want anything done with it.
 
 ---
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature — trip demand heatmap, platform admin config API, or admin trip export/reporting
-4. **resistance-research**: Publication-ready formatting pass on `democratic-renewal-proposal.md` — proposal is now evidence-dense and coverage-complete
+3. **open-source-rideshare**: Next feature — driver trip heatmap data endpoint, platform admin config API, or driver performance trend over time
+4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
 
 ### History
+
+#### Accomplished (Session 108)
+- **resistance-research**: Quality review pass COMPLETE — 9 targeted edits to `democratic-renewal-proposal.md` (Domain 1 registration gap, Domain 2 CPI/tariff-trading, Domain 5 lowest-taxed G7, Domain 6 V-Dem/judge threats, Domain 15 EPA collapse, Domain 17 union density/pay gap, Domain 22 GI Bill/FHA). `executive-summary.md` synced. Commit `ee5aa5b`.
+- **open-source-rideshare**: Driver expense tracking COMPLETE — DriverExpense model, 7-category enum, CRUD + summary endpoints, Alembic migration, 52 tests. Total 2,828 passing. Commit `0aad9ea`.
+
+---
 
 #### Accomplished (Session 107)
 - **resistance-research**: Domain Deepening Library COMPLETE (22/22). Confirmed `national-security-evidence.md` (648 lines) as Domain 19 deepening. Committed `4045559`.

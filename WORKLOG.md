@@ -4,6 +4,32 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 109 — 2026-04-14
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: no active blocks
+- stockbot: blocked on user sharing cycle logs — no dev work available
+- mfg-farm: awaiting user decision (commission vs. build route) — no autonomous work
+- resistance-research: quality review COMPLETE (Session 108); next = publication-ready formatting pass
+- open-source-rideshare: 2,828 tests passing; next feature selected = admin ride export for compliance
+
+### resistance-research — Publication-Ready Formatting Pass COMPLETE (commit b467e0b)
+- Removed 1,200+ word internal development changelog from document header; replaced with `*Last updated: April 2026*`
+- Added `## Appendix: Revision History` at end of document with distilled bullet summary of major additions
+- Fixed section 5.4 title: "Twenty Domains" → "Twenty-Two Domains"
+- Standardized 113 subheadings from dot format (`**Na. Heading.**`) to colon format (`**Na: Heading.**`) across all 22 domains
+- Verified "How to Read This Document" already correctly references 22 domains — no change needed
+- Document is now clean and shareable externally (journalist, policy audience, civic organizer)
+
+### open-source-rideshare — Admin Ride Export COMPLETE (commit 28a70be)
+- New service: `app/services/admin_ride_export.py` — `export_rides_csv()` with optional filters (start_date, end_date, status, driver_id); joins Driver+User for names; km→miles conversion; Payment table join for payment_status
+- New router: `app/api/v1/admin_ride_export.py` — `GET /api/v1/admin/rides/export`; StreamingResponse with text/csv + Content-Disposition header; admin-auth gated
+- CSV columns: ride_id, created_at, status, driver_id, driver_name, rider_id, rider_name, pickup_address, dropoff_address, distance_miles, fare_amount, currency, payment_status, surge_multiplier, vehicle_type
+- Registered in app/main.py
+- 53 tests: 25 unit (AsyncMock) + 28 integration (skip-without-live-DB)
+- **Total: 2,853 tests passing** (up from 2,828), 519 skipped, 0 failing
+
 ## Session 108 — 2026-04-14
 
 ### Orient
