@@ -1,12 +1,14 @@
 """Surge pricing zone API endpoints.
 
 Admin endpoints (require admin auth):
-  POST   /admin/surge-zones          — create zone
-  GET    /admin/surge-zones          — list all zones
-  GET    /admin/surge-zones/{id}     — get single zone
-  PUT    /admin/surge-zones/{id}     — update zone
-  DELETE /admin/surge-zones/{id}     — hard-delete zone
-  POST   /admin/surge-zones/{id}/activate  — toggle active state
+  POST   /admin/surge-zones                    — create zone
+  GET    /admin/surge-zones                    — list all zones
+  GET    /admin/surge-zones/auto-tune          — preview multiplier recommendations
+  POST   /admin/surge-zones/auto-tune/apply    — apply multiplier recommendations
+  GET    /admin/surge-zones/{id}               — get single zone
+  PUT    /admin/surge-zones/{id}               — update zone
+  DELETE /admin/surge-zones/{id}               — hard-delete zone
+  POST   /admin/surge-zones/{id}/activate      — toggle active state
 
 Public endpoint (no auth required):
   GET /pricing/surge-zones/active    — currently active zones for map display
@@ -29,6 +31,15 @@ from app.schemas.surge_zone import (
     SurgeZoneResponse,
     SurgeZoneUpdate,
     ToggleActiveRequest,
+)
+from app.schemas.surge_zone_autotune import (
+    AutoTuneApplyRequest,
+    AutoTuneApplyResponse,
+    AutoTunePreviewResponse,
+)
+from app.services.surge_zone_autotune import (
+    apply_auto_tune_recommendations,
+    compute_auto_tune_recommendations,
 )
 from app.services.surge_zones import (
     create_zone,
@@ -129,6 +140,60 @@ async def list_surge_zones(
     return SurgeZoneListResponse(
         zones=[_zone_to_response(z) for z in zones],
         total=len(zones),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Auto-tune endpoints
+# NOTE: These literal-path routes must appear before the /{zone_id} parameter
+# route so FastAPI resolves "auto-tune" as a path literal, not a UUID.
+# ---------------------------------------------------------------------------
+
+
+@admin_router.get("/auto-tune", response_model=AutoTunePreviewResponse)
+async def preview_auto_tune(
+    lookback_days: int = 30,
+    min_sample_size: int = 10,
+    db: AsyncSession = Depends(get_db),
+):
+    """Preview surge zone multiplier recommendations based on historical demand.
+
+    Analyses the last ``lookback_days`` days of hourly ride volume and
+    computes a suggested multiplier for each active zone. This is a read-only
+    preview — no changes are written to the database.
+
+    Zones with fewer than ``min_sample_size`` rides during their active window
+    receive an ``insufficient_data`` recommendation and are left unchanged.
+    """
+    return await compute_auto_tune_recommendations(
+        db, lookback_days=lookback_days, min_sample_size=min_sample_size
+    )
+
+
+@admin_router.post("/auto-tune/apply", response_model=AutoTuneApplyResponse)
+async def apply_auto_tune(
+    body: AutoTuneApplyRequest,
+    lookback_days: int = 30,
+    min_sample_size: int = 10,
+    db: AsyncSession = Depends(get_db),
+):
+    """Apply auto-tune multiplier recommendations to active surge zones.
+
+    Recomputes the same recommendations as the preview endpoint and then
+    writes the ``increase`` / ``decrease`` changes to the database.
+
+    Pass a list of ``zone_ids`` in the request body to selectively apply
+    recommendations. Omit ``zone_ids`` (or pass ``null``) to apply all
+    actionable recommendations.
+
+    Zones with ``no_change`` or ``insufficient_data`` recommendations are
+    always skipped, even if their IDs appear in ``zone_ids``.
+    """
+    return await apply_auto_tune_recommendations(
+        db,
+        zone_ids=body.zone_ids,
+        lookback_days=lookback_days,
+        min_sample_size=min_sample_size,
     )
 
 
