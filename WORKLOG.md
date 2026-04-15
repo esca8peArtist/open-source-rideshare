@@ -7078,3 +7078,38 @@ Feature: Admin configures airport staging zones; drivers join FIFO queues; dispa
 - 35 new tests passing (18 DB tests skipped — consistent with project); **Total: 4,689 tests passing** (4,654 before), 0 failing
 
 #### Session end
+
+## Session 171 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: needs STOCKBOT_API_KEY — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work queued
+- open-source-rideshare: selected — 5,252 tests passing, feature/corporate-business-accounts branch
+
+### Task selected
+Corporate Batch/Group Booking — companies frequently need to arrange multiple rides simultaneously for events, employee shuttles, and offsites. This is a natural extension of the corporate accounts feature set on the current branch. Not in Uber for Business. Self-contained and testable.
+
+
+### open-source-rideshare — Corporate Batch/Group Booking COMPLETE (commit `1f86eb9`)
+
+Feature: Account admins can create a named batch booking (DRAFT), add up to 50 individual ride requests (passenger info, pickup/dropoff, requested time), then submit the batch for fulfilment. Admins can also cancel at any point. All members can view batches and their requests. Feature not present in Uber for Business.
+
+- New models (`app/models/corporate_batch_booking.py`):
+  - `CorporateBatchBooking`: table `corporate_batch_bookings`; name, event_date, notes, status (DRAFT/SUBMITTED/CANCELLED), created_by_user_id, submitted_at, cancelled_at, cancellation_reason; cascade relationship to ride_requests
+  - `CorporateBatchRideRequest`: table `corporate_batch_ride_requests`; passenger name/email/phone, pickup/dropoff address+lat/lng, requested_time, notes, status (PENDING/REMOVED); denormalised account_id for fast account-scoped queries
+- New schemas (`app/schemas/corporate_batch_booking.py`): BatchBookingCreate/Update, CancelBatchRequest, BatchRideRequestCreate, BatchRideRequestResponse, BatchBookingResponse (with ride_request_count), BatchBookingSummary, BatchRideRequestListResponse (pending/removed counts)
+- New service (`app/services/corporate_batch_booking.py`):
+  - 9 functions: create_batch (admin, 403), get_batch (member), list_batches (member, optional status filter), update_batch (admin, draft only), add_ride_request (admin, draft only, 50-request cap), remove_ride_request (admin, draft only), submit_batch (admin, must have ≥1 pending request), cancel_batch (admin, idempotent guard), get_batch_with_requests (member)
+  - Internal helpers: `_require_account_admin`, `_require_account_member`, `_get_batch_or_404`
+- New router (`app/api/v1/corporate_batch_booking.py`) — 13 endpoints:
+  - Member: GET /corporate/accounts/me/batches, GET .../batches/{id}, GET .../batches/{id}/requests
+  - Admin: POST /corporate/accounts/me/batches, PATCH .../batches/{id}, DELETE .../batches/{id}, POST .../batches/{id}/requests, DELETE .../batches/{id}/requests/{req_id}, POST .../batches/{id}/submit
+  - Platform-admin: GET /admin/corporate/accounts/{id}/batches, GET .../batches/{id}, GET .../batches/{id}/requests
+- Migration: u2v3w4x5y6z7 (down_revision: t2u3v4w5x6y7) — 2 enum types, 2 tables, 5 indexes
+- main.py: corporate_batch_booking router registered at /api/v1
+- 38 new tests passing; **Total: 5,290 passing** (5,252 before), 0 failing
+
+#### Session end

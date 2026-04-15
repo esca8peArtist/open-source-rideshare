@@ -9,7 +9,28 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–170
+**Sessions**: 129–171
+
+### Accomplished (Session 171)
+
+#### open-source-rideshare — Corporate Batch/Group Booking
+
+**Feat (commit `1f86eb9`)**: Companies can now arrange multiple rides in a single coordinated booking — event shuttles, offsites, airport pickups for visiting clients. An admin creates a batch (DRAFT), adds up to 50 ride requests (each with a passenger, pickup, dropoff, and requested time), then submits the batch for fulfilment. Batches can be cancelled before or after submission. This feature does not exist in Uber for Business.
+
+- **2 new models** (`CorporateBatchBooking` + `CorporateBatchRideRequest`): DRAFT/SUBMITTED/CANCELLED batch lifecycle; PENDING/REMOVED request status; denormalised `account_id` on requests for fast account-scoped queries; cascade delete
+- **9 service functions**: create (admin), get (member), list (member, optional status filter), update (admin, draft-only), add_ride_request (admin, draft-only, 50-cap), remove_ride_request (admin, draft-only), submit (admin, must have ≥1 pending), cancel (admin), get_with_requests (member)
+- **13 endpoints**: 3 member-read + 6 admin-write + 4 platform-admin
+- **Migration `u2v3w4x5y6z7`** (down: `t2u3v4w5x6y7`) — 2 enum types, 2 tables, 5 indexes
+- **38 new tests**; **Total: 5,290 passing** (up from 5,252)
+
+### Needs Your Input
+
+#### open-source-rideshare — Push to GitHub
+Branch: `feature/corporate-business-accounts` (latest commit `1f86eb9`)
+Includes Sessions 166–171: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, **batch/group booking**.
+Please run: `git push origin feature/corporate-business-accounts`
+
+---
 
 ### Accomplished (Session 170)
 
@@ -24,13 +45,6 @@
   - `get_ride_pattern_analytics`: `extract(hour)` and `extract(dow)` queries; all 24 hour and all 7 DOW buckets always returned (zero-count buckets included)
 - **8 endpoints**: 4 member/admin under `/corporate/accounts/me/analytics/…` + 4 platform-admin mirrors
 - **35 new tests**; **Total: 5,252 passing** (up from 5,217)
-
-### Needs Your Input
-
-#### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `88addd1`)
-Includes Sessions 166–170: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics.
-Please run: `git push origin feature/corporate-business-accounts`
 
 ---
 
