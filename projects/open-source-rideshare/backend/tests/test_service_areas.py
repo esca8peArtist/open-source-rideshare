@@ -3,7 +3,9 @@
 Tests cover:
 - Service area schemas (create, update, response, validation)
 - Service area service logic (_polygon_wkt, validate_ride_locations)
+- RideCoverageRequest schema
 - Admin endpoints (CRUD: list, create, get, update, delete)
+- Public service area endpoints (list, get, check coverage)
 - Ride request geofence integration (estimate, request, schedule)
 """
 
@@ -408,3 +410,282 @@ class TestServiceAreaModel:
         assert "created_at" in col_names
         assert "updated_at" in col_names
         assert "description" in col_names
+
+
+# ---------------------------------------------------------------------------
+# RideCoverageRequest schema tests
+# ---------------------------------------------------------------------------
+
+
+class TestRideCoverageRequest:
+    def test_valid_request(self):
+        from app.api.v1.service_areas import RideCoverageRequest
+        req = RideCoverageRequest(
+            pickup_lat=45.5,
+            pickup_lng=-122.7,
+            dropoff_lat=45.55,
+            dropoff_lng=-122.6,
+        )
+        assert req.pickup_lat == 45.5
+        assert req.pickup_lng == -122.7
+        assert req.dropoff_lat == 45.55
+        assert req.dropoff_lng == -122.6
+
+    def test_rejects_lat_out_of_range(self):
+        from app.api.v1.service_areas import RideCoverageRequest
+        with pytest.raises(Exception):
+            RideCoverageRequest(
+                pickup_lat=91.0,
+                pickup_lng=-122.7,
+                dropoff_lat=45.55,
+                dropoff_lng=-122.6,
+            )
+
+    def test_rejects_lng_out_of_range(self):
+        from app.api.v1.service_areas import RideCoverageRequest
+        with pytest.raises(Exception):
+            RideCoverageRequest(
+                pickup_lat=45.5,
+                pickup_lng=181.0,
+                dropoff_lat=45.55,
+                dropoff_lng=-122.6,
+            )
+
+    def test_southern_hemisphere_coordinates(self):
+        from app.api.v1.service_areas import RideCoverageRequest
+        req = RideCoverageRequest(
+            pickup_lat=-33.8688,
+            pickup_lng=151.2093,
+            dropoff_lat=-33.9000,
+            dropoff_lng=151.2500,
+        )
+        assert req.pickup_lat == -33.8688
+
+    def test_boundary_lat_values_accepted(self):
+        from app.api.v1.service_areas import RideCoverageRequest
+        req = RideCoverageRequest(
+            pickup_lat=-90.0,
+            pickup_lng=-180.0,
+            dropoff_lat=90.0,
+            dropoff_lng=180.0,
+        )
+        assert req.pickup_lat == -90.0
+        assert req.dropoff_lat == 90.0
+
+
+# ---------------------------------------------------------------------------
+# Public endpoint integration tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.anyio
+class TestPublicServiceAreaEndpoints:
+    """Integration tests for public service area endpoints.
+
+    These run against the full app with a real (test) DB.
+    Service areas use PostGIS, so the service_areas table is created
+    via create_all — no extra setup required.
+    """
+
+    # -----------------------------------------------------------------------
+    # GET /service-areas — list active areas
+    # -----------------------------------------------------------------------
+
+    async def test_list_returns_200_no_auth(self, client):
+        """Public endpoint returns 200 without any authentication."""
+        resp = await client.get("/api/v1/service-areas")
+        assert resp.status_code == 200
+
+    async def test_list_returns_empty_when_no_areas(self, client):
+        """Empty list when no service areas exist."""
+        resp = await client.get("/api/v1/service-areas")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "areas" in data
+        assert "total" in data
+        assert data["total"] == 0
+        assert data["areas"] == []
+
+    async def test_list_response_shape(self, client):
+        """Response matches ServiceAreaListResponse schema."""
+        resp = await client.get("/api/v1/service-areas")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data["areas"], list)
+        assert isinstance(data["total"], int)
+
+    # -----------------------------------------------------------------------
+    # GET /service-areas/{area_id} — get one area
+    # -----------------------------------------------------------------------
+
+    async def test_get_nonexistent_area_returns_404(self, client):
+        """404 for an ID that does not exist."""
+        resp = await client.get("/api/v1/service-areas/99999")
+        assert resp.status_code == 404
+
+    async def test_get_area_404_detail(self, client):
+        """404 response includes a detail message."""
+        resp = await client.get("/api/v1/service-areas/99999")
+        data = resp.json()
+        assert "detail" in data
+
+    # -----------------------------------------------------------------------
+    # POST /service-areas/check — ride coverage check
+    # -----------------------------------------------------------------------
+
+    async def test_check_returns_200_no_auth(self, client):
+        """Coverage check is public and requires no authentication."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 45.5,
+                "pickup_lng": -122.7,
+                "dropoff_lat": 45.55,
+                "dropoff_lng": -122.6,
+            },
+        )
+        assert resp.status_code == 200
+
+    async def test_check_returns_covered_when_no_service_areas(self, client):
+        """When no service areas are configured, all locations are covered."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 45.5,
+                "pickup_lng": -122.7,
+                "dropoff_lat": 45.55,
+                "dropoff_lng": -122.6,
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["valid"] is True
+        assert data["pickup_covered"] is True
+        assert data["dropoff_covered"] is True
+
+    async def test_check_response_has_required_fields(self, client):
+        """Coverage check response includes valid, pickup_covered, dropoff_covered."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 0.0,
+                "pickup_lng": 0.0,
+                "dropoff_lat": 1.0,
+                "dropoff_lng": 1.0,
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "valid" in data
+        assert "pickup_covered" in data
+        assert "dropoff_covered" in data
+
+    async def test_check_message_null_when_covered(self, client):
+        """No message field (or null) when both locations are covered."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 45.5,
+                "pickup_lng": -122.7,
+                "dropoff_lat": 45.55,
+                "dropoff_lng": -122.6,
+            },
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        # message is None when valid (no service areas configured)
+        assert data.get("message") is None
+
+    async def test_check_rejects_invalid_lat(self, client):
+        """422 for latitude out of [-90, 90] range."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 200.0,
+                "pickup_lng": -122.7,
+                "dropoff_lat": 45.55,
+                "dropoff_lng": -122.6,
+            },
+        )
+        assert resp.status_code == 422
+
+    async def test_check_rejects_invalid_lng(self, client):
+        """422 for longitude out of [-180, 180] range."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 45.5,
+                "pickup_lng": -200.0,
+                "dropoff_lat": 45.55,
+                "dropoff_lng": -122.6,
+            },
+        )
+        assert resp.status_code == 422
+
+    async def test_check_rejects_missing_fields(self, client):
+        """422 when required coordinate fields are missing."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={"pickup_lat": 45.5},
+        )
+        assert resp.status_code == 422
+
+    async def test_check_rejects_empty_body(self, client):
+        """422 when request body is empty."""
+        resp = await client.post("/api/v1/service-areas/check", json={})
+        assert resp.status_code == 422
+
+    async def test_check_accepts_southern_hemisphere(self, client):
+        """Coverage check works for coordinates in the southern hemisphere."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": -33.8688,
+                "pickup_lng": 151.2093,
+                "dropoff_lat": -33.9000,
+                "dropoff_lng": 151.2500,
+            },
+        )
+        # Valid request — may return covered or not depending on configured areas
+        assert resp.status_code == 200
+
+    async def test_check_accepts_boundary_coordinates(self, client):
+        """Boundary values (-90, -180, 90, 180) are accepted."""
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": -90.0,
+                "pickup_lng": -180.0,
+                "dropoff_lat": 90.0,
+                "dropoff_lng": 180.0,
+            },
+        )
+        assert resp.status_code == 200
+
+    # -----------------------------------------------------------------------
+    # Auth — public routes must NOT require authentication
+    # -----------------------------------------------------------------------
+
+    async def test_list_works_with_rider_token(self, client, rider, rider_token):
+        """Authenticated riders can also call the public list endpoint."""
+        from tests.conftest import auth_header
+        resp = await client.get(
+            "/api/v1/service-areas",
+            headers=auth_header(rider_token),
+        )
+        assert resp.status_code == 200
+
+    async def test_check_works_with_driver_token(self, client, driver_user, driver_token):
+        """Authenticated drivers can call the coverage check endpoint."""
+        from tests.conftest import auth_header
+        resp = await client.post(
+            "/api/v1/service-areas/check",
+            json={
+                "pickup_lat": 45.5,
+                "pickup_lng": -122.7,
+                "dropoff_lat": 45.55,
+                "dropoff_lng": -122.6,
+            },
+            headers=auth_header(driver_token),
+        )
+        assert resp.status_code == 200
