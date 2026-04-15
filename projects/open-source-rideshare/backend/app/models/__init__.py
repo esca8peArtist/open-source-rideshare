@@ -49,3 +49,4 @@ from app.models.corporate_cost_center import CorporateCostCenter  # noqa: F401
 from app.models.corporate_budget_alert import CorporateBudgetAlert  # noqa: F401
 from app.models.corporate_employee_invitation import CorporateEmployeeInvitation  # noqa: F401
 from app.models.corporate_custom_field import CorporateCustomField, CorporateRideCustomFieldValue  # noqa: F401
+from app.models.corporate_webhook import CorporateWebhook, CorporateWebhookDelivery  # noqa: F401
