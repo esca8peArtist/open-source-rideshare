@@ -9,22 +9,25 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–142
+**Sessions**: 129–143
+
+### Accomplished (Session 143)
+
+#### open-source-rideshare — Driver Minimum Earnings Guarantee COMPLETE (commit `8c7f28a`)
+The cooperative's safety net: if a driver has a slow week, the platform covers the shortfall. Admin configures a per-ride floor (e.g. $10/ride) and a minimum rides/week to qualify. At week-end, every eligible driver with gross earnings below the guarantee gets the difference paid out from cooperative surplus.
+
+Designed around a **per-ride floor** (not hourly) — ride data is available, the formula is transparent, and drivers can't game it by staying online while refusing rides.
+
+- **EarningsGuaranteePolicy** — admin-configured: minimum_per_ride_usd, minimum_rides_to_qualify; history preserved (rows never deleted); deactivates prior policy on update
+- **WeeklyGuaranteeRecord** — per-driver per-week: rides_completed, gross_earnings, guaranteed_earnings, shortfall_usd; statuses: ineligible (below threshold) / waived (no shortfall) / pending / paid; unique on (driver_id, week_start); idempotent re-processing updates non-paid records
+- **Driver endpoints**: GET current week estimate (in-progress, not persisted) + GET own history with total received
+- **Admin endpoints**: GET/POST policy; GET calculate (dry-run preview); POST process (persist records); GET records list (filterable by week/status); GET record detail; POST pay individual; POST pay-all (bulk); GET aggregate summary
+- Migration: x1y2z3a4b5c6 (earnings_guarantee_policies + weekly_guarantee_records, 5 indexes)
+- **67 new tests; Total: 4,383 tests passing** (up from 4,316), 0 failing
 
 ### Accomplished (Session 142)
 
 #### open-source-rideshare — Cooperative Member Dividend / Profit-Sharing COMPLETE (commit `b827b33`)
-The financial return to driver-owners: when the platform generates quarterly surplus, members receive a proportional share based on rides contributed. This completes the cooperative economic model — transparency (see the flows) + governance (vote on decisions) + dividends (share in the profits).
-- **CooperativeDividend** — quarterly distribution record; lifecycle (pending→approved→distributed, or cancelled); tracks total_platform_surplus_usd, total_qualifying_rides, per_ride_payout_usd
-- **DriverDividendShare** — per-driver allocation; qualifying_rides (their contribution), share_pct, amount_usd, paid_at
-- **calculate (dry-run)** — admin previews the full per-driver breakdown before committing; no DB writes
-- **declare** — creates distribution + all driver shares in one transaction; raises error if period already exists
-- **approve → distribute** — two-step: admin approves (reviews), then triggers payout (all shares marked paid with timestamps)
-- **cancel** — cancels pending/approved distributions; blocks cancelling distributed ones
-- **Public**: list past distributions (amounts, no per-driver data — cooperative financial transparency)
-- **Driver**: own share history (qualifying rides, share %, amount, payment status per quarter)
-- **Admin**: full management (calculate/declare/list/detail/approve/distribute/cancel)
-- Migration: w1x2y3z4a5b6 (cooperative_dividends + driver_dividend_shares, 6 indexes)
 - **63 new tests; Total: 4,316 tests passing** (up from 4,253), 0 failing
 
 ### Accomplished (Session 141)
@@ -46,9 +49,10 @@ The financial return to driver-owners: when the platform generates quarterly sur
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–142 (many features)
-Branch: `feature/corporate-business-accounts` — 4,316 tests passing. Features since last push:
-- Cooperative Member Dividend / Profit-Sharing (b827b33) ← new
+#### open-source-rideshare — PR: Sessions 129–143 (many features)
+Branch: `feature/corporate-business-accounts` — 4,383 tests passing. Features since last push:
+- Driver Minimum Earnings Guarantee (8c7f28a) ← new
+- Cooperative Member Dividend / Profit-Sharing (b827b33)
 - Cooperative Governance / Driver Voting System (348e002)
 - Driver Bonus / Quest Programs (eab25d2)
 - Driver Tax Reporting / 1099-NEC (323efef)
@@ -82,7 +86,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now has 4,041 tests passing across Sessions 129–138. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now has 4,383 tests passing across Sessions 129–143. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -92,7 +96,7 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Resolve SSH push or continue with next feature (4,316 tests, local commits ready)
+3. **open-source-rideshare**: Resolve SSH push or continue with next cooperative feature (4,383 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---

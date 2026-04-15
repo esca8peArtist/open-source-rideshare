@@ -6019,3 +6019,51 @@ Cooperative transparency (Session 137) shows financial flows. Governance (Sessio
 - 63 unit tests; **Total: 4,316 tests passing** (up from 4,253), 0 failing
 
 #### Session end
+
+## Session 143 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,316 tests passing — selected **Driver Minimum Earnings Guarantee** as next feature
+
+### Rationale
+Cooperative governance (voting) and dividends (profit-sharing) are complete. The missing economic protection is a guaranteed per-ride floor — if a driver has a slow week, the platform pays the shortfall. This is a defining cooperative principle: driver-members are shielded from platform variability, not left to absorb all risk.
+
+Used a per-ride earnings floor model (rather than hourly) because ride data is directly available and the approach is transparent and gaming-resistant.
+
+### open-source-rideshare — Driver Minimum Earnings Guarantee COMPLETE (commit `8c7f28a`)
+- New model: `app/models/driver_earnings_guarantee.py`
+  - EarningsGuaranteePolicy: admin-configured per-ride floor + minimum rides to qualify; history preserved (rows never deleted); only one policy active at a time
+  - WeeklyGuaranteeRecord: per-driver per-week record; statuses — ineligible (below ride threshold) / waived (no shortfall) / pending (shortfall owed) / paid; unique on (driver_id, week_start)
+- New service: `app/services/driver_earnings_guarantee.py`
+  - get_active_policy: fetch current policy
+  - set_policy: create policy, deactivate previous
+  - preview_week: dry-run preview (no DB writes); per-driver breakdown sorted by shortfall desc
+  - process_week: persist records for all drivers with rides; idempotent — updates non-paid records, preserves paid
+  - pay_record: pending → paid
+  - pay_all_week: bulk pay all pending for a week
+  - get_driver_history: own records newest first
+  - get_current_week_estimate: in-progress estimate for current week
+  - get_guarantee_summary: aggregate platform stats
+- New schemas: `app/schemas/driver_earnings_guarantee.py`
+  - PolicyCreateRequest/Response, WeekPreviewResponse, WeeklyGuaranteeRecordResponse/DetailResponse, WeekRecordsListResponse, GuaranteeSummaryResponse, DriverCurrentWeekEstimate, DriverGuaranteeHistoryResponse, PayAllWeekResponse
+- New router: `app/api/v1/driver_earnings_guarantee.py`
+  - GET  /drivers/me/earnings-guarantee/current — live current week estimate
+  - GET  /drivers/me/earnings-guarantee/history — past records
+  - GET  /admin/earnings-guarantee/policy — active policy
+  - POST /admin/earnings-guarantee/policy — create/update policy
+  - GET  /admin/earnings-guarantee/calculate — dry-run preview
+  - POST /admin/earnings-guarantee/process — persist week records
+  - GET  /admin/earnings-guarantee/records — list (filter by week/status)
+  - GET  /admin/earnings-guarantee/records/{id} — detail
+  - POST /admin/earnings-guarantee/records/{id}/pay — pay individual
+  - POST /admin/earnings-guarantee/pay-all — bulk pay week
+  - GET  /admin/earnings-guarantee/summary — aggregate stats
+- Migration: x1y2z3a4b5c6_add_driver_earnings_guarantee — earnings_guarantee_policies + weekly_guarantee_records, 5 indexes
+- 67 unit tests; **Total: 4,383 tests passing** (up from 4,316), 0 failing
+
+#### Session end
