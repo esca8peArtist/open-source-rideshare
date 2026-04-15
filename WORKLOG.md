@@ -4,6 +4,37 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 189 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate SSO Configuration
+
+### Task: Corporate SSO Configuration — COMPLETE (commit `684849d`)
+
+Enterprise accounts can now configure single sign-on with their identity provider.
+Admins supply SAML/OIDC credentials, test the connection, activate, and optionally
+enforce SSO so all members must authenticate via their company IdP (Okta, Azure AD,
+Google Workspace, or any standard SAML 2.0 / OIDC provider).
+
+- `CorporateSSOConfig` model (SSOProvider enum: saml/oidc/google/microsoft/okta;
+  SSOStatus enum: pending/active/disabled; enforce_sso flag; SAML + OIDC credential
+  fields; attribute_mapping JSONB; allowed_domains JSONB; last_tested_at audit)
+- OIDC client secret stored hashed, excluded entirely from response schema
+- 9 service functions: create / get / update / delete / set_enforcement / activate /
+  disable / record_test / list_configs
+- 10 endpoints: admin CRUD + enforce + activate + disable + test; 2 platform-admin
+- Migration `n5o6p7q8r9s0_corporate_sso_config` (ssoprovider + ssostatus enums + table + indexes)
+- 40 tests → Total: 6,204 passing (was 6,164)
+
+#### Session end
+
+---
+
 ## Session 188 — 2026-04-15
 
 ### Orient

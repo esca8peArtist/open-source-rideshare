@@ -9,32 +9,41 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–188
+**Sessions**: 129–189
+
+### Accomplished (Session 189)
+
+#### open-source-rideshare — Corporate SSO Configuration (commit `684849d`)
+
+Enterprise accounts can now configure single sign-on with their identity provider — Okta, Azure AD, Google Workspace, or any standard SAML 2.0 / OIDC provider. Admins supply credentials, test the connection, activate, and optionally enforce SSO so all members must authenticate via their company IdP.
+
+- **`CorporateSSOConfig` model**: `SSOProvider` enum (saml/oidc/google/microsoft/okta); `SSOStatus` enum (pending/active/disabled); `enforce_sso` boolean; SAML fields (metadata_url, entity_id, sso_url, slo_url, certificate); OIDC fields (discovery_url, client_id, client_secret_hash, scopes); `attribute_mapping` JSONB; `allowed_domains` JSONB; `last_tested_at` audit; unique on account_id
+- **Security note**: OIDC client secret stored hashed, excluded entirely from response schema (not just nulled) — can never be leaked by serialization
+- **9 service functions**: create (409 if already exists) / get / update / delete / set_enforcement (422 if enabling when not active) / activate / disable (also sets enforce=False) / record_test / list_configs
+- **10 endpoints**: admin CRUD + enforce toggle + activate + disable + test-connection + 2 platform-admin (list all + get by account)
+- **Migration `n5o6p7q8r9s0`**: `ssoprovider` + `ssostatus` enums + `corporate_sso_configs` table + indexes, down_revision `m4n5o6p7q8r9`
+- **40 tests** → **Total: 6,204 passing** (was 6,164)
 
 ### Accomplished (Session 188)
 
 #### open-source-rideshare — Corporate Account Contacts (commit `2812bd9`)
 
-Enterprise accounts can now register non-billing operational contacts — the people the platform can reach for account issues, travel policy questions, employee onboarding, and legal/compliance matters.
-
-- **`CorporateAccountContact` model**: `ContactRole` enum (primary/travel_coordinator/it_admin/hr/legal/other), unique email per account, `is_primary` flag (enforced in service), soft-delete via `is_active`, 4 indexes including partial index for primary contact
-- **7 service functions**: create (email normalisation, 409 on duplicate, clear-primary on promote) / get / list (role + active filters + pagination) / update (partial, same guards) / deactivate / delete / get_primary
-- **8 endpoints**: member list+get; admin create/update/deactivate/delete; platform-admin list+primary
-- **Migration `m4n5o6p7q8r9`**: `contactrole` enum + `corporate_account_contacts` table + 4 indexes, down_revision `l3m4n5o6p7q8`
 - **34 tests** → **Total: 6,164 passing** (was 6,130)
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: feat(rideshare): corporate account contacts
+#### open-source-rideshare — Push to GitHub
 
-Branch: `feature/corporate-business-accounts` | Commit: `2812bd9`
+Branch: `feature/corporate-business-accounts` | Latest commit: `684849d`
 
-Push failed (remote permission denied for CI account). Please push and open a PR when ready to merge this into master.
+SSH key `esca8peArtist` still cannot push to `SuperClaude-Org/SuperClaude_Framework`. Please push manually when ready.
 
-Summary:
-- New model, schemas, service, router, migration, and 34 tests for operational contacts on corporate accounts
-- No regressions introduced (the 1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid` predates this session)
-- All 34 new tests pass; full suite: 6,164 passed, 1 pre-existing failure, 1,082 skipped
+Summary of what's local and unpushed since the last push:
+- **Session 186**: Corporate Scheduled Reports (commit `f834b67`) — 55 tests
+- **Session 187**: Corporate Pre-paid Credits (commit `55027e1`) — 53 tests
+- **Session 188**: Corporate Account Contacts (commit `2812bd9`) — 34 tests
+- **Session 189**: Corporate SSO Configuration (commit `684849d`) — 40 tests
+- **Total: 6,204 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
 
 ---
 
