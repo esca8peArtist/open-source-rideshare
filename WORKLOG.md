@@ -4,6 +4,106 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 196 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Billing Settings
+
+### Task: Corporate Billing Settings — COMPLETE (commit `19518f3`)
+
+Enterprise accounts can now configure how they are billed: billing address,
+tax/EIN number, PO number requirements, auto-pay preference, billing cycle,
+invoice emails, and payment methods (credit card, debit card, ACH, wire).
+
+- Models: CorporateBillingSettings (one per account; billingcycle enum
+  weekly/biweekly/monthly; billing address fields; tax_id; po_number_required +
+  default_po_number; invoice_memo_template; auto_pay_enabled; invoice_emails JSONB;
+  CASCADE delete) + CorporatePaymentMethod (payment_type enum; display_name;
+  last_four; cardholder_name; bank_name; external_payment_method_id; is_default +
+  is_active; denormalised account_id; 3 indexes)
+- Services: 9 functions (get_or_create_settings upsert-on-read /
+  update_settings / add_payment_method / get_payment_method /
+  list_payment_methods / set_default_payment_method 409 on inactive /
+  deactivate_payment_method clears default flag / delete_payment_method 409 if
+  is_default / get_billing_summary with auto_pay_ready + has_complete_billing_address)
+- Endpoints: 11 (2 member read-only, 7 admin CRUD+set-default+deactivate+delete,
+  2 platform-admin)
+- Migration: s9t0u1v2w3x4 (revises r8s9t0u1v2w3; 2 enums + 2 tables + 4 indexes)
+- 44 tests → Total: 6,456 passing (was 6,412)
+
+#### Session end
+
+---
+
+## Session 195 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Commuter Benefits
+
+### Task: Corporate Commuter Benefits — COMPLETE (commit `50d62eb`)
+
+Monthly ride subsidy program for employee commutes. Companies define a program
+giving each eligible employee a per-month credit for qualifying commute rides.
+Distinct from prepaid credits (account-level pool) and spend limits (caps).
+
+- Models: CorporateCommuterProgram (account unique; monthly_allowance_usd;
+  rollover_enabled + max_rollover_usd; eligible_trip_purpose_ids +
+  eligible_group_ids JSONB scoping; is_active soft-delete; valid_from/valid_until;
+  CASCADE delete on account) + CorporateCommuterAllotment (monthly per-employee
+  record; unique (program_id, member_id, period_year, period_month);
+  allotted_usd + used_usd + rolled_over_usd; 3 indexes)
+- Services: 8 functions (create_program/get_program/update_program/
+  deactivate_program/get_or_create_allotment with rollover logic/list_allotments/
+  get_member_allotment/record_commuter_ride_usage 409 on balance exceeded/
+  get_program_stats)
+- Endpoints: 10 (2 member self-service, 6 admin, 2 platform-admin)
+- Migration: r8s9t0u1v2w3 (revises q7r8s9t0u1v2; 2 tables + 4 indexes)
+- 42 tests → Total: 6,412 passing (was 6,370)
+
+#### Session end
+
+---
+
+## Session 194 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Employee Groups
+
+### Task: Corporate Employee Groups — COMPLETE (commit `a39a86a`)
+
+Enterprise admins create named, flexible cross-functional groups of employees.
+Groups are more flexible than departments — one employee can belong to many groups,
+and groups don't have to follow org structure (e.g. "VIP Executives", "Remote
+Workers", "Engineering All-Hands"). Useful for targeted policy enforcement,
+notifications, and analytics.
+
+- Models: CorporateEmployeeGroup (account+name unique; color field; soft-delete) +
+  CorporateGroupMembership (group+member unique; added_by audit)
+- Services: 11 functions (create/get/list/update/deactivate/delete + add_member/
+  remove_member/list_group_members/get_member_groups/get_group_stats)
+- Endpoints: 12 (4 member-level, 6 admin-level, 2 platform-admin)
+- Migration: q7r8s9t0u1v2 (revises p7q8r9s0t1u2; 2 tables + indexes)
+- 42 tests → Total: 6,370 passing (was 6,328)
+
+#### Session end
+
+---
+
 ## Session 193 — 2026-04-15
 
 ### Orient

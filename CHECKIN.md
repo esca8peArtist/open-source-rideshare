@@ -9,7 +9,66 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–193
+**Sessions**: 129–196
+
+### Accomplished (Session 196)
+
+#### open-source-rideshare — Corporate Billing Settings (commit `19518f3`)
+
+Enterprise accounts can now configure how they are billed. This is the last major missing piece for a complete enterprise B2B billing story.
+
+- **`CorporateBillingSettings` model**: one per account (upsert-on-read); billing address fields (line1/2, city, state, postal, country); `tax_id` for EIN/VAT; `po_number_required` + `default_po_number`; `invoice_memo_template` boilerplate; `auto_pay_enabled`; `billing_cycle` enum (weekly/biweekly/monthly); `invoice_emails` JSONB; `updated_by_id` audit FK; CASCADE delete
+- **`CorporatePaymentMethod` model**: multiple methods per account (credit_card/debit_card/ach_bank_account/wire_transfer); `display_name`; `last_four`; `cardholder_name`; `bank_name`; `external_payment_method_id` (Stripe `pm_…`); `is_default` + `is_active`; denormalised `account_id` for direct queries; 3 indexes
+- **9 service functions**: `get_or_create_settings` (upsert, never 404) / `update_settings` (partial patch, creates if absent) / `add_payment_method` (clears prior default when set_as_default=True) / `get_payment_method` (404 if absent) / `list_payment_methods` (active_only filter) / `set_default_payment_method` (409 on inactive) / `deactivate_payment_method` (clears default flag) / `delete_payment_method` (409 if is_default) / `get_billing_summary` (combined response with `auto_pay_ready` + `has_complete_billing_address` derived fields)
+- **11 endpoints**: member (billing summary, list methods); admin (get/update settings, add/get/set-default/deactivate/delete methods); platform-admin (list all, get for account)
+- **Migration `s9t0u1v2w3x4`** (revises `r8s9t0u1v2w3`): 2 enums + 2 tables + 4 indexes
+- **44 tests** → **Total: 6,456 passing** (was 6,412)
+
+---
+
+### Needs Your Input
+
+#### open-source-rideshare — PR: feature/corporate-business-accounts
+
+Branch now includes (most recent first):
+- Corporate Billing Settings (19518f3)
+- Corporate Commuter Benefits (50d62eb)
+- Corporate Employee Groups (a39a86a)
+- Corporate Preferred Driver Pool (d0f284f)
+
+Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
+
+---
+
+### Accomplished (Session 195)
+
+#### open-source-rideshare — Corporate Commuter Benefits (commit `50d62eb`)
+
+Companies can now define a monthly ride subsidy program giving each eligible employee a per-month credit for qualifying commute rides. Distinct from prepaid credit pools (account-level) and spend limits (caps) — this is per-employee monthly allotments.
+
+- **`CorporateCommuterProgram` model**: one-per-account unique constraint on `account_id`; `monthly_allowance_usd`; `rollover_enabled` + `max_rollover_usd` for carryover logic; `eligible_trip_purpose_ids` + `eligible_group_ids` JSONB for scoping eligibility; `is_active` soft-delete; `valid_from`/`valid_until` date range; `created_by_id` audit FK; CASCADE delete on account
+- **`CorporateCommuterAllotment` model**: monthly per-employee record; unique (program_id, member_id, period_year, period_month); `allotted_usd` copied from program; `used_usd` running total; `rolled_over_usd` for carryforward balance; 3 indexes
+- **8 service functions**: `create_program` (409 if exists) / `get_program` / `update_program` (404) / `deactivate_program` (404) / `get_or_create_allotment` (lazy create + rollover from prior month, capped by `max_rollover_usd`) / `list_allotments` (filters: year, month, member_id) / `get_member_allotment` (convenience: program lookup + allotment) / `record_commuter_ride_usage` (increment used_usd; 409 if balance exceeded) / `get_program_stats` (aggregate utilisation: members, allotted, used, remaining, pct)
+- **10 endpoints**: member self-service (get-my-allotment, allotment-history); admin (create/get/update/deactivate program, list allotments, stats); platform-admin (list-all-programs, get-for-account)
+- **Migration `r8s9t0u1v2w3`** (revises `q7r8s9t0u1v2`): 2 tables + 4 indexes + 2 unique constraints
+- **42 tests** → **Total: 6,412 passing** (was 6,370)
+
+---
+
+### Accomplished (Session 194)
+
+#### open-source-rideshare — Corporate Employee Groups (commit `a39a86a`)
+
+Enterprise admins can now create named, cross-functional groups of employees — more flexible than departments, since one employee can belong to many groups and groups don't have to follow org hierarchy. Examples: "VIP Executives", "Remote Workers", "Engineering All-Hands". Designed for targeted policy enforcement, notifications, and analytics.
+
+- **`CorporateEmployeeGroup` model**: unique (account_id, name); `color` hex field for UI display; `is_active` soft-delete; `created_by_id` audit FK; CASCADE delete on account; 2 indexes
+- **`CorporateGroupMembership` model**: unique (group_id, member_id); `added_by_id` audit FK; CASCADE delete on both group and member; 2 indexes
+- **11 service functions**: `create_group` (409 on duplicate name) / `get_group` (404) / `list_groups` (active_only filter) / `update_group` (409 on name conflict) / `deactivate_group` / `delete_group` / `add_member_to_group` (409 if already in group) / `remove_member_from_group` (404 if not in group) / `list_group_members` (paginated) / `get_member_groups` (all groups for an employee) / `get_group_stats` (member count)
+- **12 endpoints**: member (list/get/get-members/get-member-groups); admin (create/update/deactivate/delete/add-member/remove-member); platform-admin (list-all/get-stats)
+- **Migration `q7r8s9t0u1v2`** (revises `p7q8r9s0t1u2`): 2 tables + 5 indexes + 2 unique constraints
+- **42 tests** → **Total: 6,370 passing** (was 6,328)
+
+---
 
 ### Accomplished (Session 193)
 
@@ -92,7 +151,7 @@ Enterprise accounts can now configure single sign-on with their identity provide
 
 #### open-source-rideshare — Push to GitHub
 
-Branch: `feature/corporate-business-accounts` | Latest commit: `d0f284f`
+Branch: `feature/corporate-business-accounts` | Latest commit: `a39a86a`
 
 SSH key `esca8peArtist` still cannot push to `SuperClaude-Org/SuperClaude_Framework`. Please push manually when ready.
 
@@ -105,7 +164,8 @@ Summary of what's local and unpushed since the last push:
 - **Session 191**: Corporate Account Dashboard (commit `9c73f93`) — 30 tests
 - **Session 192**: Corporate Bulk Member Invitations (commit `3ae104b`) — 27 tests
 - **Session 193**: Corporate Preferred Driver Pool (commit `d0f284f`) — 32 tests
-- **Total: 6,328 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
+- **Session 194**: Corporate Employee Groups (commit `a39a86a`) — 42 tests
+- **Total: 6,370 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
 
 ---
 
