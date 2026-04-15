@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import accessibility, admin, admin_financials, admin_ride_export, analytics, audit, auth, background_checks, blocklist, bulk_notifications, busy_hours, chat, complaints, cooperative, corporate_accounts, demand_heatmap, device_tokens, document_expiry, driver_availability, driver_destination, driver_documents, driver_earnings_goals, driver_earnings_summary, driver_expenses, driver_insurance, driver_onboarding, driver_performance, driver_payouts, driver_quest, driver_referrals, driver_subscriptions, driver_tax, driver_tiers, drivers, fare_disputes, fare_splits, incentives, lost_found, notification_preferences, notifications, payments, payouts, platform_config, pools, promos, receipts, recurring_rides, ride_feedback, ride_preferences, rider_memberships, rider_ratings, rider_referrals, rider_rewards, rides, safety, saved_locations, scheduled_rides, service_areas, surge_price_lock, tips, trip_heatmap, vehicle_inspection, vehicle_maintenance, vehicles, waypoints
+from app.api.v1 import accessibility, admin, admin_financials, admin_ride_export, analytics, audit, auth, background_checks, blocklist, bulk_notifications, busy_hours, chat, complaints, cooperative, corporate_accounts, demand_heatmap, device_tokens, document_expiry, driver_availability, driver_destination, driver_documents, driver_earnings_goals, driver_earnings_summary, driver_expenses, driver_insurance, driver_onboarding, driver_performance, driver_payouts, driver_proposals, driver_quest, driver_referrals, driver_subscriptions, driver_tax, driver_tiers, drivers, fare_disputes, fare_splits, incentives, lost_found, notification_preferences, notifications, payments, payouts, platform_config, pools, promos, receipts, recurring_rides, ride_feedback, ride_preferences, rider_memberships, rider_ratings, rider_referrals, rider_rewards, rides, safety, saved_locations, scheduled_rides, service_areas, surge_price_lock, tips, trip_heatmap, vehicle_inspection, vehicle_maintenance, vehicles, waypoints
 from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api import websocket
@@ -107,6 +107,7 @@ app.include_router(vehicle_maintenance.router, prefix="/api/v1")
 app.include_router(receipts.router, prefix="/api/v1")
 app.include_router(ride_feedback.router, prefix="/api/v1")
 app.include_router(driver_quest.router, prefix="/api/v1")
+app.include_router(driver_proposals.router, prefix="/api/v1")
 app.include_router(websocket.router)
 
 
