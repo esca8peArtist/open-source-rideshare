@@ -4,6 +4,69 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 188 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Contacts
+
+### Task: Corporate Account Contacts — COMPLETE (commit `2812bd9`)
+
+General contact management for enterprise accounts. Complements the existing
+CorporateBillingContact (finance-specific) with operational contacts: IT admins,
+travel coordinators, HR, legal, and the primary account contact.
+
+- `CorporateAccountContact` model (ContactRole enum: primary/travel_coordinator/it_admin/hr/legal/other)
+- Unique (account_id, email) constraint; single is_primary enforced in service
+- 7 service functions: create / get / list / update / deactivate / delete / get_primary
+- 8 endpoints: member list/get + admin create/update/deactivate/delete + 2 platform-admin
+- Migration `m4n5o6p7q8r9_corporate_account_contacts` (contactrole enum + table + 4 indexes)
+- 34 tests → Total: 6,164 passing
+
+#### Session end
+
+---
+
+## Session 187 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Pre-paid Credits
+
+### Task: Corporate Pre-paid Credits
+
+Ledger-based deposit system for enterprise accounts. Accounts pre-load a balance;
+rides are deducted from available credits. Full transaction history, low-balance
+alerts, admin manual adjustment, platform-admin oversight.
+
+Design:
+- `CorporateCreditAccount` model (one per account, tracks balance + running totals)
+- `CorporateCreditTransaction` model (append-only ledger: deposit/deduction/refund/adjustment)
+- `CreditTransactionType` enum
+- 8 service functions
+- 9 endpoints (member balance/history + admin deposit/refund/threshold + platform-admin)
+- Migration `l3m4n5o6p7q8`
+- ~40 tests
+
+### Task: Corporate Pre-paid Credits — COMPLETE (commit `55027e1`)
+
+- `CorporateCreditAccount` model (one per account: balance_usd, totals, low-balance threshold)
+- `CorporateCreditTransaction` model (append-only ledger, CreditTransactionType enum)
+- 8 service functions (get_or_create / get_balance / deposit / deduct / refund / adjust / list_transactions / list_low_balance / set_threshold)
+- 9 endpoints (member balance+history + admin deposit/refund/threshold + platform-admin get/transactions/adjust/low-balance)
+- Migration `l3m4n5o6p7q8` (2 tables + 6 indexes + enum)
+- 53 tests → Total: 6,130 passing
+
+#### Session end
+
 ## Session 186 — 2026-04-15
 
 ### Orient

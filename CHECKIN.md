@@ -9,25 +9,59 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–186
+**Sessions**: 129–188
+
+### Accomplished (Session 188)
+
+#### open-source-rideshare — Corporate Account Contacts (commit `2812bd9`)
+
+Enterprise accounts can now register non-billing operational contacts — the people the platform can reach for account issues, travel policy questions, employee onboarding, and legal/compliance matters.
+
+- **`CorporateAccountContact` model**: `ContactRole` enum (primary/travel_coordinator/it_admin/hr/legal/other), unique email per account, `is_primary` flag (enforced in service), soft-delete via `is_active`, 4 indexes including partial index for primary contact
+- **7 service functions**: create (email normalisation, 409 on duplicate, clear-primary on promote) / get / list (role + active filters + pagination) / update (partial, same guards) / deactivate / delete / get_primary
+- **8 endpoints**: member list+get; admin create/update/deactivate/delete; platform-admin list+primary
+- **Migration `m4n5o6p7q8r9`**: `contactrole` enum + `corporate_account_contacts` table + 4 indexes, down_revision `l3m4n5o6p7q8`
+- **34 tests** → **Total: 6,164 passing** (was 6,130)
+
+### Needs Your Input
+
+#### open-source-rideshare — PR: feat(rideshare): corporate account contacts
+
+Branch: `feature/corporate-business-accounts` | Commit: `2812bd9`
+
+Push failed (remote permission denied for CI account). Please push and open a PR when ready to merge this into master.
+
+Summary:
+- New model, schemas, service, router, migration, and 34 tests for operational contacts on corporate accounts
+- No regressions introduced (the 1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid` predates this session)
+- All 34 new tests pass; full suite: 6,164 passed, 1 pre-existing failure, 1,082 skipped
+
+---
+
+### Accomplished (Session 187)
+
+#### open-source-rideshare — Corporate Pre-paid Credits (commit `55027e1`)
+
+Enterprise accounts can pre-load a credit balance that is drawn down as rides are completed. All movements are recorded in an append-only ledger — every deposit, deduction, refund, and manual adjustment is fully auditable.
+
+- **`CorporateCreditAccount` model**: one per account — `balance_usd`, `total_deposited_usd`, `total_spent_usd`, `total_refunded_usd`, optional `low_balance_threshold_usd` for alerts
+- **`CorporateCreditTransaction` model**: append-only ledger — `CreditTransactionType` enum (deposit/deduction/refund/adjustment), `amount_usd` (always positive), `balance_after_usd` snapshot, `reference_id`/`reference_type` for linking to rides/invoices
+- **8 service functions**: get_or_create / get_balance / deposit / deduct (409 if insufficient) / refund / adjust (signed, 422 if negative balance) / list_transactions / list_low_balance_accounts / set_threshold
+- **9 endpoints**: member balance+history; admin deposit/refund/threshold; platform-admin get/transactions/adjust/low-balance
+- **Migration `l3m4n5o6p7q8`**: 2 tables + 6 indexes + `credittransactiontype` enum
+- **53 tests** → **Total: 6,130 passing** (was 6,077)
 
 ### Accomplished (Session 186)
 
 #### open-source-rideshare — Corporate Scheduled Reports (commit `f834b67`)
 
-Enterprise admins configure automated periodic delivery of spending and usage reports to a list of email recipients. This closes a natural loop on the analytics and data export features — instead of manually running exports, admins set-and-forget a schedule.
-
-- **`CorporateScheduledReport` model**: `ScheduledReportType` enum (6 types: spending_overview, monthly_trend, employee_breakdown, ride_patterns, invoice_summary, expense_report_summary), `ReportFrequency` enum (daily/weekly/monthly), `day_of_week` (0=Mon…6=Sun), `day_of_month` (1–28), `recipients` JSONB, `next_due_at` pre-computed, `last_sent_at`, `is_active` soft-disable
-- **9 service functions**: create (validates freq-specific fields + computes `next_due_at`) / get / list (active_only) / update (recomputes `next_due_at` on schedule change) / deactivate (409 if already inactive) / reactivate (re-enables + recomputes) / delete (hard) / trigger_now (simulates delivery, advances `last_sent_at` + `next_due_at`, 409 if inactive) / list_due (for background schedulers — returns all active reports with `next_due_at` ≤ now)
-- **10 endpoints**: admin list/create/get/update/deactivate/reactivate/delete/trigger-now + platform-admin list-by-account + platform-admin list-due
-- **Migration `k2l3m4n5o6p7`**: `reportfrequency` + `scheduledreporttype` enums + table + 4 indexes
 - **55 tests** → **Total: 6,077 passing** (was 6,022)
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `f834b67`)
-Includes Sessions 166–186: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, custom ride fields, delegate access, address book, webhooks, API keys, **scheduled reports**.
+Branch: `feature/corporate-business-accounts` (latest commit `55027e1`)
+Includes Sessions 166–187: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, custom ride fields, delegate access, address book, webhooks, API keys, scheduled reports, **pre-paid credits**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---
