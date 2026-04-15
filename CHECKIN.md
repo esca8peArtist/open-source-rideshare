@@ -9,27 +9,27 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–178
+**Sessions**: 129–179
 
-### Accomplished (Session 178)
+### Accomplished (Session 179)
 
-#### open-source-rideshare — Corporate Fare Agreements
+#### open-source-rideshare — Corporate Employee Invitations
 
-**Feat (commit `3c39772`)**: Enterprise accounts negotiate custom pricing contracts with the platform. Agreements define rate adjustments — surge multiplier caps, flat percentage discounts, or negotiated per-mile/per-minute rates — scoped to specific vehicle categories and optional validity windows. The `/compute` endpoint previews the adjusted fare for a hypothetical ride before booking.
+**Feat (commit `24834c3`)**: Admins issue UUID-based invitation tokens to prospective employees by email address. The invitee validates the token via a public endpoint (always returns JSON, never 404), then accepts it as an authenticated user — automatically creating their corporate account membership with the contracted role. No second admin action needed.
 
-**Example flow**: Corp account has two active agreements: `surge_cap=1.5` and `flat_discount_pct=10`. An employee's booking app calls `GET /corporate/accounts/me/fare-agreements/compute?base_fare_usd=20.00&surge_multiplier=2.5` → surge capped at 1.5 → fare $30 → 10% off → **final: $27.00**. Per-mile/per-minute rate agreements are surfaced in `reference_agreements` for the billing engine to apply when processing the actual ride.
+**Example flow**: Admin calls `POST /corporate/accounts/me/invitations` with `{email: "alice@acme.com", role: "admin"}` → server generates a shareable `token` UUID → admin emails the link → Alice calls `GET /corporate/invitations/{token}` (sees is_valid=true, account name, role) → Alice calls `POST /corporate/invitations/{token}/accept` → membership created as admin, invitation marked accepted.
 
-- **`CorporateFareAgreement` model**: UUID PK, account FK, name, `FareAgreementRateType` enum (surge_cap/flat_discount_pct/per_mile_rate_usd/per_minute_rate_usd), value Numeric(10,4), `applies_to_vehicle_types` JSONB (null = all), `valid_from`/`valid_until` DateTimeTZ, `is_active` soft-disable, notes, created_by FK
-- **6 service functions**: create, get (404 on wrong account), list (active_only/rate_type/vehicle_type filters — vehicle-type filter applied in Python against JSONB), update (partial), delete, `compute_corporate_fare` (lowest surge cap wins; highest flat discount wins; per-mile/per-minute → reference_agreements; validity window + vehicle type matching applied before evaluation)
-- **9 endpoints**: 7 member (create/list/compute/get/update/delete/deactivate) + 2 platform-admin (list/compute); `/compute` declared before `/{id}` to avoid FastAPI path conflict
-- **Migration `z2a3b4c5d6e7`** (down: `y2z3a4b5c6d7`): `fareagreementratetype` enum + `corporate_fare_agreements` table + 3 indexes (account_id, is_active, rate_type)
-- **49 new tests** (all passing); **Total: 5,583 passing** (up from 5,534)
+- **`CorporateEmployeeInvitation` model**: UUID PK, separate shareable `token` UUID (unique globally), email (stored lowercase), `InvitationRole` enum (admin/member), message, expires_at DateTimeTZ (7-day default), `InvitationStatus` enum (pending/accepted/revoked/expired), full audit fields (accepted_at/by, revoked_at/by), CASCADE delete on account FK
+- **6 service functions**: `create_invitation` (admin-gated, duplicate-pending guard per email+account, lowercase email normalisation, 7-day default expiry), `get_invitation` (404 on wrong account), `list_invitations` (paginated + total count, status_filter), `revoke_invitation` (admin-gated, pending-only guard), `validate_invitation_token` (public, returns dict — never 404), `accept_invitation` (validates token, guards duplicate membership, creates BusinessAccountMember with mapped role)
+- **9 endpoints**: 4 member (POST create admin-gated, GET list, GET detail, DELETE revoke), 1 public (validate token), 1 auth (accept), 2 platform-admin (list all, list by account)
+- **Migration `a2b3c4d5e6f7`** (down: `z2a3b4c5d6e7`): `invitationstatus` + `invitationrole` enums + `corporate_employee_invitations` table + 3 indexes
+- **45 new tests** (all passing); **Total: 5,628 passing** (up from 5,583)
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `3c39772`)
-Includes Sessions 166–178: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, **fare agreements**.
+Branch: `feature/corporate-business-accounts` (latest commit `24834c3`)
+Includes Sessions 166–179: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, **employee invitations**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---

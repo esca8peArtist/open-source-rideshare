@@ -4,6 +4,47 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 179 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,583 tests passing, continuing corporate feature track
+
+### Task: Corporate Employee Invitations (commit `24834c3`)
+
+Admins issue UUID invitation tokens to prospective employees by email.  The
+invitee validates the token (public endpoint, never 404) then accepts as an
+authenticated user — membership created automatically, no further admin action.
+
+- **Model** (`corporate_employee_invitation.py`): `CorporateEmployeeInvitation`
+  with `InvitationStatus` enum (pending/accepted/revoked/expired) and
+  `InvitationRole` enum (admin/member). UUID PK, separate shareable `token` UUID,
+  email (lowercase-normalised), invited_by FK, role, message Text, expires_at
+  DateTimeTZ, status, accepted_at + accepted_by FK, revoked_at + revoked_by FK,
+  created_at. CASCADE delete on account FK.
+- **6 service functions**: `create_invitation` (admin-gated via `_require_account_admin`,
+  duplicate-pending guard per email+account, 7-day default expiry, lowercase email),
+  `get_invitation` (404 on wrong account), `list_invitations` (paginated with total
+  count, status_filter), `revoke_invitation` (admin-gated, pending-only guard),
+  `validate_invitation_token` (public, returns dict with is_valid/reason/email/role/
+  account_name — never raises 404), `accept_invitation` (validates token, guards
+  duplicate membership, creates BusinessAccountMember with mapped MemberRole, marks
+  accepted with audit timestamp).
+- **9 endpoints**: POST create (member, admin-gated in service), GET list, GET detail,
+  DELETE revoke (admin-gated); GET public validate token; POST auth accept; GET
+  platform-admin list-all, GET platform-admin list-by-account.
+- **Migration `a2b3c4d5e6f7`** (down: `z2a3b4c5d6e7`): `invitationstatus` +
+  `invitationrole` enums + `corporate_employee_invitations` table + 3 indexes.
+- **45 new tests** (all passing); **Total: 5,628 passing** (up from 5,583)
+  Pre-existing failure: `test_validate_token_not_yet_valid` in guest pass suite
+  (AttributeError on MagicMock spec — not introduced by this session).
+
+#### Session end
+
 ## Session 178 — 2026-04-15
 
 ### Orient
