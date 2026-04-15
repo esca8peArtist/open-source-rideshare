@@ -9,7 +9,20 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–162
+**Sessions**: 129–163
+
+### Accomplished (Session 163)
+
+#### open-source-rideshare — Driver Certification Badges
+
+**Feat (commit `44c7037`)**: Cooperative recognition system for driver quality and community contribution. Drivers earn badges surfaced to riders at match time — Uber/Lyft have no peer recognition equivalent.
+
+- **8 badge types**: `safe_driver` (0 incidents + high rating), `five_star` (sustained 4.8+, 50+ rides), `accessibility_specialist` (WAV certified), `pet_friendly` (opted in), `long_distance_expert` (10+ rides >30km), `mentor` (active mentorship), `eco_driver` (electric/hybrid), `veteran` (365+ days + 500+ rides)
+- **`DriverCertification` model**: unique `(driver_id, badge_type)` constraint; revoked badges kept as `is_active=False` for full audit trail
+- **6 service functions**: `award_badge` (409 on dupe, re-activates revoked), `revoke_badge` (404 if not active), `get_driver_badges` (active-only or all), `check_badge_eligibility` (8 criteria queried from rides/ratings/incidents/vehicles/mentorship), `auto_award_eligible_badges`, `get_badge_stats` (by type + top drivers)
+- **6 endpoints**: GET /drivers/{id}/badges (public, active only); GET /drivers/me/badges (driver, includes revoked); POST/DELETE /admin/drivers/{id}/badges (award/revoke); POST /admin/drivers/{id}/badges/check-eligibility (auto-award eligible); GET /admin/badge-stats
+- **Migration n1o2p3q4r5s6** (down_revision: z1a2b3c4d5e6) — 1 table, 1 enum type, 2 indexes, 1 unique constraint
+- **38 new tests**; **Total: 5,007 passing** (up from 4,969)
 
 ### Accomplished (Session 162)
 

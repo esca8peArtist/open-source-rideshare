@@ -4,6 +4,38 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 163 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,969 tests passing, continuing feature development
+
+### Task: Driver Certification Badges (commit `44c7037`)
+
+Cooperative recognition system — drivers earn badges for quality, safety, and community
+contribution. Surfaces to riders at match time. A genuine cooperative differentiator:
+Uber/Lyft have no peer recognition or community acknowledgment system.
+
+- **8 badge types**: safe_driver, five_star, accessibility_specialist, pet_friendly,
+  long_distance_expert, mentor, eco_driver, veteran
+- **Model**: `DriverCertification` — unique (driver_id, badge_type) with audit trail
+  for revoked badges (is_active=False rows kept)
+- **Service**: award (409 on dupe, re-activates revoked), revoke, get (active-only or
+  all), eligibility check (8 criteria queried from multiple tables), auto-award,
+  badge stats (by type + top drivers)
+- **6 endpoints**: public driver view, driver self-view (all including revoked),
+  admin award/revoke, admin auto-check-eligibility, admin stats
+- **Migration n1o2p3q4r5s6** — 1 table, 1 enum, 2 indexes, 1 unique constraint
+- **38 new tests** — Total: **5,007 passing** (up from 4,969)
+
+#### Session end
+
+---
+
 ## Session 162 — 2026-04-15
 
 ### Orient
