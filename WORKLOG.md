@@ -5737,6 +5737,41 @@ All four driver compliance documents (license, registration, insurance, inspecti
 - PROJECTS.md updated
 - CHECKIN.md updated
 
+## Session 137 — 2026-04-15 01:50 UTC
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 3,988 tests passing — selected **Cooperative Transparency and Member Equity** as next feature
+
+### Rationale
+Platform is extremely feature-rich (449 endpoints, 57 models). The one meaningful gap is a feature that embodies the *cooperative* identity: exposing exactly how money flows through the platform to all members. Uber/Lyft hide this; the cooperative model is the opposite. Implemented public platform stats, driver equity profiles, and quarterly transparency reports.
+
+### open-source-rideshare — Cooperative Transparency and Member Equity COMPLETE (commit `0d9a8fc`)
+- New model: `app/models/cooperative_report.py`
+  - CooperativeReport: year, quarter, total_rides, total_cancelled_rides, total_fare_collected_usd, total_platform_fees_usd, total_driver_earnings_usd, total_tips_usd, platform_fee_rate_pct, driver_take_rate_pct, active_drivers, active_riders, new_drivers, new_riders, generated_at, notes
+  - UniqueConstraint on (year, quarter) — one report per period
+- New service: `app/services/cooperative.py`
+  - get_platform_public_stats: live all-time aggregate (rides, fares, take rates, driver/rider counts)
+  - get_driver_equity_stats: driver's profile — tenure, trips, equity_share_pct (trips / platform total), lifetime earnings, platform contribution
+  - generate_quarterly_report: idempotent report generation for a period; computes all financials + member counts from live data
+  - get_quarterly_report / list_quarterly_reports: retrieval
+- New router: `app/api/v1/cooperative.py`
+  - GET  /platform/cooperative/stats — public (no auth) — live platform stats
+  - GET  /platform/cooperative/reports — public — list all quarterly reports
+  - GET  /platform/cooperative/reports/{year}/{quarter} — public — one report
+  - GET  /drivers/me/cooperative-equity — driver auth — own equity profile
+  - POST /admin/cooperative/reports/generate — admin — generate/refresh quarterly report
+- Migration: v1w2x3y4z5a6_add_cooperative_reports — 1 table + 1 index
+- 48 unit tests; **Total: 4,036 tests passing** (up from 3,988), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
 ## Session 135 — 2026-04-15
 
 ### Orient

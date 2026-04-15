@@ -9,24 +9,25 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–136
+**Sessions**: 129–137
 
-### Accomplished (Session 136)
+### Accomplished (Session 137)
 
-#### open-source-rideshare — Rider Referral Program COMPLETE (commit `61c921e`)
-Riders can now invite friends and earn rewards — a key organic growth lever for any rideshare platform.
-- **`GET /riders/me/referral-code`** — generates a unique code on first call (idempotent), returns aggregate stats (pending/qualified/rewarded counts, total reward earned)
-- **`GET /riders/me/referrals`** — paginated list of everyone the rider has referred, with status and reward/discount amounts
-- **`POST /riders/referral/apply`** — rider applies a friend's code; soft-fail on invalid code, self-referral, or duplicate (returns `success: false` + message, not a 4xx)
-- **`GET /admin/referrals/rider/stats`** — platform-wide aggregate: codes issued, total referrals, pending/qualified/rewarded counts, total reward paid
-- Constants: `REFERRER_REWARD_USD = $10.00`, `REFERRED_DISCOUNT_USD = $5.00`; qualification triggers on referred rider's first ride (`record_first_ride_completion`)
-- **41 unit tests; Total: 3,988 tests passing** (up from 3,947)
+#### open-source-rideshare — Cooperative Transparency and Member Equity COMPLETE (commit `0d9a8fc`)
+The financial backbone of the cooperative identity: every member can now see exactly how money flows through the platform. Uber/Lyft hide this — the cooperative model is the opposite.
+- **`GET /platform/cooperative/stats`** — public, no auth; live all-time platform stats: total rides, fares collected, platform fee rate %, driver take rate %, total approved drivers, active riders, drivers online right now
+- **`GET /platform/cooperative/reports`** — public; list all published quarterly transparency reports (newest first)
+- **`GET /platform/cooperative/reports/{year}/{quarter}`** — public; one quarterly report
+- **`GET /drivers/me/cooperative-equity`** — driver auth; own equity profile: tenure_days, lifetime_completed_trips, equity_share_pct (driver's trips / all platform trips), lifetime earnings, lifetime tips, lifetime platform contribution (fees generated from driver's rides), rating_avg
+- **`POST /admin/cooperative/reports/generate`** — admin; generate or refresh quarterly report (idempotent); computes all financials + member counts from live data
+- **48 unit tests; Total: 4,036 tests passing** (up from 3,988)
 - **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–136 (many features)
-Branch: `feature/corporate-business-accounts` — 3,988 tests passing. Features since last push:
+#### open-source-rideshare — PR: Sessions 129–137 (many features)
+Branch: `feature/corporate-business-accounts` — 4,036 tests passing. Features since last push:
+- Cooperative Transparency and Member Equity (0d9a8fc)
 - Rider Referral Program (61c921e)
 - Ride Receipts + Feedback APIs (a254483)
 - Driver Vehicle Maintenance Tracking (9352bf6)
@@ -41,7 +42,10 @@ Note from Session 135: `rides.py` has duplicate receipt/feedback routes that wer
 
 ---
 
-### Accomplished (Session 135)
+### Accomplished (Sessions 135–136)
+
+#### open-source-rideshare — Rider Referral Program COMPLETE (commit `61c921e`)
+- 4 endpoints; 41 unit tests; Total was 3,988 (up from 3,947)
 
 #### open-source-rideshare — Ride Receipts and Feedback APIs COMPLETE (commit `a254483`)
 - 6 endpoints (receipts router + ride_feedback router); 51 unit tests; Total was 3,947 (up from 3,896)
