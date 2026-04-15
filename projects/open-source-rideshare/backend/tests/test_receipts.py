@@ -359,7 +359,7 @@ class TestReceiptEndpoint:
 
     @pytest.mark.asyncio
     async def test_returns_receipt(self):
-        from app.api.v1.rides import get_receipt
+        from app.api.v1.receipts import get_ride_receipt as get_receipt
 
         user = _make_user(user_id=10)
         db = AsyncMock()
@@ -396,7 +396,7 @@ class TestReceiptEndpoint:
             "currency": "USD",
         }
 
-        with patch("app.services.receipts.generate_receipt", new_callable=AsyncMock, return_value=mock_receipt) as mock_gen:
+        with patch("app.api.v1.receipts.generate_receipt", new_callable=AsyncMock, return_value=mock_receipt) as mock_gen:
             result = await get_receipt(ride_id=1, user=user, db=db)
             mock_gen.assert_awaited_once_with(1, 10, db)
             assert result.ride_id == 1
@@ -405,19 +405,19 @@ class TestReceiptEndpoint:
 
     @pytest.mark.asyncio
     async def test_returns_404_when_no_receipt(self):
-        from app.api.v1.rides import get_receipt
+        from app.api.v1.receipts import get_ride_receipt as get_receipt
 
         user = _make_user(user_id=10)
         db = AsyncMock()
 
-        with patch("app.services.receipts.generate_receipt", new_callable=AsyncMock, return_value=None):
+        with patch("app.api.v1.receipts.generate_receipt", new_callable=AsyncMock, return_value=None):
             with pytest.raises(HTTPException) as exc_info:
                 await get_receipt(ride_id=999, user=user, db=db)
             assert exc_info.value.status_code == 404
 
     @pytest.mark.asyncio
     async def test_receipt_with_payment_and_driver(self):
-        from app.api.v1.rides import get_receipt
+        from app.api.v1.receipts import get_ride_receipt as get_receipt
 
         user = _make_user(user_id=10)
         db = AsyncMock()
@@ -463,7 +463,7 @@ class TestReceiptEndpoint:
             "currency": "USD",
         }
 
-        with patch("app.services.receipts.generate_receipt", new_callable=AsyncMock, return_value=mock_receipt):
+        with patch("app.api.v1.receipts.generate_receipt", new_callable=AsyncMock, return_value=mock_receipt):
             result = await get_receipt(ride_id=5, user=user, db=db)
             assert result.payment is not None
             assert result.payment.amount_charged == 9.10
