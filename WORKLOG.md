@@ -4,6 +4,40 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 139 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,041 tests passing — selected **Driver Tax Reporting / 1099-NEC** as next feature
+
+### Rationale
+No 1099-NEC system existed. Drivers are independent contractors; cooperative faces IRS risk without proper tax documentation. The platform had full earnings data (DriverPayout model) but no annual tax reporting layer. This is a compliance requirement that builds driver trust — a cooperative that helps drivers do their taxes correctly is meaningfully different from Uber/Lyft.
+
+### open-source-rideshare — Driver Tax Reporting / 1099-NEC COMPLETE (commit `323efef`)
+- New model: `app/models/driver_tax_document.py`
+  - `DriverTaxProfile`: per-driver W-9 profile — stores only `tin_last4` (never full TIN), tin_type (ssn/ein), business_name, has_w9, w9_received_at, backup withholding exempt flag
+  - `DriverTaxDocument`: annual tax document with UniqueConstraint(driver_profile_id, tax_year, document_type)
+  - Enums: TinType, TaxDocumentType (1099_nec/earnings_summary), TaxDocumentStatus (pending/ready/submitted_to_irs/corrected)
+- New service: `app/services/driver_tax.py`
+  - `get_or_create_tax_profile`, `update_w9` (4-digit TIN only)
+  - `calculate_annual_earnings` — queries DriverPayout model for calendar year totals
+  - `generate_tax_document` — $600 threshold: ≥$600 → 1099-NEC, <$600 → earnings_summary only
+  - `admin_batch_generate` — generates for all active drivers in one call
+  - `mark_submitted` — records IRS submission date + admin notes
+- New router: `app/api/v1/driver_tax.py`
+  - Driver: GET/POST profile W-9, list documents, get year-specific docs
+  - Admin: list all year docs, batch generate, mark submitted, view any driver profile
+- Migration: `a1b2c3d4e5f6_add_driver_tax_documents` — 2 tables + indexes
+- 66 unit tests; **Total: 4,107 tests passing** (up from 4,041), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
 ## Session 136 — 2026-04-15
 
 ### Orient
@@ -5864,3 +5898,124 @@ The service areas system has full admin CRUD (in admin.py) and internal geofence
 - PROJECTS.md updated
 - CHECKIN.md updated
 
+## Session 140 — 2026-04-15 03:28
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,107 tests passing — selected **Driver Bonus / Quest Programs** as next feature
+
+### Rationale
+Driver supply is the critical growth constraint for any rideshare platform. Quest-style bonuses ("Complete 15 rides this weekend, earn $50") are the industry standard for stimulating supply during peak periods. This builds the admin tooling (create/manage quests) and driver-facing layer (view active quests, track progress, claim bonuses). High leverage for cooperative driver engagement.
+
+### open-source-rideshare — Driver Bonus / Quest Programs COMPLETE (commit `eab25d2`)
+- New model: `app/models/driver_quest.py`
+  - DriverQuest: title, description, quest_type (ride_count/earnings_target/acceptance_rate/peak_hours_rides), target_value, bonus_amount_cents, start/end times, min_rating filter, zone restriction, is_active
+  - DriverQuestProgress: per-driver tracking — current_value, status (active/completed/claimed/expired/ineligible), completed_at, claimed_at; unique on (quest_id, driver_profile_id)
+- New service: `app/services/driver_quest.py`
+  - create_quest, list_active_quests, get/list driver quest progress, update_quest_progress (auto-completes when target reached), claim_quest_bonus, expire_stale_quests, get_quest_leaderboard, admin_list_quests, deactivate_quest
+- New router: `app/api/v1/driver_quest.py`
+  - GET  /drivers/me/quests — list active quests with driver progress (auto-creates progress record)
+  - GET  /drivers/me/quests/{quest_id} — single quest progress detail
+  - POST /drivers/me/quests/{quest_id}/claim — claim bonus (400 if not completed or already claimed)
+  - GET  /admin/quests — list all quests (include_inactive param)
+  - POST /admin/quests — create quest (validates end_time > start_time)
+  - GET  /admin/quests/{quest_id} — quest detail + stats (enrolled/completed/claimed counts, total bonus paid)
+  - PUT  /admin/quests/{quest_id} — update title/description/is_active only (target_value protected)
+  - GET  /admin/quests/{quest_id}/leaderboard — top 20 drivers by progress
+- Migration: b1c2d3e4f5g6_add_driver_quest — driver_quests + driver_quest_progress tables, 6 indexes
+- 70 unit tests; **Total: 4,177 tests passing** (up from 4,107), 0 failing
+
+#### Session end
+
+## Session 141 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,177 tests passing — selected **Cooperative Governance / Driver Voting System** as next feature
+
+### Rationale
+The cooperative transparency layer (Session 137) shows stats and reports, but there's no actual democratic decision-making mechanism. A genuine cooperative needs driver-owners to vote on platform proposals — fee rates, bonus structures, policy changes. This is the defining differentiator from Uber/Lyft. Implementing: DriverProposal + DriverVote models, service layer with eligibility checks, and full API (public proposal browsing, driver voting, admin proposal management).
+
+### open-source-rideshare — Cooperative Governance / Driver Voting System COMPLETE (commit `348e002`)
+- New model: `app/models/driver_proposal.py`
+  - DriverProposal: proposal_type (fee_rate_change/bonus_structure/policy_change/platform_feature/general), status machine (draft→open→closed→passed|failed, withdrawn, implemented), voting window, min_lifetime_rides_to_vote eligibility threshold (per-proposal, default 50), result_threshold_pct (0.5001 simple majority or 0.6667 supermajority), cached vote tallies (votes_for/against/abstain)
+  - DriverVote: per-driver per-proposal, unique constraint (uq_driver_vote_proposal_driver), immutable once cast
+- New service: `app/services/driver_proposal.py`
+  - list_open_proposals, get_proposal (public reads)
+  - driver_submit_proposal (min 10 rides to submit), driver_list_own_proposals
+  - cast_vote: validates open status, voting window, eligibility, uniqueness; updates cached tallies
+  - get_my_vote
+  - admin_create_proposal, admin_list_proposals, admin_update_proposal (non-terminal only)
+  - admin_open_proposal, admin_close_proposal (auto-computes passed/failed), admin_withdraw_proposal, admin_mark_implemented
+  - get_proposal_votes (ballot records), _compute_result (yes/(yes+no) >= threshold; abstentions excluded)
+- New router: `app/api/v1/driver_proposals.py`
+  - GET  /cooperative/proposals — public list (open only, paginated)
+  - GET  /cooperative/proposals/{id} — public detail (draft/withdrawn hidden)
+  - POST /drivers/me/proposals — submit proposal (driver, 10+ rides)
+  - GET  /drivers/me/proposals — list own proposals
+  - POST /cooperative/proposals/{id}/vote — cast vote (driver, eligibility check)
+  - GET  /cooperative/proposals/{id}/my-vote — own vote status
+  - GET  /admin/cooperative/proposals — admin list (all statuses, filterable)
+  - POST /admin/cooperative/proposals — create official proposal
+  - GET  /admin/cooperative/proposals/{id} — admin detail view
+  - PUT  /admin/cooperative/proposals/{id} — update non-terminal proposal
+  - POST /admin/cooperative/proposals/{id}/open — open voting with deadline
+  - POST /admin/cooperative/proposals/{id}/close — close + auto-compute result
+  - POST /admin/cooperative/proposals/{id}/withdraw — withdraw draft
+  - POST /admin/cooperative/proposals/{id}/implement — mark passed as enacted
+  - GET  /admin/cooperative/proposals/{id}/votes — paginated ballot records
+- Migration: c2d3e4f5g6h7_add_driver_proposals — driver_proposals + driver_votes tables, 5 indexes
+- 76 unit tests; **Total: 4,253 tests passing** (up from 4,177), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 142 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,253 tests passing — selected **Cooperative Member Dividend / Profit-Sharing** as next feature
+
+### Rationale
+Cooperative transparency (Session 137) shows financial flows. Governance (Session 141) lets driver-members vote on platform decisions. The missing piece is the financial return to driver-owners: when the platform generates surplus, members should receive a proportional share based on rides contributed. This is the defining economic differentiator of a cooperative vs. a corporation.
+
+### open-source-rideshare — Cooperative Member Dividend / Profit-Sharing COMPLETE (commit `b827b33`)
+- New model: `app/models/driver_dividend.py`
+  - CooperativeDividend: tracks quarterly distributions; status machine (pending→approved→distributed, or cancelled); stores total_platform_surplus_usd, total_qualifying_rides, per_ride_payout_usd, lifecycle timestamps
+  - DriverDividendShare: per-driver allocation; qualifying_rides, share_pct, amount_usd, paid_at
+- New service: `app/services/driver_dividend.py`
+  - calculate_dividend: dry-run preview (no DB write); computes per-driver breakdown with names
+  - declare_dividend: creates CooperativeDividend + DriverDividendShare records; raises ValueError if period already exists
+  - admin_approve_dividend: pending → approved
+  - admin_distribute_dividend: approved → distributed; all shares → paid; sets paid_at
+  - admin_cancel_dividend: pending/approved → cancelled; pending shares → cancelled
+  - list_dividends, get_dividend, get_driver_dividend_history, build_dividend_detail
+- New schemas: `app/schemas/driver_dividend.py`
+  - DividendCalculationRequest/Preview, DividendDeclarationRequest, DividendResponse, DividendDetailResponse, DividendListResponse, DriverDividendHistoryResponse, PublicDividendListResponse
+- New router: `app/api/v1/driver_dividends.py`
+  - GET  /platform/cooperative/dividends — public list (no per-driver data)
+  - GET  /drivers/me/dividends — driver's own share history
+  - POST /admin/cooperative/dividends/calculate — dry-run preview
+  - POST /admin/cooperative/dividends — declare distribution
+  - GET  /admin/cooperative/dividends — list all
+  - GET  /admin/cooperative/dividends/{id} — detail + per-driver breakdown
+  - POST /admin/cooperative/dividends/{id}/approve — approve for payout
+  - POST /admin/cooperative/dividends/{id}/distribute — mark all shares paid
+  - POST /admin/cooperative/dividends/{id}/cancel — cancel
+- Migration: w1x2y3z4a5b6_add_cooperative_dividends — cooperative_dividends + driver_dividend_shares, 6 indexes
+- 63 unit tests; **Total: 4,316 tests passing** (up from 4,253), 0 failing
+
+#### Session end

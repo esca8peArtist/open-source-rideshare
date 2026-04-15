@@ -9,23 +9,49 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–138
+**Sessions**: 129–142
+
+### Accomplished (Session 142)
+
+#### open-source-rideshare — Cooperative Member Dividend / Profit-Sharing COMPLETE (commit `b827b33`)
+The financial return to driver-owners: when the platform generates quarterly surplus, members receive a proportional share based on rides contributed. This completes the cooperative economic model — transparency (see the flows) + governance (vote on decisions) + dividends (share in the profits).
+- **CooperativeDividend** — quarterly distribution record; lifecycle (pending→approved→distributed, or cancelled); tracks total_platform_surplus_usd, total_qualifying_rides, per_ride_payout_usd
+- **DriverDividendShare** — per-driver allocation; qualifying_rides (their contribution), share_pct, amount_usd, paid_at
+- **calculate (dry-run)** — admin previews the full per-driver breakdown before committing; no DB writes
+- **declare** — creates distribution + all driver shares in one transaction; raises error if period already exists
+- **approve → distribute** — two-step: admin approves (reviews), then triggers payout (all shares marked paid with timestamps)
+- **cancel** — cancels pending/approved distributions; blocks cancelling distributed ones
+- **Public**: list past distributions (amounts, no per-driver data — cooperative financial transparency)
+- **Driver**: own share history (qualifying rides, share %, amount, payment status per quarter)
+- **Admin**: full management (calculate/declare/list/detail/approve/distribute/cancel)
+- Migration: w1x2y3z4a5b6 (cooperative_dividends + driver_dividend_shares, 6 indexes)
+- **63 new tests; Total: 4,316 tests passing** (up from 4,253), 0 failing
+
+### Accomplished (Session 141)
+
+#### open-source-rideshare — Cooperative Governance / Driver Voting System COMPLETE (commit `348e002`)
+- **76 new tests; Total: 4,253 tests passing** (up from 4,177), 0 failing
+
+### Accomplished (Session 140)
+#### open-source-rideshare — Driver Bonus / Quest Programs COMPLETE (commit `eab25d2`)
+- **70 new tests; Total: 4,177 tests passing** (up from 4,107)
+
+### Accomplished (Session 139)
+#### open-source-rideshare — Driver Tax Reporting / 1099-NEC COMPLETE (commit `323efef`)
+- **66 new tests; Total: 4,107 tests passing** (up from 4,041), 0 failing
 
 ### Accomplished (Session 138)
-
 #### open-source-rideshare — Public Service Coverage API COMPLETE (commit `8600e0e`)
-Riders and prospective users can now check if their area is covered before signing up — a critical acquisition flow. The service area system has had admin management and internal validation for a long time, but no public-facing API. Fixed that.
-- **`GET /service-areas`** — public, no auth; list all active service areas with name and description; useful for a coverage map on the marketing page or app onboarding flow
-- **`GET /service-areas/{area_id}`** — public; get one active area by ID (404 if inactive or missing)
-- **`POST /service-areas/check`** — public; check whether a pickup + dropoff coordinate pair is within active service areas; returns `{valid, pickup_covered, dropoff_covered, message?}`; when no service areas are configured, all locations are considered covered (cooperative hasn't set up geofencing yet)
-- New schema: `RideCoverageRequest` — validates lat in [-90, 90], lng in [-180, 180]
-- **35 new tests; Total: 4,041 tests passing** (up from 4,036), 0 failing
-- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
+- **35 new tests; Total: 4,041 tests passing** (up from 4,036)
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–138 (many features)
-Branch: `feature/corporate-business-accounts` — 4,041 tests passing. Features since last push:
+#### open-source-rideshare — PR: Sessions 129–142 (many features)
+Branch: `feature/corporate-business-accounts` — 4,316 tests passing. Features since last push:
+- Cooperative Member Dividend / Profit-Sharing (b827b33) ← new
+- Cooperative Governance / Driver Voting System (348e002)
+- Driver Bonus / Quest Programs (eab25d2)
+- Driver Tax Reporting / 1099-NEC (323efef)
 - Public Service Coverage API (8600e0e)
 - Cooperative Transparency and Member Equity (0d9a8fc)
 - Rider Referral Program (61c921e)
@@ -38,7 +64,9 @@ Branch: `feature/corporate-business-accounts` — 4,041 tests passing. Features 
 - Driver Subscription Plans (479219c)
 The SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually when ready.
 
-Note from Session 135: `rides.py` has duplicate receipt/feedback routes that were superseded by the new dedicated routers. These can be cleaned up after merge.
+Note from Session 135: `rides.py` has duplicate receipt/feedback routes superseded by dedicated routers — cleanup after merge.
+
+Note from Session 139: Tax documents reference driver earnings via DriverPayout model. If payout data is sparse in early testing, `calculate_annual_earnings` will return 0 (correct behavior — drivers with no completed payouts don't get 1099s).
 
 ---
 
@@ -64,7 +92,7 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Resolve SSH push or continue with next feature (4,041 tests, local commits ready)
+3. **open-source-rideshare**: Resolve SSH push or continue with next feature (4,316 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
