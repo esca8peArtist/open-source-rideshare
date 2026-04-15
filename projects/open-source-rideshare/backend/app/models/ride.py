@@ -1,8 +1,10 @@
 import enum
+import uuid
 from datetime import datetime
 
 from geoalchemy2 import Geometry
 from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -92,6 +94,15 @@ class Ride(Base):
         ForeignKey("corporate_trip_purposes.id"), nullable=True, index=True
     )
     trip_notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    # Optional guest pass link — set when a ride is booked using a corporate
+    # guest pass token.  Allows auditing which rides were created via a pass.
+    guest_pass_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("corporate_guest_passes.id"),
+        nullable=True,
+        index=True,
+    )
 
     rider = relationship("User", foreign_keys=[rider_id], backref="rides_as_rider")
     driver = relationship("User", foreign_keys=[driver_id], backref="rides_as_driver")
