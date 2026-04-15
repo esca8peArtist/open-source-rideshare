@@ -4,6 +4,120 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 174 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,374 tests passing, continuing corporate feature track
+
+### Task: Corporate Employee Spend Limits (commit `0daed0a`)
+
+Surfaces the existing `monthly_spend_limit` column on `BusinessAccountMember`
+with a full API. No new model or migration required — all data from existing tables.
+
+**Employees** can now see:
+- Their current-month spend vs personal monthly cap + utilization %
+- YTD totals
+- Month-by-month spend history (last N months, up to 24)
+
+**Admins** can now:
+- Set or update any member's monthly spend limit
+- Remove a member's limit (set to unlimited)
+- View a live utilization dashboard across all members (bulk query)
+- Pull a single member's full spend summary
+
+**Platform admins** can view member spend limits for any account.
+
+- **6 service functions** (`corporate_employee_expense.py`):
+  `get_my_spend_summary`, `get_my_spend_history`, `get_member_spend_summary`,
+  `list_members_spend_summary`, `set_member_spend_limit`, `remove_member_spend_limit`
+- **7 endpoints**: `GET /corporate/accounts/me/my-spending`,
+  `GET /corporate/accounts/me/my-spending/history`,
+  `GET /corporate/accounts/me/members/spend-limits`,
+  `GET /corporate/accounts/me/members/{uid}/spend-limit`,
+  `PUT /corporate/accounts/me/members/{uid}/spend-limit`,
+  `DELETE /corporate/accounts/me/members/{uid}/spend-limit`,
+  `GET /admin/corporate/accounts/{id}/members/spend-limits`
+- **43 new tests**; **Total: 5,417 passing** (up from 5,374)
+
+#### Session end
+
+---
+
+## Session 173 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,330 tests passing, continuing corporate feature track
+
+### Task: Corporate Guest Passes (commit `ee0e029`)
+
+Employees can issue limited-use booking tokens (UUID) to non-employees — clients,
+candidates, visitors. The guest submits the token when booking; no corporate login
+required. The ride bills to the corporate account.
+
+- **Model** (`corporate_guest_pass.py`): `CorporateGuestPass` with UUID PK and UUID
+  `token` (globally unique), `label` VARCHAR(200), `max_uses`/`uses_remaining` (both
+  nullable = unlimited), `max_ride_budget_usd` Numeric(10,2), optional FKs to
+  `corporate_trip_purposes` and `corporate_cost_centers`, `valid_from`/`valid_until`
+  DateTimeTZ window, `GuestPassStatus` enum (active/exhausted/expired/revoked),
+  `revoked_at`/`revoked_by_id` audit fields. Nullable `guest_pass_id` FK added to
+  `rides` table.
+- **8 service functions**: create (sets uses_remaining=max_uses), get (404 on wrong
+  account), list (status filter + pagination), update (rejects revoked/exhausted),
+  revoke (409 if already revoked), validate_guest_pass_token (public-safe: never 404,
+  returns is_valid dict), use_guest_pass (decrements, auto-exhausts at 0, links ride),
+  get_guest_pass_rides
+- **7 endpoints**: employee CRUD (POST/GET/GET-by-id/PATCH/DELETE); public
+  `GET /guest-pass/{token}` (no auth); platform-admin list all + list by account
+- **Migration `w2x3y4z5a6b7`** (down: `v2w3x4y5z6a7`)
+- **44 new tests**; **Total: 5,374 passing** (up from 5,330)
+
+#### Session end
+
+---
+
+## Session 172 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,290 tests passing, continuing corporate feature track
+
+### Task: Corporate Trip Purpose Codes (commit `564a580`)
+
+Employees can tag rides with an admin-defined purpose code (e.g. CLIENT_MEETING, CONFERENCE,
+AIRPORT_TRANSFER). Admins define the valid codes; analytics break down spend per purpose
+with an untagged bucket.
+
+- **Model** (`corporate_trip_purpose.py`): `CorporateTripPurpose` table with
+  `(account_id, code)` UniqueConstraint. Two columns added to `rides`:
+  nullable `trip_purpose_id` FK and `trip_notes` VARCHAR(500).
+- **8 service functions**: create (normalises code uppercase, 409 on dupe), get, list,
+  update, deactivate (soft-delete, preserves history), set_ride_purpose (validates
+  ownership + account scope + requires_notes enforcement), get_purpose_spend_analytics
+  (tagged + untagged buckets, optional date range), list_ride_purposes_for_account
+- **9 endpoints**: member read (list/get/analytics), admin write (create/patch/delete),
+  rider tag (`PUT /rides/{id}/trip-purpose`), platform-admin (list/analytics)
+- **Migration `v2w3x4y5z6a7`** (down: `u2v3w4x5y6z7`)
+- **40 new tests**; **Total: 5,330 passing** (up from 5,290)
+- Fixed pre-existing env gap: installed `pydantic[email]` (email-validator missing from system)
+
+#### Session end
+
+---
+
 ## Session 170 — 2026-04-15
 
 ### Orient

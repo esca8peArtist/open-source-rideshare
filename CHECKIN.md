@@ -9,7 +9,42 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–171
+**Sessions**: 129–174
+
+### Accomplished (Session 174)
+
+#### open-source-rideshare — Corporate Employee Spend Limits
+
+**Feat (commit `0daed0a`)**: Surfaces the existing `monthly_spend_limit` column on `BusinessAccountMember` with a full self-service and admin API. No new model or migration needed — all data from existing tables.
+
+Employees now have a self-service spending dashboard: current-month spend vs personal monthly cap, utilization percentage, YTD totals, and a month-by-month history view. Admins can set, update, or remove any employee's monthly cap, and pull a live overview of all members' limits alongside their current-month usage (single bulk query).
+
+- **6 service functions**: `get_my_spend_summary`, `get_my_spend_history`, `get_member_spend_summary`, `list_members_spend_summary`, `set_member_spend_limit`, `remove_member_spend_limit`
+- **7 endpoints**: `GET /corporate/accounts/me/my-spending` (employee self-service), `GET /corporate/accounts/me/my-spending/history`, `GET /corporate/accounts/me/members/spend-limits` (admin overview), `GET /corporate/accounts/me/members/{uid}/spend-limit`, `PUT /corporate/accounts/me/members/{uid}/spend-limit`, `DELETE /corporate/accounts/me/members/{uid}/spend-limit`, `GET /admin/corporate/accounts/{id}/members/spend-limits` (platform-admin)
+- **43 new tests**; **Total: 5,417 passing** (up from 5,374)
+
+### Needs Your Input
+
+#### open-source-rideshare — Push to GitHub
+Branch: `feature/corporate-business-accounts` (latest commit `0daed0a`)
+Includes Sessions 166–174: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, **employee spend limits**.
+Please run: `git push origin feature/corporate-business-accounts`
+
+---
+
+### Accomplished (Session 173)
+
+#### open-source-rideshare — Corporate Guest Passes
+
+**Feat (commit `ee0e029`)**: Corporate employees can now issue limited-use booking tokens to non-employees — clients, candidates, and visitors. The guest submits the UUID token when booking; no corporate login is required. The resulting ride bills to the corporate account. Passes have configurable expiry, per-ride budget caps, optional usage limits, and can be linked to a cost center and trip purpose for automatic tagging.
+
+- **`CorporateGuestPass` model**: UUID PK and UUID `token` (globally unique); `label` VARCHAR(200); `max_uses`/`uses_remaining` (both nullable = unlimited); `max_ride_budget_usd` Numeric(10,2); optional FKs to `corporate_trip_purposes` and `corporate_cost_centers`; `valid_from`/`valid_until` DateTimeTZ window; `GuestPassStatus` enum (active/exhausted/expired/revoked); `revoked_at`/`revoked_by_id` audit fields. `guest_pass_id` nullable UUID FK added to `rides` table.
+- **8 service functions**: `create_guest_pass` (sets uses_remaining=max_uses), `get_guest_pass` (404 on wrong account), `list_guest_passes` (status filter + pagination), `update_guest_pass` (rejects revoked/exhausted), `revoke_guest_pass` (409 if already revoked), `validate_guest_pass_token` (public-safe: never 404, returns is_valid dict checking status + time window), `use_guest_pass` (decrements uses_remaining, auto-exhausts at 0, links ride), `get_guest_pass_rides`
+- **7 endpoints**: employee CRUD (POST/GET/GET-by-id/PATCH/DELETE); public `GET /guest-pass/{token}` (no auth, returns `GuestPassValidationResponse`); platform-admin list all + list by account
+- **Migration `w2x3y4z5a6b7`** (down: `v2w3x4y5z6a7`): creates `corporate_guest_passes` table + `GuestPassStatus` enum + adds `guest_pass_id` to rides
+- **44 new tests**; **Total: 5,374 passing** (up from 5,330)
+
+---
 
 ### Accomplished (Session 171)
 
@@ -22,13 +57,6 @@
 - **13 endpoints**: 3 member-read + 6 admin-write + 4 platform-admin
 - **Migration `u2v3w4x5y6z7`** (down: `t2u3v4w5x6y7`) — 2 enum types, 2 tables, 5 indexes
 - **38 new tests**; **Total: 5,290 passing** (up from 5,252)
-
-### Needs Your Input
-
-#### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `1f86eb9`)
-Includes Sessions 166–171: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, **batch/group booking**.
-Please run: `git push origin feature/corporate-business-accounts`
 
 ---
 
