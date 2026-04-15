@@ -9,29 +9,27 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–175
+**Sessions**: 129–176
 
-### Accomplished (Session 175)
+### Accomplished (Session 176)
 
-#### open-source-rideshare — Corporate Data Export
+#### open-source-rideshare — Corporate Budget Alerts
 
-**Feat (commit `8147a9d`)**: CSV exports for corporate accounts. Finance teams can now pull accounting-ready data directly from the API without any data pipeline.
+**Feat (commit `3f5027f`)**: Admins configure percentage-based spend thresholds on cost centers or the overall account. An evaluation endpoint computes current-month utilisation and triggers any qualifying alerts, recording spend and budget snapshots at the moment of trigger. Triggered alerts can be acknowledged by any account admin.
 
-**Rides export** (`GET /corporate/accounts/me/export/rides`) — admin-only; filterable by date range, cost center, and trip purpose; 19 columns: ride_id, completed_at, status, rider/driver id+name, pickup/dropoff addresses, distance_km, duration_min, actual_fare, tip_amount, total_charged, cost_center_code/name, trip_purpose_code/label, trip_notes.
+**Example flow**: Admin sets a 75% threshold on the "Engineering" cost center → runs evaluate for April 2026 → if Engineering has spent ≥75% of its monthly budget, alert flips to `triggered` with `spend_at_trigger_usd` and `budget_at_trigger_usd` recorded → admin acknowledges, alert moves to `acknowledged`.
 
-**Invoice line-items export** (`GET /corporate/accounts/me/export/invoices/{id}`) — any member; one row per completed ride within the invoice billing period; invoice metadata (number, status, period) repeated on every row for pivot-table compatibility.
-
-All exports return `text/csv` with a `Content-Disposition: attachment` header and an auto-generated timestamped filename. Platform-admin mirrors available for both endpoints.
-
-- **2 service functions**: `export_corporate_rides_csv`, `export_invoice_csv`
-- **4 endpoints**: member/admin GET for rides + invoice (+ 2 platform-admin mirrors)
-- **25 new tests**; **Total: 5,441 passing** (up from 5,417)
+- **`CorporateBudgetAlert` model**: unique per `(account, scope, cost_center, threshold_pct)`, `BudgetAlertScope` enum (cost_center/account), `BudgetAlertStatus` enum (active/triggered/acknowledged), full trigger + acknowledge audit trail
+- **7 service functions**: create (1–100 validation, 409 on dupe), get, list (scope/status filter), update (rejects triggered/acknowledged), delete, acknowledge, evaluate (monthly aggregate engine, caches per-cost-center spend within a run)
+- **9 endpoints**: member CRUD + evaluate + acknowledge under `/corporate/accounts/me/budget-alerts`; platform-admin list + evaluate under `/admin/corporate/accounts/{id}/budget-alerts`
+- **Migration `x2y3z4a5b6c7`**: 2 enum types + `corporate_budget_alerts` table + indexes
+- **48 new tests**; **Total: 5,489 passing** (up from 5,441)
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `8147a9d`)
-Includes Sessions 166–175: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, **data export**.
+Branch: `feature/corporate-business-accounts` (latest commit `3f5027f`)
+Includes Sessions 166–176: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, **budget alerts**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---

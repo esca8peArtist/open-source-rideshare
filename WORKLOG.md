@@ -4,6 +4,42 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 176 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,441 tests passing, continuing corporate feature track
+
+### Task: Corporate Budget Alerts (commit `3f5027f`)
+
+Admins configure percentage-based alert thresholds on cost centers and the overall account.
+When billing-cycle spend crosses a threshold, an alert record is created and surfaced via API.
+
+- **Model** (`corporate_budget_alert.py`): `CorporateBudgetAlert` with `BudgetAlertScope`
+  (cost_center/account) and `BudgetAlertStatus` (active/triggered/acknowledged) enums.
+  UUID PK, account + cost-center FKs, `threshold_pct` int, trigger/acknowledge audit fields
+  (triggered_at, billing_month, spend_at_trigger_usd, budget_at_trigger_usd,
+  acknowledged_at, acknowledged_by_id). Unique constraint on
+  `(corporate_account_id, scope, cost_center_id, threshold_pct)`.
+- **7 service functions**: `create_budget_alert` (validates 1–100, 409 on duplicate),
+  `get_budget_alert` (404 on wrong account), `list_budget_alerts` (filterable by scope/status),
+  `update_budget_alert` (rejects triggered/acknowledged), `delete_budget_alert`,
+  `acknowledge_alert` (triggered→acknowledged, 409 if wrong state),
+  `evaluate_budget_alerts` (core engine: date_trunc monthly aggregates per cost-center
+  and account, flips active→triggered with snapshot fields)
+- **9 endpoints**: 7 member (`POST/GET/GET-by-id/PATCH/DELETE/acknowledge/evaluate`
+  under `/corporate/accounts/me/budget-alerts`) + 2 platform-admin (list + evaluate)
+- **Migration `x2y3z4a5b6c7`** (down: `w2x3y4z5a6b7`): 2 enum types + table + indexes
+- **48 new tests**; **Total: 5,489 passing** (up from 5,441)
+
+#### Session end
+
+---
+
 ## Session 174 — 2026-04-15
 
 ### Orient
