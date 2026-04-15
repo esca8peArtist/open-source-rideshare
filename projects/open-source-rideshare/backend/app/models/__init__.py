@@ -52,3 +52,4 @@ from app.models.corporate_custom_field import CorporateCustomField, CorporateRid
 from app.models.corporate_webhook import CorporateWebhook, CorporateWebhookDelivery  # noqa: F401
 from app.models.corporate_scheduled_report import CorporateScheduledReport  # noqa: F401
 from app.models.corporate_notification_settings import CorporateNotificationConfig  # noqa: F401
+from app.models.corporate_employee_group import CorporateEmployeeGroup, CorporateGroupMembership  # noqa: F401
