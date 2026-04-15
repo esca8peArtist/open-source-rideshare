@@ -9,7 +9,57 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–167
+**Sessions**: 129–170
+
+### Accomplished (Session 170)
+
+#### open-source-rideshare — Corporate Spending Analytics
+
+**Feat (commit `88addd1`)**: Read-only analytics layer completing the corporate billing picture. Account members can view spend trends and ride patterns; admins get per-employee breakdowns. Finance teams can now answer "How much did we spend this month vs budget?" and "Who are our top 10 spenders?" without needing a data export.
+
+- **4 service functions** — no new model/migration:
+  - `get_spending_overview`: current-month + YTD + all-time ride counts and totals; budget utilisation % when `monthly_budget_limit` is set
+  - `get_monthly_spend_trend`: PostgreSQL `to_char(YYYY-MM)` grouping, 1–24 months, newest-first; includes avg fare per month
+  - `get_employee_spend_breakdown`: admin-only; top-N employees by total spend in a date range; avg fare per employee
+  - `get_ride_pattern_analytics`: `extract(hour)` and `extract(dow)` queries; all 24 hour and all 7 DOW buckets always returned (zero-count buckets included)
+- **8 endpoints**: 4 member/admin under `/corporate/accounts/me/analytics/…` + 4 platform-admin mirrors
+- **35 new tests**; **Total: 5,252 passing** (up from 5,217)
+
+### Needs Your Input
+
+#### open-source-rideshare — Push to GitHub
+Branch: `feature/corporate-business-accounts` (latest commit `88addd1`)
+Includes Sessions 166–170: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics.
+Please run: `git push origin feature/corporate-business-accounts`
+
+---
+
+### Accomplished (Session 169)
+
+#### open-source-rideshare — Corporate Monthly Invoices
+
+**Feat (commit `4da54cd`)**: Monthly billing invoices for corporate accounts. Admins can generate, finalize, mark as paid, void, and recalculate invoices. Any member can view line items and cost-center breakdowns.
+
+- **`CorporateInvoice` model** (`corporate_invoices_v2` table): Note — `corporate_invoices` was already taken by an older `BusinessInvoice` model in `corporate.py`; used `_v2` suffix consistent with project conventions. Invoice number auto-generated as `INV-{account_id:04d}-{YYYYMM}` with `-2/-3` suffixes on collision. 4-state enum: draft/finalized/paid/void. Columns: `invoice_number` (unique), `period_start/end`, `total_rides`, `subtotal_usd`, `notes`, `generated_at`, `finalized_at`, `paid_at`, `voided_at`.
+- **8 service functions**: `generate_invoice` (admin-only, 409 on duplicate non-void period, aggregates `Ride.corporate_account_id`-linked completed rides), `get_invoice` (account-scoped 404), `list_invoices` (status filter, period_start DESC), `finalize_invoice` (draft-only), `mark_invoice_paid` (finalized-only, optional notes), `void_invoice` (400 if already void), `get_invoice_line_items` (any member; per-ride + by-cost-center summary), `regenerate_invoice_totals` (draft-only re-aggregation)
+- **11 member endpoints** + **3 platform-admin endpoints**: POST/GET/GET/{id}/GET/{id}/line-items/PUT/{id}/finalize/PUT/{id}/paid/DELETE/{id}/POST/{id}/regenerate
+- **Migration `t2u3v4w5x6y7`** (down_revision: s2t3u4v5w6x7) — 1 new table, `corp_invoice_status_v2` enum type, 2 indexes
+- **39 new tests**; **Total: 5,217 passing** (up from 5,178)
+
+---
+
+### Accomplished (Session 168)
+
+#### open-source-rideshare — Corporate Cost Centers
+
+**Feat (commit `cfb33a0`)**: Named departments, projects, or teams for per-cost-center expense tracking. Companies can create cost centers, tag rides to them at booking time, and view spend breakdowns by department. No equivalent feature exists in Uber for Business — finance-controlled orgs can now see exactly which department spent what, with optional monthly budget caps and utilization percentages.
+
+- **`CorporateCostCenter` model**: unique `(account_id, code)` constraint; code UPPER-normalised in schema; `is_active` soft-delete flag preserves historical ride assignments; optional `monthly_budget` Decimal cap
+- **`rides.cost_center_id`**: nullable FK → corporate_cost_centers (SET NULL on delete); cost center tag set at booking time
+- **7 service functions**: `create_cost_center` (admin-only, duplicate-code guard, 100-center cap), `get_cost_center` (account-scoped, 404 on mismatch), `list_cost_centers` (active_only filter), `update_cost_center` (admin-only partial update), `deactivate_cost_center` (soft-delete, 400 if already inactive), `get_cost_center_spend` (date-range aggregation + budget utilization pct), `list_account_spend_by_cost_center` (all centers ranked by spend desc; zero-ride centers included)
+- **10 endpoints**: POST/GET/GET/{id}/PATCH/{id}/DELETE/{id}/GET/{id}/spend (member + admin); GET /spend (account breakdown, admin-only); 3 platform-admin endpoints
+- **Migration s2t3u4v5w6x7** (down_revision: r2s3t4u5v6w7) — 1 new table, nullable FK column on rides, 3 indexes
+- **40 new tests**; **Total: 5,178 passing** (up from 5,138)
 
 ### Accomplished (Session 167)
 

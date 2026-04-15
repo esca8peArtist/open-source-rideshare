@@ -4,6 +4,113 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 170 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,217 tests passing, continuing corporate feature track
+
+### Task: Corporate Spending Analytics (commit `88addd1`)
+
+Read-only analytics layer for corporate accounts. Completes the corporate
+billing picture: create → policy → approvals → cost centers → invoices → **analytics**.
+
+- **Schemas** (`corporate_spending_analytics.py`):
+  `SpendingOverviewResponse`, `MonthlySpendTrendResponse`/`MonthlySpendPoint`,
+  `EmployeeSpendBreakdownResponse`/`EmployeeSpendItem`,
+  `RidePatternResponse`/`HourBucket`/`DayBucket`
+
+- **Service** (`corporate_spending_analytics.py`):
+  `get_spending_overview` (current-month + YTD + all-time + budget utilisation pct),
+  `get_monthly_spend_trend` (PostgreSQL to_char YYYY-MM grouping, 1–24 months),
+  `get_employee_spend_breakdown` (admin-only, top-N by total spend within date range),
+  `get_ride_pattern_analytics` (hour-of-day extract + dow extract; all 24/7 buckets always returned)
+
+- **API** (`corporate_spending_analytics.py`):
+  4 member/admin endpoints under `/corporate/accounts/me/analytics/…` +
+  4 platform-admin mirrors under `/admin/corporate/accounts/{id}/analytics/…`
+
+- **35 new tests**; **Total: 5,252 passing** (up from 5,217)
+
+#### Session end
+
+---
+
+## Session 169 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,178 tests passing, continuing corporate feature track
+
+### Task: Corporate Monthly Invoices (commit `4da54cd`)
+
+Formal billing/invoice lifecycle for corporate accounts. Status lifecycle: draft → finalized → paid (or void).
+Natural completion of the corporate cost center work — finance teams need exportable billing records.
+
+- **`CorporateInvoice` model** (`corporate_invoices_v2` table — `corporate_invoices` was taken by older model):
+  auto-generated invoice_number (`INV-{account_id:04d}-{YYYYMM}`), 4-state enum (draft/finalized/paid/void),
+  total_rides, subtotal_usd, notes, timestamp fields for each status transition
+- **8 service functions**: `generate_invoice` (admin-only, 409 on duplicate non-void period, aggregates corporate rides),
+  `get_invoice` (account-scoped 404), `list_invoices` (status filter, period_start DESC),
+  `finalize_invoice` (draft-only), `mark_invoice_paid` (finalized-only), `void_invoice` (400 if already void),
+  `get_invoice_line_items` (per-ride + by-cost-center summary, any member),
+  `regenerate_invoice_totals` (draft-only re-aggregation)
+- **11 member + 3 platform-admin endpoints**
+- **Migration t2u3v4w5x6y7** (down_revision: s2t3u4v5w6x7)
+- **39 new tests**; **Total: 5,217 passing** (up from 5,178)
+
+#### Session end
+
+---
+
+## Session 168 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,138 tests passing, continuing feature development
+
+### Task: Corporate Cost Centers (commit `cfb33a0`)
+
+Companies can create named cost centers (departments, projects, teams), tag
+rides to them at booking time, and view per-cost-center spend reports.
+No equivalent exists in Uber for Business — genuine enterprise differentiator
+for finance-controlled organisations that need departmental expense visibility.
+
+- **`CorporateCostCenter` model**: account_id FK → corporate_accounts_v2;
+  name (100); code (20, unique per account, UPPER-normalised); description (300);
+  is_active (soft-delete flag); monthly_budget (optional Decimal cap);
+  created_at / updated_at
+- **7 service functions**: `create_cost_center` (admin-only, dup-code guard,
+  100-centre cap), `get_cost_center` (account-scoped), `list_cost_centers`
+  (active_only filter), `update_cost_center` (admin-only partial update),
+  `deactivate_cost_center` (soft-delete, 400 if already inactive),
+  `get_cost_center_spend` (date-range ride aggregation + budget utilization %),
+  `list_account_spend_by_cost_center` (all centres ranked by spend desc, zero-
+  ride centres included with $0)
+- **10 endpoints**: POST/GET/GET/{id}/PATCH/{id}/DELETE/{id}/GET/{id}/spend for
+  members; GET /spend (account breakdown, admin-only); 3 platform-admin endpoints
+  for list, breakdown, single-centre spend on any account
+- **Migration s2t3u4v5w6x7** (down_revision: r2s3t4u5v6w7): creates
+  `corporate_cost_centers` table + adds nullable `cost_center_id` FK (SET NULL
+  on delete) to `rides` table; 2 indexes on cost_centers, 1 on rides
+- **40 new tests** — Total: **5,178 passing** (up from 5,138)
+
+#### Session end
+
+---
+
 ## Session 167 — 2026-04-15
 
 ### Orient
