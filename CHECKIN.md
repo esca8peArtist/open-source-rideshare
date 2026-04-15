@@ -9,28 +9,46 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–179
+**Sessions**: 129–180
 
-### Accomplished (Session 179)
+### Accomplished (Session 180)
 
-#### open-source-rideshare — Corporate Employee Invitations
+Three new corporate features built and committed. **Total: 5,759 passing** (was 5,628).
 
-**Feat (commit `24834c3`)**: Admins issue UUID-based invitation tokens to prospective employees by email address. The invitee validates the token via a public endpoint (always returns JSON, never 404), then accepts it as an authenticated user — automatically creating their corporate account membership with the contracted role. No second admin action needed.
+#### open-source-rideshare — Corporate Departments (commit `ddb36fe`)
 
-**Example flow**: Admin calls `POST /corporate/accounts/me/invitations` with `{email: "alice@acme.com", role: "admin"}` → server generates a shareable `token` UUID → admin emails the link → Alice calls `GET /corporate/invitations/{token}` (sees is_valid=true, account name, role) → Alice calls `POST /corporate/invitations/{token}/accept` → membership created as admin, invitation marked accepted.
+Admins organise account members into named departments (Engineering, Sales, etc.) with optional monthly budgets and cost center links. Spend analytics aggregate completed rides for all members in real time.
 
-- **`CorporateEmployeeInvitation` model**: UUID PK, separate shareable `token` UUID (unique globally), email (stored lowercase), `InvitationRole` enum (admin/member), message, expires_at DateTimeTZ (7-day default), `InvitationStatus` enum (pending/accepted/revoked/expired), full audit fields (accepted_at/by, revoked_at/by), CASCADE delete on account FK
-- **6 service functions**: `create_invitation` (admin-gated, duplicate-pending guard per email+account, lowercase email normalisation, 7-day default expiry), `get_invitation` (404 on wrong account), `list_invitations` (paginated + total count, status_filter), `revoke_invitation` (admin-gated, pending-only guard), `validate_invitation_token` (public, returns dict — never 404), `accept_invitation` (validates token, guards duplicate membership, creates BusinessAccountMember with mapped role)
-- **9 endpoints**: 4 member (POST create admin-gated, GET list, GET detail, DELETE revoke), 1 public (validate token), 1 auth (accept), 2 platform-admin (list all, list by account)
-- **Migration `a2b3c4d5e6f7`** (down: `z2a3b4c5d6e7`): `invitationstatus` + `invitationrole` enums + `corporate_employee_invitations` table + 3 indexes
-- **45 new tests** (all passing); **Total: 5,628 passing** (up from 5,583)
+- `CorporateDepartment` + `CorporateDepartmentMember` models; 9 service functions including per-department spend analytics; 11 endpoints; migration `b2c3d4e5f6g7`; 52 tests
+
+#### open-source-rideshare — Corporate Expense Reports (commit `4ab6d0a`)
+
+Employees submit personal ride expenses to the corporate account for reimbursement. Admins approve or reject with an optional feedback note. Parallel path to direct billing — handles "paid on personal card, need to expense it."
+
+- `CorporateExpenseReport` model; `ExpenseStatus` enum (pending/approved/rejected/withdrawn); validates ride ownership + cost center + trip purpose on submit; 6 service functions; 7 endpoints; migration `c3d4e5f6g7h8`; 41 tests
+
+#### open-source-rideshare — Corporate Billing Contacts (commit `2f81ab2`)
+
+Finance team members registered to receive invoices and budget notifications. May be email-only — not required to be platform users. Three notification opt-ins: invoices, budget alerts, monthly summary.
+
+- `CorporateBillingContact` model; email unique/account, immutable after creation; `list_contacts_for_notification` internal dispatch helper; 6 endpoints; migration `d4e5f6g7h8i9`; 38 tests
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `24834c3`)
-Includes Sessions 166–179: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, **employee invitations**.
+Branch: `feature/corporate-business-accounts` (latest commit `2f81ab2`)
+Includes Sessions 166–180: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, **departments, expense reports, billing contacts**.
 Please run: `git push origin feature/corporate-business-accounts`
+
+---
+
+### Accomplished (Session 179)
+
+#### open-source-rideshare — Corporate Employee Invitations (commit `24834c3`)
+
+Admins issue UUID-based invitation tokens to prospective employees by email address. The invitee validates the token via a public endpoint (always returns JSON, never 404), then accepts it as an authenticated user — automatically creating their corporate account membership with the contracted role.
+
+- 9 endpoints; migration `a2b3c4d5e6f7`; 45 tests; **Total: 5,628 passing**
 
 ---
 

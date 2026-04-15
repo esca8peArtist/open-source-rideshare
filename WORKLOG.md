@@ -4,6 +4,62 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 180 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Found untracked department files from previous partial session — completed and committed
+- Selected: open-source-rideshare — continuing corporate feature track
+
+### Task: Corporate Department Management (commit `ddb36fe`)
+
+Previously-written files found untracked (model, schema, service, API, migration, tests all
+complete). Ran 52 tests — all passing. Committed as `ddb36fe`. Total: 5,680 passing.
+
+- **2 models**: `CorporateDepartment` (account dept with optional monthly budget + cost center
+  link, code unique/account uppercased) + `CorporateDepartmentMember` junction (head flag)
+- **9 service functions**: create/get/list/update/deactivate + add/remove/list members +
+  get_department_spend (current-month per-member totals + budget utilisation %)
+- **11 endpoints**: 4 member + 5 admin + 2 platform-admin
+- **Migration `b2c3d4e5f6g7`**: both tables + 4 indexes
+- **52 tests** → **Total: 5,680 passing**
+
+### Task: Corporate Expense Reports (commit `4ab6d0a`)
+
+Employees submit personal ride expenses to the corporate account for reimbursement. Admins
+review and approve/reject with an optional note.
+
+- **`CorporateExpenseReport` model**: `ExpenseStatus` enum (pending/approved/rejected/withdrawn),
+  Integer PK, account_id CASCADE, submitted_by_id, optional ride_id (validates ownership),
+  amount_usd Numeric(10,2), description, optional cost_center_id + trip_purpose_id, receipt_url,
+  reviewed_by_id, reviewed_at, review_note, submitted_at, created_at
+- **6 service functions**: submit (validates ride ownership + cost center + trip purpose), get
+  (own or admin), list_my, list_account (admin-gated), review (approve/reject, pending-only),
+  withdraw (submitter, pending-only)
+- **7 endpoints**: 4 member + 2 admin + 1 platform-admin
+- **Migration `c3d4e5f6g7h8`**: expensestatus enum + table + 3 indexes
+- **41 tests** → **Total: 5,721 passing**
+
+### Task: Corporate Billing Contacts (commit `2f81ab2`)
+
+Finance team members registered to receive invoices and budget notifications — may be
+email-only (not required to be platform users).
+
+- **`CorporateBillingContact` model**: Integer PK, account_id CASCADE, name, email
+  (lowercase, unique/account), phone, role free-text, three notification opt-ins
+  (receives_invoices/budget_alerts/monthly_summary), is_active soft-delete, added_by_id, timestamps
+- **6 service functions**: add (admin-gated, duplicate-email guard), get, list, update
+  (email immutable), deactivate, list_contacts_for_notification (internal dispatch helper)
+- **6 endpoints**: 2 member read-only + 3 admin + 1 platform-admin
+- **Migration `d4e5f6g7h8i9`**: table + unique constraint + account_id index
+- **38 tests** → **Total: 5,759 passing**
+
+#### Session end
+
 ## Session 179 — 2026-04-15
 
 ### Orient
@@ -7411,4 +7467,16 @@ All return `StreamingResponse` with `text/csv` + `Content-Disposition: attachmen
 results, column content, null-field handling) + API layer; **Total: 5,441 passing**.
 
 #### Session end
+
+
+## Session 180 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready — no autonomous work
+- Selected: open-source-rideshare — 5,628 tests passing, continuing corporate feature track
+- Task selected: Corporate Department Management — organise employees into named departments with optional budgets, cost center links, and spend analytics
 
