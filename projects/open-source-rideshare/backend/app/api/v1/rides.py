@@ -22,7 +22,6 @@ from app.schemas.ride import (
     GeocodeResponse,
     ReverseGeocodeRequest,
     ReverseGeocodeResponse,
-    RideReceiptResponse,
     RideRequest,
     RideRatingRequest,
     RideResponse,
@@ -32,8 +31,6 @@ from app.schemas.eta import DriverETAResponse, DriverLocationResponse, TripETARe
 from app.schemas.feedback import (
     DisputeCreate,
     DisputeResponse,
-    FeedbackCreate,
-    FeedbackResponse,
 )
 from app.services.cancellation import evaluate_cancellation
 from app.services.payments import create_cancellation_payment_intent
@@ -1161,104 +1158,6 @@ async def rate_ride(
         await notify_rating_received(db, user_id=rated_user_id, ride_id=ride.id, rating=req.rating)
 
     return {"status": "rated"}
-
-
-@router.get("/{ride_id}/receipt", response_model=RideReceiptResponse)
-async def get_receipt(
-    ride_id: int,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get a detailed receipt for a completed ride."""
-    from app.services.receipts import generate_receipt
-
-    receipt = await generate_receipt(ride_id, user.id, db)
-    if not receipt:
-        raise HTTPException(status_code=404, detail="Receipt not available — ride not found or not completed")
-    return RideReceiptResponse(**receipt)
-
-
-@router.post("/{ride_id}/feedback", response_model=FeedbackResponse, status_code=status.HTTP_201_CREATED)
-async def submit_feedback(
-    ride_id: int,
-    req: FeedbackCreate,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Submit feedback for a completed ride (rider or driver)."""
-    from app.services.feedback import submit_feedback as _submit
-
-    # Determine role
-    result = await db.execute(select(Ride).where(Ride.id == ride_id))
-    ride = result.scalar_one_or_none()
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found")
-
-    if user.id == ride.rider_id:
-        role = "rider"
-    elif user.id == ride.driver_id:
-        role = "driver"
-    else:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    try:
-        feedback = await _submit(
-            ride_id=ride_id,
-            user_id=user.id,
-            role=role,
-            rating=req.rating,
-            comment=req.comment,
-            categories=req.categories,
-            tip_amount=req.tip_amount,
-            db=db,
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=409, detail=str(e))
-    except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
-
-    return FeedbackResponse(
-        id=feedback.id,
-        ride_id=feedback.ride_id,
-        user_id=feedback.user_id,
-        role=feedback.role,
-        rating=feedback.rating,
-        comment=feedback.comment,
-        categories=feedback.categories.split(",") if feedback.categories else None,
-        created_at=feedback.created_at,
-    )
-
-
-@router.get("/{ride_id}/feedback", response_model=list[FeedbackResponse])
-async def get_ride_feedback(
-    ride_id: int,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get all feedback for a ride. Only ride participants can view."""
-    result = await db.execute(select(Ride).where(Ride.id == ride_id))
-    ride = result.scalar_one_or_none()
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found")
-    if ride.rider_id != user.id and ride.driver_id != user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    from app.services.feedback import get_ride_feedback as _get_feedback
-
-    items = await _get_feedback(ride_id, db)
-    return [
-        FeedbackResponse(
-            id=f.id,
-            ride_id=f.ride_id,
-            user_id=f.user_id,
-            role=f.role,
-            rating=f.rating,
-            comment=f.comment,
-            categories=f.categories.split(",") if f.categories else None,
-            created_at=f.created_at,
-        )
-        for f in items
-    ]
 
 
 @router.post("/{ride_id}/dispute", response_model=DisputeResponse, status_code=status.HTTP_201_CREATED)
