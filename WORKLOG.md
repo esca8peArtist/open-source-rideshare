@@ -4,6 +4,46 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 204 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Found: corporate_account_tags files were untracked (feature started but not committed)
+- Selected: open-source-rideshare — complete and commit pending tags feature, then build next feature
+
+### Task 1: Corporate Account Tags — COMPLETE (commit `8f2a8e9`)
+
+Feature was fully built but not committed. Fixed 12 API tests that used TestClient
+with fake auth headers — rewrote them to use direct async endpoint function calls
+(matching the pattern from test_corporate_account_suspensions.py). All 36 tests pass.
+
+- CorporateAccountTag model (unique account+tag; 3 indexes)
+- normalise_tag() helper: lowercase, hyphens, truncate 50
+- 6 service functions: add/remove/list/platform-summary/accounts-by-tag/bulk-add
+- 7 endpoints: 6 platform-admin + 1 member read-only
+- Migration z5a6b7c8d9e0
+- 36 tests → Total: 6,760 passing
+
+### Task 2: Corporate Member Ride Quotas — COMPLETE (commit `c08f12d`)
+
+Per-member ride count limits (daily/weekly/monthly) complementing existing spend limits.
+Admins set "employee can take at most N rides per [period]"; members check remaining quota.
+
+- CorporateMemberRideQuota model (unique account+member+period; 3 indexes)
+- _period_start() helper scoping ride counts to UTC midnight for daily/weekly/monthly
+- 8 service functions (set_quota reactivates inactive rows; get_quota_usage with exceeded flag)
+- 13 endpoints: member check-own + list-with-usage; admin CRUD + summary; platform-admin cross-account
+- Migration a1b2c3d4e5f6
+- 45 tests → Total: 6,805 passing
+
+#### Session end
+
+---
+
 ## Session 202 — 2026-04-15
 
 ### Orient
@@ -8240,5 +8280,55 @@ or any field required by the enterprise ERP/back-office system.
 **Migration `f6g7h8i9j0k1`**: custom_field_type enum + 2 tables + 5 indexes.
 
 **48 tests** — all passing. **Total: 5,842 passing**.
+
+#### Session end
+
+## Session 203 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — continuing corporate feature track (6,687 tests passing)
+
+### Task selected: Corporate Account Notes
+Platform admins need a CRM-style way to annotate corporate accounts with context that
+isn't captured in structured data — support calls, sales notes, compliance findings,
+billing exceptions. Each note has a type (general/billing/support/compliance/sales/technical),
+a pin flag for important items, and an internal flag controlling member visibility.
+
+### Task: Corporate Account Notes (commit `94fd249`)
+
+Platform admins can annotate corporate accounts with CRM-style freeform notes.
+
+**Model** (`corporate_account_note.py`):
+- `CorporateAccountNote`: `NoteType` enum (general/billing/support/compliance/sales/technical);
+  content text (min 10 chars); is_pinned flag (pinned notes sort first); is_internal flag
+  (controls member visibility); author_id FK SET NULL; CASCADE delete; 4 indexes
+
+**Service** (`corporate_account_notes.py`) — 7 functions:
+- `create_note` — platform-admin create
+- `get_note` — 404 on wrong account
+- `list_notes` — note_type / pinned_only / include_internal filters; pinned-first sort
+- `update_note` — partial update, all fields optional; 404 on wrong account
+- `delete_note` — hard delete; 404 on wrong account
+- `toggle_pin` — flips is_pinned; 404 on wrong account
+- `list_notes_member` — non-internal only; delegates to list_notes
+
+**API** (`corporate_account_notes.py`) — 8 endpoints:
+  POST   /admin/corporate/accounts/{id}/notes               (platform-admin create)
+  GET    /admin/corporate/accounts/{id}/notes               (platform-admin list)
+  GET    /admin/corporate/accounts/{id}/notes/{note_id}     (platform-admin get)
+  PUT    /admin/corporate/accounts/{id}/notes/{note_id}     (platform-admin update)
+  DELETE /admin/corporate/accounts/{id}/notes/{note_id}     (platform-admin delete, 204)
+  POST   /admin/corporate/accounts/{id}/notes/{note_id}/pin (platform-admin toggle-pin)
+  GET    /corporate/accounts/me/notes                       (member, non-internal only)
+  GET    /corporate/accounts/me/notes/{note_id}             (member, 404 on internal)
+
+**Migration `y4z5a6b7c8d9`**: notetype enum + corporate_account_notes table + 4 indexes.
+
+**37 tests** — all passing. **Total: 6,724 passing**.
 
 #### Session end

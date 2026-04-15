@@ -8,8 +8,49 @@
 
 ## Since Last Check-in
 
-**Period**: April 15, 2026
-**Sessions**: 129–202
+**Period**: April 16, 2026
+**Sessions**: 129–204
+
+### Accomplished (Session 204)
+
+#### open-source-rideshare — Corporate Account Tags (commit `8f2a8e9`)
+
+Platform admins can now label corporate accounts with short slugified tags (vip, at-risk, healthcare, government) for internal classification and cross-account filtering. Tags are ad-hoc — no registry. Normalisation is automatic (lowercase, spaces→hyphens, non-alphanumeric stripped, max 50 chars).
+
+- **`CorporateAccountTag` model**: unique constraint on `(account_id, tag)`; `created_by_id` FK SET NULL; CASCADE delete; 3 indexes
+- **`normalise_tag()` helper** in schemas: lowercase → replace spaces/underscores with hyphens → strip non-alphanumeric → collapse consecutive hyphens → truncate 50
+- **6 service functions**: `add_tag` (409 duplicate) / `remove_tag` (404 if absent) / `list_tags` (alphabetical) / `get_platform_tag_summary` (all distinct tags by account_count desc) / `list_accounts_by_tag` / `bulk_add_tags` (1–20 tags; silently skips existing; deduplicates input)
+- **7 endpoints**: platform-admin add/remove/list/bulk-add/tag-index/accounts-by-tag; member list-own-tags (read-only)
+- **Migration `z5a6b7c8d9e0`** (revises `y4z5a6b7c8d9`)
+- **36 tests** → **Total: 6,760 passing** (was 6,724)
+
+#### open-source-rideshare — Corporate Member Ride Quotas (commit `c08f12d`)
+
+Admins define per-member ride count limits (daily/weekly/monthly) that complement the existing per-member spend limits. Employees can check their remaining quota before booking; platform-admins see a cross-account list of exceeded quotas.
+
+- **`CorporateMemberRideQuota` model**: unique on `(account_id, member_id, period)`; `max_rides` ≥1; `is_active`; `created_by_id` FK SET NULL; CASCADE delete; 3 indexes
+- **`_period_start(period)`** helper: UTC midnight for daily (today), weekly (current Monday), monthly (1st of month)
+- **`_count_rides_in_period()`**: counts non-cancelled rides for member on `Ride.corporate_account_id` in current period
+- **8 service functions**: `set_quota` (409 active duplicate; reactivates inactive rows instead of creating duplicates) / `update_quota` / `deactivate_quota` / `delete_quota` / `get_quota` / `list_member_quotas` / `get_quota_usage` (current_period_rides + remaining + quota_exceeded + quota_active flag) / `get_account_quota_summary` (all active quotas enriched with live usage)
+- **13 endpoints**: member check-own (period filter) + list-own-with-usage; admin set/list/get/update/delete/summary; platform-admin list-any-account / set-on-any / cross-account-exceeded
+- **Migration `a1b2c3d4e5f6`** (revises `z5a6b7c8d9e0`)
+- **45 tests** → **Total: 6,805 passing** (was 6,760)
+
+---
+
+### Accomplished (Session 203)
+
+#### open-source-rideshare — Corporate Account Notes (commit `94fd249`)
+
+Platform admins can now annotate corporate accounts with CRM-style freeform notes — support call summaries, billing exceptions, sales context, compliance findings. The first dedicated admin CRM tooling in the system.
+
+- **`CorporateAccountNote` model**: `NoteType` enum (general/billing/support/compliance/sales/technical); `content` text (min 10 chars); `is_pinned` flag (pinned notes sort first in list); `is_internal` flag (controls member visibility); `author_id` FK SET NULL; CASCADE delete on account; 4 indexes
+- **7 service functions**: `create_note` / `get_note` (404 on wrong account) / `list_notes` (note_type + pinned_only + include_internal filters; pinned-first sort) / `update_note` (partial update, all fields optional) / `delete_note` (hard delete) / `toggle_pin` (flip is_pinned) / `list_notes_member` (non-internal only)
+- **8 endpoints**: platform-admin `POST/GET/GET-by-id/PUT/DELETE/toggle-pin`; member `GET /corporate/accounts/me/notes` + `GET .../notes/{id}` (returns 404 on internal notes)
+- **Migration `y4z5a6b7c8d9`**: `notetype` enum + `corporate_account_notes` table + 4 indexes
+- **37 tests** → **Total: 6,724 passing** (was 6,687)
+
+---
 
 ### Accomplished (Session 202)
 
@@ -116,7 +157,12 @@ Enterprise accounts can now configure how they are billed. This is the last majo
 #### open-source-rideshare — PR: feature/corporate-business-accounts
 
 Branch now includes (most recent first):
-- Corporate Account Suspension & Reinstatement (03907e5) ← new
+- Corporate Member Ride Quotas (c08f12d) ← new
+- Corporate Account Tags (8f2a8e9)
+- Corporate Account Notes (94fd249)
+- Corporate Account Health Score (c0b4d1d)
+- Corporate Invoice Dispute Resolution (d0f793c)
+- Corporate Account Suspension & Reinstatement (03907e5)
 - Corporate Carbon Budget & ESG Reporting (0c5d3a3)
 - Corporate Account Contract Management (b7e139e)
 - Corporate Account Onboarding Checklist (868b7d7)
@@ -126,7 +172,7 @@ Branch now includes (most recent first):
 - Corporate Preferred Driver Pool (d0f284f)
 - ... and 30+ more enterprise features
 
-**Total: 6,601 passing.** Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
+**Total: 6,805 passing** (45 new, no regressions — pre-existing 1 failure in test_corporate_guest_pass unrelated). Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
 
 ---
 
