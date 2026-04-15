@@ -9,7 +9,51 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–189
+**Sessions**: 129–192
+
+### Accomplished (Session 192)
+
+#### open-source-rideshare — Corporate Bulk Member Invitations (commit `3ae104b`)
+
+Admins can now invite up to 100 employees in a single POST request instead of making individual invitation calls. Designed for enterprise onboarding — import an entire team at once.
+
+- **`BulkInvitationRequest`** schema: 1–100 `BulkInvitationItem` entries (email + role + message); optional shared `expires_at` (validated future); Pydantic enforces bounds
+- **`create_bulk_invitations()` service**: admin check once upfront; per-item guards (pending-dupe check, active-member-by-email check via User join); emails normalized lowercase; shared expiry applied to all created items; errors collected without aborting batch
+- **`POST /corporate/accounts/me/invitations/bulk`** (admin-only, HTTP 200): per-item `status` ∈ {created/skipped/error}; `reason` field on skipped/error; full `InvitationResponse` on created items; aggregate counts `total_requested/created/skipped/errors`
+- Route declared before `/{invite_id}` to avoid FastAPI treating "bulk" as a UUID path param
+- **27 tests** (10 service, 10 schema, 7 API) → **Total: 6,296 passing** (was 6,269)
+
+---
+
+### Accomplished (Session 191)
+
+#### open-source-rideshare — Corporate Account Dashboard (commit `9c73f93`)
+
+Single read endpoint that returns a consolidated health snapshot of a corporate account — one call replaces ~10 separate API queries when rendering an admin overview page. No new model or migration needed.
+
+- **Sections returned**:
+  - `account` — name, status, billing_email, tax_id, monthly_budget_limit, created_at
+  - `members` — total_active, total_admins, pending_invitations
+  - `spend` — rides_this_month, spend_this_month_usd, monthly_budget_limit, budget_utilization_pct
+  - `credit` — prepaid balance + low-balance flag (null when unconfigured)
+  - `pending` — pending_ride_approvals, pending_invitations
+  - `setup` — sso_configured/status/enforced, active_webhooks, active_api_keys, billing_contacts, account_contacts, notification_configs
+  - `alerts` — total_active, total_triggered (budget alerts)
+  - `blackouts` — total_active blackout periods
+- **2 endpoints**: `GET /corporate/{account_id}/dashboard` (authenticated user) + `GET /platform-admin/corporate/{account_id}/dashboard` (admin)
+- **30 tests** → **Total: 6,269 passing** (was 6,239)
+
+### Accomplished (Session 190)
+
+#### open-source-rideshare — Corporate Notification Settings (commit `da2d9ca`)
+
+Admins can now configure per-account notification routing — which of 12 event types trigger emails and which contact channels receive them. Ties together billing contacts, account contacts, and webhooks into a unified dispatch layer.
+
+- **`CorporateNotificationConfig` model**: unique (account_id, event_type); `NotificationEventType` enum (member_joined / member_removed / policy_violation / budget_threshold_crossed / invoice_generated / invoice_paid / ride_approval_requested / ride_approval_denied / low_credit_balance / sso_login_failed / api_key_created / data_export_ready); per-event flags: `enabled`, `notify_billing_contacts`, `notify_account_contacts`, `notify_via_webhooks`, `additional_emails` JSONB
+- **6 service functions**: `get_notification_config` (upsert-on-read with defaults) / `get_all_notification_configs` (always returns all 12) / `update_notification_config` / `bulk_update_notification_configs` / `reset_notification_configs` / `get_recipients_for_event` (queries billing contacts + account contacts + webhooks based on flags — ready for dispatch layer)
+- **7 endpoints**: admin list + get + update + bulk-update + reset + preview-recipients; 1 platform-admin view
+- **Migration `o6p7q8r9s0t1`**: `notificationeventtype` enum + `corporate_notification_configs` table + indexes
+- **35 tests** → **Total: 6,239 passing** (was 6,204)
 
 ### Accomplished (Session 189)
 
@@ -34,7 +78,7 @@ Enterprise accounts can now configure single sign-on with their identity provide
 
 #### open-source-rideshare — Push to GitHub
 
-Branch: `feature/corporate-business-accounts` | Latest commit: `684849d`
+Branch: `feature/corporate-business-accounts` | Latest commit: `3ae104b`
 
 SSH key `esca8peArtist` still cannot push to `SuperClaude-Org/SuperClaude_Framework`. Please push manually when ready.
 
@@ -43,7 +87,10 @@ Summary of what's local and unpushed since the last push:
 - **Session 187**: Corporate Pre-paid Credits (commit `55027e1`) — 53 tests
 - **Session 188**: Corporate Account Contacts (commit `2812bd9`) — 34 tests
 - **Session 189**: Corporate SSO Configuration (commit `684849d`) — 40 tests
-- **Total: 6,204 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
+- **Session 190**: Corporate Notification Settings (commit `da2d9ca`) — 35 tests
+- **Session 191**: Corporate Account Dashboard (commit `9c73f93`) — 30 tests
+- **Session 192**: Corporate Bulk Member Invitations (commit `3ae104b`) — 27 tests
+- **Total: 6,296 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
 
 ---
 

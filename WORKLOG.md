@@ -4,6 +4,98 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 192 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Bulk Member Invitations
+
+### Task: Corporate Bulk Member Invitations — COMPLETE (commit `3ae104b`)
+
+Admins can now invite up to 100 employees in a single API call instead of
+one at a time. Per-item failures (duplicate pending, already-active member,
+same email twice in batch) are recorded as "skipped" with reason; batch does
+not abort. Aggregate counts in response body.
+
+- 4 files modified/created: schemas (4 new classes), services (1 new function),
+  api router (1 new endpoint before /{invite_id}), tests (new file)
+- 1 endpoint: POST /corporate/accounts/me/invitations/bulk (admin-only, HTTP 200)
+- 27 tests → Total: 6,296 passing (was 6,269)
+
+#### Session end
+
+---
+
+## Session 191 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Dashboard
+
+### Task: Corporate Account Dashboard — COMPLETE (commit `9c73f93`)
+
+Single aggregated health endpoint for corporate accounts. No new model or migration —
+reads from all existing corporate tables.
+
+Sections: account (name/status/budget), members (active/admin/pending-invitations),
+spend (rides+$ this month + budget utilization %), credit (prepaid balance + low-balance
+flag; null when unconfigured), pending (pending approvals + pending invitations), setup
+(SSO status/enforcement, webhook/API key/contact counts, notification config count),
+alerts (active + triggered budget alert counts), blackouts (active blackout count).
+
+- 4 files: schemas/corporate_account_dashboard.py + services/corporate_account_dashboard.py
+  + api/v1/corporate_account_dashboard.py + tests/test_corporate_account_dashboard.py
+- 2 endpoints: GET /corporate/{id}/dashboard (auth user) +
+  GET /platform-admin/corporate/{id}/dashboard (admin)
+- 30 tests → Total: 6,269 passing (was 6,239)
+
+#### Session end
+
+---
+
+## Session 190 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Notification Settings
+
+### Task: Corporate Notification Settings — COMPLETE (commit `da2d9ca`)
+
+Unified per-account notification routing layer. Admins configure which of 12 event types
+trigger email notifications and which contact channels receive them (billing contacts,
+account contacts, webhooks, additional ad-hoc emails).
+
+- `CorporateNotificationConfig` model (`NotificationEventType` enum: member_joined/
+  member_removed/policy_violation/budget_threshold_crossed/invoice_generated/invoice_paid/
+  ride_approval_requested/ride_approval_denied/low_credit_balance/sso_login_failed/
+  api_key_created/data_export_ready; unique (account_id, event_type); per-event flags:
+  enabled, notify_billing_contacts, notify_account_contacts, notify_via_webhooks,
+  additional_emails JSONB)
+- 6 service functions: get_notification_config (upsert-on-read) / get_all_notification_configs
+  (always returns all 12) / update_notification_config / bulk_update_notification_configs /
+  reset_notification_configs / get_recipients_for_event (queries billing contacts + account
+  contacts + webhooks based on config flags — used by dispatch layer)
+- 7 endpoints: admin list + get + update + bulk-update + reset + preview-recipients;
+  1 platform-admin view
+- Migration `o6p7q8r9s0t1_corporate_notification_settings` (notificationeventtype enum + table + indexes)
+- 35 tests → Total: 6,239 passing (was 6,204)
+
+#### Session end
+
+---
+
 ## Session 189 — 2026-04-15
 
 ### Orient
