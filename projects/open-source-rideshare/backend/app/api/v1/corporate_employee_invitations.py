@@ -38,6 +38,9 @@ from app.models.corporate import BusinessAccountMember
 from app.models.corporate_employee_invitation import InvitationStatus
 from app.models.user import User
 from app.schemas.corporate_employee_invitation import (
+    BulkInvitationItemResult,
+    BulkInvitationRequest,
+    BulkInvitationResponse,
     InvitationCreate,
     InvitationListResponse,
     InvitationResponse,
@@ -45,6 +48,7 @@ from app.schemas.corporate_employee_invitation import (
 )
 from app.services.corporate_employee_invitation import (
     accept_invitation,
+    create_bulk_invitations,
     create_invitation,
     get_invitation,
     list_invitations,
@@ -114,6 +118,72 @@ async def create_my_invitation(
     await db.commit()
     await db.refresh(invitation)
     return InvitationResponse.model_validate(invitation)
+
+
+# ---------------------------------------------------------------------------
+# Member: bulk create invitations (admin only — declared before /{invite_id})
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/corporate/accounts/me/invitations/bulk",
+    response_model=BulkInvitationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Bulk-create employee invitations (account admin)",
+)
+async def create_bulk_my_invitations(
+    data: BulkInvitationRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Invite up to 100 prospective employees in a single request.
+
+    Only account admins may use this endpoint.  Each item is processed
+    independently — duplicate emails or emails already belonging to an active
+    member are recorded as ``skipped`` entries rather than aborting the batch.
+
+    A shared ``expires_at`` may be provided; it defaults to 7 days from now.
+
+    Returns a summary with per-item results and aggregate counts.
+    """
+    account_id = await _get_member_account_id(db, current_user.id)
+    raw_results = await create_bulk_invitations(
+        db,
+        account_id,
+        current_user.id,
+        data.invitations,
+        expires_at=data.expires_at,
+    )
+    await db.commit()
+
+    # Refresh created invitations so all DB-generated fields are populated
+    item_results: list[BulkInvitationItemResult] = []
+    for r in raw_results:
+        inv_resp = None
+        if r["status"] == "created" and r["invitation"] is not None:
+            await db.refresh(r["invitation"])
+            inv_resp = InvitationResponse.model_validate(r["invitation"])
+        item_results.append(
+            BulkInvitationItemResult(
+                email=r["email"],
+                role=r["role"],
+                status=r["status"],
+                reason=r["reason"],
+                invitation=inv_resp,
+            )
+        )
+
+    total_created = sum(1 for r in item_results if r.status == "created")
+    total_skipped = sum(1 for r in item_results if r.status == "skipped")
+    total_errors = sum(1 for r in item_results if r.status == "error")
+
+    return BulkInvitationResponse(
+        total_requested=len(item_results),
+        total_created=total_created,
+        total_skipped=total_skipped,
+        total_errors=total_errors,
+        results=item_results,
+    )
 
 
 # ---------------------------------------------------------------------------

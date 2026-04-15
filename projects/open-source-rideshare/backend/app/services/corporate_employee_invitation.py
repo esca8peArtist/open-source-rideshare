@@ -7,6 +7,7 @@ BusinessAccountMember row linking their user account to the corporate account.
 Public surface
 --------------
 create_invitation(db, account_id, invited_by_id, data)
+create_bulk_invitations(db, account_id, invited_by_id, items, expires_at=None)
 get_invitation(db, invite_id, account_id)
 list_invitations(db, account_id, status_filter=None, skip=0, limit=50)
 revoke_invitation(db, invite_id, account_id, revoked_by_id)
@@ -29,7 +30,8 @@ from app.models.corporate_employee_invitation import (
     InvitationRole,
     InvitationStatus,
 )
-from app.schemas.corporate_employee_invitation import InvitationCreate
+from app.models.user import User
+from app.schemas.corporate_employee_invitation import BulkInvitationItem, InvitationCreate
 
 _DEFAULT_EXPIRY_DAYS = 7
 
@@ -173,6 +175,125 @@ async def create_invitation(
     db.add(invitation)
     await db.flush()
     return invitation
+
+
+async def create_bulk_invitations(
+    db: AsyncSession,
+    account_id: int,
+    invited_by_id: int,
+    items: list[BulkInvitationItem],
+    expires_at: datetime | None = None,
+) -> list[dict]:
+    """Create multiple employee invitations in a single operation.
+
+    Admin access is verified once upfront.  Each item is then processed
+    independently — per-item failures (duplicate pending, email already an
+    active member of this account) are recorded as "skipped" entries rather
+    than aborting the entire batch.
+
+    Args:
+        db: Database session.
+        account_id: Corporate account issuing the invitations.
+        invited_by_id: User ID of the admin sending the invitations.
+        items: List of BulkInvitationItem entries (1–100).
+        expires_at: Optional shared expiry; defaults to 7 days from now.
+
+    Returns:
+        List of dicts with keys: email, role, status, reason, invitation.
+        ``status`` is one of "created" | "skipped" | "error".
+
+    Raises:
+        HTTPException 403: Caller is not an account admin.
+    """
+    await _require_account_admin(db, account_id, invited_by_id)
+
+    now = _now_utc()
+    shared_expires_at = (
+        expires_at if expires_at is not None else now + timedelta(days=_DEFAULT_EXPIRY_DAYS)
+    )
+    if shared_expires_at.tzinfo is None:
+        shared_expires_at = shared_expires_at.replace(tzinfo=timezone.utc)
+
+    results: list[dict] = []
+
+    for item in items:
+        email_lower = item.email.lower()
+
+        # Guard: duplicate pending invitation for same email+account
+        existing_pending = await db.execute(
+            select(CorporateEmployeeInvitation).where(
+                CorporateEmployeeInvitation.account_id == account_id,
+                CorporateEmployeeInvitation.email == email_lower,
+                CorporateEmployeeInvitation.status == InvitationStatus.PENDING,
+            )
+        )
+        if existing_pending.scalar_one_or_none() is not None:
+            results.append(
+                {
+                    "email": email_lower,
+                    "role": item.role,
+                    "status": "skipped",
+                    "reason": "A pending invitation for this email already exists.",
+                    "invitation": None,
+                }
+            )
+            continue
+
+        # Guard: email is already an active member of this account
+        already_member = await db.execute(
+            select(BusinessAccountMember)
+            .join(User, User.id == BusinessAccountMember.user_id)
+            .where(
+                BusinessAccountMember.account_id == account_id,
+                BusinessAccountMember.is_active.is_(True),
+                User.email == email_lower,
+            )
+        )
+        if already_member.scalar_one_or_none() is not None:
+            results.append(
+                {
+                    "email": email_lower,
+                    "role": item.role,
+                    "status": "skipped",
+                    "reason": "This email address is already an active member of the account.",
+                    "invitation": None,
+                }
+            )
+            continue
+
+        try:
+            invitation = CorporateEmployeeInvitation(
+                account_id=account_id,
+                email=email_lower,
+                invited_by_id=invited_by_id,
+                role=item.role,
+                message=item.message,
+                expires_at=shared_expires_at,
+                status=InvitationStatus.PENDING,
+            )
+            db.add(invitation)
+            await db.flush()
+            results.append(
+                {
+                    "email": email_lower,
+                    "role": item.role,
+                    "status": "created",
+                    "reason": None,
+                    "invitation": invitation,
+                }
+            )
+        except Exception as exc:  # pragma: no cover
+            results.append(
+                {
+                    "email": email_lower,
+                    "role": item.role,
+                    "status": "error",
+                    "reason": str(exc),
+                    "invitation": None,
+                }
+            )
+
+    return results
 
 
 async def get_invitation(
