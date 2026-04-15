@@ -4,6 +4,42 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 157 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,743 tests passing, continuing from session 156
+
+### Task: Ride Carbon Footprint Tracker
+
+#### feat(rideshare): ride carbon footprint tracker (commit `07e3d2f`)
+Green Rides cooperative differentiator: per-ride CO2 tracking + voluntary
+carbon offset payments. Uber/Lyft offer no environmental accountability;
+a cooperative that cares about its community should.
+
+- `RideCarbonRecord`: one row per ride; emission_class (petrol/diesel/hybrid/electric/unknown),
+  distance_km, co2_grams (computed at creation), offset_cost_cents, offset_paid flag.
+  Emission rates: petrol 120g/km, diesel 130g/km, hybrid 70g/km, electric 50g/km
+  Offset pricing: $1/10kg CO2 = 10 cents per kg
+- 7 service functions: calculate_co2 (pure), calculate_offset_cost_cents (pure),
+  record_ride_carbon (idempotent upsert — preserves offset if already paid),
+  get_ride_carbon, pay_carbon_offset (404/409 guards),
+  get_rider_carbon_summary (aggregate per rider), get_platform_carbon_stats (admin)
+- 5 endpoints:
+    GET  /carbon/rides/{ride_id}         — per-ride carbon data
+    GET  /carbon/me/summary              — rider lifetime footprint + breakdown by class
+    POST /carbon/rides/{ride_id}/offset  — pay voluntary carbon offset
+    POST /carbon/admin/rides             — record/update carbon data for a ride (admin)
+    GET  /carbon/admin/stats             — platform sustainability metrics (admin)
+- Migration h1i2j3k4l5m6 (down_revision: g1h2i3j4k5l6) — 1 table, 1 enum, 3 indexes
+- **26 new tests passing**; **Total: 4,769 passing** (4,743 before), 0 failing
+
+#### Session end
+
 ## Session 156 — 2026-04-15
 
 ### Orient

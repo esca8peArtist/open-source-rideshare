@@ -9,7 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–156
+**Sessions**: 129–157
+
+### Accomplished (Session 157)
+
+#### open-source-rideshare — Ride Carbon Footprint Tracker
+
+**Feat (commit `07e3d2f`)**: Green Rides — per-ride CO2 tracking and voluntary carbon offsets. Cooperative differentiator: Uber/Lyft offer no environmental accountability.
+
+- **1 model**: `RideCarbonRecord` — emission_class (petrol/diesel/hybrid/electric/unknown), distance_km, co2_grams computed at record creation, voluntary offset payment tracking
+- **Emission rates**: petrol 120g/km, diesel 130g/km, hybrid 70g/km, electric 50g/km (well-to-wheel mixed grid)
+- **Offset pricing**: $1 per 10kg CO2 (10 cents/kg) — minimum 1 cent
+- **7 service functions**: 2 pure calculators + idempotent record upsert (preserves offset if already paid) + get + pay offset (409 if already paid) + rider summary + platform stats
+- **5 endpoints**: rider (per-ride data, lifetime summary, pay offset) + admin (record/update, platform sustainability metrics with green_pct, electric_pct)
+- **Migration h1i2j3k4l5m6** (down_revision: g1h2i3j4k5l6) — 1 table, 1 enum, 3 indexes
+- **26 new tests**; **Total: 4,769 passing** (up from 4,743)
 
 ### Accomplished (Session 156)
 
