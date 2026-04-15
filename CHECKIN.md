@@ -9,7 +9,22 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 129–204
+**Sessions**: 129–205
+
+### Accomplished (Session 205)
+
+#### open-source-rideshare — Corporate Policy Violation Tracking (commit `19f0c47`)
+
+Corporate accounts now have an append-only compliance audit trail of ride policy violations. When employees' bookings break account ride policy, violations are recorded with type, JSONB context (e.g. attempted vehicle type vs. allowed types), and a policy snapshot so the audit trail remains accurate even if the policy later changes.
+
+- **`CorporatePolicyViolation` model**: account+member FKs CASCADE; ride_id FK SET NULL (NULL for pre-booking denials); `violation_type` String(50); `violation_details` + `policy_snapshot` JSONB; `is_acknowledged` + acknowledgement audit fields (by_id, at, note); immutable `created_at` (no updated_at — violations are never mutated); 4 indexes (account_id; member_id; account+created_at; account+is_acknowledged)
+- **8 ViolationType values**: `vehicle_type` / `per_ride_cost_exceeded` / `business_hours` / `missing_purpose` / `unapproved_purpose` / `spend_limit_exceeded` / `ride_quota_exceeded` / `blackout_period`
+- **7 service functions**: `record_violation` / `get_violation` (404 on wrong account) / `list_violations` (member+type+ack+date-range filters; newest-first) / `acknowledge_violation` (409 if already acked) / `bulk_acknowledge_violations` (silently skips already-acked or not-found rows) / `get_violation_summary` (total + unacknowledged count + by_type breakdown + top-5 offenders + period_days) / `list_all_violations` (platform-admin cross-account)
+- **8 endpoints**: member list-own (with ack filter); admin list+summary+get+acknowledge+bulk-acknowledge; platform-admin list-all+manually-record
+- **Migration `b2c3d4e5f6a7`** (revises `a1b2c3d4e5f6`)
+- **45 tests** → **Total: 6,850 passing** (was 6,805)
+
+---
 
 ### Accomplished (Session 204)
 

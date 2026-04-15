@@ -4,6 +4,42 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 205 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Policy Violation Tracking
+
+### Task: Corporate Policy Violation Tracking — COMPLETE (commit `19f0c47`)
+
+Append-only compliance audit trail for corporate ride policy violations.
+When employees' bookings break account ride policy, violations are recorded
+with type, JSONB context, and a policy snapshot for auditing.
+
+- CorporatePolicyViolation model (account+member FKs CASCADE; ride_id
+  SET NULL optional; violation_type String(50); violation_details +
+  policy_snapshot JSONB; is_acknowledged + ack audit fields; immutable
+  created_at; 4 indexes)
+- 8 ViolationType values: vehicle_type / per_ride_cost_exceeded /
+  business_hours / missing_purpose / unapproved_purpose /
+  spend_limit_exceeded / ride_quota_exceeded / blackout_period
+- 7 service functions (record_violation; get_violation; list_violations
+  with member+type+ack+date filters; acknowledge_violation 409-if-acked;
+  bulk_acknowledge_violations silently-skips-acked; get_violation_summary
+  with by_type+top_offenders; list_all_violations platform-admin)
+- 8 endpoints: member list-own; admin list+summary+get+acknowledge+
+  bulk-acknowledge; platform-admin list-all+record
+- Migration b2c3d4e5f6a7 (revises a1b2c3d4e5f6)
+- 45 tests → Total: 6,850 passing
+
+#### Session end
+
+---
+
 ## Session 204 — 2026-04-16
 
 ### Orient
