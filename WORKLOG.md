@@ -4,6 +4,44 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 177 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,489 tests passing, continuing corporate feature track
+
+### Task: Corporate Blackout Periods (commit `d6dff97`)
+
+Admins define named date ranges when corporate bookings are restricted.
+Complements the existing `business_hours_only` flag on ride policy with
+support for specific calendar windows (holidays, shutdowns, weekly blocks).
+
+- **Model** (`corporate_blackout_period.py`): `CorporateBlackoutPeriod` with
+  `BlackoutRecurrence` enum (none/annual/weekly). UUID PK, account FK, name,
+  start/end datetime, affected_days JSONB (weekday integers for weekly),
+  override_allowed + override_requires_approval booleans, reason text,
+  is_active soft-disable, created_by FK.
+- **6 service functions**: `create_blackout_period` (validates end > start),
+  `get_blackout_period` (404 on wrong account), `list_blackout_periods`
+  (active_only/from_dt/to_dt filters), `update_blackout_period` (partial update,
+  re-validates dates), `delete_blackout_period`, `check_booking_blackout`
+  (core engine: evaluates all active periods with `_period_covers` — handles
+  none/annual/weekly recurrence including annual cross-year wrapping).
+- **9 endpoints**: 7 member (`POST/GET-list/GET-check/GET/{id}/PATCH/{id}/DELETE/{id}/POST-deactivate`)
+  under `/corporate/accounts/me/blackout-periods` + 2 platform-admin (list + check).
+  `/check` route declared before `/{id}` to prevent FastAPI path conflict.
+- **Migration `y2z3a4b5c6d7`** (down: `x2y3z4a5b6c7`): `blackoutrecurrence` enum
+  + `corporate_blackout_periods` table with 2 indexes.
+- **45 new tests** (all passing); **Total: 5,534 passing** (up from 5,489)
+
+#### Session end
+
+---
+
 ## Session 176 — 2026-04-15
 
 ### Orient

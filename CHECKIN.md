@@ -9,27 +9,27 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–176
+**Sessions**: 129–177
 
-### Accomplished (Session 176)
+### Accomplished (Session 177)
 
-#### open-source-rideshare — Corporate Budget Alerts
+#### open-source-rideshare — Corporate Blackout Periods
 
-**Feat (commit `3f5027f`)**: Admins configure percentage-based spend thresholds on cost centers or the overall account. An evaluation endpoint computes current-month utilisation and triggers any qualifying alerts, recording spend and budget snapshots at the moment of trigger. Triggered alerts can be acknowledged by any account admin.
+**Feat (commit `d6dff97`)**: Admins define named date ranges during which corporate bookings are restricted. Three recurrence modes: one-time (`none`), annually-repeating (e.g., "Christmas" every Dec 24–26), and weekly recurring (e.g., "No weekend corporate rides"). The `/check` endpoint lets callers verify whether a proposed booking datetime is blocked before attempting to book.
 
-**Example flow**: Admin sets a 75% threshold on the "Engineering" cost center → runs evaluate for April 2026 → if Engineering has spent ≥75% of its monthly budget, alert flips to `triggered` with `spend_at_trigger_usd` and `budget_at_trigger_usd` recorded → admin acknowledges, alert moves to `acknowledged`.
+**Example flow**: Admin creates an annual blackout "Christmas Shutdown" Dec 24–26. Employee's booking app calls `GET /corporate/accounts/me/blackout-periods/check?dt=2026-12-25T10:00:00Z` → `is_blacked_out: true, active_periods: [...]` → app blocks booking or prompts for override approval.
 
-- **`CorporateBudgetAlert` model**: unique per `(account, scope, cost_center, threshold_pct)`, `BudgetAlertScope` enum (cost_center/account), `BudgetAlertStatus` enum (active/triggered/acknowledged), full trigger + acknowledge audit trail
-- **7 service functions**: create (1–100 validation, 409 on dupe), get, list (scope/status filter), update (rejects triggered/acknowledged), delete, acknowledge, evaluate (monthly aggregate engine, caches per-cost-center spend within a run)
-- **9 endpoints**: member CRUD + evaluate + acknowledge under `/corporate/accounts/me/budget-alerts`; platform-admin list + evaluate under `/admin/corporate/accounts/{id}/budget-alerts`
-- **Migration `x2y3z4a5b6c7`**: 2 enum types + `corporate_budget_alerts` table + indexes
-- **48 new tests**; **Total: 5,489 passing** (up from 5,441)
+- **`CorporateBlackoutPeriod` model**: UUID PK, account FK, name, start/end datetime (timezone-aware), `BlackoutRecurrence` enum (none/annual/weekly), `affected_days` JSONB (weekday integers for weekly blocks), `override_allowed`/`override_requires_approval` booleans, reason, `is_active` soft-disable, created_by FK
+- **6 service functions**: create (validates end > start), get (404 on wrong account), list (active_only/from_dt/to_dt filters), update (partial, re-validates dates), delete, check_booking_blackout (`_period_covers` handles all three recurrence types, including annual cross-year wrapping)
+- **9 endpoints**: 7 member (create/list/check-datetime/get/update/delete/deactivate) + 2 platform-admin (list/check); `/check` declared before `/{id}` to avoid FastAPI path conflict
+- **Migration `y2z3a4b5c6d7`** (down: `x2y3z4a5b6c7`): `blackoutrecurrence` enum + `corporate_blackout_periods` table + 2 indexes
+- **45 new tests** (all passing); **Total: 5,534 passing** (up from 5,489)
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `3f5027f`)
-Includes Sessions 166–176: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, **budget alerts**.
+Branch: `feature/corporate-business-accounts` (latest commit `d6dff97`)
+Includes Sessions 166–177: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, **blackout periods**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---
