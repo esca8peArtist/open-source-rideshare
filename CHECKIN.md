@@ -9,7 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–161
+**Sessions**: 129–162
+
+### Accomplished (Session 162)
+
+#### open-source-rideshare — Community Safety Alerts
+
+**Feat (commit `1d77664`)**: Crowdsourced hazard reporting for drivers and riders. Every cooperative member can warn others about road conditions, construction, weather, and safety concerns in real time. Unlike Uber/Lyft (which silo safety data), this gives the network a live community safety layer where every member has a voice.
+
+- **2 models**: `SafetyAlert` (alert type: road_hazard/construction/weather/traffic/dangerous_area/other; severity: low/medium/high/critical; lat/lon + radius_meters; optional description + auto-expiry; moderation lifecycle: pending/auto_approved/approved/rejected; cached upvote_count; soft-deactivate); `SafetyAlertUpvote` (unique vote per user per alert; CASCADE delete)
+- **Auto-approval**: low-sensitivity types (road_hazard, construction, weather, traffic) skip moderation and are immediately visible; sensitive types (dangerous_area, other) enter pending queue for admin review
+- **Proximity search**: haversine great-circle + bounding-box DB pre-filter; alert's own radius_meters extends effective query radius (e.g. a 500m area alert surfaced even if its centre is slightly outside the query zone)
+- **10 service functions**: create (auto-approve logic), get (404 on miss), nearby search (approved + active + non-expired), upvote (409 on dupe or inactive), list mine, deactivate (reporter or admin; 403/409 guards), admin list (filter by status/type), admin moderate (approve/reject; reject also deactivates), platform stats
+- **10 endpoints**: 5 auth-user (POST /safety-alerts, GET /nearby, GET /me, POST /upvote, DELETE deactivate); 4 admin (list, detail, moderate, stats); 1 admin force-deactivate
+- **Migration m1n2o3p4q5r6** (down_revision: l1m2n3o4p5q6) — 2 tables, 4 enum types, 7 indexes, 1 unique constraint
+- **48 new tests** (48 passed, 12 skipped — integration tests need live DB); **Total: 4,969 passing** (up from 4,921)
 
 ### Accomplished (Session 161)
 

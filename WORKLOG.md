@@ -4,6 +4,53 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 162 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,921 tests passing, continuing from session 161
+
+### Task: Community Safety Alerts (commit `1d77664`)
+
+Crowdsourced hazard reporting layer — distinct from SOS (emergency-only) and driver
+incident reporting (post-ride). Drivers and riders can report road conditions,
+construction, weather, and safety concerns in real time.  Approved alerts surface
+to nearby users via a proximity search (haversine + bounding-box DB pre-filter).
+
+Cooperative differentiator: Uber and Lyft silo safety data; this gives every
+cooperative member a voice in the network's real-time safety awareness.
+
+- **2 models**: `SafetyAlert` (type, severity, lat/lon, radius_meters, description,
+  auto-expiry, moderation lifecycle: pending/auto_approved/approved/rejected, cached
+  upvote_count, soft-deactivate); `SafetyAlertUpvote` (unique vote per user per alert)
+- **Auto-approval** for low-sensitivity types (road_hazard, construction, weather,
+  traffic) — immediately visible; **pending** for dangerous_area and other (admin review)
+- **Proximity search**: haversine great-circle distance + bounding-box DB pre-filter
+  (±radius/111° lat/lon); alert's own radius_meters extends effective search radius
+- **10 service functions**: create, get (404 on miss), nearby search (approved + active
+  + non-expired), upvote (idempotent 409 on dupe, 409 on inactive alert), list mine,
+  deactivate (reporter or admin; 403 for non-reporter; 409 if already inactive), admin
+  list with status/type filters, admin moderate (approve/reject; reject also deactivates),
+  platform stats (by type + severity, top upvoted, pending backlog)
+- **10 endpoints** (5 auth-user, 4 admin, 1 admin force-deactivate):
+  - POST /safety-alerts (report); GET /safety-alerts/nearby (proximity search);
+    GET /safety-alerts/me (mine); POST /safety-alerts/{id}/upvote; DELETE /safety-alerts/{id}
+  - GET /admin/safety-alerts (all, filterable); GET /admin/safety-alerts/stats;
+    GET /admin/safety-alerts/{id}; POST /admin/safety-alerts/{id}/moderate;
+    DELETE /admin/safety-alerts/{id} (force)
+- **Migration m1n2o3p4q5r6** (down_revision: l1m2n3o4p5q6) — 2 tables, 4 enum types,
+  7 indexes, 1 unique constraint
+- **48 new tests** (48 passed, 12 skipped — integration tests need live DB)
+- **Total: 4,969 passing** (up from 4,921)
+
+#### Session end
+
+---
+
 ## Session 161 — 2026-04-15
 
 ### Orient
