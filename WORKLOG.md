@@ -4,6 +4,53 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 159 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,798 tests passing, continuing from session 158
+
+### Task: Driver Incentive Zones
+
+Transparent "boost zones" for drivers — admin-created geographic zones with
+earnings bonuses (multiplier or flat). Differentiator: unlike Uber's opaque Boost,
+the cooperative shows drivers exactly why a zone exists and what they'll earn.
+
+#### feat(rideshare): driver incentive zones (commit `f68fd69`)
+
+- **2 models**: `DriverIncentiveZone` (polygon or circle geometry; MULTIPLIER
+  or FLAT bonus type; optional total/per-driver caps; mandatory `reason` field
+  for cooperative transparency); `DriverZoneCompletion` (idempotent per-ride
+  bonus record; (zone_id, ride_id) unique constraint prevents double-awarding)
+- **Pure helpers**: `check_ride_qualifies` (ray-cast polygon + haversine circle
+  check; validates active flag and time window); `_haversine_km`; `_ray_cast_in_polygon`
+- **10 service functions**: create/update/deactivate/get/get_active/get_all,
+  record_zone_completion (idempotent; total + per-driver cap guards),
+  get_driver_completions, get_driver_zone_summary, get_zone_stats
+- **11 endpoints** (4 driver, 7 admin):
+    GET  /incentive-zones                          — list active zones (driver)
+    GET  /incentive-zones/{zone_id}                — zone detail (driver)
+    GET  /incentive-zones/my/completions           — driver's bonus history
+    GET  /incentive-zones/my/summary               — driver's aggregate earnings
+    POST /incentive-zones/admin                    — create zone (admin)
+    GET  /incentive-zones/admin/all                — all zones paginated (admin)
+    GET  /incentive-zones/admin/{zone_id}          — zone detail (admin)
+    PUT  /incentive-zones/admin/{zone_id}          — update zone (admin)
+    POST /incentive-zones/admin/{zone_id}/deactivate — end zone early (admin)
+    POST /incentive-zones/admin/completions        — record completion bonus (admin)
+    GET  /incentive-zones/admin/{zone_id}/stats    — zone performance stats (admin)
+- **Migration j3k4l5m6n7o8** (down_revision: i2j3k4l5m6n7) — 2 tables,
+  1 enum type, 5 indexes, 1 unique constraint
+- **39 new tests** (39 passed, 0 failed); **Total: 4,837 passing** (up from 4,798)
+
+#### Session end
+
+---
+
 ## Session 158 — 2026-04-15
 
 ### Orient

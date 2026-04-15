@@ -9,7 +9,20 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–158
+**Sessions**: 129–159
+
+### Accomplished (Session 159)
+
+#### open-source-rideshare — Driver Incentive Zones (Transparent Boost Zones)
+
+**Feat (commit `f68fd69`)**: Cooperative-transparent "boost zones" — admins create time-limited geographic zones with earnings bonuses for drivers. Every zone includes a mandatory `reason` field visible to drivers, showing them the cooperative's rationale. Unlike Uber's opaque Boost multipliers, this is fully transparent governance.
+
+- **2 models**: `DriverIncentiveZone` (polygon or circle geometry; MULTIPLIER (e.g. 1.5× earnings) or FLAT (fixed cents per ride) bonus; optional total cap + per-driver cap; optional min rating; mandatory reason); `DriverZoneCompletion` (idempotent per-ride award; (zone_id, ride_id) unique constraint prevents double-awarding)
+- **Pure helpers**: `check_ride_qualifies` (ray-cast polygon check + haversine circle; validates active flag and time window); exposed for testing
+- **10 service functions**: create/update/deactivate/get zone, get active zones, get all zones, record_zone_completion (idempotent; total + per-driver cap guards), get_driver_completions, get_driver_zone_summary, get_zone_stats
+- **11 endpoints** (4 driver, 7 admin): driver (list active, zone detail, my bonus history, my earnings summary); admin (create, list all, get, update, deactivate, record completion, performance stats)
+- **Migration j3k4l5m6n7o8** (down_revision: i2j3k4l5m6n7) — 2 tables, 1 enum type, 5 indexes, 1 unique constraint
+- **39 new tests** (39 passed, 0 failed); **Total: 4,837 passing** (up from 4,798)
 
 ### Accomplished (Session 158)
 
