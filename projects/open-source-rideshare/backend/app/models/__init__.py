@@ -44,3 +44,6 @@ from app.models.driver_language import DriverLanguage, RiderLanguagePreference  
 from app.models.corporate import BusinessAccount, BusinessAccountMember  # noqa: F401
 from app.models.corporate_batch_booking import CorporateBatchBooking, CorporateBatchRideRequest  # noqa: F401
 from app.models.corporate_trip_purpose import CorporateTripPurpose  # noqa: F401
+from app.models.corporate_guest_pass import CorporateGuestPass  # noqa: F401
+from app.models.corporate_cost_center import CorporateCostCenter  # noqa: F401
+from app.models.corporate_budget_alert import CorporateBudgetAlert  # noqa: F401
