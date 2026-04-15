@@ -6167,3 +6167,54 @@ Riders frequently leave items in rideshare vehicles. A lost and found system:
 - **Total: 4,419 tests passing** (up from 4,383), 0 failing
 
 #### Session end
+
+## Session 147 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,467 tests passing — selected **Emergency Contact / Trip Sharing** as next feature
+
+### Rationale
+Riders frequently want to share trip details with trusted contacts (family, friends) for safety.
+Emergency contact / trip sharing:
+- Riders register up to 5 trusted contacts (name, phone, email, relationship)
+- Contacts can be set to auto-share on every ride or shared manually
+- When a ride starts, contacts receive a notification with trip details
+- When the ride completes, contacts receive a completion notification
+- Admin can view sharing activity platform-wide
+- Differentiator: cooperative safety feature not prominently offered by Uber/Lyft
+
+
+### open-source-rideshare — Trusted Contact & Trip Sharing System COMPLETE (commit `d7889ee`)
+- New models:
+  - `TrustedContact`: user_id, name, phone (optional), email (optional), relationship_label, share_automatically, is_active; unique constraint (user_id, phone); max 5 active per rider; requires phone OR email
+  - `TripShareRecord`: ride_id + contact_id (unique pair), shared_at, start_notified_at, complete_notified_at
+- New service: `app/services/trusted_contacts.py`
+  - add_contact: max-5 guard, dup-phone guard; requires phone or email (schema validator)
+  - list_contacts: active contacts only, newest first
+  - get_contact: ownership validated; 404 if not found/wrong owner
+  - update_contact: partial update; 404 guard
+  - delete_contact: soft-delete (is_active=False); 404 guard
+  - share_trip: ride ownership validated; auto-share or explicit contact_ids; idempotent (skips already-shared contacts); 404/403/400 guards
+  - notify_trip_started: stamps start_notified_at on un-stamped records; returns count
+  - notify_trip_completed: stamps complete_notified_at; returns count
+  - get_share_status: ride ownership validated; returns all TripShareRecord rows for ride
+- New schemas: `app/schemas/trusted_contact.py`
+  - TrustedContactCreate (model_validator: requires phone or email), TrustedContactUpdate, TrustedContactResponse
+  - ShareTripRequest (optional contact_ids), TripShareContactStatus, TripShareStatusResponse, AdminTripShareSummary
+- New router: `app/api/v1/trusted_contacts.py`
+  - POST /riders/me/trusted-contacts — add contact
+  - GET  /riders/me/trusted-contacts — list
+  - PUT  /riders/me/trusted-contacts/{id} — update
+  - DELETE /riders/me/trusted-contacts/{id} — soft-delete
+  - POST /riders/me/rides/{id}/share-trip — share (auto or explicit); stamps start_notified_at
+  - GET  /riders/me/rides/{id}/share-status — who was notified
+  - GET  /admin/trusted-contacts/summary — platform stats
+- Migration: c4d5e6f7g8h9 (follows b3c4d5e6f7g8) — trusted_contacts + trip_share_records; 4 indexes; 2 unique constraints
+- 54 tests (25 passing + 29 skipped — no live DB, consistent with project); **Total: 4,492 tests passing** (4,467 before), 0 failing
+
+#### Session end

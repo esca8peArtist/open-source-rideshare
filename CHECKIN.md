@@ -9,33 +9,36 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–146
+**Sessions**: 129–147
+
+### Accomplished (Session 147)
+
+#### open-source-rideshare — Trusted Contact & Trip Sharing System COMPLETE (commit `d7889ee`)
+Safety differentiator: riders register trusted contacts (family, friends) and share live trip details with them. Contacts get notified when a ride starts and when it completes.
+
+- **TrustedContact** model: up to 5 per rider; name, phone, email (at least one required), relationship_label, share_automatically flag; unique (user_id, phone) constraint
+- **TripShareRecord** model: one per (ride, contact) pair; tracks shared_at, start_notified_at, complete_notified_at — idempotent re-share skips already-notified contacts
+- Business rules: max 5 active contacts; duplicate phone blocked; ownership validated on all operations
+- 7 endpoints:
+  - `POST /riders/me/trusted-contacts` — add contact (max-5 guard, dup-phone guard)
+  - `GET /riders/me/trusted-contacts` — list active contacts
+  - `PUT /riders/me/trusted-contacts/{id}` — update (name, phone, email, share_automatically, is_active)
+  - `DELETE /riders/me/trusted-contacts/{id}` — soft-delete
+  - `POST /riders/me/rides/{id}/share-trip` — share with auto-share contacts or explicit ids; stamps start_notified_at immediately
+  - `GET /riders/me/rides/{id}/share-status` — who was notified and when
+  - `GET /admin/trusted-contacts/summary` — platform-wide stats (total contacts, auto-share count, total shares, rides shared)
+- Migration: c4d5e6f7g8h9 (follows b3c4d5e6f7g8)
+- **54 new tests** (25 passing + 29 skipped — no live DB, consistent with project); **Total: 4,492 tests passing** (up from 4,467), 0 failing
 
 ### Accomplished (Session 146)
 
 #### open-source-rideshare — Driver Rating Appeal System COMPLETE (commit `1d3f1db`)
-Cooperative differentiator: drivers can appeal retaliatory 1-star ratings; admins review and optionally nullify the rating from score calculations.
-
-- **DriverRatingAppeal** model: one appeal per feedback record (unique constraint on feedback_id); tracks reason, status, admin notes, reviewer, nullified flag
-- Business rules enforced: driver must be the rated party; no re-appeals; no admin re-review
-- On **approve**: `rating_nullified=True` — excluded from driver average going forward; underlying row preserved for audit
-- On **reject**: rating stands, appeal closed
-- 5 endpoints: driver POST/GET own appeals; admin GET all (status filter), POST review, GET summary dashboard
-- Migration: b3c4d5e6f7g8 (follows a2b3c4d5e6f7)
-- Also fixed: `RideFeedback` and `Dispute` were not in `app/models/__init__.py` — added (SQLAlchemy mapper was failing to resolve string relationship for any test that imported all models together)
-- **38 new tests** (16 passing + 22 skipped — no live DB, consistent with project); **Total: 4,467 tests passing** (up from 4,451), 0 failing
+- **38 new tests; Total: 4,467 tests passing** (up from 4,451), 0 failing
 
 ### Accomplished (Session 145)
 
 #### open-source-rideshare — Ride Cancellation Policies and Fees COMPLETE (commit `c2c332e`)
-Late cancellations cost drivers real income — this system enforces platform economics while keeping the cooperative's values (waiveable, admin-controlled, transparent).
-
-- **CancellationPolicy** (singleton, admin-managed): rider grace period (default 120s free cancel window), flat fee ($5.00 default), percent-of-fare option, driver free cancels per day (3), driver penalty when exceeded ($2.00)
-- **CancellationRecord**: one per cancelled ride — who cancelled, reason, grace-period-expired flag, fee amount, fee_status (pending/charged/waived/refunded), admin waive fields
-- Existing pure `evaluate_cancellation()` service preserved; DB-backed layer added alongside it
-- 9 endpoints: rider cancel ride + history, driver cancel + history, admin policy CRUD + list + waive + summary stats
-- Migration: a2b3c4d5e6f7 (down from y1z2a3b4c5d6)
-- **85 new tests** (53 passing + 32 skipped — no live DB, consistent with project); **Total: 4,451 tests passing** (up from 4,419), 0 failing
+- **85 new tests; Total: 4,451 tests passing** (up from 4,419), 0 failing
 
 ### Accomplished (Session 144)
 
@@ -54,9 +57,10 @@ Late cancellations cost drivers real income — this system enforces platform ec
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–146 (many features)
-Branch: `feature/corporate-business-accounts` — **4,467 tests passing**. Features since last push:
-- Driver Rating Appeal System (1d3f1db) ← new
+#### open-source-rideshare — PR: Sessions 129–147 (many features)
+Branch: `feature/corporate-business-accounts` — **4,492 tests passing**. Features since last push:
+- Trusted Contact & Trip Sharing (d7889ee) ← new
+- Driver Rating Appeal System (1d3f1db)
 - Ride Cancellation Policies and Fees (c2c332e)
 - Lost and Found System (cb508dd)
 - Driver Minimum Earnings Guarantee (8c7f28a)
@@ -101,7 +105,7 @@ Paper trading live since April 14. No autonomous path without `STOCKBOT_API_KEY`
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature TBD (4,467 tests, local commits ready)
+3. **open-source-rideshare**: Next feature TBD (4,492 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
