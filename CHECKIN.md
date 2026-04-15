@@ -9,7 +9,49 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–199
+**Sessions**: 129–202
+
+### Accomplished (Session 202)
+
+#### open-source-rideshare — Corporate Account Health Score (commit `c0b4d1d`)
+
+Corporate accounts and platform admins can now view a computed 0–100 health score that aggregates six data domains into a single risk indicator. Scores are stored as immutable snapshots, preserving historical trend data.
+
+- **`CorporateAccountHealthScore` model**: `HealthRiskLevel` enum (excellent/good/fair/poor/critical); `overall_score` 0–100 composite; 6 sub-scores (payment/compliance/credit/dispute/contract/suspension); `score_details` JSON evidence; `computed_at` + `computed_by_id` audit; CASCADE delete; 4 indexes + 7 check constraints
+- **5 service functions**: `compute_health_score` (weighted average: payment 30% / compliance 20% / credit 20% / dispute 15% / contract 10% / suspension 5%; persists snapshot) / `get_latest_health_score` / `get_health_score_history` / `list_accounts_by_health` (filter by risk_level or below_score; uses max-per-account subquery; sorted worst-first) / `get_at_risk_summary` (platform distribution counts by risk level)
+- **7 endpoints**: member `GET .../health-score` + `GET .../health-score/history`; admin `POST .../health-score/refresh` (403 if not account admin); platform-admin `GET/POST /admin/corporate/accounts/{id}/health-score(/recompute)` + `GET /admin/corporate/health-scores` (filters) + `GET /admin/corporate/health-scores/at-risk`
+- **Migration `x3y4z5a6b7c8`** (revises `w3x4y5z6a7b8`): `healthrisklevel` enum + `corporate_account_health_scores` table + 4 indexes
+- **46 tests** → **Total: 6,687 passing** (was 6,641)
+
+---
+
+### Accomplished (Session 201)
+
+#### open-source-rideshare — Corporate Invoice Dispute Resolution (commit `d0f793c`)
+
+Corporate accounts can now formally dispute charges on their invoices through a structured workflow. Employees submit disputes, admins review and resolve, members can withdraw before resolution.
+
+- **`CorporateInvoiceDispute` model**: `DisputeType` enum (7 values: incorrect_charge/service_failure/duplicate_charge/policy_violation/unauthorized_ride/pricing_discrepancy/other); `DisputeStatus` enum (5 values: submitted/under_review/resolved_upheld/resolved_denied/withdrawn); `description` text required (min 10 chars); `disputed_rides` JSON nullable (list of ride IDs); `disputed_amount_usd` optional; `resolved_by_id` FK SET NULL; `resolved_at` timestamp; CASCADE delete on both invoice and account; 4 indexes
+- **8 service functions**: `submit_dispute` (404 wrong invoice/account; 409 active dispute already exists; re-dispute allowed after resolution) / `update_dispute` (409 if not in submitted status) / `mark_under_review` (409 if resolved/withdrawn) / `resolve_dispute` (upheld/denied; sets resolved_by/at) / `withdraw_dispute` (409 if already resolved) / `get_dispute` / `list_account_disputes` (optional status filter) / `list_all_disputes` (platform-admin)
+- **9 endpoints**: member `POST .../disputes` (submit) + `GET .../disputes` (by invoice) + `GET /corporate/disputes/{id}` + `PUT .../update` + `DELETE .../withdraw`; admin `GET /corporate/accounts/{id}/disputes` + `POST .../review` + `POST .../resolve`; platform-admin `GET /admin/corporate/disputes`
+- **Migration `w3x4y5z6a7b8`** (revises `v2w3x4y5z6a7`): `disputetype` + `disputestatus` enums + `corporate_invoice_disputes` table + 4 indexes
+- **40 tests** → **Total: 6,641 passing** (was 6,601)
+
+---
+
+### Accomplished (Session 200)
+
+#### open-source-rideshare — Corporate Account Suspension & Reinstatement (commit `03907e5`)
+
+Platform-admins can now suspend corporate accounts for billing overdue, policy violations, fraud investigations, voluntary pauses, compliance failures, non-payment, or other reasons. Once issues are resolved, accounts can be reinstated with a note. Members can check their own account's suspension status.
+
+- **`CorporateAccountSuspension` model**: `SuspensionReason` enum (7 values: billing_overdue/policy_violation/fraud_investigation/voluntary_pause/compliance_failure/non_payment/other); `suspended_by_id` FK SET NULL (system events supported); `suspension_note` text; `suspended_at` default now(); `reinstated_at` nullable; `reinstated_by_id` FK SET NULL; `reinstatement_note`; `is_active` bool; CASCADE delete on account; 3 indexes
+- **6 service functions**: `suspend_account` (409 if active suspension already exists) / `reinstate_account` (404 if no active suspension) / `get_active_suspension` (None when not suspended) / `is_account_suspended` (bool — ready for booking-flow gating) / `list_suspension_history` (all records newest-first) / `list_all_suspended_accounts` (paginated, platform-admin cross-account)
+- **6 endpoints**: platform-admin `POST .../suspend` + `POST .../reinstate` + `GET .../suspension` (active only) + `GET .../suspension/history`; platform-admin `GET /admin/corporate/suspensions` (all suspended); member `GET /corporate/suspension/status` (own account)
+- **Migration `v2w3x4y5z6a7`** (revises `u1v2w3x4y5z6`): `suspensionreason` enum + `corporate_account_suspensions` table + 3 indexes
+- **38 tests** → **Total: 6,601 passing** (was 6,563)
+
+---
 
 ### Accomplished (Session 199)
 
@@ -74,7 +116,8 @@ Enterprise accounts can now configure how they are billed. This is the last majo
 #### open-source-rideshare — PR: feature/corporate-business-accounts
 
 Branch now includes (most recent first):
-- Corporate Carbon Budget & ESG Reporting (0c5d3a3) ← new
+- Corporate Account Suspension & Reinstatement (03907e5) ← new
+- Corporate Carbon Budget & ESG Reporting (0c5d3a3)
 - Corporate Account Contract Management (b7e139e)
 - Corporate Account Onboarding Checklist (868b7d7)
 - Corporate Billing Settings (19518f3)
@@ -83,7 +126,7 @@ Branch now includes (most recent first):
 - Corporate Preferred Driver Pool (d0f284f)
 - ... and 30+ more enterprise features
 
-**Total: 6,563 passing.** Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
+**Total: 6,601 passing.** Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
 
 ---
 

@@ -4,6 +4,113 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 202 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Health Score
+
+### Task: Corporate Account Health Score — COMPLETE (commit `c0b4d1d`)
+
+Computed 0–100 composite health score aggregating six domains: payment
+history (30%), compliance violations (20%), credit balance (20%), open
+disputes (15%), contract status (10%), suspension history (5%).
+
+- Model: CorporateAccountHealthScore (immutable snapshots; healthrisklevel
+  enum excellent/good/fair/poor/critical; 7 sub-scores + score_details JSON
+  evidence; computed_at + computed_by_id audit; CASCADE delete; 4 indexes +
+  7 check constraints)
+- Service: 5 functions (compute_health_score w/weighted average + persist;
+  get_latest_health_score; get_health_score_history; list_accounts_by_health
+  with risk_level+below_score filters using max-per-account subquery;
+  get_at_risk_summary platform distribution)
+- Endpoints: 7 (member get-latest + history; admin refresh-own w/403 guard;
+  platform-admin get + recompute + list-all + at-risk-summary)
+- Migration x3y4z5a6b7c8 (revises w3x4y5z6a7b8)
+- 46 tests → Total: 6,687 passing (was 6,641)
+
+#### Session end
+
+---
+
+## Session 201 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Invoice Disputes
+
+### Task: Corporate Invoice Disputes — COMPLETE (commit `d0f793c`)
+
+Corporate accounts can now formally dispute charges on their invoices.
+Employees submit disputes, admins mark under review and resolve, members
+can withdraw before resolution.
+
+- Model: CorporateInvoiceDispute (invoice_id FK CASCADE; account_id FK
+  CASCADE; submitted_by_id FK SET NULL; DisputeType enum 7 values:
+  incorrect_charge/service_failure/duplicate_charge/policy_violation/
+  unauthorized_ride/pricing_discrepancy/other; description text required;
+  disputed_rides JSON nullable; disputed_amount_usd Numeric(10,2) nullable;
+  DisputeStatus enum 5 values: submitted/under_review/resolved_upheld/
+  resolved_denied/withdrawn; resolution_note text nullable; resolved_by_id
+  FK SET NULL; resolved_at timestamp nullable; 4 indexes)
+- Service: 8 functions (submit_dispute 404 wrong invoice/account, 409 if
+  active dispute exists; update_dispute 409 if not submitted; mark_under_review
+  409 if resolved/withdrawn; resolve_dispute upheld/denied; withdraw_dispute
+  409 if resolved; list_account_disputes with status filter; list_all_disputes
+  platform-admin)
+- Endpoints: 9 (member submit/list-by-invoice/get/update/withdraw; admin
+  list-account/mark-review/resolve; platform-admin list-all)
+- Migration: w3x4y5z6a7b8 (down_revision: v2w3x4y5z6a7); disputetype +
+  disputestatus enums + corporate_invoice_disputes table + 4 indexes
+- 40 tests → Total: 6,641 passing (was 6,601)
+
+#### Session end
+
+---
+
+## Session 200 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Suspension & Reinstatement
+
+### Task: Corporate Account Suspension & Reinstatement — COMPLETE (commit `03907e5`)
+
+Platform-admins can now suspend corporate accounts for billing/compliance/policy
+reasons and reinstate them once issues are resolved. Critical operational feature
+for managing problematic accounts — integrates with existing billing, contracts,
+and credit systems.
+
+- Model: CorporateAccountSuspension (account_id FK CASCADE; suspended_by_id FK
+  SET NULL for system events; SuspensionReason enum 7 values: billing_overdue/
+  policy_violation/fraud_investigation/voluntary_pause/compliance_failure/
+  non_payment/other; suspension_note text; suspended_at; reinstated_at nullable;
+  reinstated_by_id FK SET NULL; reinstatement_note; is_active bool)
+- Service: 6 functions (suspend_account 409 on duplicate active; reinstate_account
+  404 if no active suspension; get_active_suspension; is_account_suspended bool;
+  list_suspension_history newest-first; list_all_suspended_accounts paginated)
+- Endpoints: 6 (platform-admin suspend/reinstate/get-suspension/list-history/
+  list-all-suspended; member suspension-status check for own account)
+- Migration: v2w3x4y5z6a7 (down_revision: u1v2w3x4y5z6); suspensionreason enum
+  + corporate_account_suspensions table + 3 indexes
+- 38 tests → Total: 6,601 passing (was 6,563)
+
+#### Session end
+
+---
+
 ## Session 199 — 2026-04-15
 
 ### Orient
