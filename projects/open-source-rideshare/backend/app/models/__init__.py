@@ -32,3 +32,4 @@ from app.models.rider_referral import RiderReferralCode, RiderReferral  # noqa: 
 from app.models.service_area import ServiceArea  # noqa: F401
 from app.models.driver_quest import DriverQuest, DriverQuestProgress  # noqa: F401
 from app.models.driver_proposal import DriverProposal, DriverVote  # noqa: F401
+from app.models.driver_dividend import CooperativeDividend, DriverDividendShare  # noqa: F401
