@@ -9,26 +9,52 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–147
+**Sessions**: 129–149
+
+### Accomplished (Session 149)
+
+#### open-source-rideshare — Driver Shift & Hours Tracking System COMPLETE (commit `b715edb`)
+Cooperative differentiator: Uber/Lyft have no driver fatigue protections. This gives drivers clock-in/out, daily/weekly hours visibility, and break recommendations — and gives admins a platform-wide fatigue dashboard.
+
+- **DriverShift** model: driver_id, started_at, ended_at, status (active/completed/auto_ended), rides_completed, total_minutes, admin_note, ended_by_admin_id
+- **Policy constants**: 12 h/day max, 60 h/week max, break recommended after 4 h on shift
+- **9 endpoints**:
+  - Driver: `POST /drivers/me/shift/start` — clock in; `POST /drivers/me/shift/end` — clock out
+  - Driver: `GET /drivers/me/shift/current` — active shift status
+  - Driver: `GET /drivers/me/shifts` — paginated history; `GET /drivers/me/hours/summary` — daily + weekly hours
+  - Driver: `GET /drivers/me/shift/fatigue` — break recommendation + hours remaining
+  - Admin: `GET /admin/driver-shifts` — all shifts (filter by driver, status, date); `GET /admin/driver-hours/summary` — fatigue dashboard
+  - Admin: `POST /admin/driver-shifts/{id}/end` — force-end any active shift (records admin note)
+- Migration: z1a2b3c4d5e6 — driver_shifts table, 4 indexes
+- **16 new tests passing** (25 DB tests skipped); **Total: 4,547 tests passing** (up from 4,531), 0 failing
+
+### Accomplished (Session 148)
+
+#### open-source-rideshare — Corporate Business Accounts System COMPLETE (commit `71401f6`)
+Companies can register corporate accounts, add employee riders with optional per-member spend limits, and receive consolidated billing invoices. Platform admins manage and audit all accounts.
+
+- **BusinessAccount** model: company name, tax_id (optional), billing_email, billing_address, status (pending/active/suspended/cancelled), monthly_budget_limit
+- **BusinessAccountMember** model: account + user pair; role (admin/member); per-member monthly_spend_limit; soft-deletable; max 500 per account; user can only belong to one active account
+- **BusinessInvoice** model: billing period, total rides + amount, status lifecycle (draft → issued → paid/overdue)
+- 17 endpoints:
+  - `POST /corporate/accounts` — create account (becomes admin)
+  - `GET/PUT /corporate/accounts/me` — view/update own account
+  - `GET/POST /corporate/accounts/me/members` — list / add members
+  - `PUT/DELETE /corporate/accounts/me/members/{user_id}` — update / remove member (last-admin guard)
+  - `GET /corporate/accounts/me/invoices` — invoice history
+  - `GET /corporate/accounts/me/spend` — current month spend summary
+  - `GET /admin/corporate/accounts` — list all (filter by status)
+  - `PUT /admin/corporate/accounts/{id}/suspend|activate` — account status management
+  - `POST /admin/corporate/accounts/{id}/invoices` — generate invoice for billing period
+  - `PUT /admin/corporate/invoices/{id}/issue|paid` — invoice lifecycle
+  - `GET /admin/corporate/summary` — platform-wide totals
+- Migration: d5e6f7g8h9i0 — corporate_accounts_v2, corporate_account_members, corporate_invoices; 3 enum types, 5 indexes
+- **45 new tests** (39 passing + 6 skipped); **Total: 4,531 tests passing** (up from 4,492), 0 failing
 
 ### Accomplished (Session 147)
 
 #### open-source-rideshare — Trusted Contact & Trip Sharing System COMPLETE (commit `d7889ee`)
-Safety differentiator: riders register trusted contacts (family, friends) and share live trip details with them. Contacts get notified when a ride starts and when it completes.
-
-- **TrustedContact** model: up to 5 per rider; name, phone, email (at least one required), relationship_label, share_automatically flag; unique (user_id, phone) constraint
-- **TripShareRecord** model: one per (ride, contact) pair; tracks shared_at, start_notified_at, complete_notified_at — idempotent re-share skips already-notified contacts
-- Business rules: max 5 active contacts; duplicate phone blocked; ownership validated on all operations
-- 7 endpoints:
-  - `POST /riders/me/trusted-contacts` — add contact (max-5 guard, dup-phone guard)
-  - `GET /riders/me/trusted-contacts` — list active contacts
-  - `PUT /riders/me/trusted-contacts/{id}` — update (name, phone, email, share_automatically, is_active)
-  - `DELETE /riders/me/trusted-contacts/{id}` — soft-delete
-  - `POST /riders/me/rides/{id}/share-trip` — share with auto-share contacts or explicit ids; stamps start_notified_at immediately
-  - `GET /riders/me/rides/{id}/share-status` — who was notified and when
-  - `GET /admin/trusted-contacts/summary` — platform-wide stats (total contacts, auto-share count, total shares, rides shared)
-- Migration: c4d5e6f7g8h9 (follows b3c4d5e6f7g8)
-- **54 new tests** (25 passing + 29 skipped — no live DB, consistent with project); **Total: 4,492 tests passing** (up from 4,467), 0 failing
+- **54 new tests; Total: 4,492 tests passing** (up from 4,467), 0 failing
 
 ### Accomplished (Session 146)
 
@@ -40,26 +66,13 @@ Safety differentiator: riders register trusted contacts (family, friends) and sh
 #### open-source-rideshare — Ride Cancellation Policies and Fees COMPLETE (commit `c2c332e`)
 - **85 new tests; Total: 4,451 tests passing** (up from 4,419), 0 failing
 
-### Accomplished (Session 144)
-
-#### open-source-rideshare — Lost and Found System COMPLETE (commit `cb508dd`)
-- **68 new tests; Total: 4,419 tests passing** (up from 4,383), 0 failing
-
-### Accomplished (Session 143)
-
-#### open-source-rideshare — Driver Minimum Earnings Guarantee COMPLETE (commit `8c7f28a`)
-- **67 new tests; Total: 4,383 tests passing** (up from 4,316), 0 failing
-
-### Accomplished (Session 142)
-
-#### open-source-rideshare — Cooperative Member Dividend / Profit-Sharing COMPLETE (commit `b827b33`)
-- **63 new tests; Total: 4,316 tests passing** (up from 4,253), 0 failing
-
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–147 (many features)
-Branch: `feature/corporate-business-accounts` — **4,492 tests passing**. Features since last push:
-- Trusted Contact & Trip Sharing (d7889ee) ← new
+#### open-source-rideshare — PR: Sessions 129–149 (many features)
+Branch: `feature/corporate-business-accounts` — **4,547 tests passing**. Features since last push:
+- Driver Shift & Hours Tracking (b715edb) ← new
+- Corporate Business Accounts (71401f6)
+- Trusted Contact & Trip Sharing (d7889ee)
 - Driver Rating Appeal System (1d3f1db)
 - Ride Cancellation Policies and Fees (c2c332e)
 - Lost and Found System (cb508dd)
@@ -105,7 +118,7 @@ Paper trading live since April 14. No autonomous path without `STOCKBOT_API_KEY`
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature TBD (4,492 tests, local commits ready)
+3. **open-source-rideshare**: Next feature TBD (4,531 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---

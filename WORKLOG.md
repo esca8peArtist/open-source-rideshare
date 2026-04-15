@@ -4,6 +4,44 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 149 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — **Driver Shift & Hours Tracking**
+
+### Rationale
+Clear cooperative differentiator — Uber/Lyft impose no driver fatigue protections and have faced regulatory scrutiny for it. Shift tracking (clock-in/out), daily/weekly hours limits, break recommendations, and an admin fatigue dashboard directly embodies the cooperative promise to protect drivers from overwork.
+
+### open-source-rideshare — Driver Shift & Hours Tracking COMPLETE (commit `b715edb`)
+- New model: `app/models/driver_shift.py`
+  - `DriverShift`: driver_id, started_at, ended_at, status (active/completed/auto_ended), rides_completed, total_minutes, admin_note, ended_by_admin_id
+  - `ShiftStatus` enum
+- New schemas: `app/schemas/driver_shift.py`
+  - `DriverShiftOut`, `DriverShiftListOut`, `HoursSummaryOut`, `DailyHoursSummary`, `FatigueStatusOut`, `AdminShiftRow`, `AdminShiftListOut`, `AdminHoursSummaryOut`, `AdminForceEndShift`
+  - Policy constants: MAX_HOURS_PER_DAY=12, MAX_HOURS_PER_WEEK=60, BREAK_AFTER_HOURS=4
+- New service: `app/services/driver_shift.py` (all async)
+  - `start_shift` / `end_shift` (409 conflict, 404 not-found guards)
+  - `get_active_shift`, `list_driver_shifts` (paginated)
+  - `get_hours_summary`: daily + weekly hours, limit proximity flags
+  - `get_fatigue_status`: current shift elapsed, break recommendation (after 4 h)
+  - `admin_force_end_shift`: marks auto_ended, records admin note + who ended
+  - `admin_list_shifts`: filter by driver_id, status, date range
+  - `admin_hours_summary`: active shifts, drivers near/over daily/weekly limits, avg shift today
+- New router: `app/api/v1/driver_shifts.py` — 9 endpoints
+  - Driver: POST shift/start (201), POST shift/end (200), GET shift/current (200/404), GET shifts (paginated), GET hours/summary, GET shift/fatigue
+  - Admin: GET driver-shifts (with filters), GET driver-hours/summary, POST driver-shifts/{id}/end
+- Migration: `z1a2b3c4d5e6` (follows y1z2a3b4c5d6) — driver_shifts table, 4 indexes
+- 16 tests passing + 25 skipped (no live DB); **Total: 4,547 tests passing** (up from 4,531), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
 ## Session 146 — 2026-04-15
 
 ### Orient
@@ -6216,5 +6254,38 @@ Emergency contact / trip sharing:
   - GET  /admin/trusted-contacts/summary — platform stats
 - Migration: c4d5e6f7g8h9 (follows b3c4d5e6f7g8) — trusted_contacts + trip_share_records; 4 indexes; 2 unique constraints
 - 54 tests (25 passing + 29 skipped — no live DB, consistent with project); **Total: 4,492 tests passing** (4,467 before), 0 failing
+
+#### Session end
+
+## Session 148 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,492 tests passing, branch `feature/corporate-business-accounts` — selected **Corporate Business Accounts** as next feature (matches branch name; admin-side corporate billing existed but no full business enrollment system)
+
+### open-source-rideshare — Corporate Business Accounts System COMPLETE (commit `71401f6`)
+Feature: Companies register corporate accounts, add employee riders with optional per-member spend limits, and get consolidated invoices. Platform admins manage all accounts.
+
+- New models (`app/models/corporate.py`):
+  - `BusinessAccount`: id, name, tax_id, billing_email, billing_address, status (pending/active/suspended/cancelled), monthly_budget_limit, created_at/updated_at
+  - `BusinessAccountMember`: account_id, user_id, role (admin/member), monthly_spend_limit, is_active, joined_at; unique (account_id, user_id)
+  - `BusinessInvoice`: account_id, billing_period_start/end, total_rides, total_amount, status (draft/issued/paid/overdue), issued_at, paid_at
+  - Note: Used `Business*` prefix to avoid SQLAlchemy mapper collision with pre-existing `CorporateAccount` model
+- New schemas (`app/schemas/corporate.py`): Create/Update/Response for accounts, members, invoices; CorporateSpendSummary; CorporatePlatformSummary; InvoiceGenerateRequest; all monetary fields use Decimal
+- New service (`app/services/corporate_account_mgmt.py`):
+  - Account: create (requesting user auto-becomes admin), get, get_user_account, update (account admin only), suspend/activate (platform admin)
+  - Member: add (max-500 cap, cross-account guard, dup guard), list, get, update, remove (last-admin guard)
+  - Invoice: generate, issue, mark_paid; list by account
+  - Spend: get_spend_summary (current calendar month)
+- New router (`app/api/v1/corporate.py`): 17 endpoints
+  - Account-admin: POST /corporate/accounts, GET/PUT /corporate/accounts/me, GET/POST/PUT/DELETE /corporate/accounts/me/members/{user_id}, GET /corporate/accounts/me/invoices, GET /corporate/accounts/me/spend
+  - Platform-admin: GET /admin/corporate/accounts, GET/PUT suspend/activate per-account, POST generate invoice, PUT issue/paid invoices, GET /admin/corporate/summary
+- Migration: d5e6f7g8h9i0_add_corporate_accounts.py — tables: corporate_accounts_v2, corporate_account_members, corporate_invoices; 3 enum types, 5 indexes
+- main.py: corporate router registered at /api/v1
+- 45 tests (39 passing + 6 skipped — no live DB): full coverage of create_account, add_member, remove_member, update_account, suspend/activate, spend_summary, invoice lifecycle; **Total: 4,531 tests passing** (4,492 before), 0 failing
 
 #### Session end
