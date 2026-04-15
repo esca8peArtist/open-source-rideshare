@@ -41,3 +41,5 @@ from app.models.trusted_contact import TrustedContact, TripShareRecord  # noqa: 
 from app.models.driver_shift import DriverShift  # noqa: F401
 from app.models.hardship_fund import DriverHardshipFund, HardshipContribution, HardshipApplication  # noqa: F401
 from app.models.driver_language import DriverLanguage, RiderLanguagePreference  # noqa: F401
+from app.models.corporate import BusinessAccount, BusinessAccountMember  # noqa: F401
+from app.models.corporate_batch_booking import CorporateBatchBooking, CorporateBatchRideRequest  # noqa: F401
