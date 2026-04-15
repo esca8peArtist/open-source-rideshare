@@ -9,7 +9,24 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–130
+**Sessions**: 129–131
+
+### Accomplished (Session 131)
+
+#### open-source-rideshare — Driver Payout / Disbursement System COMPLETE (commit `373168d`)
+Full payout lifecycle for drivers — cooperative's answer to Uber's opaque weekly settlements:
+- **`GET /drivers/me/payouts/pending-earnings`** — calculates unpaid earnings for any date range (defaults to last 7 days); respects 0% commission for subscribed drivers, 15% standard otherwise; deducts rides already covered by an existing payout
+- **`GET /drivers/me/payouts`** — paginated payout history (skip/limit)
+- **`POST /drivers/me/payouts`** — request a payout; returns 400 if nothing to pay out or if a pending/processing payout already overlaps the period
+- **`GET /admin/payouts`** — all payouts with optional status filter (pending/processing/completed/failed)
+- **`GET /admin/payouts/stats`** — aggregate: total pending USD, total completed USD, pending/completed/failed counts, avg payout USD
+- **`POST /admin/payouts/{payout_id}/process`** — moves pending → processing → completed; records processed_at timestamp
+- **`POST /admin/payouts/{payout_id}/fail`** — marks pending or processing payout as failed with a reason string
+- **Commission integration**: calls `get_driver_commission_pct` from driver_subscriptions service (0.0 for active subscribers, 15.0 otherwise)
+- **Decimal precision**: all monetary fields use `Decimal` with `ROUND_HALF_UP` to 2 d.p.; DB columns are `NUMERIC(10, 2)`
+- Migration `r1s2t3u4v5w6_add_driver_payouts`: `driver_disbursements` table with status/method enums, 3 indexes
+- 65 unit tests; **Total: 3,749 tests passing** (up from 3,684)
+- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Accomplished (Session 130)
 
@@ -47,7 +64,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now includes all features through Session 130 (3,684 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now includes all features through Session 131 (3,749 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.

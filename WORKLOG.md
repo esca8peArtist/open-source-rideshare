@@ -5571,3 +5571,44 @@ Feature: drivers opt into a weekly ($49) or monthly ($149) flat-fee subscription
 - GitHub push blocked: SSH key `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`; commit is local only
 - PROJECTS.md updated
 - CHECKIN.md updated
+
+## Session 131 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs from user — no autonomous path
+- mfg-farm: waiting on user decision (commission vs build route) — no autonomous path
+- resistance-research: publication-ready, no autonomous work remaining
+- open-source-rideshare: 3,684 tests passing — selected **Driver Payout / Disbursement System** as next feature
+
+### Rationale
+Driver payout system is core to the cooperative business model: transparent, fair, predictable payouts that differentiate from Uber/Lyft's opaque payment schedules. Covers weekly/on-demand disbursements, earnings breakdown, Stripe integration hook, admin queue oversight.
+
+### open-source-rideshare — Driver Payout / Disbursement System COMPLETE (commit 373168d)
+- New model: `app/models/driver_payout.py`
+  - DriverPayout: id, driver_id, amount_usd, platform_fee_usd, net_payout_usd, status, method, period_start, period_end, requested_at, processed_at, failed_reason, stripe_transfer_id, notes
+  - DriverPayoutStatus enum: pending | processing | completed | failed
+  - DriverPayoutMethod enum: stripe_transfer | bank_transfer | manual
+  - tablename: driver_disbursements (avoids conflict with existing User.payouts backref)
+- Migration: `r1s2t3u4v5w6_add_driver_payouts` — 1 table, NUMERIC(10,2) for all monetary columns
+- New schema: `app/schemas/driver_payout.py` — PayoutRequestRequest, DriverPayoutResponse, AdminPayoutResponse, PendingEarningsResponse, PayoutStatsResponse, AdminFailPayoutRequest, AdminProcessPayoutRequest
+- New service: `app/services/driver_payouts.py`
+  - calculate_pending_earnings: sums completed rides for period, applies commission rate (0% if subscribed, 15% standard)
+  - request_payout: validates net > 0, no overlapping pending/processing payout, creates record
+  - process_payout / fail_payout: state transitions with timestamps/reason
+  - get_payout / get_driver_payouts / get_all_payouts / get_payout_stats
+- New router: `app/api/v1/driver_payouts.py`
+  - GET  /drivers/me/payouts/pending-earnings — unpaid earnings for date range
+  - GET  /drivers/me/payouts — paginated payout history
+  - POST /drivers/me/payouts — request a payout
+  - GET  /admin/payouts — all payouts (filterable by status)
+  - GET  /admin/payouts/stats — aggregate stats
+  - POST /admin/payouts/{payout_id}/process — mark completed
+  - POST /admin/payouts/{payout_id}/fail — mark failed with reason
+- Registered driver_payouts.router in app/main.py
+- 65 unit tests; **Total: 3,749 tests passing** (up from 3,684), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
