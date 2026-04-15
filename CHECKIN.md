@@ -9,35 +9,25 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–183
+**Sessions**: 129–186
 
-### Accomplished (Session 183)
+### Accomplished (Session 186)
 
-Two features accounted for this session. **Total: 5,927 passing** (was 5,842).
+#### open-source-rideshare — Corporate Scheduled Reports (commit `f834b67`)
 
-#### open-source-rideshare — Corporate Delegate Access (commit `1d7e69c`)
+Enterprise admins configure automated periodic delivery of spending and usage reports to a list of email recipients. This closes a natural loop on the analytics and data export features — instead of manually running exports, admins set-and-forget a schedule.
 
-Admins grant employees (assistants, office managers) the ability to book rides on behalf of other employees (principals/executives). Delegations are scoped to the corporate account with configurable per-ride spend caps, history-view permission, and optional expiry dates.
-
-- **`CorporateDelegate` model**: account+principal+delegate triple unique, can_book_rides, can_view_history, max_per_ride_usd cap, valid_until expiry, is_active soft-delete
-- **8 service functions**: grant/revoke/get/list-principals/list-delegates/list-all/check-permission/update
-- **9 endpoints**: member read + check-permission + admin CRUD + 2 platform-admin
-- **Migration `g7h8i9j0k1l2`**; **42 tests** → Total: 5,884 passing
-
-#### open-source-rideshare — Corporate Address Book (commit `a3d82aa`)
-
-Enterprise admins maintain a shared library of named locations — offices, client sites, airports, hotels — that employees browse and select when booking rides. Each address optionally auto-tags rides with a default cost center and trip purpose, cutting down manual entry for recurring corporate destinations.
-
-- **`CorporateAddress` model**: name, full address components (line1/2/city/state/zip/country), lat/lng, notes, is_pickup_point, is_dropoff_point, default_cost_center_id (FK, auto-tag), default_trip_purpose_id (FK, auto-tag), is_active soft-delete, created_by_id
-- **7 service functions**: create/get/list/search/update/deactivate/delete (member, admin-gated where needed) + platform-admin list-all
-- **9 endpoints**: member list/search/get + admin create/update/deactivate/delete + 2 platform-admin
-- **Migration `h8i9j0k1l2m3`** (4 indexes); **43 tests** → Total: 5,927 passing
+- **`CorporateScheduledReport` model**: `ScheduledReportType` enum (6 types: spending_overview, monthly_trend, employee_breakdown, ride_patterns, invoice_summary, expense_report_summary), `ReportFrequency` enum (daily/weekly/monthly), `day_of_week` (0=Mon…6=Sun), `day_of_month` (1–28), `recipients` JSONB, `next_due_at` pre-computed, `last_sent_at`, `is_active` soft-disable
+- **9 service functions**: create (validates freq-specific fields + computes `next_due_at`) / get / list (active_only) / update (recomputes `next_due_at` on schedule change) / deactivate (409 if already inactive) / reactivate (re-enables + recomputes) / delete (hard) / trigger_now (simulates delivery, advances `last_sent_at` + `next_due_at`, 409 if inactive) / list_due (for background schedulers — returns all active reports with `next_due_at` ≤ now)
+- **10 endpoints**: admin list/create/get/update/deactivate/reactivate/delete/trigger-now + platform-admin list-by-account + platform-admin list-due
+- **Migration `k2l3m4n5o6p7`**: `reportfrequency` + `scheduledreporttype` enums + table + 4 indexes
+- **55 tests** → **Total: 6,077 passing** (was 6,022)
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `a3d82aa`)
-Includes Sessions 166–183: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, custom ride fields, **delegate access**, **address book**.
+Branch: `feature/corporate-business-accounts` (latest commit `f834b67`)
+Includes Sessions 166–186: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, custom ride fields, delegate access, address book, webhooks, API keys, **scheduled reports**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---

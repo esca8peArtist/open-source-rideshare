@@ -4,6 +4,106 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 186 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Scheduled Reports
+
+### Task: Corporate Scheduled Reports (commit `f834b67`)
+
+Automated periodic delivery of spending and usage reports to email recipients.
+Enterprise admins configure schedules (daily/weekly/monthly) with recipient lists.
+
+- **`CorporateScheduledReport` model**: report_type (ScheduledReportType enum:
+  spending_overview/monthly_trend/employee_breakdown/ride_patterns/invoice_summary/
+  expense_report_summary), frequency (ReportFrequency enum: daily/weekly/monthly),
+  day_of_week (0–6 for weekly), day_of_month (1–28 for monthly), recipients JSONB,
+  is_active, last_sent_at, next_due_at (pre-computed), created_by_id
+- **9 service functions**: create (validates freq fields + computes next_due_at) /
+  get / list (active_only filter) / update (recomputes next_due_at on schedule change) /
+  deactivate (soft-disable, 409 if already inactive) / reactivate (re-enables +
+  recomputes) / delete (hard) / trigger_now (simulates delivery, advances last_sent_at
+  + next_due_at) / list_due (for background schedulers)
+- **10 endpoints**: admin list/create/get/update/deactivate/reactivate/delete/trigger +
+  platform-admin list-by-account + platform-admin list-due
+- **Migration `k2l3m4n5o6p7`**: reportfrequency + scheduledreporttype enums + table + 4 indexes
+- **55 tests** → **Total: 6,077 passing**
+
+#### Session end
+
+## Session 185 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate API Keys (pull-based enterprise integration)
+
+### Task: Corporate API Keys (commit `b83793f`)
+
+Pull-based programmatic access complement to the webhooks (push-based) feature.
+Enterprise admins generate named API keys — external systems (HRIS, ERP, analytics)
+use these to query corporate account data directly.
+
+- **`CorporateApiKey` model**: name, key_prefix (first 8 chars for display), key_hash
+  (SHA-256, never exposed), scopes JSONB, is_active, expires_at, last_used_at,
+  created_by_id
+- **Key format**: `rsk_<64 hex chars>` — plaintext shown only at creation or rotation
+- **6 permission scopes**: rides:read, invoices:read, analytics:read, employees:read,
+  exports:read, reports:read
+- **8 service functions**: create (returns plain key once) / get / list (active_only) /
+  update (name/scopes/expiry) / revoke (soft-delete, 409 if already revoked) / delete
+  (hard) / rotate (new key, re-activates revoked) / verify (hash lookup, checks expiry)
+- **9 endpoints**: admin list/create/get/update/revoke/delete/rotate +
+  platform-admin list-by-account + platform-admin verify
+- **Migration `j0k1l2m3n4o5`**: corporate_api_keys table + 4 indexes
+- **50 tests** → **Total: 6,022 passing**
+
+#### Session end
+
+## Session 184 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Webhooks (enterprise integration layer)
+
+### Task: Corporate Webhooks (commit `6ea6998`)
+
+Admins configure HTTP POST endpoints to receive event notifications for key corporate
+account events — standard enterprise integration pattern for HRIS/ERP/accounting systems.
+
+- **`CorporateWebhook` model**: account_id FK, url, secret (32-byte hex for HMAC-SHA256),
+  event_types JSONB, is_active, description, created_by_id, last_delivery_at,
+  last_delivery_success
+- **`CorporateWebhookDelivery` model**: webhook_id FK CASCADE, event_type, payload JSONB,
+  attempted_at, status_code, response_body (first 1000 chars), success, attempt_number
+- **8 service functions**: create (validates event_types, generates secret) / get (404 on
+  wrong account) / list (active_only filter) / update (partial, re-validates event_types) /
+  deactivate (soft-delete, 409 if already inactive) / delete (hard) /
+  deliver_event (httpx POST, HMAC-SHA256 `X-Rideshare-Signature`, 5s timeout, swallows errors,
+  logs delivery, updates last_delivery_* on webhook) / list_deliveries (most recent first)
+- **Event types**: ride.completed, invoice.finalized, invoice.paid, expense_report.submitted,
+  expense_report.approved, expense_report.rejected, budget_alert.triggered,
+  ride_approval.approved, ride_approval.rejected, employee.joined
+- **9 endpoints**: admin list/create/get/update/deactivate/delete/deliveries/test-ping +
+  platform-admin list
+- **Migration `i9j0k1l2m3n4`**: corporate_webhooks + corporate_webhook_deliveries tables +
+  indexes (account_id on webhooks; webhook_id + attempted_at on deliveries)
+- **45 tests** → **Total: 5,972 passing**
+
+#### Session end
+
 ## Session 183 — 2026-04-15
 
 ### Orient
