@@ -398,3 +398,57 @@ airport pickups for visiting clients. It is not available in Uber for Business.
 **Test results:** 5,290 passing (5,252 existing + 38 new), 1,074 skipped, 0 failures.
 
 ---
+
+### feature/corporate-business-accounts — corporate trip purpose codes
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `564a580`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-15
+
+**Summary:**
+Employees can tag their corporate rides with a purpose code (e.g. CLIENT_MEETING,
+CONFERENCE, AIRPORT_TRANSFER). Corporate admins define the valid codes for their
+account. Analytics break down completed-ride spend by purpose with an untagged
+bucket for rides without a tag. Codes normalised to uppercase; a `requires_notes`
+flag can mandate free-text notes when using a specific code.
+
+**Architecture decisions:**
+- `deactivate_purpose` sets `is_active=False` rather than deleting — rides that
+  already reference the purpose retain the tag for historical analytics.
+- `set_ride_purpose` validates ride ownership, that the purpose belongs to the
+  ride's corporate account, and enforces `requires_notes` before persisting.
+- Service functions return `(result, err)` tuples (same pattern as batch booking)
+  so the API layer raises HTTPException only at the boundary.
+- `_require_account_admin` is a module-level import in the API file so it can be
+  cleanly patched in tests.
+- Migration `v2w3x4y5z6a7` adds the `corporate_trip_purposes` table and two
+  nullable columns (`trip_purpose_id`, `trip_notes`) to `rides`.
+
+**Files added:**
+- `backend/app/models/corporate_trip_purpose.py` — CorporateTripPurpose model
+- `backend/app/schemas/corporate_trip_purpose.py` — Create/Update/Response schemas + analytics schemas
+- `backend/app/services/corporate_trip_purpose.py` — 8 service functions
+- `backend/app/api/v1/corporate_trip_purpose.py` — 9 REST endpoints (member + admin + platform-admin + rider)
+- `backend/app/db/migrations/versions/v2w3x4y5z6a7_corporate_trip_purpose.py` — Alembic migration
+- `backend/tests/test_corporate_trip_purpose.py` — 40 tests (all passing)
+
+**Files modified:**
+- `backend/app/models/ride.py` — added `trip_purpose_id` FK and `trip_notes` columns
+- `backend/app/models/__init__.py` — added CorporateTripPurpose import
+- `backend/app/main.py` — registered `corporate_trip_purpose` router
+
+**Endpoints added:**
+- `GET    /api/v1/corporate/accounts/me/trip-purposes` — list active purposes (member)
+- `GET    /api/v1/corporate/accounts/me/trip-purposes/{id}` — get purpose (member)
+- `POST   /api/v1/corporate/accounts/me/trip-purposes/analytics` — spend by purpose (member)
+- `POST   /api/v1/corporate/accounts/me/trip-purposes` — create purpose (admin only)
+- `PATCH  /api/v1/corporate/accounts/me/trip-purposes/{id}` — update purpose (admin only)
+- `DELETE /api/v1/corporate/accounts/me/trip-purposes/{id}` — deactivate purpose (admin only)
+- `PUT    /api/v1/rides/{ride_id}/trip-purpose` — tag or clear ride purpose (rider)
+- `GET    /api/v1/admin/corporate/accounts/{id}/trip-purposes` — list all (platform admin)
+- `GET    /api/v1/admin/corporate/accounts/{id}/trip-purposes/analytics` — analytics (platform admin)
+
+**Test results:** 5,222 passing (5,182 existing + 40 new), 1,074 skipped, 0 failures (61 pre-existing failures unaffected).
+
+---
