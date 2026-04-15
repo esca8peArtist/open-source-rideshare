@@ -4,6 +4,38 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 156 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,717 tests passing, continuing from session 155
+
+### Task: Driver Mentorship Program
+
+#### feat(rideshare): driver mentorship program (commit `634f676`)
+Cooperative differentiator: experienced drivers mentor new ones and earn a
+small commission on mentee ride earnings for a configurable window (default 2%
+for 90 days). Uber/Lyft have no formal mentorship — this builds community and
+reduces early-driver attrition.
+
+- `DriverMentorship`: mentee requests → admin assigns mentor → active → completed/cancelled
+  Lifecycle: pending → active → completed | cancelled
+  Snapshots commission_rate + commission_days at assignment time (policy-change safe)
+- `MentorshipEarning`: immutable per-ride commission record;
+  unique(mentorship_id, ride_id) for idempotency; paid_at tracks payout inclusion
+- 8 service functions: request_mentorship (409 guard), assign_mentor (400/409 guards),
+  cancel_mentorship (409 guard), record_commission (idempotent, returns None if no active),
+  complete_expired_mentorships (batch), get_mentor_earning_summary, get_admin_summary, get_mentor_mentees
+- 8 endpoints: driver self-service (request/status/mentees/earnings) + admin (list/summary/assign/cancel)
+- Migration g1h2i3j4k5l6 (down_revision: f8a9b0c1d2e3) — 2 tables, 1 enum, 6 indexes, 2 unique constraints
+- **26 new tests passing**; **Total: 4,743 passing** (4,717 before), 0 failing
+
+#### Session end
+
 ## Session 155 — 2026-04-15
 
 ### Orient

@@ -9,7 +9,20 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–155
+**Sessions**: 129–156
+
+### Accomplished (Session 156)
+
+#### open-source-rideshare — Driver Mentorship Program
+
+**Feat (commit `634f676`)**: Driver Mentorship Program — cooperative differentiator with no Uber/Lyft equivalent.
+
+- **2 models**: `DriverMentorship` (pending → active → completed | cancelled; commission_rate + commission_days snapshotted at assignment), `MentorshipEarning` (per-ride commission; idempotent unique constraint on ride_id)
+- **Lifecycle**: new driver requests mentorship → admin assigns experienced driver as mentor → active for configurable days (default 90) → auto-completes → mentor earns 2% of mentee ride earnings
+- **8 service functions**: request (409 guard), assign (404/409/400 guards), cancel (409 guard), record_commission (idempotent), complete_expired (batch), earning summary, admin summary, list mentees
+- **8 endpoints**: driver self-service (request/status/mentees/earnings) + admin (list/summary/assign/cancel)
+- **Migration g1h2i3j4k5l6** (follows hardship fund)
+- **26 new tests**; **Total: 4,743 passing** (up from 4,717)
 
 ### Accomplished (Session 155)
 
