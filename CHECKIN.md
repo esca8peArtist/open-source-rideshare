@@ -9,7 +9,30 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–177
+**Sessions**: 129–178
+
+### Accomplished (Session 178)
+
+#### open-source-rideshare — Corporate Fare Agreements
+
+**Feat (commit `3c39772`)**: Enterprise accounts negotiate custom pricing contracts with the platform. Agreements define rate adjustments — surge multiplier caps, flat percentage discounts, or negotiated per-mile/per-minute rates — scoped to specific vehicle categories and optional validity windows. The `/compute` endpoint previews the adjusted fare for a hypothetical ride before booking.
+
+**Example flow**: Corp account has two active agreements: `surge_cap=1.5` and `flat_discount_pct=10`. An employee's booking app calls `GET /corporate/accounts/me/fare-agreements/compute?base_fare_usd=20.00&surge_multiplier=2.5` → surge capped at 1.5 → fare $30 → 10% off → **final: $27.00**. Per-mile/per-minute rate agreements are surfaced in `reference_agreements` for the billing engine to apply when processing the actual ride.
+
+- **`CorporateFareAgreement` model**: UUID PK, account FK, name, `FareAgreementRateType` enum (surge_cap/flat_discount_pct/per_mile_rate_usd/per_minute_rate_usd), value Numeric(10,4), `applies_to_vehicle_types` JSONB (null = all), `valid_from`/`valid_until` DateTimeTZ, `is_active` soft-disable, notes, created_by FK
+- **6 service functions**: create, get (404 on wrong account), list (active_only/rate_type/vehicle_type filters — vehicle-type filter applied in Python against JSONB), update (partial), delete, `compute_corporate_fare` (lowest surge cap wins; highest flat discount wins; per-mile/per-minute → reference_agreements; validity window + vehicle type matching applied before evaluation)
+- **9 endpoints**: 7 member (create/list/compute/get/update/delete/deactivate) + 2 platform-admin (list/compute); `/compute` declared before `/{id}` to avoid FastAPI path conflict
+- **Migration `z2a3b4c5d6e7`** (down: `y2z3a4b5c6d7`): `fareagreementratetype` enum + `corporate_fare_agreements` table + 3 indexes (account_id, is_active, rate_type)
+- **49 new tests** (all passing); **Total: 5,583 passing** (up from 5,534)
+
+### Needs Your Input
+
+#### open-source-rideshare — Push to GitHub
+Branch: `feature/corporate-business-accounts` (latest commit `3c39772`)
+Includes Sessions 166–178: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, **fare agreements**.
+Please run: `git push origin feature/corporate-business-accounts`
+
+---
 
 ### Accomplished (Session 177)
 
@@ -17,20 +40,11 @@
 
 **Feat (commit `d6dff97`)**: Admins define named date ranges during which corporate bookings are restricted. Three recurrence modes: one-time (`none`), annually-repeating (e.g., "Christmas" every Dec 24–26), and weekly recurring (e.g., "No weekend corporate rides"). The `/check` endpoint lets callers verify whether a proposed booking datetime is blocked before attempting to book.
 
-**Example flow**: Admin creates an annual blackout "Christmas Shutdown" Dec 24–26. Employee's booking app calls `GET /corporate/accounts/me/blackout-periods/check?dt=2026-12-25T10:00:00Z` → `is_blacked_out: true, active_periods: [...]` → app blocks booking or prompts for override approval.
-
 - **`CorporateBlackoutPeriod` model**: UUID PK, account FK, name, start/end datetime (timezone-aware), `BlackoutRecurrence` enum (none/annual/weekly), `affected_days` JSONB (weekday integers for weekly blocks), `override_allowed`/`override_requires_approval` booleans, reason, `is_active` soft-disable, created_by FK
 - **6 service functions**: create (validates end > start), get (404 on wrong account), list (active_only/from_dt/to_dt filters), update (partial, re-validates dates), delete, check_booking_blackout (`_period_covers` handles all three recurrence types, including annual cross-year wrapping)
 - **9 endpoints**: 7 member (create/list/check-datetime/get/update/delete/deactivate) + 2 platform-admin (list/check); `/check` declared before `/{id}` to avoid FastAPI path conflict
-- **Migration `y2z3a4b5c6d7`** (down: `x2y3z4a5b6c7`): `blackoutrecurrence` enum + `corporate_blackout_periods` table + 2 indexes
+- **Migration `y2z3a4b5c6d7`**: `blackoutrecurrence` enum + `corporate_blackout_periods` table + 2 indexes
 - **45 new tests** (all passing); **Total: 5,534 passing** (up from 5,489)
-
-### Needs Your Input
-
-#### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `d6dff97`)
-Includes Sessions 166–177: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, **blackout periods**.
-Please run: `git push origin feature/corporate-business-accounts`
 
 ---
 

@@ -4,6 +4,41 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 178 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,534 tests passing, continuing corporate feature track
+
+### Task: Corporate Fare Agreements (commit `3c39772`)
+
+Enterprise accounts negotiate custom pricing with the platform.  Agreements
+define rate adjustments scoped to vehicle categories and optional validity windows.
+
+- **Model** (`corporate_fare_agreement.py`): `CorporateFareAgreement` with
+  `FareAgreementRateType` enum (surge_cap/flat_discount_pct/per_mile_rate_usd/
+  per_minute_rate_usd). UUID PK, account FK, name, value Numeric(10,4),
+  applies_to_vehicle_types JSONB (null = all), valid_from/valid_until DateTimeTZ,
+  is_active soft-disable, notes, created_by FK.
+- **6 service functions**: `create_fare_agreement`, `get_fare_agreement` (404 on
+  wrong account), `list_fare_agreements` (active_only/rate_type/vehicle_type
+  filters), `update_fare_agreement` (partial), `delete_fare_agreement`,
+  `compute_corporate_fare` (core engine: surge_cap → lowest cap wins;
+  flat_discount_pct → highest discount wins; per_mile/per_minute go to
+  reference_agreements; validity window + vehicle type matching applied).
+- **9 endpoints**: 7 member (create/list/compute/get/update/delete/deactivate)
+  under `/corporate/accounts/me/fare-agreements` + 2 platform-admin (list/compute);
+  `/compute` declared before `/{id}` to avoid FastAPI path conflict.
+- **Migration `z2a3b4c5d6e7`** (down: `y2z3a4b5c6d7`): `fareagreementratetype`
+  enum + `corporate_fare_agreements` table + 3 indexes.
+- **49 new tests** (all passing); **Total: 5,583 passing** (up from 5,534)
+
+#### Session end
+
 ## Session 177 — 2026-04-15
 
 ### Orient
