@@ -29,3 +29,5 @@ from app.models.platform_config import PlatformConfig  # noqa: F401
 from app.models.driver_tier import DriverCareerTier  # noqa: F401
 from app.models.surge_price_lock import SurgePriceLock  # noqa: F401
 from app.models.rider_referral import RiderReferralCode, RiderReferral  # noqa: F401
+from app.models.service_area import ServiceArea  # noqa: F401
+from app.models.driver_quest import DriverQuest, DriverQuestProgress  # noqa: F401
