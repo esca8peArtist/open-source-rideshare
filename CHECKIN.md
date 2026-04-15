@@ -9,7 +9,19 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–166
+**Sessions**: 129–167
+
+### Accomplished (Session 167)
+
+#### open-source-rideshare — Corporate Ride Approval Workflow
+
+**Feat (commit `f8658d7`)**: Pre-booking expense approval for corporate accounts. A genuinely missing enterprise feature — Uber for Business has no pre-approval flow; review is post-hoc. Finance-controlled orgs can now require employees to get explicit sign-off before booking a corporate ride.
+
+- **`CorporateRideApproval` model**: links account + requester + reviewer; stores purpose, destination, estimated cost, status (6-value enum), unique UUID approval code, admin-set cost ceiling, expiry window, review note, audit timestamps
+- **7 service functions**: `request_approval` (active-member guard, 5-concurrent-pending cap), `list_pending_approvals` (admin queue, oldest-first), `list_member_approvals`, `get_approval` (account-scoped), `approve` (admin-only, PENDING-only), `deny` (admin-only, PENDING-only), `cancel` (requester cancels own PENDING), `verify_approval` (code → status → expiry → cost-ceiling chain — returns structured result)
+- **8 endpoints**: POST/GET/DELETE `/corporate/accounts/me/approvals` (member); GET `…/pending` (admin review queue); PUT `…/{id}/approve` + `…/{id}/deny` (admin); POST `…/verify` (booking-time check, any member); GET `/admin/corporate/accounts/{id}/approvals` (platform admin)
+- **Migrations**: `q2r3s4t5u6v7` (backfill — corporate_ride_policies migration missing from session 166 commit) + `r2s3t4u5v6w7` (corporate_ride_approvals — enum type + table + 4 indexes)
+- **38 new tests**; **Total: 5,138 passing** (up from 5,100)
 
 ### Accomplished (Session 166)
 

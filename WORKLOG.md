@@ -4,6 +4,56 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 167 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,100 tests passing, continuing feature development
+- Note: corporate ride policy migration (q2r3s4t5u6v7) missing from last commit — will create it
+
+### Task: Corporate Ride Approval Workflow (commit `f8658d7`)
+
+Pre-booking expense approval for corporate accounts. Employees request an
+approval for a ride (purpose, destination, estimated cost). Account admins
+approve or deny. Approved requests carry a unique code that can be verified at
+booking time — ensuring the ride falls within the approved parameters.
+
+Genuine enterprise differentiator: no comparable pre-approval flow in Uber for
+Business. Finance-controlled organisations can enforce approval gates before
+employees book rather than reviewing expenses post-hoc.
+
+Also: created missing migration q2r3s4t5u6v7 (corporate_ride_policies) which
+was not included in session 166's commit despite being described in the WORKLOG.
+
+- **`CorporateRideApproval` model**: account_id FK → corporate_accounts_v2;
+  requester/reviewer FKs → users; purpose (200), destination_description (300),
+  estimated_cost_usd; status enum (pending/approved/denied/expired/cancelled/used);
+  approval_code (UUID, unique indexed); max_cost_usd (admin-set ceiling);
+  expires_at; review_note (300); reviewed_at; used_at; requested_at
+- **7 service functions**: `request_approval` (active-member check, 5-concurrent-
+  pending cap), `list_pending_approvals` (admin queue, oldest-first),
+  `list_member_approvals`, `get_approval` (account-scoped to prevent leakage),
+  `approve` (admin-only, PENDING guard, sets reviewer + timestamp + ceiling),
+  `deny` (admin-only, PENDING guard), `cancel` (own request, PENDING only),
+  `verify_approval` (code lookup → status → expiry → cost-ceiling checks)
+- **8 endpoints**: POST/GET/DELETE /corporate/accounts/me/approvals (member);
+  GET /corporate/accounts/me/approvals/pending (admin queue);
+  PUT /corporate/accounts/me/approvals/{id}/approve (admin);
+  PUT /corporate/accounts/me/approvals/{id}/deny (admin);
+  POST /corporate/accounts/me/approvals/verify (booking-time, any member);
+  GET /admin/corporate/accounts/{account_id}/approvals (platform admin)
+- **Migration r2s3t4u5v6w7** (down_revision: q2r3s4t5u6v7) — 1 table, 1 enum type,
+  4 indexes, 1 unique constraint
+- **38 new tests** — Total: **5,138 passing** (up from 5,100)
+
+#### Session end
+
+---
+
 ## Session 166 — 2026-04-15
 
 ### Orient
