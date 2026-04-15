@@ -5659,3 +5659,34 @@ Driver payout system is core to the cooperative business model: transparent, fai
 #### Session end
 - PROJECTS.md updated
 - CHECKIN.md updated
+
+## Session 133 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 3,808 tests passing — selected **Driver Document Expiry Alert System** as next feature
+
+### Rationale
+All four driver compliance documents (license, registration, insurance, inspection) have expiry tracking baked into their models, but no service or API layer to surface expiring/expired documents. This is operationally critical: a driver with expired insurance can't legally operate. Built the full alert surface: driver self-check endpoint, admin cross-fleet view, and idempotent bulk-expiry scan for scheduled jobs.
+
+### open-source-rideshare — Driver Document Expiry Alert System COMPLETE (commit `1484765`)
+- New service: `app/services/document_expiry_alerts.py`
+  - `get_driver_expiry_status(driver_id, db, days_ahead=30)` — all 4 doc types for one driver
+  - `get_all_expiring_documents(db, days_ahead, doc_type, skip, limit)` — admin cross-fleet list
+  - `run_expiry_scan(db)` — bulk-marks overdue active docs as EXPIRED, returns per-type counts
+- New schema: `app/schemas/document_expiry.py`
+  - ExpiringDocumentItem, DriverExpiryStatusResponse, AdminExpiringDocumentsResponse, ExpiryScaResponse
+- New router: `app/api/v1/document_expiry.py`
+  - GET  /drivers/me/documents/expiry-status       — driver's own doc expiry (with ?days= window)
+  - GET  /admin/documents/expiring                 — all drivers with expiring docs (filter by doc_type)
+  - POST /admin/documents/expiry/scan              — idempotent bulk-expiry scan for scheduler
+- Registered document_expiry.router in app/main.py
+- 47 unit tests; **Total: 3,855 tests passing** (up from 3,808), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated

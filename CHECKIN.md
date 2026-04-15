@@ -9,40 +9,35 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–132
+**Sessions**: 129–133
+
+### Accomplished (Session 133)
+
+#### open-source-rideshare — Driver Document Expiry Alert System COMPLETE (commit `1484765`)
+All four driver compliance documents (license, registration, insurance, inspection) had expiry-date fields with no service/API layer to surface them. Built the full alert stack:
+- **`GET /drivers/me/documents/expiry-status`** — driver's own expiry view; `?days=` lookahead (default 30); returns `expiring` list and `expired` list with `days_until_expiry` (negative = already past)
+- **`GET /admin/documents/expiring`** — cross-fleet list; filterable by `doc_type` (license/registration/insurance/inspection); sorted expired-first; paginated
+- **`POST /admin/documents/expiry/scan`** — idempotent bulk-expiry scan; marks all active docs past their date as EXPIRED; returns per-type counts; safe to run on a nightly scheduler
+- 47 unit tests; **Total: 3,855 tests passing** (up from 3,808)
+- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Accomplished (Session 132)
 
 #### open-source-rideshare — Accessibility / WAV Certification System COMPLETE (commit `8e20c40`)
-Regulatory-required accessibility layer — ADA/TfL compliance, missing from the platform entirely:
-- **`GET /riders/me/accessibility`** — get accessibility profile (auto-creates blank if none exists)
-- **`PUT /riders/me/accessibility`** — set needs_wav, has_mobility_device, visual_impairment, hearing_impairment, other_needs
-- **`GET /drivers/me/wav`** — get WAV certification status (404 if not submitted)
-- **`PUT /drivers/me/wav`** — submit/update WAV certification; resets rejected/expired → pending; preserves verified status (allows doc renewal before expiry)
-- **`GET /admin/accessibility/stats`** — platform WAV coverage: riders needing WAV, drivers by status, coverage_ratio (verified/needing_wav, capped 1.0)
-- **`POST /admin/drivers/{driver_id}/wav/verify`** — admin approve (→ verified) or reject with note + optional expiry date
-- **`GET /admin/drivers/wav`** — list all certifications, filter by status, paginated
-- Migration `s1t2u3v4w5x6_add_accessibility`: `rider_accessibility_profiles` + `driver_wav_certifications` tables, 3 indexes
-- 59 unit tests; **Total: 3,808 tests passing** (up from 3,749)
-- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
+- 6 endpoints: rider accessibility profile, driver WAV cert submission/review, admin stats + cert list
+- Migration `s1t2u3v4w5x6_add_accessibility`; 59 unit tests; Total was 3,808 (up from 3,749)
 
 ### Accomplished (Session 131)
 
 #### open-source-rideshare — Driver Payout / Disbursement System COMPLETE (commit `373168d`)
-- 7 endpoints (3 driver, 4 admin); commission integration (0% subscribed / 15% standard); Decimal precision
+- 7 endpoints (3 driver, 4 admin); commission integration (0% subscribed / 15% standard)
 - Migration `r1s2t3u4v5w6_add_driver_payouts`; 65 unit tests; Total was 3,749 (up from 3,684)
 
 ### Accomplished (Session 130)
 
 #### open-source-rideshare — Rider Loyalty Rewards Programme COMPLETE (commit `42b393f`)
-- 5 endpoints; earn 10 pts/$1 (10% cashback); min 500 pts redemption; 50% fare cap
+- 5 endpoints; earn 10 pts/$1; min 500 pts redemption; 50% fare cap
 - Migration `q1r2s3t4u5v6_add_rider_rewards`; 58 unit tests; Total was 3,684 (up from 3,626)
-
-### Accomplished (Session 129)
-
-#### open-source-rideshare — Driver Subscription / Flat-Fee Plan COMPLETE (commit `479219c`)
-- Weekly ($49) / monthly ($149) flat-fee; 0% commission while active
-- 8 endpoints; 49 unit tests; Total was 3,626 (up from 3,577)
 
 ---
 
@@ -58,7 +53,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now includes all features through Session 132 (3,808 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now has 3,855 tests passing across Sessions 129–133. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -76,6 +71,9 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ---
 
 ### History
+
+#### Accomplished (Session 129)
+- **open-source-rideshare**: Driver Subscription / Flat-Fee Plan COMPLETE (commit `479219c`). Weekly ($49) / monthly ($149) flat-fee; 0% commission while active. 8 endpoints; 49 unit tests. Total: 3,626 passing.
 
 #### Accomplished (Session 128)
 - **open-source-rideshare**: Driver/Rider Blocklist System COMPLETE (commit `85834f9`). Either party can block specific counterparties; matching engine checks both directions. 4 endpoints. 34 tests. Total: 3,577 passing.
