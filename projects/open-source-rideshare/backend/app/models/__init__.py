@@ -35,3 +35,5 @@ from app.models.driver_proposal import DriverProposal, DriverVote  # noqa: F401
 from app.models.driver_dividend import CooperativeDividend, DriverDividendShare  # noqa: F401
 from app.models.driver_earnings_guarantee import EarningsGuaranteePolicy, WeeklyGuaranteeRecord  # noqa: F401
 from app.models.cancellation import CancellationPolicy, CancellationRecord  # noqa: F401
+from app.models.feedback import RideFeedback, Dispute  # noqa: F401
+from app.models.driver_rating_appeal import DriverRatingAppeal  # noqa: F401
