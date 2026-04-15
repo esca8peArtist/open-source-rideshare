@@ -9,7 +9,20 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–159
+**Sessions**: 129–160
+
+### Accomplished (Session 160)
+
+#### open-source-rideshare — Cooperative Board Elections
+
+**Feat (commit `9e4f919`)**: Full democratic governance tooling for electing cooperative board members. Unlike Uber/Lyft (which have no such structure), driver-owners elect their own representatives through a formal, transparent process with nomination windows, candidacy review, and secret ballots.
+
+- **4 models**: `CooperativeBoardSeat` (named seats with term months, term limits, eligibility threshold, current holder tracking); `BoardElection` (7-stage lifecycle: draft → nominations_open → nominations_closed → voting_open → tallied → certified | cancelled); `BoardCandidacy` (driver self-nomination with platform statement; admin-reviewed with approve/reject; vote_count cached at tally); `BoardElectionVote` (secret ballot; unique per driver per election — individual choices never exposed publicly)
+- **Business rules**: one active election per seat at a time (409 guard); ride eligibility thresholds for both running and voting; tie-breaking by earliest applied_at; certification updates seat's current holder and sets term expiry date
+- **14 service functions**: full seat CRUD, all 6 election lifecycle transitions, candidacy apply/review/withdraw, cast_vote with eligibility checks, get_election_results (tallied/certified only), get_board_roster
+- **20 endpoints**: 2 public (board roster, seat list), 6 driver (list elections, detail, ballot, self-nominate, withdraw, secret ballot), 12 admin (seat CRUD, create draft, open/close nominations, open voting, tally, certify, cancel, full results, review candidacy)
+- **Migration k3l4m5n6o7p8** (down_revision: j3k4l5m6n7o8) — 4 tables, 2 enum types, 10 indexes, 2 unique constraints
+- **50 new tests** (50 passed, 16 skipped); **Total: 4,887 passing** (up from 4,837)
 
 ### Accomplished (Session 159)
 
