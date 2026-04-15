@@ -4,6 +4,51 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 158 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,769 tests passing, continuing from session 157
+
+### Task: GDPR/CCPA Data Privacy Compliance
+
+#### feat(rideshare): GDPR/CCPA data privacy compliance (commit `994e390`)
+Cooperative differentiator and legal requirement for EU/California.
+Gives riders control over their personal data — Uber/Lyft offer nothing comparable.
+
+- **3 models**: `PrivacyConsentRecord` (per-user consent audit trail with IP + user-agent
+  evidence; 4 policy types: PRIVACY_POLICY / TERMS_OF_SERVICE / MARKETING / DATA_SHARING;
+  idempotent upsert on policy version change); `DataExportRequest` (GDPR right of access —
+  PENDING → PROCESSING → READY → DOWNLOADED/EXPIRED; 7-day expiry, capped at 3 downloads);
+  `AccountDeletionRequest` (GDPR right to erasure — 30-day grace period; cancellable;
+  irreversible PII anonymisation on execution, user row retained for referential integrity)
+- **13 service functions**: record_consent (upsert), get_user_consents, request_data_export
+  (409 guard), get_export_request, generate_user_data_export (profile + ride/payment counts +
+  consent history), complete_export_request, mark_export_downloaded (DOWNLOADED at 3 downloads),
+  request_account_deletion (409 guard), cancel_deletion_request (404/409 guards),
+  execute_account_deletion (anonymises PII), get_deletion_request, get_all_export_requests
+  (admin paginated), get_all_deletion_requests (admin paginated)
+- **11 endpoints** (8 user, 3 admin):
+    GET    /privacy/consents                          — list my consent records
+    POST   /privacy/consents                          — record consent decision
+    POST   /privacy/data-export                       — request data export (GDPR right of access)
+    GET    /privacy/data-export/{id}                  — check export status
+    GET    /privacy/data-export/{id}/download         — download export JSON
+    POST   /privacy/delete-account                    — request account deletion (GDPR erasure)
+    GET    /privacy/delete-account/status             — check deletion request
+    DELETE /privacy/delete-account/{id}               — cancel deletion request
+    GET    /privacy/admin/exports                     — admin: list all exports
+    GET    /privacy/admin/deletions                   — admin: list all deletions
+    POST   /privacy/admin/deletions/{id}/execute      — admin: execute irreversible deletion
+- **Migration i2j3k4l5m6n7** (down_revision: h1i2j3k4l5m6) — 3 tables, 3 enum types, 8 indexes
+- **29 new tests** (4 mock-chain bugs fixed in test file); **Total: 4,798 passing** (4,769 before), 0 failing
+
+#### Session end
+
 ## Session 157 — 2026-04-15
 
 ### Orient

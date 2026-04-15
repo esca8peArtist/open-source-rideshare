@@ -9,7 +9,19 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–157
+**Sessions**: 129–158
+
+### Accomplished (Session 158)
+
+#### open-source-rideshare — GDPR/CCPA Data Privacy Compliance
+
+**Feat (commit `994e390`)**: Full data privacy compliance — legally required for EU/California and a meaningful cooperative differentiator (Uber/Lyft offer nothing comparable).
+
+- **3 models**: `PrivacyConsentRecord` (consent audit trail; 4 policy types; IP + user-agent evidence; idempotent upsert on version change), `DataExportRequest` (GDPR right of access; full lifecycle with 7-day expiry and 3-download cap), `AccountDeletionRequest` (GDPR right to erasure; 30-day grace period; cancellable; irreversible PII anonymisation — row kept for referential integrity)
+- **13 service functions** including generate_user_data_export (profile + ride/payment counts + consent history), execute_account_deletion (overwrites name/email/phone/password, deactivates account)
+- **11 endpoints**: 8 user-facing (consent CRUD, data export request/status/download, deletion request/status/cancel) + 3 admin (list exports, list deletions, execute deletion)
+- **Migration i2j3k4l5m6n7** (down_revision: h1i2j3k4l5m6) — 3 tables, 3 enum types, 8 indexes
+- **29 new tests** (fixed 4 mock-chain bugs in test file); **Total: 4,798 passing** (up from 4,769)
 
 ### Accomplished (Session 157)
 
