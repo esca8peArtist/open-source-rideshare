@@ -4,6 +4,31 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 193 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Preferred Driver Pool
+
+### Task: Corporate Preferred Driver Pool — COMPLETE (commit `d0f284f`)
+
+Enterprise accounts curate a pool of trusted, vetted drivers that the matching
+engine can surface first for corporate rides. Uber for Business has no equivalent.
+
+- Model: CorporateDriverPool (account+driver unique; is_active soft-delete; notes; CASCADE FKs)
+- Service: 6 functions (add/remove/get/list/is_preferred/stats)
+- Endpoints: 8 (member list+get+check; admin add+remove; driver stats; 2 platform-admin)
+- Migration: p7q8r9s0t1u2 (revises o6p7q8r9s0t1)
+- 32 tests → Total: 6,328 passing (was 6,296)
+
+#### Session end
+
+---
+
 ## Session 192 — 2026-04-15
 
 ### Orient

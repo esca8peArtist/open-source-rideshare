@@ -9,7 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–192
+**Sessions**: 129–193
+
+### Accomplished (Session 193)
+
+#### open-source-rideshare — Corporate Preferred Driver Pool (commit `d0f284f`)
+
+Enterprise accounts can now curate a pool of trusted, vetted drivers that the matching engine surfaces first for corporate rides — giving companies continuity and quality assurance. Uber for Business has no equivalent feature.
+
+- **`CorporateDriverPool` model**: unique (account_id, driver_id) constraint; `is_active` soft-delete flag; optional `notes`; `added_by_id` audit FK; CASCADE deletes on both account and driver FKs; 3 indexes
+- **6 service functions**: `add_driver_to_pool` (409 if active; upserts deactivated entry) / `remove_driver_from_pool` (soft-delete, 404 if not active) / `get_pool_entry` (404 if not active) / `list_pool_drivers` (paginated, active_only flag) / `is_driver_preferred` (plain bool — ready for matching engine) / `get_driver_pool_stats` (count of preferring accounts, driver-facing)
+- **8 endpoints**: member list + get + boolean check; admin add (201) + remove (204); driver pool-stats; 2 platform-admin (list + remove)
+- **Migration `p7q8r9s0t1u2`** (revises `o6p7q8r9s0t1`): `corporate_driver_pool` table + 3 indexes + unique constraint
+- **32 tests** → **Total: 6,328 passing** (was 6,296)
+
+---
 
 ### Accomplished (Session 192)
 
@@ -78,7 +92,7 @@ Enterprise accounts can now configure single sign-on with their identity provide
 
 #### open-source-rideshare — Push to GitHub
 
-Branch: `feature/corporate-business-accounts` | Latest commit: `3ae104b`
+Branch: `feature/corporate-business-accounts` | Latest commit: `d0f284f`
 
 SSH key `esca8peArtist` still cannot push to `SuperClaude-Org/SuperClaude_Framework`. Please push manually when ready.
 
@@ -90,7 +104,8 @@ Summary of what's local and unpushed since the last push:
 - **Session 190**: Corporate Notification Settings (commit `da2d9ca`) — 35 tests
 - **Session 191**: Corporate Account Dashboard (commit `9c73f93`) — 30 tests
 - **Session 192**: Corporate Bulk Member Invitations (commit `3ae104b`) — 27 tests
-- **Total: 6,296 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
+- **Session 193**: Corporate Preferred Driver Pool (commit `d0f284f`) — 32 tests
+- **Total: 6,328 passing** (1 pre-existing failure in `test_corporate_guest_pass.py::test_validate_token_not_yet_valid`, 1,082 skipped)
 
 ---
 
