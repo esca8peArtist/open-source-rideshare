@@ -9,7 +9,46 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–163
+**Sessions**: 129–166
+
+### Accomplished (Session 166)
+
+#### open-source-rideshare — Corporate Ride Policy
+
+**Feat (commit `18d5a18`)**: Companies can now define a ride policy that controls what rides employees may charge to the corporate account — vehicle type restrictions, per-ride cost caps, per-employee monthly limits, trip purpose requirements with an approved-purpose allowlist, and business-hours-only restrictions. No policy configured → all rides permitted (safe default). Genuine enterprise differentiator that makes corporate accounts production-ready.
+
+- **`CorporateRidePolicy` model**: unique on `account_id`; FK → `corporate_accounts_v2`; 6 policy columns (allowed_vehicle_categories JSONB, max_per_ride_usd, max_per_member_monthly_usd, require_purpose, approved_purposes JSONB, business_hours_only); created_at / updated_at
+- **4 service functions**: `get_policy` (returns None when not configured), `set_policy` (upsert, account-admin-only, 403/404 guarded), `delete_policy` (account-admin-only, 404 if not set), `check_ride_allowed` (evaluates proposed ride against all 4 policy dimensions; returns `{allowed, reason}`)
+- **5 endpoints**: GET/PUT/DELETE `/corporate/accounts/me/policy` (any member read; admin write); POST `/corporate/accounts/me/policy/check` (any member); GET `/admin/corporate/accounts/{id}/policy`
+- **Schema validation**: max_per_ride_usd and max_per_member_monthly_usd > 0; approved_purposes ≤ 20 entries; each purpose ≤ 100 chars
+- **Migration q2r3s4t5u6v7** (down_revision: p2q3r4s5t6u7) — 1 table, 1 unique constraint
+- **31 new tests**; **Total: 5,100 passing** (up from 5,069)
+
+### Accomplished (Session 165)
+
+#### open-source-rideshare — Driver Work Preferences
+
+**Feat (commit `57b8707`)**: Drivers can specify what kinds of rides they are willing to accept — pool rides, pet passengers, extra luggage, trip distance range, long-distance preference, and language-matched dispatch priority. Gives drivers real agency over their workload — a core cooperative value that Uber/Lyft's algorithmic dispatch completely ignores.
+
+- **`DriverWorkPreference` model**: unique on `driver_id`; 8 preference columns; defaults are permissive (all ride types accepted) so new drivers aren't inadvertently excluded from dispatch
+- **3 service functions**: `get_preferences` (auto-creates default row on first access), `update_preferences` (partial update — only supplied fields written), `reset_preferences` (restore all fields to platform defaults)
+- **4 endpoints**: GET/PUT/DELETE `/drivers/me/work-preferences` (driver self-manage); GET `/admin/drivers/{id}/work-preferences` (admin read-only)
+- **Migration p2q3r4s5t6u7** (down_revision: o2p3q4r5s6t7) — 1 table, 1 index, 1 unique constraint
+- **Schema validation**: min/max distance range cross-validated (min ≤ max); `notes` max 200 chars; distances 0–500 km
+- **22 new tests**; **Total: 5,069 passing** (up from 5,047)
+
+### Accomplished (Session 164)
+
+#### open-source-rideshare — Driver Language Skills & Rider Language Preferences
+
+**Feat (commit `ebbf097`)**: Language-matched rides for non-English-speaking communities — genuine cooperative accessibility that Uber/Lyft have never offered.
+
+- **`DriverLanguage` model**: unique `(driver_id, language_code)` constraint; `LanguageProficiency` enum (basic/conversational/fluent/native); `is_primary` flag (at most one per driver — auto-clears previous)
+- **`RiderLanguagePreference` model**: one row per rider (upsert on update); soft preference — matching surfaces language-compatible drivers first, never blocks a ride when none available
+- **8 service functions**: `set_driver_language` (upsert with primary-clear logic), `remove_driver_language`, `get_driver_languages`, `get_drivers_by_language` (optional min_proficiency filter using ordered proficiency scale), `set_rider_language_preference`, `get_rider_language_preference`, `clear_rider_language_preference`, `get_language_coverage_stats` (per-language driver count + fluent/native breakdown for admin diversity reporting)
+- **9 endpoints**: GET /drivers/{id}/languages (public); GET/POST/DELETE /drivers/me/languages (driver self-manage); GET/PUT/DELETE /riders/me/language-preference (rider); GET /admin/language-coverage-stats; GET /admin/drivers/{id}/languages
+- **Migration o2p3q4r5s6t7** (down_revision: n1o2p3q4r5s6) — 2 tables, 1 enum type, 3 indexes, 1 unique constraint
+- **40 new tests**; **Total: 5,047 passing** (up from 5,007)
 
 ### Accomplished (Session 163)
 

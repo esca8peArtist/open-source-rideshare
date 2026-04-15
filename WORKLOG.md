@@ -4,6 +4,109 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 166 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,069 tests passing, continuing feature development
+
+### Task: Corporate Ride Policy (commit `18d5a18`)
+
+Natural complement to the existing corporate business accounts system.
+Companies can now define a ride policy that controls what rides their
+employees may charge to the corporate account — a genuine enterprise
+differentiator.  No policy configured → all rides permitted (safe default).
+
+- **`CorporateRidePolicy` model**: unique on `account_id`; FK →
+  `corporate_accounts_v2`; 6 policy columns (allowed_vehicle_categories,
+  max_per_ride_usd, max_per_member_monthly_usd, require_purpose,
+  approved_purposes, business_hours_only)
+- **4 service functions**: `get_policy` (returns None if not set), `set_policy`
+  (upsert, account-admin-only), `delete_policy` (account-admin-only, 404 if
+  not set), `check_ride_allowed` (evaluate proposed ride against all 4 policy
+  dimensions; no policy → allowed=True)
+- **5 endpoints**: GET/PUT/DELETE `/corporate/accounts/me/policy` (member/admin);
+  POST `/corporate/accounts/me/policy/check` (any member); GET
+  `/admin/corporate/accounts/{id}/policy`
+- **Schema validation**: max_per_ride_usd > 0; approved_purposes ≤ 20 entries;
+  each purpose string ≤ 100 chars
+- **Migration q2r3s4t5u6v7** (down_revision: p2q3r4s5t6u7) — 1 table, 1 unique
+  constraint
+- **31 new tests** — Total: **5,100 passing** (up from 5,069)
+
+#### Session end
+
+---
+
+## Session 165 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,047 tests passing, continuing feature development
+
+### Task: Driver Work Preferences (commit `57b8707`)
+
+Pairing feature to rider ride preferences — drivers get equivalent agency over
+their workload. Cooperative differentiator: Uber/Lyft dispatch ignores driver
+preferences entirely.
+
+- **`DriverWorkPreference` model**: unique on `driver_id`; 8 columns (pool rides,
+  pets, extra luggage, min/max distance km, long-distance preference, language-match
+  preference, notes); permissive defaults (all ride types accepted) — new drivers
+  are never inadvertently excluded
+- **3 service functions**: `get_preferences` (auto-creates default row on first
+  access), `update_preferences` (partial — only non-None fields written, distance
+  range validated), `reset_preferences` (restore platform defaults)
+- **4 endpoints**: GET/PUT/DELETE `/drivers/me/work-preferences`; GET
+  `/admin/drivers/{id}/work-preferences`
+- **Schema validation**: `min_trip_distance_km` ≤ `max_trip_distance_km` (cross-
+  field validator); both in [0.0, 500.0]; `notes` max 200 chars
+- **Migration p2q3r4s5t6u7** (down_revision: o2p3q4r5s6t7)
+- **22 new tests** — Total: **5,069 passing** (up from 5,047)
+
+#### Session end
+
+---
+
+## Session 164 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 5,007 tests passing, continuing feature development
+
+### Task: Driver Language Skills & Rider Language Preferences (commit `ebbf097`)
+
+Language-matched rides for non-English-speaking communities — a genuine cooperative
+accessibility commitment. Uber/Lyft have no equivalent.
+
+- **2 models**: DriverLanguage (driver_id + language_code unique; proficiency enum
+  basic/conversational/fluent/native; is_primary with auto-clear of previous);
+  RiderLanguagePreference (one row per rider; upsert on update)
+- **8 service functions**: set/remove/get driver languages; get_drivers_by_language
+  (min_proficiency filter using ordered scale); set/get/clear rider preference;
+  get_language_coverage_stats (top 20 languages + fluent/native breakdown)
+- **9 endpoints**: public driver view, driver self-manage (add/update/delete),
+  rider preference CRUD, admin coverage stats, admin driver view
+- **Migration o2p3q4r5s6t7** (down_revision: n1o2p3q4r5s6) — 2 tables, 1 enum,
+  3 indexes, 1 unique constraint
+- **40 new tests** — Total: **5,047 passing** (up from 5,007)
+
+#### Session end
+
+---
+
 ## Session 163 — 2026-04-15
 
 ### Orient
