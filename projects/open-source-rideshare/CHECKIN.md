@@ -6,6 +6,63 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/corporate-business-accounts — driver certification badges
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `44c7037`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-15
+
+**Summary:**
+Implements a cooperative driver recognition badge system. Drivers earn badges for
+quality, safety, and community contribution. Riders see a driver's active badges
+when matched. This is a cooperative differentiator — Uber/Lyft have no peer
+recognition system for drivers.
+
+**Badge types:** safe_driver, five_star, accessibility_specialist, pet_friendly,
+long_distance_expert, mentor, eco_driver, veteran.
+
+**Architecture decisions:**
+- One row per driver+badge_type with a unique constraint. Revoked badges are not
+  deleted; `is_active=False` preserves the audit trail. Re-awarding a revoked badge
+  re-activates the existing row rather than inserting a duplicate.
+- Admin awards are manual (POST endpoint); `check-eligibility` auto-awards any badge
+  the driver qualifies for and is safe to call repeatedly (no duplicates).
+- Eligibility checks are wrapped individually in `try/except` so a missing model
+  column (e.g., `Vehicle.fuel_type` not yet in schema) degrades gracefully with an
+  "award manually" reason rather than failing the entire check.
+- eco_driver check detects whether the `fuel_type` column exists at runtime; if not,
+  the badge is marked not auto-eligible with a clear message.
+- `await db.flush()` used throughout (not `commit`) — commits handled by middleware.
+
+**Files changed:**
+- `backend/app/models/driver_certification.py` — DriverCertification model + BadgeType enum
+- `backend/app/schemas/driver_certification.py` — all request/response Pydantic schemas
+- `backend/app/services/driver_certification.py` — award, revoke, eligibility, auto-award, stats
+- `backend/app/api/v1/driver_certifications.py` — 6 endpoints (public + admin)
+- `backend/app/db/migrations/versions/n1o2p3q4r5s6_add_driver_certifications.py` — migration (down_revision: z1a2b3c4d5e6)
+- `backend/app/main.py` — registered driver_certifications.router
+- `backend/tests/test_driver_certifications.py` — 38 unit tests, all passing
+
+**Endpoints added:**
+- `GET    /api/v1/drivers/{driver_id}/badges` — public: view any driver's active badges
+- `GET    /api/v1/drivers/me/badges` — authenticated driver: view own badges (+ revoked)
+- `POST   /api/v1/admin/drivers/{driver_id}/badges` — award badge (409 on duplicate active)
+- `DELETE /api/v1/admin/drivers/{driver_id}/badges/{badge_type}` — revoke badge (404 if not active)
+- `POST   /api/v1/admin/drivers/{driver_id}/badges/check-eligibility` — check + auto-award
+- `GET    /api/v1/admin/badge-stats` — platform totals, breakdown by type, top 10 drivers
+
+**Test results:** 5,007 passing, 0 failing (full suite — increased from 4,969 baseline by +38).
+
+**Review notes:**
+- eco_driver badge cannot be auto-awarded yet because `Vehicle` has no `fuel_type` column.
+  A follow-up migration could add `fuel_type` to the vehicles table to enable auto-award.
+  Admins can still award eco_driver manually via the admin endpoint.
+- The `GET /drivers/{driver_id}/badges` endpoint is unauthenticated (public). If the platform
+  decides badge data should be rider-only or require auth, add `Depends(get_current_user)`.
+
+---
+
 ### feature/corporate-business-accounts — corporate business accounts system
 
 **Branch:** `feature/corporate-business-accounts`
