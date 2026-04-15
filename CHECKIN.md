@@ -9,35 +9,27 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–180
+**Sessions**: 129–182
 
-### Accomplished (Session 180)
+### Accomplished (Session 182)
 
-Three new corporate features built and committed. **Total: 5,759 passing** (was 5,628).
+One new corporate feature built and committed. **Total: 5,842 passing** (was 5,794).
 
-#### open-source-rideshare — Corporate Departments (commit `ddb36fe`)
+#### open-source-rideshare — Corporate Custom Ride Fields (commit `9e7dc0e`)
 
-Admins organise account members into named departments (Engineering, Sales, etc.) with optional monthly budgets and cost center links. Spend analytics aggregate completed rides for all members in real time.
+Enterprise admins define custom metadata fields — project codes, client billing codes, cost-allocation tags, or any back-office field the enterprise ERP requires — that employees fill in on corporate rides. Values are validated against the field schema before persisting.
 
-- `CorporateDepartment` + `CorporateDepartmentMember` models; 9 service functions including per-department spend analytics; 11 endpoints; migration `b2c3d4e5f6g7`; 52 tests
-
-#### open-source-rideshare — Corporate Expense Reports (commit `4ab6d0a`)
-
-Employees submit personal ride expenses to the corporate account for reimbursement. Admins approve or reject with an optional feedback note. Parallel path to direct billing — handles "paid on personal card, need to expense it."
-
-- `CorporateExpenseReport` model; `ExpenseStatus` enum (pending/approved/rejected/withdrawn); validates ride ownership + cost center + trip purpose on submit; 6 service functions; 7 endpoints; migration `c3d4e5f6g7h8`; 41 tests
-
-#### open-source-rideshare — Corporate Billing Contacts (commit `2f81ab2`)
-
-Finance team members registered to receive invoices and budget notifications. May be email-only — not required to be platform users. Three notification opt-ins: invoices, budget alerts, monthly summary.
-
-- `CorporateBillingContact` model; email unique/account, immutable after creation; `list_contacts_for_notification` internal dispatch helper; 6 endpoints; migration `d4e5f6g7h8i9`; 38 tests
+- **2 models**: `CorporateCustomField` (label, field_key unique/account auto-slugified, `CustomFieldType` enum text/number/dropdown/checkbox, dropdown_options JSONB, is_required, max_length, display_order, is_active soft-delete, created_by_id) + `CorporateRideCustomFieldValue` (field_id + ride_id unique, value Text, set_by_id, set_at; upsert semantics)
+- **8 service functions**: create/get/list/update/deactivate (admin) + `set_ride_field_value` (member — validates type/options/length, upserts) + `get_ride_field_values` (returns values + field metadata per ride)
+- **9 endpoints**: 3 member read + 1 member set-value + 4 admin CRUD (create/update/deactivate/get) + 2 platform-admin (list fields, ride values)
+- **Migration `f6g7h8i9j0k1`**: `custom_field_type` enum + 2 tables + 5 indexes
+- **48 tests**
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `2f81ab2`)
-Includes Sessions 166–180: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, **departments, expense reports, billing contacts**.
+Branch: `feature/corporate-business-accounts` (latest commit `9e7dc0e`)
+Includes Sessions 166–182: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, **custom ride fields**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---

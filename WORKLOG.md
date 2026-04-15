@@ -7480,3 +7480,97 @@ results, column content, null-field handling) + API layer; **Total: 5,441 passin
 - Selected: open-source-rideshare — 5,628 tests passing, continuing corporate feature track
 - Task selected: Corporate Department Management — organise employees into named departments with optional budgets, cost center links, and spend analytics
 
+
+## Session 181 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready — no autonomous work
+- Selected: open-source-rideshare — 5,759 tests passing, continuing corporate feature track
+- Task selected: Corporate Admin Audit Log — account-scoped immutable record of admin actions for compliance (SOX/SOC2 readiness). Non-conflicting with platform-wide audit.py.
+
+### Task: Corporate Admin Audit Log (commit `6e0250c`)
+
+Added an append-only compliance audit log for corporate admin actions.
+
+**Model** (`corporate_admin_audit_log.py`):
+- `CorporateAdminAuditLog`: account FK (CASCADE), actor FK (SET NULL for system
+  events), action (dot-namespaced string e.g. "billing_contact.create"),
+  resource_type, resource_id (flexible string), details (JSONB), created_at;
+  no updated_at — entries are immutable.
+- 5 indexes: account_id, actor_id, action, resource_type, created_at.
+
+**Service** (`corporate_admin_audit_log.py`) — 5 functions:
+- `log_action` — internal append helper, no auth check, does not commit.
+- `list_audit_logs` — admin-only, paginated, filters: actor/action/resource_type/from_dt/to_dt.
+- `get_audit_log_entry` — admin-only single entry.
+- `list_audit_logs_platform` — platform-admin variant, no member check.
+- `get_audit_log_entry_platform` — platform-admin single entry.
+
+**Endpoints** (`corporate_admin_audit_log.py`) — 4 endpoints:
+  `GET /corporate/accounts/me/audit-log` (admin, filterable, newest-first)
+  `GET /corporate/accounts/me/audit-log/{entry_id}` (admin)
+  `GET /admin/corporate/accounts/{account_id}/audit-log` (platform-admin)
+  `GET /admin/corporate/accounts/{account_id}/audit-log/{entry_id}` (platform-admin)
+
+**35 new tests** — all passing; **Total: 5,794 passing**.
+
+#### Session end
+
+## Session 182 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — continuing corporate feature track (5,794 tests)
+
+### Task selected: Corporate Custom Ride Fields
+Enterprise admins define custom data fields (project code, client billing code, etc.) that
+employees fill in when booking rides. Integrates with existing expense, invoice, and analytics
+features. Two models: CorporateCustomField (field schema) + CorporateRideCustomFieldValue
+(per-ride values). Admin CRUD + member set/get + platform-admin view.
+
+### Task: Corporate Custom Ride Fields (commit `9e7dc0e`)
+
+Enterprise admins define custom metadata fields that employees fill in on
+corporate rides — project codes, client billing codes, cost-allocation tags,
+or any field required by the enterprise ERP/back-office system.
+
+**Model** (`corporate_custom_field.py`) — 2 models:
+- `CorporateCustomField`: label, field_key (slugified, unique/account),
+  `CustomFieldType` enum (text/number/dropdown/checkbox), dropdown_options
+  JSONB, is_required, max_length (text fields), display_order, is_active,
+  created_by_id
+- `CorporateRideCustomFieldValue`: field_id + ride_id (unique), value Text,
+  set_by_id, set_at; upsert semantics on repeated set
+
+**Service** (`corporate_custom_field.py`) — 8 functions:
+- create (admin, auto-slugifies label to field_key if omitted, 409 on dup)
+- get (404 on wrong account), list (active_only filter, display_order sort)
+- update (label/options/required/max_length/order/active; field_key + type immutable)
+- deactivate (soft-delete; 409 if already inactive)
+- set_ride_field_value (any member; validates numeric/checkbox/dropdown/text-length; upserts)
+- get_ride_field_values (returns values + field metadata for all account fields on ride)
+
+**API** (`corporate_custom_fields.py`) — 9 endpoints:
+  GET  /corporate/accounts/me/custom-fields
+  GET  /corporate/accounts/me/custom-fields/{field_id}
+  POST /corporate/accounts/me/custom-fields               (admin)
+  PUT  /corporate/accounts/me/custom-fields/{field_id}    (admin)
+  DELETE /corporate/accounts/me/custom-fields/{field_id}/deactivate (admin)
+  GET  /corporate/accounts/me/rides/{ride_id}/custom-fields
+  PUT  /corporate/accounts/me/rides/{ride_id}/custom-fields/{field_id}
+  GET  /admin/corporate/accounts/{id}/custom-fields
+  GET  /admin/corporate/accounts/{id}/rides/{ride_id}/custom-fields
+
+**Migration `f6g7h8i9j0k1`**: custom_field_type enum + 2 tables + 5 indexes.
+
+**48 tests** — all passing. **Total: 5,842 passing**.
+
+#### Session end
