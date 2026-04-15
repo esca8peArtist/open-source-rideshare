@@ -5690,3 +5690,68 @@ All four driver compliance documents (license, registration, insurance, inspecti
 #### Session end
 - PROJECTS.md updated
 - CHECKIN.md updated
+
+## Session 135 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 3,896 tests passing — selected **Ride Receipts + Feedback APIs** as next feature
+
+### Rationale
+Both `app/services/receipts.py` and `app/services/feedback.py` had full service implementations with no API exposure. Post-ride receipt + feedback is a critical user flow: after a completed ride, riders need a receipt and both parties should be able to rate the experience. Implemented together since they're the natural post-ride complement.
+
+### open-source-rideshare — Ride Receipts + Feedback APIs COMPLETE (commit `a254483`)
+- New router: `app/api/v1/receipts.py`
+  - GET /rides/{ride_id}/receipt — rider or driver fetches detailed receipt (fare breakdown, payment, driver info, promo discount, tip, receipt number)
+- New router: `app/api/v1/ride_feedback.py`
+  - POST /rides/{ride_id}/feedback — rider or driver submits feedback (1–5 rating, comment, categories, tip); role auto-detected; prevents duplicates; syncs rating to Ride model
+  - GET  /rides/{ride_id}/feedback/mine — authenticated user's own feedback on this ride
+  - GET  /riders/me/feedback — paginated feedback history for current rider
+  - GET  /drivers/me/feedback — paginated feedback history for current driver
+  - GET  /admin/feedback — admin view of all feedback (filterable by ride_id, user_id, role)
+- New schema: `app/schemas/receipt.py` — re-export of ReceiptFareBreakdown, ReceiptPaymentInfo, ReceiptDriverInfo, RideReceiptResponse
+- Updated schema: `app/schemas/feedback.py` — SubmitFeedbackRequest, FeedbackResponse (with categories CSV→list validator), FeedbackPaginatedResponse
+- 51 unit tests; **Total: 3,947 tests passing** (up from 3,896), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 134 — 2026-04-15 01:57
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 3,855 tests passing — selected **Driver Vehicle Maintenance Tracking** as next feature
+
+### Rationale
+Vehicle maintenance tracking is a gap in the platform. The Vehicle model exists but has no maintenance history layer. Safety-critical for a cooperative: a driver with overdue brake service shouldn't be on the road. Builds driver trust (we care about their vehicles) and platform safety. Will cover: maintenance log per vehicle, upcoming service alerts, admin fleet-wide view.
+
+### open-source-rideshare — Driver Vehicle Maintenance Tracking COMPLETE (commit 9352bf6)
+- New model: `app/models/vehicle_maintenance.py`
+  - VehicleMaintenanceLog: vehicle_id, driver_profile_id, maintenance_type, date_serviced, mileage_at_service, cost_usd, service_provider, next_service_date, next_service_mileage
+  - MaintenanceType enum: 15 types (oil_change, tire_rotation, brake_inspection, brake_replacement, air_filter, cabin_filter, battery_replacement, coolant_flush, transmission_service, spark_plugs, belt_replacement, wiper_blades, annual_inspection, other, other)
+- New service: `app/services/vehicle_maintenance.py`
+  - log_maintenance: record a service event
+  - get_vehicle_maintenance_history: paginated per-vehicle history
+  - get_driver_maintenance_history: paginated across all driver vehicles
+  - get_upcoming_maintenance: upcoming + overdue by next_service_date (days_until_due negative = overdue)
+  - get_fleet_maintenance_summary: admin overview — overdue count, due-soon count, vehicles with overdue, recent logs
+- New router: `app/api/v1/vehicle_maintenance.py`
+  - POST /drivers/me/vehicles/{vehicle_id}/maintenance — log event
+  - GET  /drivers/me/vehicles/{vehicle_id}/maintenance — history for one vehicle
+  - GET  /drivers/me/maintenance/upcoming              — all upcoming/overdue across vehicles
+  - GET  /admin/maintenance/fleet                      — fleet-wide summary
+- Migration: t1u2v3w4x5y6_add_vehicle_maintenance — 1 table + 3 indexes
+- 41 unit tests; **Total: 3,896 tests passing** (up from 3,855), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
