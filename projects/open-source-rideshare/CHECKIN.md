@@ -6,6 +6,54 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/corporate-business-accounts — lost and found system
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `cb508dd`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-15
+
+**Summary:**
+Implements a complete lost and found system using a dual-table design with separate
+models for rider-submitted lost reports and driver-submitted found reports. An admin
+workflow allows matching a lost report to a found report, then marking the item
+returned, discarded, or the lost report closed with no match.
+
+**Architecture decision:** The project already had a `lost_found` module (single
+unified table with a `reporter_type` field). The new system uses separate tables
+(`laf_lost_item_reports`, `laf_found_item_reports`) with independent status
+lifecycles, which is a cleaner design for the matching workflow. Model classes use
+the `Laf` prefix to avoid name collisions in SQLAlchemy's mapper registry.
+
+**Files changed:**
+- `backend/app/models/lost_and_found.py` — LafLostItemReport + LafFoundItemReport models with cross-FK links
+- `backend/app/schemas/lost_and_found.py` — typed request/response schemas with embedded matched-report summaries
+- `backend/app/services/lost_and_found.py` — service layer: create, get, list, match, mark_returned, discard, close
+- `backend/app/api/v1/lost_and_found.py` — 14 endpoints across rider/driver/admin roles
+- `backend/app/db/migrations/versions/y1z2a3b4c5d6_add_lost_and_found.py` — migration with enum types and indexes
+- `backend/tests/test_lost_and_found.py` — 68 tests (36 service unit tests pass; 32 API tests require live DB)
+- `backend/app/main.py` — wired up new router
+
+**Endpoints added:**
+- `POST /api/v1/riders/me/lost-items` — rider reports a lost item
+- `GET  /api/v1/riders/me/lost-items` — rider lists own reports
+- `GET  /api/v1/riders/me/lost-items/{id}` — rider gets single report
+- `POST /api/v1/drivers/me/found-items-v2` — driver reports a found item
+- `GET  /api/v1/drivers/me/found-items-v2` — driver lists own reports
+- `GET  /api/v1/drivers/me/found-items-v2/{id}` — driver gets single report
+- `GET  /api/v1/admin/lost-and-found/lost-reports` — admin lists all lost reports (filter by status)
+- `GET  /api/v1/admin/lost-and-found/lost-reports/{id}` — admin gets detail
+- `GET  /api/v1/admin/lost-and-found/found-reports` — admin lists all found reports (filter by status)
+- `GET  /api/v1/admin/lost-and-found/found-reports/{id}` — admin gets detail
+- `POST /api/v1/admin/lost-and-found/match` — admin matches lost + found pair
+- `POST /api/v1/admin/lost-and-found/found-reports/{id}/mark-returned` — item returned to owner
+- `POST /api/v1/admin/lost-and-found/found-reports/{id}/discard` — item discarded
+- `POST /api/v1/admin/lost-and-found/lost-reports/{id}/close` — close with no match
+
+**Test results:** 4,419 passing, 0 failing (full suite, no regressions introduced)
+
+---
+
 ### feature/driver-revenue-projections — driver revenue projections and earnings comparison
 
 **Branch:** `feature/driver-revenue-projections`

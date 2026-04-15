@@ -12,6 +12,10 @@
 ## New Items
 <!-- Add tasks here. Format: - [date] [description] -->
 
+<!-- Processed 2026-04-14 Session 120:
+- [21:36] Discord notifications too frequent — user wants only the ~2-hour periodic ones, not per-session → noted in WORKLOG, feedback saved, orchestrator will limit Discord pings to once per ~2hr window going forward
+-->
+
 <!-- Processed 2026-04-14 Session 106:
 - [15:56] Discord bot showing same status info → investigated and answered in CHECKIN.md
 -->

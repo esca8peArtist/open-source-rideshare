@@ -6067,3 +6067,38 @@ Used a per-ride earnings floor model (rather than hourly) because ride data is d
 - 67 unit tests; **Total: 4,383 tests passing** (up from 4,316), 0 failing
 
 #### Session end
+
+## Session 144 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,383 tests passing — selected **Lost and Found system** as next feature
+
+### Rationale
+Riders frequently leave items in rideshare vehicles. A lost and found system:
+- Riders report lost items (description, ride reference, contact info)
+- Drivers report found items (description, can attach to recent ride)
+- Platform matches reports and facilitates contact/return
+- Admin manages unresolved reports, marks items returned/discarded
+- Improves rider trust and platform reputation
+
+### open-source-rideshare — Lost and Found System COMPLETE (commit `cb508dd`)
+- New models: `LafLostItemReport` (rider-submitted) + `LafFoundItemReport` (driver-submitted); `Laf` prefix avoids collision with pre-existing `lost_found` module
+  - LafLostItemStatus: open/matched/returned/closed_no_match
+  - LafFoundItemStatus: pending_match/matched/returned_to_owner/discarded
+  - Cross-referencing nullable FKs set during admin matching; ride-ownership validation when ride_id provided
+- New service: create_lost_report, create_found_report, get_rider_lost_reports, get_driver_found_reports, admin_list_lost/found_reports (status filter), match_reports, mark_returned, discard_found_item, close_lost_report; state-transition guards raise LostAndFoundError
+- New schemas: LafLostItemReportCreate/Response, LafFoundItemReportCreate/Response, MatchReportsRequest, LostReportListResponse, FoundReportListResponse
+- New router: 14 endpoints
+  - Rider: POST /riders/me/lost-items, GET list + detail
+  - Driver: POST /drivers/me/found-items-v2 (path conflict with legacy route), GET list + detail
+  - Admin: GET all lost/found (filter by status), GET detail, POST match, POST mark-returned, POST discard, POST close-lost
+- Migration: y1z2a3b4c5d6_add_lost_and_found — laf_lost_item_reports + laf_found_item_reports, 4 enum types, deferred cross-FK
+- 68 tests: 36 service unit (passing) + 32 API integration (skip — no live DB, consistent with rest of suite)
+- **Total: 4,419 tests passing** (up from 4,383), 0 failing
+
+#### Session end

@@ -9,20 +9,25 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–143
+**Sessions**: 129–144
+
+### Accomplished (Session 144)
+
+#### open-source-rideshare — Lost and Found System COMPLETE (commit `cb508dd`)
+Riders leave items in rideshare vehicles constantly. This is the canonical feature that builds rider trust post-ride.
+
+- **LafLostItemReport** (rider-submitted): ride_id (optional), description, category (electronics/clothing/documents/bags/jewelry/keys/other), date_lost, contact_preference; statuses: open/matched/returned/closed_no_match
+- **LafFoundItemReport** (driver-submitted): ride_id (optional), description, category, storage_location; statuses: pending_match/matched/returned_to_owner/discarded
+- `Laf` prefix used — pre-existing `lost_found` module was already in the codebase; this is the new, complete system
+- Driver found-items at `/drivers/me/found-items-v2` — path conflict with legacy route
+- **Admin workflow**: admin matches a lost + found pair → mark-returned (both resolved) or discard (driver held too long, no claim) or close-lost (no match found)
+- State-transition guards prevent double-processing; ride-ownership validation when ride_id provided
+- Migration: y1z2a3b4c5d6 (laf_lost_item_reports + laf_found_item_reports, 4 enum types, deferred cross-FK)
+- **68 new tests** (36 service unit passing + 32 API integration skip — no live DB, consistent with rest of suite); **Total: 4,419 tests passing** (up from 4,383), 0 failing
 
 ### Accomplished (Session 143)
 
 #### open-source-rideshare — Driver Minimum Earnings Guarantee COMPLETE (commit `8c7f28a`)
-The cooperative's safety net: if a driver has a slow week, the platform covers the shortfall. Admin configures a per-ride floor (e.g. $10/ride) and a minimum rides/week to qualify. At week-end, every eligible driver with gross earnings below the guarantee gets the difference paid out from cooperative surplus.
-
-Designed around a **per-ride floor** (not hourly) — ride data is available, the formula is transparent, and drivers can't game it by staying online while refusing rides.
-
-- **EarningsGuaranteePolicy** — admin-configured: minimum_per_ride_usd, minimum_rides_to_qualify; history preserved (rows never deleted); deactivates prior policy on update
-- **WeeklyGuaranteeRecord** — per-driver per-week: rides_completed, gross_earnings, guaranteed_earnings, shortfall_usd; statuses: ineligible (below threshold) / waived (no shortfall) / pending / paid; unique on (driver_id, week_start); idempotent re-processing updates non-paid records
-- **Driver endpoints**: GET current week estimate (in-progress, not persisted) + GET own history with total received
-- **Admin endpoints**: GET/POST policy; GET calculate (dry-run preview); POST process (persist records); GET records list (filterable by week/status); GET record detail; POST pay individual; POST pay-all (bulk); GET aggregate summary
-- Migration: x1y2z3a4b5c6 (earnings_guarantee_policies + weekly_guarantee_records, 5 indexes)
 - **67 new tests; Total: 4,383 tests passing** (up from 4,316), 0 failing
 
 ### Accomplished (Session 142)
@@ -35,23 +40,12 @@ Designed around a **per-ride floor** (not hourly) — ride data is available, th
 #### open-source-rideshare — Cooperative Governance / Driver Voting System COMPLETE (commit `348e002`)
 - **76 new tests; Total: 4,253 tests passing** (up from 4,177), 0 failing
 
-### Accomplished (Session 140)
-#### open-source-rideshare — Driver Bonus / Quest Programs COMPLETE (commit `eab25d2`)
-- **70 new tests; Total: 4,177 tests passing** (up from 4,107)
-
-### Accomplished (Session 139)
-#### open-source-rideshare — Driver Tax Reporting / 1099-NEC COMPLETE (commit `323efef`)
-- **66 new tests; Total: 4,107 tests passing** (up from 4,041), 0 failing
-
-### Accomplished (Session 138)
-#### open-source-rideshare — Public Service Coverage API COMPLETE (commit `8600e0e`)
-- **35 new tests; Total: 4,041 tests passing** (up from 4,036)
-
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–143 (many features)
-Branch: `feature/corporate-business-accounts` — 4,383 tests passing. Features since last push:
-- Driver Minimum Earnings Guarantee (8c7f28a) ← new
+#### open-source-rideshare — PR: Sessions 129–144 (many features)
+Branch: `feature/corporate-business-accounts` — **4,419 tests passing**. Features since last push:
+- Lost and Found System (cb508dd) ← new
+- Driver Minimum Earnings Guarantee (8c7f28a)
 - Cooperative Member Dividend / Profit-Sharing (b827b33)
 - Cooperative Governance / Driver Voting System (348e002)
 - Driver Bonus / Quest Programs (eab25d2)
@@ -69,34 +63,31 @@ Branch: `feature/corporate-business-accounts` — 4,383 tests passing. Features 
 The SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually when ready.
 
 Note from Session 135: `rides.py` has duplicate receipt/feedback routes superseded by dedicated routers — cleanup after merge.
-
-Note from Session 139: Tax documents reference driver earnings via DriverPayout model. If payout data is sparse in early testing, `calculate_annual_earnings` will return 0 (correct behavior — drivers with no completed payouts don't get 1099s).
+Note from Session 139: Tax documents reference driver earnings via DriverPayout model. `calculate_annual_earnings` returns 0 for drivers with no completed payouts (correct — no 1099 for $0 earnings).
 
 ---
 
-### Needs Your Input
-
 **mfg-farm — Business plan is ready; next action is your call**
-The full business plan is at `projects/mfg-farm/business-plan.md`. To launch, the first concrete step is getting original cable management designs — either:
-- **Commission route**: Post on Fiverr/Upwork for a cable management parametric family ($200–350, own the STLs outright). Fastest path to sellable product.
-- **Build route**: Start Fusion 360 learning path (free for hobbyists). Slower but builds the design capability that drives long-term margin.
-Drop the direction in INBOX.md and the orchestrator will set up the next operational steps.
+The full business plan is at `projects/mfg-farm/business-plan.md`. To launch:
+- **Commission route**: Fiverr/Upwork for cable management parametric family ($200–350, own the STLs). Fastest.
+- **Build route**: Fusion 360 learning path (free for hobbyists). Slower but builds long-term design margin.
+Drop the direction in INBOX.md.
 
 **Stockbot — paper trading cycle logs (ongoing)**
-Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
+Paper trading live since April 14. No autonomous path without `STOCKBOT_API_KEY` in env. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page to unblock.
 
-**open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now has 4,383 tests passing across Sessions 129–143. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
+**open-source-rideshare — SSH key**
+`esca8peArtist` can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm correct credentials.
 
-**resistance-research — proposal is done; what next?**
-`democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
+**resistance-research — what next?**
+`democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it.
 
 ---
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Resolve SSH push or continue with next cooperative feature (4,383 tests, local commits ready)
+3. **open-source-rideshare**: Next feature TBD (4,419 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
