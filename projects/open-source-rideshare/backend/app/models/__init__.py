@@ -39,3 +39,4 @@ from app.models.feedback import RideFeedback, Dispute  # noqa: F401
 from app.models.driver_rating_appeal import DriverRatingAppeal  # noqa: F401
 from app.models.trusted_contact import TrustedContact, TripShareRecord  # noqa: F401
 from app.models.driver_shift import DriverShift  # noqa: F401
+from app.models.hardship_fund import DriverHardshipFund, HardshipContribution, HardshipApplication  # noqa: F401
