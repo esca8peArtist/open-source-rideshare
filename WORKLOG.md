@@ -4,6 +4,47 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 153 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: selected — 4,627 tests passing, continuing from session 152
+
+### Task selected
+Community Partner Organization System — hospitals, NGOs, social service agencies can
+partner with the cooperative to fund rides for their clients (post-discharge transport,
+job-training commutes, etc.). Genuinely differentiating feature not found on Uber/Lyft.
+
+### open-source-rideshare — Community Partner Organization System COMPLETE (commit `cea2099`)
+Feature: Community organizations issue ride credits to specific riders. Admins manage
+org accounts, partner org admins monitor their usage, riders see and benefit from
+credits automatically applied to rides.
+
+- New models (`app/models/partner_org.py`):
+  - `PartnerOrganization`: org account; types: healthcare/social_services/education/transit_authority/nonprofit/government/other; status: pending → active ↔ suspended / terminated; optional monthly_credit_limit_usd; designated partner_admin_user_id for read-only org portal access
+  - `PartnerCreditGrant`: per-rider credit with total amount_usd, per_ride_cap_usd (optional), expiry_date (optional); status: active → exhausted (funds used) / expired / revoked; tracks amount_used_usd
+  - `PartnerCreditUsage`: immutable record of grant funds applied to one ride; unique constraint (grant_id, ride_id) for idempotency
+- New schemas (`app/schemas/partner_org.py`): Create/Update/Response for orgs; GrantRequest/Response/Usage; RiderPartnerCreditSummary/HistoryItem; platform and org summary responses
+- New service (`app/services/partner_orgs.py`):
+  - Org: create, get, list (filter by status/type), update, activate, suspend, terminate (revokes active grants)
+  - Grant: issue (monthly cap check, org-active check), get, list, revoke, expire_stale_grants (bulk utility)
+  - apply_credit_to_ride(): FIFO selection, respects per_ride_cap and remaining balance, idempotent via unique constraint, marks exhausted when fully used
+  - Summaries: get_org_summary, get_platform_partner_summary
+  - Rider: get_rider_active_grants, get_rider_credit_history (enriched with org name + purpose)
+- New router (`app/api/v1/partner_orgs.py`) — 21 endpoints:
+  - Admin org management: POST /admin/partner-orgs, GET /admin/partner-orgs (+ filters), GET /admin/partner-orgs/summary, POST /admin/partner-orgs/expire-grants, GET/PUT /admin/partner-orgs/{id}, PUT suspend/activate/terminate, GET /admin/partner-orgs/{id}/summary
+  - Admin grant management: POST /admin/partner-orgs/{id}/credits, GET /admin/partner-orgs/{id}/credits, GET/PUT-revoke /admin/partner-credits/{id}, GET /admin/partner-credits/{id}/usages
+  - Partner admin: GET /partner/me/org, GET /partner/me/summary, GET /partner/me/credits
+  - Rider: GET /riders/me/partner-credits, GET /riders/me/partner-credits/history
+- Migration: d6e7f8a9b0c1 — 3 tables, 3 enum types, 7 indexes, 1 unique constraint
+- 27 new tests passing, 11 DB tests skipped; **Total: 4,654 tests passing** (4,627 before), 0 failing
+
+#### Session end
+
 ## Session 151 — 2026-04-15
 
 ### Orient
@@ -6384,5 +6425,37 @@ Feature: Riders can join the cooperative as member-owners, vote on platform prop
 - Migration: c6d7e8f9a0b1 (revises b5c6d7e8f9a0) — rider_coop_memberships, rider_coop_votes, rider_dividend_shares; 3 enum types (ridermemberstatus, ridervotechoice, riderdividendsharestatus), 9 indexes, 3 unique constraints
 - main.py: rider_cooperative router registered at /api/v1
 - 31 new tests passing (19 DB tests skipped — consistent with project); **Total: 4,627 tests passing** (4,596 before), 0 failing
+
+#### Session end
+
+## Session 154 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: selected — 4,654 tests passing, continuing from session 153
+
+### Task selected
+Airport Queue Management — real operational requirement for TNC airport compliance. Airports require rideshare drivers to stage in designated holding lots and be dispatched FIFO. Missing from the platform; self-contained and testable.
+
+### open-source-rideshare — Airport Queue Management System COMPLETE (commit `5766eb3`)
+Feature: Admin configures airport staging zones; drivers join FIFO queues; dispatched in arrival order for regulatory compliance.
+
+- New models (`app/models/airport_queue.py`):
+  - `AirportZone`: id, name, airport_code, terminal, address, lat/lng, max_queue_size (default 50), ttl_minutes (default 120), is_active; indexes on airport_code and is_active
+  - `AirportQueueEntry`: id, zone_id, driver_id, status (waiting/dispatched/left/expired), joined_at, dispatched_at, left_at, expires_at; UniqueConstraint(zone_id, driver_id) prevents double-joining; compound indexes on (zone_id, status) and (driver_id, status)
+- New schemas (`app/schemas/airport_queue.py`): AirportZoneCreate/Update/Response (with current_queue_size), JoinQueueRequest (optional lat/lng), QueueEntryResponse (1-based position), DispatchResponse (includes next_in_queue), QueuePositionResponse, AdminQueueView (live snapshot + today's stats)
+- New service (`app/services/airport_queue.py`):
+  - Zone: create (normalises airport_code to upper), get, list (filter by airport_code/active), update, get_zone_queue_size
+  - Queue: join_queue (capacity check + dup guard + TTL expiry set), leave_queue, get_my_entry, get_my_active_entries, get_position (1-based FIFO rank via COUNT ahead), dispatch_next (pops FIFO head, returns next_in_queue), remove_entry (admin force), expire_stale (TTL sweep), admin_zone_view (expire → snapshot → today's stats)
+- New router (`app/api/v1/airport_queue.py`) — 9 endpoints:
+  - Driver: POST/DELETE/GET /drivers/me/airport-queue/{zone_id}, GET /drivers/me/airport-queue
+  - Admin: POST/GET /admin/airport-zones, GET/PUT /admin/airport-zones/{zone_id}, POST /admin/airport-zones/{zone_id}/dispatch, DELETE /admin/airport-zones/{zone_id}/entries/{entry_id}, POST /admin/airport-zones/{zone_id}/expire
+- Migration: e7f8a9b0c1d2 (revises d6e7f8a9b0c1) — airport_zones, airport_queue_entries; queueentrystatus enum; 5 indexes; 1 unique constraint
+- main.py: airport_queue router registered at /api/v1
+- 35 new tests passing (18 DB tests skipped — consistent with project); **Total: 4,689 tests passing** (4,654 before), 0 failing
 
 #### Session end

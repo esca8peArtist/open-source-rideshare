@@ -9,7 +9,32 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–152
+**Sessions**: 129–154
+
+### Accomplished (Session 154)
+
+#### open-source-rideshare — Airport Queue Management System COMPLETE (commit `5766eb3`)
+Real operational feature: airports require TNC drivers to stage in designated holding lots and be dispatched FIFO. This implements the full system for regulatory compliance with airport authorities.
+
+- **AirportZone**: admin-configured staging/pickup zone per terminal; max_queue_size cap; ttl_minutes expiry policy; is_active toggle
+- **AirportQueueEntry**: FIFO queue slot per driver-per-zone; status: waiting → dispatched | left | expired; UniqueConstraint prevents double-joining; position derived from joined_at ASC (no mutable column = no race conditions)
+- **Service**: join (capacity check + dup guard + TTL expiry set), leave, get_position (1-based FIFO rank), dispatch_next (pops FIFO head, returns next_in_queue), expire_stale, admin_zone_view (expire → snapshot → today's stats)
+- **9 endpoints**: driver (join/leave/get position/list active queues); admin (create/list/view/update zones + dispatch + remove entry + expire stale)
+- Migration: e7f8a9b0c1d2 — airport_zones, airport_queue_entries; queueentrystatus enum; 5 indexes; 1 unique constraint
+- **35 new tests passing** (18 DB tests skipped); **Total: 4,689 tests passing** (up from 4,654), 0 failing
+
+### Accomplished (Session 153)
+
+#### open-source-rideshare — Community Partner Organization System COMPLETE (commit `cea2099`)
+Cooperative differentiator: hospitals, social service agencies, and NGOs can partner with the platform to directly fund rides for their clients — filling the last-mile gap for patients, job-training participants, and others who need transport support but can't pay out-of-pocket.
+
+- **PartnerOrganization**: pending → active ↔ suspended / terminated; 7 org types; optional monthly credit issuance cap; designated partner admin user can log in and view their org's data
+- **PartnerCreditGrant**: org issues a dollar credit to a specific rider; optional per-ride cap; optional expiry; FIFO applied across rides; auto-marked exhausted when balance reaches $0
+- **PartnerCreditUsage**: immutable record per ride; idempotent (unique constraint prevents double-apply)
+- **apply_credit_to_ride()**: service helper ready to call from the rides service when a ride completes
+- **21 endpoints**: admin org CRUD + lifecycle (activate/suspend/terminate), admin grant issuance/revocation/usage view, partner-admin read-only org portal, rider credit summary + usage history
+- Migration: d6e7f8a9b0c1 — 3 tables, 3 enum types, 7 indexes, 1 unique constraint
+- **27 new tests passing** (11 DB tests skipped); **Total: 4,654 tests passing** (up from 4,627), 0 failing
 
 ### Accomplished (Session 152)
 
