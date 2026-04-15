@@ -4,6 +4,44 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 199 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Carbon Budget & ESG Reporting
+
+### Task: Corporate Carbon Budget & ESG Reporting — COMPLETE (commit `0c5d3a3`)
+
+Enterprise ESG feature — corporate accounts set a monthly CO2 budget and track
+their environmental footprint across all employee rides. Ties into the existing
+ride_carbon_records table. No Uber for Business equivalent.
+
+- Model: CorporateCarbonBudget (one per account; monthly_budget_co2_kg nullable
+  ceiling in kg; offset_budget_usd optional USD reserve; tracking_enabled flag;
+  alert_threshold_pct 1–100 default 80; notes; updated_by audit FK; CASCADE
+  delete on account; unique constraint on account_id)
+- Service: 6 functions (get_or_create_carbon_budget upsert-on-read; update_carbon_budget
+  partial PUT; get_account_carbon_summary current-month CO2+green_pct+offset+
+  budget_utilisation+alert_triggered; get_carbon_trend month-over-month 1–24 months
+  newest-first; get_employee_carbon_breakdown admin-only ordered by CO2 desc;
+  get_platform_esg_report platform-admin cross-account ESG cumulative totals +
+  monthly trend)
+- Endpoints: 7 (member GET carbon-budget; admin PUT carbon-budget; member GET
+  carbon-summary; member GET carbon-trend ?months=6; admin GET carbon/employees
+  ?period_start&period_end; platform-admin GET /admin/corporate/accounts/{id}/
+  carbon-budget; platform-admin GET /admin/corporate/carbon/esg-report ?months=12)
+- Migration: u1v2w3x4y5z6 (down_revision: t0u1v2w3x4y5); corporate_carbon_budgets
+  table + unique constraint + 1 index
+- 39 tests → Total: 6,563 passing (was 6,524)
+
+#### Session end
+
+---
+
 ## Session 198 — 2026-04-15
 
 ### Orient

@@ -9,7 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–198
+**Sessions**: 129–199
+
+### Accomplished (Session 199)
+
+#### open-source-rideshare — Corporate Carbon Budget & ESG Reporting (commit `0c5d3a3`)
+
+Corporate accounts can now set a monthly CO2 budget and track their environmental footprint across all employee rides. Sustainability teams get current-month summaries, month-over-month trend data, per-employee breakdowns, and platform-wide ESG reports. No Uber for Business equivalent — this is a genuine cooperative differentiator for ESG-conscious enterprise clients.
+
+- **`CorporateCarbonBudget` model**: one per account (upsert-on-read); `monthly_budget_co2_kg` Numeric(10,2) nullable ceiling; `offset_budget_usd` Numeric(10,2) optional; `tracking_enabled` bool (default True); `alert_threshold_pct` int 1–100 (default 80); `notes` text; `updated_by_id` audit FK (SET NULL); CASCADE delete on account; unique constraint on account_id; 1 index
+- **6 service functions**: `get_or_create_carbon_budget` (upsert-on-read, never 404) / `update_carbon_budget` (partial PUT, creates if absent, only supplied fields written) / `get_account_carbon_summary` (current-month CO2 kg + green ride % + offset payments + budget utilisation % + alert_triggered flag; 403 when tracking disabled for non-admin members) / `get_carbon_trend` (month-over-month 1–24 months, newest-first; 400 on range) / `get_employee_carbon_breakdown` (admin only, ordered by CO2 desc; 400 on bad period; 403 non-admin) / `get_platform_esg_report` (platform-admin cross-account; cumulative totals + monthly trend; 400 on range)
+- **7 endpoints**: `GET /corporate/accounts/me/carbon-budget` (member) / `PUT /corporate/accounts/me/carbon-budget` (admin set/update) / `GET /corporate/accounts/me/carbon-summary` (member, current month) / `GET /corporate/accounts/me/carbon-trend` (member, ?months=6) / `GET /corporate/accounts/me/carbon/employees` (admin, ?period_start&period_end) / `GET /admin/corporate/accounts/{id}/carbon-budget` (platform-admin) / `GET /admin/corporate/carbon/esg-report` (platform-admin, ?months=12)
+- **Migration `u1v2w3x4y5z6`** (revises `t0u1v2w3x4y5`): `corporate_carbon_budgets` table + unique constraint + 1 index
+- **39 tests** → **Total: 6,563 passing** (was 6,524)
+
+---
 
 ### Accomplished (Session 198)
 
@@ -60,6 +74,7 @@ Enterprise accounts can now configure how they are billed. This is the last majo
 #### open-source-rideshare — PR: feature/corporate-business-accounts
 
 Branch now includes (most recent first):
+- Corporate Carbon Budget & ESG Reporting (0c5d3a3) ← new
 - Corporate Account Contract Management (b7e139e)
 - Corporate Account Onboarding Checklist (868b7d7)
 - Corporate Billing Settings (19518f3)
@@ -68,7 +83,7 @@ Branch now includes (most recent first):
 - Corporate Preferred Driver Pool (d0f284f)
 - ... and 30+ more enterprise features
 
-**Total: 6,524 passing.** Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
+**Total: 6,563 passing.** Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
 
 ---
 
@@ -684,7 +699,7 @@ Paper trading live since April 14. No autonomous path without `STOCKBOT_API_KEY`
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next enterprise feature (6,486 tests passing, corporate suite nearly complete)
+3. **open-source-rideshare**: Next enterprise feature (6,563 tests passing, corporate suite very complete)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
