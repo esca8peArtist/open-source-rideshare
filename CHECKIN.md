@@ -9,7 +9,20 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–160
+**Sessions**: 129–161
+
+### Accomplished (Session 161)
+
+#### open-source-rideshare — Platform Announcements / Cooperative News Feed
+
+**Feat (commit `c8189b5`)**: Persistent cooperative communication channel. Unlike Uber's opaque email blasts, cooperative members get a structured, browsable news feed with full acknowledgment audit trails. Critical policy/regulatory notices require explicit acknowledgment before they can be dismissed — giving the cooperative a legally defensible record that members were informed.
+
+- **2 models**: `PlatformAnnouncement` (title, body, audience: all/drivers/riders/members, priority: low/normal/high/critical, `requires_acknowledgment` flag; draft-or-published lifecycle via `published_at`; optional `expires_at`; soft-delete via `is_active`); `AnnouncementView` (per-user view + `acknowledged_at`; unique constraint on (announcement_id, user_id) prevents duplicate rows)
+- **Audience routing**: drivers see ALL + DRIVERS + MEMBERS; riders see ALL + RIDERS + MEMBERS; public (no auth) sees only ALL
+- **13 service functions**: create/update/publish/unpublish/delete (admin writes); get + admin_list_all; list_public_announcements (no-auth); list_announcements_for_user (role-filtered); mark_viewed (idempotent upsert); acknowledge_announcement (409 if already acked, 422 if not required); get_pending_acknowledgments (unacked critical items per user); get_announcement_stats (view + ack counts); get_announcement_views (paginated per-user records)
+- **16 endpoints**: 1 public (GET /announcements), 4 auth-user (my feed, pending acks, mark viewed, acknowledge), 9 admin (CRUD + publish/unpublish + stats + view records + soft-delete)
+- **Migration l1m2n3o4p5q6** (down_revision: k3l4m5n6o7p8) — 2 tables, 2 enum types, 6 indexes, 1 unique constraint
+- **34 new tests** (34 passed, 17 skipped — integration tests need live DB); **Total: 4,921 passing** (up from 4,887)
 
 ### Accomplished (Session 160)
 

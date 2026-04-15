@@ -4,6 +4,47 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 161 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,887 tests passing, continuing from session 160
+
+### Task: Platform Announcements / Cooperative News Feed
+
+Persistent cooperative communication channel — distinct from bulk_notifications
+(fire-and-forget push). Announcements are browsable by audience, filterable,
+and support mandatory acknowledgment tracking for critical policy/regulatory notices.
+Cooperative differentiator: Uber/Lyft send opaque email blasts; this gives members
+a transparent, structured feed with full acknowledgment audit trails.
+
+#### feat(rideshare): platform announcements (commit `c8189b5`)
+
+- **2 models**: `PlatformAnnouncement` (title/body, audience enum: all/drivers/riders/members,
+  priority: low/normal/high/critical, requires_acknowledgment flag, draft-or-published
+  lifecycle via published_at, optional expires_at, soft-delete); `AnnouncementView`
+  (per-user view + acknowledged_at; unique constraint prevents duplicate rows)
+- **13 service functions**: create/update/publish/unpublish/delete (admin writes);
+  get_announcement, admin_list_all; list_public_announcements (no-auth, audience=ALL);
+  list_announcements_for_user (role-filtered — drivers see DRIVERS+MEMBERS+ALL, riders
+  see RIDERS+MEMBERS+ALL); mark_viewed (idempotent upsert); acknowledge_announcement
+  (409 if already acked, 422 if not required); get_pending_acknowledgments (unacknowledged
+  critical items for user); get_announcement_stats; get_announcement_views
+- **16 endpoints**: 1 public (GET /announcements); 4 auth-user (my feed, pending acks,
+  mark viewed, acknowledge); 9 admin (CRUD + publish/unpublish + stats + view records)
+- **Migration l1m2n3o4p5q6** (down_revision: k3l4m5n6o7p8) — 2 tables, 2 enum types,
+  6 indexes, 1 unique constraint
+- **34 new tests** (34 passed, 17 skipped — integration tests need live DB)
+- **Total: 4,921 passing** (up from 4,887)
+
+#### Session end
+
+---
+
 ## Session 160 — 2026-04-15
 
 ### Orient
