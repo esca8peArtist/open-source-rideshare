@@ -86,5 +86,12 @@ class Ride(Base):
         ForeignKey("corporate_cost_centers.id"), nullable=True, index=True
     )
 
+    # Optional trip purpose tag — set by the rider to categorise the ride
+    # (e.g. "CLIENT_MEETING", "CONFERENCE").  Only applies to corporate rides.
+    trip_purpose_id: Mapped[int | None] = mapped_column(
+        ForeignKey("corporate_trip_purposes.id"), nullable=True, index=True
+    )
+    trip_notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
     rider = relationship("User", foreign_keys=[rider_id], backref="rides_as_rider")
     driver = relationship("User", foreign_keys=[driver_id], backref="rides_as_driver")
