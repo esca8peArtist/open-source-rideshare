@@ -6352,3 +6352,37 @@ Feature: Companies register corporate accounts, add employee riders with optiona
 - 45 tests (39 passing + 6 skipped — no live DB): full coverage of create_account, add_member, remove_member, update_account, suspend/activate, spend_summary, invoice lifecycle; **Total: 4,531 tests passing** (4,492 before), 0 failing
 
 #### Session end
+
+## Session 152 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: selected — 4,596 tests passing, continuing from session 151
+
+### Task selected
+Rider Cooperative Membership & Dividends — completes the multi-stakeholder cooperative model. Drivers already have profit-sharing (driver_dividend.py) and governance (driver_proposal.py). Riders joining as member-owners is the natural counterpart.
+
+### open-source-rideshare — Rider Cooperative Membership & Dividends COMPLETE (commit `be177df`)
+Feature: Riders can join the cooperative as member-owners, vote on platform proposals, and receive a share of quarterly surplus distributions.
+
+- New models (`app/models/rider_cooperative.py`):
+  - `RiderCoopMembership`: one row per rider; applicant → member ↔ suspended / resigned lifecycle; tracks lifetime_rides and voting_weight (1 + rides//100, max 5)
+  - `RiderCoopVote`: rider-member votes on DriverProposal records; voting_weight snapshotted at cast time; UniqueConstraint(proposal_id, membership_id); stored separately from driver votes for per-stakeholder tallying
+  - `RiderDividendShare`: per-rider allocation in a CooperativeDividend; proportional to qualifying rides; pending → paid / cancelled lifecycle
+- New schemas (`app/schemas/rider_cooperative.py`): MembershipApplicationRequest, SuspendMemberRequest, RiderCoopMembershipResponse, ProposalSummary, RiderVoteRequest/Response, ProposalRiderTallyResponse, RiderDividendShareResponse, GenerateRiderSharesRequest, RiderCoopSummaryResponse
+- New service (`app/services/rider_cooperative.py`):
+  - Membership: apply (dup guard), get, resign, withdraw_application, approve, suspend, reinstate, list_members, get_summary
+  - Voting: list_open_proposals, cast_vote (membership check + open-status check + dup guard), get_my_vote, get_proposal_tally (weighted aggregates)
+  - Dividends: generate_rider_shares (idempotent; filters by quarter date range; updates lifetime_rides + voting_weight), list_my_dividends, list_dividend_shares, mark_share_paid
+- New router (`app/api/v1/rider_cooperative.py`) — 15 endpoints:
+  - Rider: POST/GET/DELETE /riders/me/cooperative/membership, DELETE .../application (withdraw), GET /riders/me/cooperative/proposals, POST .../proposals/{id}/vote, GET .../tally, GET .../my-vote, GET /riders/me/cooperative/dividends
+  - Admin: GET /admin/cooperative/rider-members (+ ?status filter), POST .../approve / suspend / reinstate, GET /admin/cooperative/rider-summary, POST /admin/cooperative/rider-dividends, GET .../rider-dividends/{dividend_id}, POST .../rider-dividend-shares/{id}/pay
+- Migration: c6d7e8f9a0b1 (revises b5c6d7e8f9a0) — rider_coop_memberships, rider_coop_votes, rider_dividend_shares; 3 enum types (ridermemberstatus, ridervotechoice, riderdividendsharestatus), 9 indexes, 3 unique constraints
+- main.py: rider_cooperative router registered at /api/v1
+- 31 new tests passing (19 DB tests skipped — consistent with project); **Total: 4,627 tests passing** (4,596 before), 0 failing
+
+#### Session end

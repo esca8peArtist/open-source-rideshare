@@ -9,7 +9,19 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–151
+**Sessions**: 129–152
+
+### Accomplished (Session 152)
+
+#### open-source-rideshare — Rider Cooperative Membership & Dividends COMPLETE (commit `be177df`)
+Completes the multi-stakeholder cooperative model. Drivers already had profit-sharing and governance; riders now join as member-owners too.
+
+- **RiderCoopMembership**: applicant → member ↔ suspended / resigned; tracks lifetime_rides + voting_weight (1 + rides//100, max 5)
+- **RiderCoopVote**: riders vote on existing DriverProposal records; weight snapshotted at cast time; stored separately for per-stakeholder tallies
+- **RiderDividendShare**: riders receive a portion of quarterly surplus proportional to rides taken that period
+- **15 endpoints**: full rider self-service (apply/resign/withdraw/vote/dividends) + admin management (approve/suspend/reinstate/generate shares/mark paid) + platform summary
+- Migration: c6d7e8f9a0b1 — 3 tables, 3 enum types, 9 indexes, 3 unique constraints
+- **31 new tests passing** (19 DB tests skipped); **Total: 4,627 tests passing** (up from 4,596), 0 failing
 
 ### Accomplished (Session 151)
 
@@ -95,9 +107,10 @@ Companies can register corporate accounts, add employee riders with optional per
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–151 (many features)
-Branch: `feature/corporate-business-accounts` — **4,596 tests passing**. Features since last push:
-- Driver Live Location Tracking (f299951) ← new
+#### open-source-rideshare — PR: Sessions 129–152 (many features)
+Branch: `feature/corporate-business-accounts` — **4,627 tests passing**. Features since last push:
+- Rider Cooperative Membership & Dividends (be177df) ← new
+- Driver Live Location Tracking (f299951)
 - Driver Incident Reporting (9be524d)
 - Driver Shift & Hours Tracking (b715edb)
 - Corporate Business Accounts (71401f6)
