@@ -9,7 +9,23 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–154
+**Sessions**: 129–155
+
+### Accomplished (Session 155)
+
+#### open-source-rideshare — Recovery + Driver Emergency Assistance Fund
+
+**Fix (commit `2800b57`)**: Four cancellation policy files from a prior session were on disk but never git-added. Recovered and committed — no code changes, just the missing `git add`. 77 cancellation tests confirmed passing first.
+
+**Feat (commit `7810699`)**: Driver Emergency Assistance Fund — cooperative mutual-aid infrastructure. No Uber/Lyft equivalent.
+
+- **3 models**: `DriverHardshipFund` (singleton balance ledger), `HardshipContribution` (deposit record), `HardshipApplication` (driver application with full lifecycle)
+- **6 application statuses**: pending → under_review → approved → disbursed | denied; or withdrawn
+- **6 application types**: medical, vehicle_repair, natural_disaster, housing, bereavement, other
+- **Business rules**: one active application per driver at a time; fund balance sufficiency check before approving; ownership check on withdrawal
+- **13 endpoints**: public balance (transparency), driver self-service (apply/list/view/withdraw), admin full review workflow (start review / approve / deny / disburse) + contribution management
+- **Migration f8a9b0c1d2e3** (follows airport queue)
+- **28 new tests**; **Total: 4,717 passing** (up from 4,689)
 
 ### Accomplished (Session 154)
 

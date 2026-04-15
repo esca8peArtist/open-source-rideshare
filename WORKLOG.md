@@ -4,6 +4,42 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 155 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — 4,689 tests passing, continuing from session 154
+
+### Task: Recover untracked cancellation files + build Driver Emergency Assistance Fund
+
+#### fix(cancellation): add missing model/schema/router/migration files (commit `2800b57`)
+Discovered 4 files from commit `c2c332e` were created locally but never git-added:
+- `app/models/cancellation.py`
+- `app/schemas/cancellation.py`
+- `app/api/v1/cancellation_policies.py`
+- `app/db/migrations/versions/a2b3c4d5e6f7_add_cancellation_policies.py`
+All 77 cancellation tests passing before commit. Clean recovery — no code changes needed.
+
+#### feat(rideshare): driver emergency assistance fund (commit `7810699`)
+Cooperative mutual-aid feature: drivers and platform contribute to a shared fund; drivers
+can apply for emergency disbursements (medical, vehicle repair, natural disaster, housing,
+bereavement). No Uber/Lyft equivalent — genuine cooperative differentiator.
+
+- `DriverHardshipFund`: singleton balance record (total_balance, total_contributed, total_disbursed)
+- `HardshipContribution`: ledger of all deposits (source: driver|platform|donation|other)
+- `HardshipApplication`: driver applications with full lifecycle — pending → under_review → approved → disbursed | denied; or withdrawn
+- 3 enums: ContributionSource, ApplicationType (6 types), ApplicationStatus (6 states)
+- 10 service functions: one-active-application-per-driver guard (409), fund sufficiency check on approve (400), ownership check on withdraw (403)
+- 13 endpoints: public fund balance (transparency), driver self-service (apply/list/get/withdraw), admin fund management (balance/contributions) + full application review workflow
+- Migration f8a9b0c1d2e3 (down_revision: e7f8a9b0c1d2) — 3 tables, 3 enum types, 8 indexes
+- **28 new tests passing** (9 DB tests skipped); **Total: 4,717 tests passing** (4,689 before), 0 failing
+
+#### Session end
+
 ## Session 153 — 2026-04-15
 
 ### Orient
