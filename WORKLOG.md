@@ -4,6 +4,52 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 136 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: paper trading live, still blocked on STOCKBOT_API_KEY
+- mfg-farm: awaiting user decision
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — **Rider Referral Program**
+
+### open-source-rideshare — Rider Referral Program COMPLETE (commit 61c921e)
+
+Feature: riders can now refer friends and earn rewards. This is a key organic
+growth lever — referral programs are among the most cost-effective acquisition
+channels for rideshare platforms.
+
+- New model: `app/models/rider_referral.py`
+  - RiderReferralCode: one unique code per rider (generated on first request, user_id unique)
+  - RiderReferral: referrer_user_id, referred_user_id (unique), code_used, status enum
+    (pending/qualified/rewarded), first_ride_id (nullable), referrer_reward_amount,
+    referred_discount_amount, created_at, qualified_at
+  - RiderReferralStatus enum: PENDING | QUALIFIED | REWARDED
+- Migration: `u1v2w3x4y5z6_add_rider_referrals` — 2 tables, 4 indexes
+- New schema: `app/schemas/rider_referral.py`
+  - RiderReferralCodeResponse, RiderReferralItem, RiderReferralListResponse
+  - ApplyRiderReferralRequest/Response, AdminRiderReferralStats
+- New service: `app/services/rider_referrals.py`
+  - REFERRER_REWARD_USD=10.00, REFERRED_DISCOUNT_USD=5.00
+  - get_or_create_referral_code: idempotent code generation
+  - apply_referral_code: soft-fail on invalid/self/duplicate; upcases code
+  - record_first_ride_completion: pending→qualified on referred rider's first ride
+  - get_referral_summary: code + aggregate stats (pending/qualified/rewarded counts)
+  - get_my_referrals: paginated referral list
+  - get_admin_stats: platform-wide aggregate
+- New router: `app/api/v1/rider_referrals.py`
+  - GET  /riders/me/referral-code    — code + summary stats
+  - GET  /riders/me/referrals        — paginated list
+  - POST /riders/referral/apply      — apply a friend's code
+  - GET  /admin/referrals/rider/stats — admin aggregate stats
+- 48 tests; 41 pass, 7 integration skipped (no test DB)
+- **Total: 3,988 tests passing** (up from 3,947)
+
+#### Session end
+- GitHub push still blocked (SSH key issue — pre-existing)
+- PROJECTS.md, CHECKIN.md updated
+
 ## Session 132 — 2026-04-15
 
 ### Orient

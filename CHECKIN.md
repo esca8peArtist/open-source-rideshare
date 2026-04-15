@@ -9,7 +9,54 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–133
+**Sessions**: 129–136
+
+### Accomplished (Session 136)
+
+#### open-source-rideshare — Rider Referral Program COMPLETE (commit `61c921e`)
+Riders can now invite friends and earn rewards — a key organic growth lever for any rideshare platform.
+- **`GET /riders/me/referral-code`** — generates a unique code on first call (idempotent), returns aggregate stats (pending/qualified/rewarded counts, total reward earned)
+- **`GET /riders/me/referrals`** — paginated list of everyone the rider has referred, with status and reward/discount amounts
+- **`POST /riders/referral/apply`** — rider applies a friend's code; soft-fail on invalid code, self-referral, or duplicate (returns `success: false` + message, not a 4xx)
+- **`GET /admin/referrals/rider/stats`** — platform-wide aggregate: codes issued, total referrals, pending/qualified/rewarded counts, total reward paid
+- Constants: `REFERRER_REWARD_USD = $10.00`, `REFERRED_DISCOUNT_USD = $5.00`; qualification triggers on referred rider's first ride (`record_first_ride_completion`)
+- **41 unit tests; Total: 3,988 tests passing** (up from 3,947)
+- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
+
+### Needs Your Input
+
+#### open-source-rideshare — PR: Sessions 129–136 (many features)
+Branch: `feature/corporate-business-accounts` — 3,988 tests passing. Features since last push:
+- Rider Referral Program (61c921e)
+- Ride Receipts + Feedback APIs (a254483)
+- Driver Vehicle Maintenance Tracking (9352bf6)
+- Driver Document Expiry Alerts (1484765)
+- Accessibility / WAV Certification (8e20c40)
+- Driver Payout / Disbursement (373168d)
+- Rider Loyalty Rewards (42b393f)
+- Driver Subscription Plans (479219c)
+The SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually when ready.
+
+Note from Session 135: `rides.py` has duplicate receipt/feedback routes that were superseded by the new dedicated routers. These can be cleaned up after merge.
+
+---
+
+### Accomplished (Session 135)
+
+#### open-source-rideshare — Ride Receipts and Feedback APIs COMPLETE (commit `a254483`)
+- 6 endpoints (receipts router + ride_feedback router); 51 unit tests; Total was 3,947 (up from 3,896)
+
+### Accomplished (Session 134)
+
+#### open-source-rideshare — Driver Vehicle Maintenance Tracking COMPLETE (commit `9352bf6`)
+Drivers can now log maintenance events per vehicle and get alerted on upcoming/overdue service. Safety-critical for a cooperative: a vehicle with overdue brake service or annual inspection shouldn't be on the road.
+- **`POST /drivers/me/vehicles/{vehicle_id}/maintenance`** — log a service event (oil change, brake job, tyre rotation, etc.) with date, mileage, cost, service provider, and next-service schedule
+- **`GET /drivers/me/vehicles/{vehicle_id}/maintenance`** — paginated maintenance history for one vehicle
+- **`GET /drivers/me/maintenance/upcoming`** — all upcoming/overdue items across all the driver's vehicles; `?days=` window (default 30); overdue items always included; `days_until_due` negative = past due
+- **`GET /admin/maintenance/fleet`** — fleet-wide summary: overdue count, vehicles with overdue, due-within-30-days count, 10 most recent logs
+- 15 maintenance types: oil_change, tire_rotation, tire_replacement, brake_inspection, brake_replacement, air_filter, cabin_filter, battery_replacement, coolant_flush, transmission_service, spark_plugs, belt_replacement, wiper_blades, annual_inspection, other
+- 41 unit tests; **Total: 3,896 tests passing** (up from 3,855)
+- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Accomplished (Session 133)
 
@@ -19,7 +66,6 @@ All four driver compliance documents (license, registration, insurance, inspecti
 - **`GET /admin/documents/expiring`** — cross-fleet list; filterable by `doc_type` (license/registration/insurance/inspection); sorted expired-first; paginated
 - **`POST /admin/documents/expiry/scan`** — idempotent bulk-expiry scan; marks all active docs past their date as EXPIRED; returns per-type counts; safe to run on a nightly scheduler
 - 47 unit tests; **Total: 3,855 tests passing** (up from 3,808)
-- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Accomplished (Session 132)
 
@@ -53,7 +99,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now has 3,855 tests passing across Sessions 129–133. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now has 3,896 tests passing across Sessions 129–134. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -63,7 +109,7 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Resolve SSH push or continue with next feature
+3. **open-source-rideshare**: Resolve SSH push or continue with next feature (3,896 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
