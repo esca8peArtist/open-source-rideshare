@@ -4,6 +4,48 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 130 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: still blocked on STOCKBOT_API_KEY / user sharing cycle logs
+- mfg-farm: awaiting user decision (commission vs build route)
+- Continued with open-source-rideshare: selected **Rider Loyalty Rewards Programme**
+
+### open-source-rideshare — Rider Loyalty Rewards Programme — IN PROGRESS
+Feature: points-based loyalty system. Riders earn 10 pts per $1 of fare; each point is worth $0.01 on redemption (10% effective cashback). Min redemption: 500 pts ($5).
+
+### open-source-rideshare — Rider Loyalty Rewards Programme COMPLETE (commit 42b393f)
+- New model: `app/models/rider_reward.py`
+  - RiderRewardAccount: rider_id (unique), points_balance, lifetime_earned, lifetime_redeemed
+  - RiderRewardTransaction: rider_id, account_id, ride_id (nullable), transaction_type, points_delta, balance_after, description
+  - RewardTransactionType enum: earn | redeem | admin_adjust | expiry
+  - Constants: POINTS_PER_DOLLAR=10, POINT_VALUE_CENTS=1, MIN_REDEMPTION_POINTS=500, MAX_REDEMPTION_PCT=50.0
+- Migration: `q1r2s3t4u5v6_add_rider_rewards` — 2 tables, 4 indexes
+- New schema: `app/schemas/rider_reward.py` — RewardAccountResponse, RewardTransactionResponse, RewardTransactionPage, RedeemPointsRequest/Response, AdminAdjustPointsRequest, RewardPlatformStats
+- New service: `app/services/rider_rewards.py`
+  - get_or_create_account: lazy creation on first earn/redeem
+  - award_points_for_ride: earn = floor(fare × POINTS_PER_DOLLAR); ride_id optional; zero fare returns None
+  - redeem_points: validates balance >= points, points >= MIN_REDEMPTION_POINTS; returns transaction
+  - get_transaction_history: paginated with total count, clamped at MAX_PAGE_SIZE
+  - admin_adjust_points: credit/debit; debit capped at current balance; zero delta raises
+  - get_platform_stats: aggregate counts + outstanding liability USD
+  - helpers: points_to_usd, usd_to_points (floor rounding)
+- New router: `app/api/v1/rider_rewards.py`
+  - GET    /riders/me/rewards          — balance + lifetime stats (auto-creates account)
+  - GET    /riders/me/rewards/history  — paginated transaction history
+  - POST   /riders/me/rewards/redeem   — burn points, get discount value USD
+  - GET    /admin/rewards/stats        — platform-wide aggregate stats
+  - POST   /admin/rewards/adjust       — admin manual credit/debit
+- 58 unit tests; **Total: 3,684 tests passing** (up from 3,626)
+  - (3 pre-existing order-dependent flakes in test_driver_earnings_goals confirmed present before this session)
+
+#### Session end
+- GitHub push still blocked (SSH key issue — pre-existing)
+- PROJECTS.md updated
+- CHECKIN.md updated
+
 ## Session 121 — 2026-04-14
 
 ### Orient

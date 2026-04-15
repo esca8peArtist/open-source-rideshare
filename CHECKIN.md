@@ -9,24 +9,29 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Session**: 129
+**Sessions**: 129–130
+
+### Accomplished (Session 130)
+
+#### open-source-rideshare — Rider Loyalty Rewards Programme COMPLETE (commit `42b393f`)
+Points-based reward system — a cooperative differentiator vs Uber/Lyft's ~2% cashback:
+- **`GET /riders/me/rewards`** — account balance, lifetime stats, dollar value of current balance (auto-creates account on first call)
+- **`GET /riders/me/rewards/history`** — paginated transaction history (earn/redeem events with ride linkage)
+- **`POST /riders/me/rewards/redeem`** — burn points for a dollar discount; returns discount_value_usd + new balance
+- **`GET /admin/rewards/stats`** — platform-wide totals: accounts, outstanding points, liability USD, lifetime earned/redeemed
+- **`POST /admin/rewards/adjust`** — manually credit or debit a rider's balance (capped at zero, audit logged)
+- **Earn rate**: 10 pts per $1 fare (floor rounding; zero-fare rides earn nothing)
+- **Point value**: $0.01 each → 10% effective cashback
+- **Rules**: min redemption 500 pts ($5); points may cover up to 50% of single fare; balance cannot go below 0
+- Migration `q1r2s3t4u5v6_add_rider_rewards`: `rider_reward_accounts` + `rider_reward_transactions` tables, 4 indexes
+- 58 unit tests; **Total: 3,684 tests passing** (up from 3,626)
+- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Accomplished (Session 129)
 
 #### open-source-rideshare — Driver Subscription / Flat-Fee Plan COMPLETE (commit `479219c`)
-Drivers can now opt into a flat-fee subscription instead of paying 15% per-ride commission:
-- **`GET /driver-subscriptions/plans`** — public plan catalogue (weekly $49, monthly $149)
-- **`GET /drivers/me/subscription`** — active subscription or 404
-- **`GET /drivers/me/subscriptions`** — full subscription history
-- **`POST /drivers/me/subscription`** — subscribe to weekly or monthly plan
-- **`PATCH /drivers/me/subscription`** — update auto-renew flag
-- **`DELETE /drivers/me/subscription`** — cancel (benefits valid until period end)
-- **`GET /admin/driver-subscriptions/stats`** — counts + revenue by plan/status
-- **`GET /admin/driver-subscriptions`** — all subscriptions (paginated, filterable by status/plan)
-- **Rules**: one active subscription per driver; cancellation sets status=cancelled but period benefits remain; commission_pct=0.0 while active vs. 15.0% standard
-- Migration `p1q2r3s4t5u6_add_driver_subscriptions`: `driver_subscriptions` table + 3 indexes
-- 49 unit tests; **Total: 3,626 tests passing** (up from 3,577)
-- **Note**: GitHub push blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
+- Weekly ($49) or monthly ($149) flat-fee plan; 0% commission while active
+- 8 endpoints; 49 unit tests; Total was 3,626 (up from 3,577)
 
 ---
 
@@ -42,7 +47,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now includes all features through Session 129 (3,626 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now includes all features through Session 130 (3,684 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
