@@ -9,27 +9,35 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–182
+**Sessions**: 129–183
 
-### Accomplished (Session 182)
+### Accomplished (Session 183)
 
-One new corporate feature built and committed. **Total: 5,842 passing** (was 5,794).
+Two features accounted for this session. **Total: 5,927 passing** (was 5,842).
 
-#### open-source-rideshare — Corporate Custom Ride Fields (commit `9e7dc0e`)
+#### open-source-rideshare — Corporate Delegate Access (commit `1d7e69c`)
 
-Enterprise admins define custom metadata fields — project codes, client billing codes, cost-allocation tags, or any back-office field the enterprise ERP requires — that employees fill in on corporate rides. Values are validated against the field schema before persisting.
+Admins grant employees (assistants, office managers) the ability to book rides on behalf of other employees (principals/executives). Delegations are scoped to the corporate account with configurable per-ride spend caps, history-view permission, and optional expiry dates.
 
-- **2 models**: `CorporateCustomField` (label, field_key unique/account auto-slugified, `CustomFieldType` enum text/number/dropdown/checkbox, dropdown_options JSONB, is_required, max_length, display_order, is_active soft-delete, created_by_id) + `CorporateRideCustomFieldValue` (field_id + ride_id unique, value Text, set_by_id, set_at; upsert semantics)
-- **8 service functions**: create/get/list/update/deactivate (admin) + `set_ride_field_value` (member — validates type/options/length, upserts) + `get_ride_field_values` (returns values + field metadata per ride)
-- **9 endpoints**: 3 member read + 1 member set-value + 4 admin CRUD (create/update/deactivate/get) + 2 platform-admin (list fields, ride values)
-- **Migration `f6g7h8i9j0k1`**: `custom_field_type` enum + 2 tables + 5 indexes
-- **48 tests**
+- **`CorporateDelegate` model**: account+principal+delegate triple unique, can_book_rides, can_view_history, max_per_ride_usd cap, valid_until expiry, is_active soft-delete
+- **8 service functions**: grant/revoke/get/list-principals/list-delegates/list-all/check-permission/update
+- **9 endpoints**: member read + check-permission + admin CRUD + 2 platform-admin
+- **Migration `g7h8i9j0k1l2`**; **42 tests** → Total: 5,884 passing
+
+#### open-source-rideshare — Corporate Address Book (commit `a3d82aa`)
+
+Enterprise admins maintain a shared library of named locations — offices, client sites, airports, hotels — that employees browse and select when booking rides. Each address optionally auto-tags rides with a default cost center and trip purpose, cutting down manual entry for recurring corporate destinations.
+
+- **`CorporateAddress` model**: name, full address components (line1/2/city/state/zip/country), lat/lng, notes, is_pickup_point, is_dropoff_point, default_cost_center_id (FK, auto-tag), default_trip_purpose_id (FK, auto-tag), is_active soft-delete, created_by_id
+- **7 service functions**: create/get/list/search/update/deactivate/delete (member, admin-gated where needed) + platform-admin list-all
+- **9 endpoints**: member list/search/get + admin create/update/deactivate/delete + 2 platform-admin
+- **Migration `h8i9j0k1l2m3`** (4 indexes); **43 tests** → Total: 5,927 passing
 
 ### Needs Your Input
 
 #### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `9e7dc0e`)
-Includes Sessions 166–182: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, **custom ride fields**.
+Branch: `feature/corporate-business-accounts` (latest commit `a3d82aa`)
+Includes Sessions 166–183: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, data export, budget alerts, blackout periods, fare agreements, employee invitations, departments, expense reports, billing contacts, admin audit log, custom ride fields, **delegate access**, **address book**.
 Please run: `git push origin feature/corporate-business-accounts`
 
 ---

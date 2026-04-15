@@ -4,6 +4,50 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 183 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Found unlogged commit `1d7e69c` (corporate delegate access, +42 tests → 5,884 passing) — updating management files
+- Selected: open-source-rideshare — continuing corporate feature track with Corporate Address Book
+
+### Task: Corporate Delegate Access — management files update
+
+Commit `1d7e69c` was not yet reflected in PROJECTS.md/CHECKIN.md. Updating now.
+
+- **`CorporateDelegate` model**: account+principal+delegate triple unique, can_book_rides,
+  can_view_history, max_per_ride_usd spend cap, valid_until expiry, is_active soft-delete
+- **8 service functions**: grant/revoke/get/list-principals/list-delegates/list-all/
+  check-permission/update
+- **9 endpoints**: member read + check-permission + admin CRUD + 2 platform-admin
+- **Migration `g7h8i9j0k1l2`**: `corporate_delegates` table + indexes
+- **42 tests** → **Total: 5,884 passing**
+
+### Task: Corporate Address Book (commit `a3d82aa`)
+
+Shared company address book — admins define named locations (offices, client sites,
+airports) that employees can select when booking. Auto-tags rides with cost center and
+trip purpose.
+
+- **`CorporateAddress` model**: name, line1/line2/city/state/zip/country, lat/lng, notes,
+  is_pickup_point, is_dropoff_point, default_cost_center_id (FK), default_trip_purpose_id (FK),
+  is_active soft-delete, created_by_id
+- **7 service functions**: create (admin, validates FKs) / get (any member) / list (any member,
+  active_only filter) / search (ilike on name/city/street) / update (admin, partial) /
+  deactivate (admin, 409 if already inactive) / delete (admin hard-delete) +
+  list_all for platform-admin
+- **9 endpoints**: GET list + GET search + GET get (member) + POST create + PATCH update +
+  DELETE /deactivate + DELETE (admin) + 2 platform-admin (list + get)
+- **Migration `h8i9j0k1l2m3`** (4 indexes: account_id, account+is_active, default_cost_center,
+  default_trip_purpose)
+- **43 tests** → **Total: 5,927 passing**
+
+#### Session end
+
 ## Session 180 — 2026-04-15
 
 ### Orient
