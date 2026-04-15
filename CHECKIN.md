@@ -9,7 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 129–205
+**Sessions**: 129–206
+
+### Accomplished (Session 206)
+
+#### open-source-rideshare — Corporate Multi-Level Approval Chains (commit `a365044`)
+
+Corporate accounts can now define configurable multi-step approval chains. When a ride request matches a chain's triggers (cost threshold and/or cost center filter), the employee must obtain sequential approval from each step before proceeding. For example: rides over $150 require approval from a designated manager, then a finance admin.
+
+- **4 new models**: `CorporateApprovalChain` (chain definition with cost+cost-center triggers); `CorporateApprovalChainStep` (ordered steps with approver_type specific_user/any_admin, optional timeout + escalation_action skip/deny); `CorporateApprovalChainRequest` (running request tracking current step and status pending/approved/denied/cancelled); `CorporateApprovalChainStepDecision` (append-only per-step decision log)
+- **14 service functions**: full chain CRUD (create validates sequential steps; delete 409 if pending requests; deactivate 409 if already inactive); `find_applicable_chain` returns most-specific match (highest min_cost_usd first); `start_chain_request` (409 on inactive chain); `decide_step` (approve advances to next or resolves; deny closes immediately; 403 if wrong specific-user approver); `cancel_request` (409 if not pending); `list_pending_for_approver` (returns requests awaiting a given admin's decision)
+- **15 endpoints**: admin chain CRUD + deactivate + pending-review list + decide-step; member applicable-chain lookup + start/list/get/cancel request; platform-admin list-all chains and requests
+- **Migration `c3d4e5f6a7b8`** (revises `b2c3d4e5f6a7`)
+- **66 tests** → **Total: 6,916 passing** (was 6,850)
+
+---
 
 ### Accomplished (Session 205)
 

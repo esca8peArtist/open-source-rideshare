@@ -4,6 +4,53 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 206 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Multi-Level Approval Chains
+
+### Task: Corporate Multi-Level Approval Chains — COMPLETE (commit `a365044`)
+
+Multi-step configurable approval workflows for corporate rides. When a ride
+matches a chain's triggers (cost threshold and/or cost center filter), the
+employee's booking request must receive sequential approval from each step
+before the ride can proceed.
+
+- CorporateApprovalChain model (account FK CASCADE; name; min_cost_usd
+  trigger threshold; applies_to_all_cost_centers + cost_center_ids JSONB
+  for scoped chains; is_active; created_by_id FK SET NULL; 2 indexes)
+- CorporateApprovalChainStep model (chain FK CASCADE; step_order 1-based;
+  approver_type specific_user/any_admin; approver_user_id FK SET NULL;
+  timeout_hours + escalation_action skip/deny; unique(chain,step_order))
+- CorporateApprovalChainRequest model (chain FK SET NULL for history;
+  account FK CASCADE; requester FK SET NULL; current_step_order;
+  status pending/approved/denied/cancelled; cost/purpose fields;
+  final_decision audit; 3 indexes)
+- CorporateApprovalChainStepDecision model (request FK CASCADE; step_order;
+  approver FK SET NULL; decision approved/denied/skipped; note; decided_at;
+  unique(request,step_order))
+- 14 service functions: create_chain (validates sequential steps) /
+  get_chain / list_chains / update_chain (replaces steps if provided) /
+  deactivate_chain 409-already-inactive / delete_chain 409-with-pending /
+  find_applicable_chain (most-specific first by min_cost_usd desc) /
+  start_chain_request 409-inactive / get_chain_request / list_requests /
+  list_pending_for_approver / decide_step (approve advances/resolves;
+  deny closes; 403 wrong specific_user approver) / cancel_request 409-not-pending /
+  list_all_chains + list_all_requests (platform-admin)
+- 15 endpoints: admin chain CRUD + deactivate + pending-review + decide-step;
+  member applicable/start/list/get/cancel; platform-admin list-all
+- Migration c3d4e5f6a7b8 (revises b2c3d4e5f6a7)
+- 66 tests → Total: 6,916 passing (was 6,850)
+
+#### Session end
+
+---
+
 ## Session 205 — 2026-04-16
 
 ### Orient
