@@ -4,6 +4,74 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 198 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Contract Management
+
+### Task: Corporate Account Contract Management — COMPLETE (commit `b7e139e`)
+
+Enterprise service agreements between the platform and corporate clients. Tracks
+contract lifecycle (draft → active → terminated), committed volume, account
+managers, renewal terms, and negotiated discounts.
+
+- Model: CorporateAccountContract (ContractStatus enum draft/active/expired/terminated;
+  contract_number unique auto-generated; contract_start/end_date; auto_renews +
+  renewal_term_days + renewal_notice_days; committed_monthly_rides + committed_
+  monthly_spend_usd; negotiated_discount_pct; account_manager_name/email;
+  contract_document_url; signed_by_name + signed_at; activated/terminated audit
+  fields; CASCADE delete on account; 4 indexes + unique constraint)
+- Service: 8 functions (create/get/get_active/list/update/activate/terminate/
+  list_expiring); guards: 409 active-exists on create, 409 non-draft on activate,
+  409 non-active on terminate, 409 terminated/expired on update; auto contract
+  number generation as CONTRACT-{acct:04d}-{YYYYMM}-{seq}
+- Endpoints: 8 total — member GET own active contract; platform-admin list/create/
+  get/update/activate/terminate/list-expiring; /expiring declared before /{id}
+  to avoid FastAPI path ambiguity
+- Migration: t0u1v2w3x4y5 (down_revision: s9t0u1v2w3x4)
+- 38 tests → Total: 6,524 passing (was 6,486)
+
+#### Session end
+
+---
+
+## Session 197 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Onboarding Checklist
+
+### Task: Corporate Account Onboarding Checklist — COMPLETE (commit `868b7d7`)
+
+New corporate accounts can now see a structured setup checklist showing which
+configuration steps are complete and which remain. Purely computed — no new
+tables or migration. Ties the entire enterprise feature suite together.
+
+- Schema: OnboardingStep (key, title, description, is_complete, is_optional,
+  action_hint) + OnboardingChecklistResponse (aggregates: total_steps,
+  required_steps, completed_required, completed_optional, all_required_complete,
+  completion_pct, ordered steps list)
+- Service: `get_onboarding_checklist(db, account_id)` — 10 scalar COUNT queries
+  against existing tables (billing settings, payment methods, members, ride
+  policy, cost centers, trip purposes, notification configs, SSO configs,
+  webhooks, API keys); assembles result with 5 required + 3 optional steps
+- Endpoints: GET /corporate/accounts/me/onboarding-checklist (any active member)
+  + GET /admin/corporate/accounts/{id}/onboarding-checklist (platform admin)
+- 30 tests → Total: 6,486 passing (was 6,456)
+
+#### Session end
+
+---
+
 ## Session 196 — 2026-04-15
 
 ### Orient

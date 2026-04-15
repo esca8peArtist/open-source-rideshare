@@ -9,7 +9,36 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–196
+**Sessions**: 129–198
+
+### Accomplished (Session 198)
+
+#### open-source-rideshare — Corporate Account Contract Management (commit `b7e139e`)
+
+Enterprise service agreements between the platform and corporate clients. Sales and account management teams can now track the full contract lifecycle — draft → active → terminated — with committed volume, negotiated discounts, and account manager assignment.
+
+- **`CorporateAccountContract` model**: `ContractStatus` enum (draft/active/expired/terminated); `contract_number` unique auto-generated as `CONTRACT-{acct:04d}-{YYYYMM}-{seq}`; `contract_start/end_date` (nullable end = open-ended); `auto_renews` + `renewal_term_days` + `renewal_notice_days`; `committed_monthly_rides` + `committed_monthly_spend_usd`; `negotiated_discount_pct` (0–100); `account_manager_name` + `account_manager_email`; `contract_document_url`; `signed_by_name` + `signed_at`; `activated_at`, `terminated_at`, `termination_reason` audit fields; CASCADE delete on account; 4 indexes + unique constraint on contract_number
+- **8 service functions**: `create_contract` (409 if active exists), `get_contract` (404), `get_active_contract` (returns None), `list_contracts` (status filter + pagination), `update_contract` (409 on terminated/expired), `activate_contract` (draft-only; deactivates prior active), `terminate_contract` (active-only), `list_expiring_contracts` (active contracts where end_date ≤ today + N days)
+- **8 endpoints**: member `GET /corporate/accounts/me/contract` (own active contract or 404); platform-admin `GET/POST /admin/corporate/accounts/{id}/contracts`, `GET /admin/corporate/contracts/expiring`, `GET/PATCH /admin/corporate/contracts/{id}`, `POST .../activate`, `POST .../terminate`
+- **Migration `t0u1v2w3x4y5`** (revises `s9t0u1v2w3x4`): `contractstatus` enum + `corporate_account_contracts` table + 4 indexes + unique constraint
+- **38 tests** → **Total: 6,524 passing** (was 6,486)
+
+---
+
+### Accomplished (Session 197)
+
+#### open-source-rideshare — Corporate Account Onboarding Checklist (commit `868b7d7`)
+
+New corporate accounts can view a structured setup checklist that shows which features are configured and what's still missing. Purely computed — no new database tables or migration.
+
+- **5 required steps**: billing (settings + at least one payment method), employees (at least 1 active member), ride_policy (CorporateRidePolicy configured), cost_centers (at least 1 active), trip_purposes (at least 1 active)
+- **3 optional steps**: notifications (at least 1 enabled event config), sso (status=active), integrations (active webhook OR active API key)
+- **Service**: `get_onboarding_checklist()` fires 10 scalar `COUNT(*)` queries against existing tables — no N+1, no new schema
+- **Endpoints**: `GET /corporate/accounts/me/onboarding-checklist` (any active member) + `GET /admin/corporate/accounts/{id}/onboarding-checklist` (platform admin)
+- **Response**: step-by-step list with `is_complete`, `is_optional`, `action_hint` per step; aggregates: `total_steps`, `required_steps`, `completed_required`, `completed_optional`, `all_required_complete`, `completion_pct`
+- **30 tests** → **Total: 6,486 passing** (was 6,456)
+
+---
 
 ### Accomplished (Session 196)
 
@@ -31,12 +60,15 @@ Enterprise accounts can now configure how they are billed. This is the last majo
 #### open-source-rideshare — PR: feature/corporate-business-accounts
 
 Branch now includes (most recent first):
+- Corporate Account Contract Management (b7e139e)
+- Corporate Account Onboarding Checklist (868b7d7)
 - Corporate Billing Settings (19518f3)
 - Corporate Commuter Benefits (50d62eb)
 - Corporate Employee Groups (a39a86a)
 - Corporate Preferred Driver Pool (d0f284f)
+- ... and 30+ more enterprise features
 
-Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
+**Total: 6,524 passing.** Push to remote blocked by org permissions. Please push and open a PR to `master` when ready to review.
 
 ---
 
@@ -652,7 +684,7 @@ Paper trading live since April 14. No autonomous path without `STOCKBOT_API_KEY`
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature TBD (4,531 tests, local commits ready)
+3. **open-source-rideshare**: Next enterprise feature (6,486 tests passing, corporate suite nearly complete)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
