@@ -347,3 +347,54 @@ when `OPENRIDE_TEST_DATABASE_URL` is not available, consistent with all other te
   a follow-up to roll them into earnings totals once the migration is complete.
 
 ---
+
+### feature/corporate-business-accounts — corporate batch/group booking
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `1f86eb9`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-15
+
+**Summary:**
+Implements Corporate Batch/Group Booking — a feature that lets account admins
+create a batch booking (DRAFT), add up to 50 individual ride requests, then
+submit the batch for fulfilment. This covers event shuttles, offsites, and
+airport pickups for visiting clients. It is not available in Uber for Business.
+
+**Workflow:**
+1. Admin creates a batch (`POST /corporate/accounts/me/batches`) — starts DRAFT.
+2. Admin adds ride requests one at a time (up to 50 per batch).
+3. Admin removes requests as needed (marks REMOVED; not deleted).
+4. Admin submits the batch — must have at least 1 PENDING request.
+5. Admin or platform admin can cancel at any stage.
+
+**Endpoints:**
+- Member (read): list, get batch, get requests with counts
+- Admin (write): create, update (DRAFT only), cancel, add/remove requests, submit
+- Platform admin: same read endpoints for any account (`/admin/corporate/accounts/{id}/batches/...`)
+
+**Architecture decisions:**
+- `CorporateBatchRideRequest.account_id` is denormalised (same as batch) for fast
+  account-scoped queries without joining through the batch row.
+- Capacity limit (50) is enforced in the service by counting PENDING requests before
+  inserting; not a DB constraint, so the limit can be adjusted without a migration.
+- Cancellation is allowed from any non-cancelled status; only the service enforces
+  "already cancelled" → 400, not a DB constraint.
+- Ride requests are never hard-deleted; setting `status=REMOVED` preserves audit trail.
+- `await db.flush()` used throughout (not `commit`) — commits handled by middleware.
+
+**Files added:**
+- `backend/app/models/corporate_batch_booking.py` — CorporateBatchBooking + CorporateBatchRideRequest models
+- `backend/app/schemas/corporate_batch_booking.py` — request/response schemas (8 classes)
+- `backend/app/services/corporate_batch_booking.py` — 9 service functions + 3 internal helpers
+- `backend/app/api/v1/corporate_batch_booking.py` — 13 REST endpoints
+- `backend/app/db/migrations/versions/u2v3w4x5y6z7_add_corporate_batch_bookings.py` — Alembic migration (revision `u2v3w4x5y6z7`, down `t2u3v4w5x6y7`)
+- `backend/tests/test_corporate_batch_booking.py` — 38 tests (all passing)
+
+**Files modified:**
+- `backend/app/models/__init__.py` — added imports for BusinessAccount and new models
+- `backend/app/main.py` — registered `corporate_batch_booking` router
+
+**Test results:** 5,290 passing (5,252 existing + 38 new), 1,074 skipped, 0 failures.
+
+---
