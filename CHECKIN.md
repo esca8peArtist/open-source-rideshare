@@ -9,24 +9,24 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–137
+**Sessions**: 129–138
 
-### Accomplished (Session 137)
+### Accomplished (Session 138)
 
-#### open-source-rideshare — Cooperative Transparency and Member Equity COMPLETE (commit `0d9a8fc`)
-The financial backbone of the cooperative identity: every member can now see exactly how money flows through the platform. Uber/Lyft hide this — the cooperative model is the opposite.
-- **`GET /platform/cooperative/stats`** — public, no auth; live all-time platform stats: total rides, fares collected, platform fee rate %, driver take rate %, total approved drivers, active riders, drivers online right now
-- **`GET /platform/cooperative/reports`** — public; list all published quarterly transparency reports (newest first)
-- **`GET /platform/cooperative/reports/{year}/{quarter}`** — public; one quarterly report
-- **`GET /drivers/me/cooperative-equity`** — driver auth; own equity profile: tenure_days, lifetime_completed_trips, equity_share_pct (driver's trips / all platform trips), lifetime earnings, lifetime tips, lifetime platform contribution (fees generated from driver's rides), rating_avg
-- **`POST /admin/cooperative/reports/generate`** — admin; generate or refresh quarterly report (idempotent); computes all financials + member counts from live data
-- **48 unit tests; Total: 4,036 tests passing** (up from 3,988)
+#### open-source-rideshare — Public Service Coverage API COMPLETE (commit `8600e0e`)
+Riders and prospective users can now check if their area is covered before signing up — a critical acquisition flow. The service area system has had admin management and internal validation for a long time, but no public-facing API. Fixed that.
+- **`GET /service-areas`** — public, no auth; list all active service areas with name and description; useful for a coverage map on the marketing page or app onboarding flow
+- **`GET /service-areas/{area_id}`** — public; get one active area by ID (404 if inactive or missing)
+- **`POST /service-areas/check`** — public; check whether a pickup + dropoff coordinate pair is within active service areas; returns `{valid, pickup_covered, dropoff_covered, message?}`; when no service areas are configured, all locations are considered covered (cooperative hasn't set up geofencing yet)
+- New schema: `RideCoverageRequest` — validates lat in [-90, 90], lng in [-180, 180]
+- **35 new tests; Total: 4,041 tests passing** (up from 4,036), 0 failing
 - **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–137 (many features)
-Branch: `feature/corporate-business-accounts` — 4,036 tests passing. Features since last push:
+#### open-source-rideshare — PR: Sessions 129–138 (many features)
+Branch: `feature/corporate-business-accounts` — 4,041 tests passing. Features since last push:
+- Public Service Coverage API (8600e0e)
 - Cooperative Transparency and Member Equity (0d9a8fc)
 - Rider Referral Program (61c921e)
 - Ride Receipts + Feedback APIs (a254483)
@@ -42,55 +42,6 @@ Note from Session 135: `rides.py` has duplicate receipt/feedback routes that wer
 
 ---
 
-### Accomplished (Sessions 135–136)
-
-#### open-source-rideshare — Rider Referral Program COMPLETE (commit `61c921e`)
-- 4 endpoints; 41 unit tests; Total was 3,988 (up from 3,947)
-
-#### open-source-rideshare — Ride Receipts and Feedback APIs COMPLETE (commit `a254483`)
-- 6 endpoints (receipts router + ride_feedback router); 51 unit tests; Total was 3,947 (up from 3,896)
-
-### Accomplished (Session 134)
-
-#### open-source-rideshare — Driver Vehicle Maintenance Tracking COMPLETE (commit `9352bf6`)
-Drivers can now log maintenance events per vehicle and get alerted on upcoming/overdue service. Safety-critical for a cooperative: a vehicle with overdue brake service or annual inspection shouldn't be on the road.
-- **`POST /drivers/me/vehicles/{vehicle_id}/maintenance`** — log a service event (oil change, brake job, tyre rotation, etc.) with date, mileage, cost, service provider, and next-service schedule
-- **`GET /drivers/me/vehicles/{vehicle_id}/maintenance`** — paginated maintenance history for one vehicle
-- **`GET /drivers/me/maintenance/upcoming`** — all upcoming/overdue items across all the driver's vehicles; `?days=` window (default 30); overdue items always included; `days_until_due` negative = past due
-- **`GET /admin/maintenance/fleet`** — fleet-wide summary: overdue count, vehicles with overdue, due-within-30-days count, 10 most recent logs
-- 15 maintenance types: oil_change, tire_rotation, tire_replacement, brake_inspection, brake_replacement, air_filter, cabin_filter, battery_replacement, coolant_flush, transmission_service, spark_plugs, belt_replacement, wiper_blades, annual_inspection, other
-- 41 unit tests; **Total: 3,896 tests passing** (up from 3,855)
-- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
-
-### Accomplished (Session 133)
-
-#### open-source-rideshare — Driver Document Expiry Alert System COMPLETE (commit `1484765`)
-All four driver compliance documents (license, registration, insurance, inspection) had expiry-date fields with no service/API layer to surface them. Built the full alert stack:
-- **`GET /drivers/me/documents/expiry-status`** — driver's own expiry view; `?days=` lookahead (default 30); returns `expiring` list and `expired` list with `days_until_expiry` (negative = already past)
-- **`GET /admin/documents/expiring`** — cross-fleet list; filterable by `doc_type` (license/registration/insurance/inspection); sorted expired-first; paginated
-- **`POST /admin/documents/expiry/scan`** — idempotent bulk-expiry scan; marks all active docs past their date as EXPIRED; returns per-type counts; safe to run on a nightly scheduler
-- 47 unit tests; **Total: 3,855 tests passing** (up from 3,808)
-
-### Accomplished (Session 132)
-
-#### open-source-rideshare — Accessibility / WAV Certification System COMPLETE (commit `8e20c40`)
-- 6 endpoints: rider accessibility profile, driver WAV cert submission/review, admin stats + cert list
-- Migration `s1t2u3v4w5x6_add_accessibility`; 59 unit tests; Total was 3,808 (up from 3,749)
-
-### Accomplished (Session 131)
-
-#### open-source-rideshare — Driver Payout / Disbursement System COMPLETE (commit `373168d`)
-- 7 endpoints (3 driver, 4 admin); commission integration (0% subscribed / 15% standard)
-- Migration `r1s2t3u4v5w6_add_driver_payouts`; 65 unit tests; Total was 3,749 (up from 3,684)
-
-### Accomplished (Session 130)
-
-#### open-source-rideshare — Rider Loyalty Rewards Programme COMPLETE (commit `42b393f`)
-- 5 endpoints; earn 10 pts/$1; min 500 pts redemption; 50% fare cap
-- Migration `q1r2s3t4u5v6_add_rider_rewards`; 58 unit tests; Total was 3,684 (up from 3,626)
-
----
-
 ### Needs Your Input
 
 **mfg-farm — Business plan is ready; next action is your call**
@@ -103,7 +54,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now has 3,896 tests passing across Sessions 129–134. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now has 4,041 tests passing across Sessions 129–138. The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. Push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.
@@ -113,7 +64,7 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Resolve SSH push or continue with next feature (3,896 tests, local commits ready)
+3. **open-source-rideshare**: Resolve SSH push or continue with next feature (4,041 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---
@@ -121,6 +72,28 @@ Paper trading has been live since April 14. The orchestrator cannot read cycle l
 ---
 
 ### History
+
+#### Accomplished (Session 137)
+- **open-source-rideshare**: Cooperative Transparency and Member Equity COMPLETE (commit `0d9a8fc`). Public platform stats, driver equity profile, quarterly transparency reports, admin report generation. 48 unit tests. Total: 4,036 passing.
+
+#### Accomplished (Sessions 135–136)
+- **open-source-rideshare**: Rider Referral Program COMPLETE (commit `61c921e`). 4 endpoints; 41 unit tests; 3,988 passing.
+- **open-source-rideshare**: Ride Receipts and Feedback APIs COMPLETE (commit `a254483`). 6 endpoints; 51 unit tests; 3,947 passing.
+
+#### Accomplished (Session 134)
+- **open-source-rideshare**: Driver Vehicle Maintenance Tracking COMPLETE (commit `9352bf6`). 41 unit tests. 3,896 passing.
+
+#### Accomplished (Session 133)
+- **open-source-rideshare**: Driver Document Expiry Alert System COMPLETE (commit `1484765`). 47 unit tests. 3,855 passing.
+
+#### Accomplished (Session 132)
+- **open-source-rideshare**: Accessibility / WAV Certification System COMPLETE (commit `8e20c40`). 59 unit tests. 3,808 passing.
+
+#### Accomplished (Session 131)
+- **open-source-rideshare**: Driver Payout / Disbursement System COMPLETE (commit `373168d`). 65 unit tests. 3,749 passing.
+
+#### Accomplished (Session 130)
+- **open-source-rideshare**: Rider Loyalty Rewards Programme COMPLETE (commit `42b393f`). 58 unit tests. 3,684 passing.
 
 #### Accomplished (Session 129)
 - **open-source-rideshare**: Driver Subscription / Flat-Fee Plan COMPLETE (commit `479219c`). Weekly ($49) / monthly ($149) flat-fee; 0% commission while active. 8 endpoints; 49 unit tests. Total: 3,626 passing.

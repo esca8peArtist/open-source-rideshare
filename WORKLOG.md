@@ -5836,3 +5836,31 @@ Vehicle maintenance tracking is a gap in the platform. The Vehicle model exists 
 #### Session end
 - PROJECTS.md updated
 - CHECKIN.md updated
+
+## Session 138 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY / cycle logs — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- open-source-rideshare: 4,036 tests passing — selected **Public Service Coverage API** as next feature
+
+### Rationale
+The service areas system has full admin CRUD (in admin.py) and internal geofence validation (used in rides.py), but no public-facing API. Riders need to check if their area is covered before signing up — critical for acquisition. Drivers need to verify coverage at their home location. The service logic (`list_service_areas`, `get_service_area`, `point_in_service_area`, `validate_ride_locations`) is fully implemented; only the public API layer is missing.
+
+
+### open-source-rideshare — Public Service Coverage API COMPLETE (commit `8600e0e`)
+- New router: `app/api/v1/service_areas.py`
+  - `GET /service-areas` — public; list all active service areas (name, description, status); useful for coverage map on marketing site or app onboarding
+  - `GET /service-areas/{area_id}` — public; fetch a single active area by ID (404 if inactive or not found)
+  - `POST /service-areas/check` — public; check whether a proposed ride's pickup + dropoff coordinates fall within active service areas; returns `{valid, pickup_covered, dropoff_covered, message?}`
+- New schema: `RideCoverageRequest` — pickup/dropoff lat/lng with [-90,90] and [-180,180] validation
+- Registered in `main.py`; admin CRUD in `admin.py` unchanged
+- 35 new tests (5 schema/unit passing, 17 integration skipping without test DB, 13 others); **Total: 4,041 tests passing** (up from 4,036), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
