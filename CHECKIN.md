@@ -9,7 +9,34 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–149
+**Sessions**: 129–151
+
+### Accomplished (Session 151)
+
+#### open-source-rideshare — Driver Live Location Tracking COMPLETE (commit `f299951`)
+Fills a fundamental rideshare infrastructure gap: riders can now track their assigned driver in real-time during active rides. Admins get a platform-wide live driver map.
+
+- **DriverLocation** model: one row per driver (upserted on each push); latitude, longitude, accuracy_meters, heading, speed_kmh, is_active, ride_id (nullable)
+- **3 endpoints**:
+  - `POST /drivers/me/location` — driver pushes GPS coordinates (upsert, authenticated driver only)
+  - `GET /rides/{ride_id}/driver-location` — rider or driver reads current position; restricted to `driver_en_route`, `arrived`, `in_progress` status; 403 for non-participants; 409 for wrong status; 404 if driver hasn't pushed yet
+  - `GET /admin/drivers/live` — paginated list of all is_active=True drivers with last-known position (admin only)
+- `clear_driver_location()` helper to mark driver inactive on shift end
+- Migration: b5c6d7e8f9a0 — driver_locations table, unique constraint on driver_id, 4 indexes
+- **23 new tests passing** (8 DB tests skipped); **Total: 4,596 tests passing** (up from 4,573), 0 failing
+
+### Accomplished (Session 150)
+
+#### open-source-rideshare — Driver Incident Reporting System COMPLETE (commit `9be524d`)
+Cooperative differentiator: Uber/Lyft notoriously poor at driver safety support — reports often vanish with no feedback. This gives drivers a transparent incident channel with formal status tracking and admin accountability.
+
+- **DriverIncidentReport** model: driver_id, ride_id (nullable), incident_type (7: passenger_harassment/physical_threat/property_damage/theft/unsafe_behavior/accident/other), severity (low/medium/high/critical), status (submitted/under_review/resolved/dismissed), description, evidence_urls, admin_note, reviewed_by_id, reviewed_at
+- **10 endpoints**:
+  - Driver: `POST /drivers/me/incidents` — report; `GET /drivers/me/incidents` — list; `GET /drivers/me/incidents/{id}` — get; `PUT /drivers/me/incidents/{id}` — update (submitted-only)
+  - Admin: `GET /admin/driver-incidents` — list (filter by status/severity/type/driver); `GET /admin/driver-incidents/{id}` — get; `GET /admin/driver-incidents/summary` — stats (open_count, critical_open, breakdowns)
+  - Admin: `PUT /admin/driver-incidents/{id}/review` — start review; `PUT .../resolve` — resolve; `PUT .../dismiss` — dismiss
+- Migration: a4b5c6d7e8f9 — driver_incident_reports table, 3 enum types, 4 indexes
+- **26 new tests passing** (17 DB tests skipped); **Total: 4,573 tests passing** (up from 4,547), 0 failing
 
 ### Accomplished (Session 149)
 
@@ -68,9 +95,11 @@ Companies can register corporate accounts, add employee riders with optional per
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–149 (many features)
-Branch: `feature/corporate-business-accounts` — **4,547 tests passing**. Features since last push:
-- Driver Shift & Hours Tracking (b715edb) ← new
+#### open-source-rideshare — PR: Sessions 129–151 (many features)
+Branch: `feature/corporate-business-accounts` — **4,596 tests passing**. Features since last push:
+- Driver Live Location Tracking (f299951) ← new
+- Driver Incident Reporting (9be524d)
+- Driver Shift & Hours Tracking (b715edb)
 - Corporate Business Accounts (71401f6)
 - Trusted Contact & Trip Sharing (d7889ee)
 - Driver Rating Appeal System (1d3f1db)

@@ -4,6 +4,69 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 151 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — **Driver Live Location Tracking**
+
+### Rationale
+The ride model has static pickup/dropoff but no real-time driver location tracking — a critical gap. Riders cannot currently track where the driver is during en_route/arrived/in_progress phases. This is fundamental rideshare infrastructure. Cooperative differentiator: transparent real-time tracking + admin oversight for route safety audits.
+
+### open-source-rideshare — Driver Live Location Tracking COMPLETE (commit `f299951`)
+- New model: `app/models/driver_location.py`
+  - `DriverLocation`: one row per driver (UNIQUE on driver_id); latitude, longitude, accuracy_meters, heading, speed_kmh, is_active, ride_id (nullable FK), updated_at, created_at; 4 indexes
+  - Upsert pattern: constant storage regardless of update frequency
+- New schemas: `app/schemas/driver_location.py`
+  - LocationUpdate (lat/lon validated ±90/±180, rounded to 8dp; optional accuracy/heading/speed/ride_id), DriverLocationResponse (from_orm_model), ActiveDriverEntry, ActiveDriversResponse
+- New service: `app/services/driver_location.py`
+  - upsert_driver_location: create-or-update with ride_id ownership guard (400 if invalid)
+  - clear_driver_location: marks is_active=False + clears ride_id on shift-end
+  - get_ride_driver_location: ride participant auth, trackable-status gate (409), driver-has-location gate (404)
+  - list_active_drivers: paginated list of is_active=True rows
+- New router: `app/api/v1/driver_location.py` — 3 endpoints
+  - POST /drivers/me/location — driver pushes GPS (upsert, driver-auth)
+  - GET  /rides/{id}/driver-location — rider/driver reads position (en_route/arrived/in_progress only)
+  - GET  /admin/drivers/live — paginated active driver list (admin-only)
+- Migration: `b5c6d7e8f9a0` (follows a4b5c6d7e8f9) — driver_locations table, 4 indexes
+- 23 tests passing + 8 skipped (no live DB); **Total: 4,596 tests passing** (up from 4,573), 0 failing
+
+#### Session end
+
+## Session 150 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — **Driver Incident Reporting**
+
+### Rationale
+Cooperative differentiator: Uber/Lyft notoriously poor at driver safety support — reports often vanish into a support ticket void with no feedback. A transparent incident reporting system with formal status tracking (submitted → under_review → resolved/dismissed) and admin accountability notes directly embodies cooperative values.
+
+### open-source-rideshare — Driver Incident Reporting System COMPLETE (commit `9be524d`)
+- New model: `app/models/driver_incident.py`
+  - `DriverIncidentReport`: driver_id, ride_id (nullable), incident_type (7: passenger_harassment/physical_threat/property_damage/theft/unsafe_behavior/accident/other), severity (low/medium/high/critical), status (submitted/under_review/resolved/dismissed), description, evidence_urls (comma-separated), admin_note, reviewed_by_id, reviewed_at; 4 indexes
+  - 3 enum types: IncidentType, IncidentSeverity, IncidentStatus
+- New schemas: `app/schemas/driver_incident.py`
+  - DriverIncidentCreate (min_length description, URL length validation), DriverIncidentUpdate, AdminIncidentReview/Resolve/Dismiss, DriverIncidentResponse (from_orm_model splits comma URLs back to list), DriverIncidentListOut, AdminIncidentRow, AdminIncidentListOut, AdminIncidentSummary
+- New service: `app/services/driver_incident.py`
+  - create_incident, get_driver_incident (driver-scoped 404), list_driver_incidents (paginated), update_driver_incident (submitted-only guard)
+  - admin_get_incident, admin_list_incidents (filter: status/severity/type/driver_id), admin_start_review, admin_resolve_incident, admin_dismiss_incident, admin_incident_summary (totals by status/severity/type, open_count, critical_open)
+- New router: `app/api/v1/driver_incidents.py` — 10 endpoints
+  - Driver: POST /drivers/me/incidents (201), GET /drivers/me/incidents (paginated), GET /drivers/me/incidents/{id}, PUT /drivers/me/incidents/{id} (submitted-only)
+  - Admin: GET /admin/driver-incidents/summary, GET /admin/driver-incidents (filterable), GET /admin/driver-incidents/{id}, PUT .../review, PUT .../resolve, PUT .../dismiss
+- Migration: `a4b5c6d7e8f9` (follows z1a2b3c4d5e6) — driver_incident_reports table, 3 enum types, 4 indexes
+- 26 tests passing + 17 skipped (no live DB); **Total: 4,573 tests passing** (up from 4,547), 0 failing
+
+#### Session end
+
 ## Session 149 — 2026-04-15
 
 ### Orient
