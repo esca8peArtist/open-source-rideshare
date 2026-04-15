@@ -9,7 +9,32 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–174
+**Sessions**: 129–175
+
+### Accomplished (Session 175)
+
+#### open-source-rideshare — Corporate Data Export
+
+**Feat (commit `8147a9d`)**: CSV exports for corporate accounts. Finance teams can now pull accounting-ready data directly from the API without any data pipeline.
+
+**Rides export** (`GET /corporate/accounts/me/export/rides`) — admin-only; filterable by date range, cost center, and trip purpose; 19 columns: ride_id, completed_at, status, rider/driver id+name, pickup/dropoff addresses, distance_km, duration_min, actual_fare, tip_amount, total_charged, cost_center_code/name, trip_purpose_code/label, trip_notes.
+
+**Invoice line-items export** (`GET /corporate/accounts/me/export/invoices/{id}`) — any member; one row per completed ride within the invoice billing period; invoice metadata (number, status, period) repeated on every row for pivot-table compatibility.
+
+All exports return `text/csv` with a `Content-Disposition: attachment` header and an auto-generated timestamped filename. Platform-admin mirrors available for both endpoints.
+
+- **2 service functions**: `export_corporate_rides_csv`, `export_invoice_csv`
+- **4 endpoints**: member/admin GET for rides + invoice (+ 2 platform-admin mirrors)
+- **25 new tests**; **Total: 5,441 passing** (up from 5,417)
+
+### Needs Your Input
+
+#### open-source-rideshare — Push to GitHub
+Branch: `feature/corporate-business-accounts` (latest commit `8147a9d`)
+Includes Sessions 166–175: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, employee spend limits, **data export**.
+Please run: `git push origin feature/corporate-business-accounts`
+
+---
 
 ### Accomplished (Session 174)
 
@@ -22,13 +47,6 @@ Employees now have a self-service spending dashboard: current-month spend vs per
 - **6 service functions**: `get_my_spend_summary`, `get_my_spend_history`, `get_member_spend_summary`, `list_members_spend_summary`, `set_member_spend_limit`, `remove_member_spend_limit`
 - **7 endpoints**: `GET /corporate/accounts/me/my-spending` (employee self-service), `GET /corporate/accounts/me/my-spending/history`, `GET /corporate/accounts/me/members/spend-limits` (admin overview), `GET /corporate/accounts/me/members/{uid}/spend-limit`, `PUT /corporate/accounts/me/members/{uid}/spend-limit`, `DELETE /corporate/accounts/me/members/{uid}/spend-limit`, `GET /admin/corporate/accounts/{id}/members/spend-limits` (platform-admin)
 - **43 new tests**; **Total: 5,417 passing** (up from 5,374)
-
-### Needs Your Input
-
-#### open-source-rideshare — Push to GitHub
-Branch: `feature/corporate-business-accounts` (latest commit `0daed0a`)
-Includes Sessions 166–174: corporate ride policy, approval workflow, cost centers, monthly invoices, spending analytics, batch/group booking, trip purpose codes, guest passes, **employee spend limits**.
-Please run: `git push origin feature/corporate-business-accounts`
 
 ---
 

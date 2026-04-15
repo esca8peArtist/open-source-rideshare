@@ -7227,3 +7227,38 @@ Feature: Account admins can create a named batch booking (DRAFT), add up to 50 i
 - 38 new tests passing; **Total: 5,290 passing** (5,252 before), 0 failing
 
 #### Session end
+
+## Session 175 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: no STOCKBOT_API_KEY in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready — no autonomous work
+- Selected: open-source-rideshare — 5,417 tests passing, continuing corporate feature track
+
+### Task: Corporate Data Export (commit `8147a9d`)
+
+Added CSV export functionality for corporate accounts — the final layer
+needed to make corporate billing fully self-serve.
+
+**Service** (`corporate_data_export.py`) — 2 export functions:
+- `export_corporate_rides_csv` (admin-only): filterable by date range, cost
+  center, and trip purpose; 19 columns incl. rider/driver names, fares,
+  distance/duration, cost center and trip purpose annotations.
+- `export_invoice_csv` (member-level): per-ride line items for a specific
+  invoice; invoice metadata repeated on each row for easy pivot-table use.
+
+**Router** (`api/v1/corporate_data_export.py`) — 4 endpoints:
+  `GET /corporate/accounts/me/export/rides` (admin)
+  `GET /corporate/accounts/me/export/invoices/{id}` (member)
+  `GET /admin/corporate/accounts/{id}/export/rides`
+  `GET /admin/corporate/accounts/{id}/export/invoices/{invoice_id}`
+All return `StreamingResponse` with `text/csv` + `Content-Disposition: attachment`.
+
+**25 new tests** — service unit (date ranges, auth guards, empty/multi-row
+results, column content, null-field handling) + API layer; **Total: 5,441 passing**.
+
+#### Session end
+
