@@ -9,21 +9,38 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–144
+**Sessions**: 129–146
+
+### Accomplished (Session 146)
+
+#### open-source-rideshare — Driver Rating Appeal System COMPLETE (commit `1d3f1db`)
+Cooperative differentiator: drivers can appeal retaliatory 1-star ratings; admins review and optionally nullify the rating from score calculations.
+
+- **DriverRatingAppeal** model: one appeal per feedback record (unique constraint on feedback_id); tracks reason, status, admin notes, reviewer, nullified flag
+- Business rules enforced: driver must be the rated party; no re-appeals; no admin re-review
+- On **approve**: `rating_nullified=True` — excluded from driver average going forward; underlying row preserved for audit
+- On **reject**: rating stands, appeal closed
+- 5 endpoints: driver POST/GET own appeals; admin GET all (status filter), POST review, GET summary dashboard
+- Migration: b3c4d5e6f7g8 (follows a2b3c4d5e6f7)
+- Also fixed: `RideFeedback` and `Dispute` were not in `app/models/__init__.py` — added (SQLAlchemy mapper was failing to resolve string relationship for any test that imported all models together)
+- **38 new tests** (16 passing + 22 skipped — no live DB, consistent with project); **Total: 4,467 tests passing** (up from 4,451), 0 failing
+
+### Accomplished (Session 145)
+
+#### open-source-rideshare — Ride Cancellation Policies and Fees COMPLETE (commit `c2c332e`)
+Late cancellations cost drivers real income — this system enforces platform economics while keeping the cooperative's values (waiveable, admin-controlled, transparent).
+
+- **CancellationPolicy** (singleton, admin-managed): rider grace period (default 120s free cancel window), flat fee ($5.00 default), percent-of-fare option, driver free cancels per day (3), driver penalty when exceeded ($2.00)
+- **CancellationRecord**: one per cancelled ride — who cancelled, reason, grace-period-expired flag, fee amount, fee_status (pending/charged/waived/refunded), admin waive fields
+- Existing pure `evaluate_cancellation()` service preserved; DB-backed layer added alongside it
+- 9 endpoints: rider cancel ride + history, driver cancel + history, admin policy CRUD + list + waive + summary stats
+- Migration: a2b3c4d5e6f7 (down from y1z2a3b4c5d6)
+- **85 new tests** (53 passing + 32 skipped — no live DB, consistent with project); **Total: 4,451 tests passing** (up from 4,419), 0 failing
 
 ### Accomplished (Session 144)
 
 #### open-source-rideshare — Lost and Found System COMPLETE (commit `cb508dd`)
-Riders leave items in rideshare vehicles constantly. This is the canonical feature that builds rider trust post-ride.
-
-- **LafLostItemReport** (rider-submitted): ride_id (optional), description, category (electronics/clothing/documents/bags/jewelry/keys/other), date_lost, contact_preference; statuses: open/matched/returned/closed_no_match
-- **LafFoundItemReport** (driver-submitted): ride_id (optional), description, category, storage_location; statuses: pending_match/matched/returned_to_owner/discarded
-- `Laf` prefix used — pre-existing `lost_found` module was already in the codebase; this is the new, complete system
-- Driver found-items at `/drivers/me/found-items-v2` — path conflict with legacy route
-- **Admin workflow**: admin matches a lost + found pair → mark-returned (both resolved) or discard (driver held too long, no claim) or close-lost (no match found)
-- State-transition guards prevent double-processing; ride-ownership validation when ride_id provided
-- Migration: y1z2a3b4c5d6 (laf_lost_item_reports + laf_found_item_reports, 4 enum types, deferred cross-FK)
-- **68 new tests** (36 service unit passing + 32 API integration skip — no live DB, consistent with rest of suite); **Total: 4,419 tests passing** (up from 4,383), 0 failing
+- **68 new tests; Total: 4,419 tests passing** (up from 4,383), 0 failing
 
 ### Accomplished (Session 143)
 
@@ -35,16 +52,13 @@ Riders leave items in rideshare vehicles constantly. This is the canonical featu
 #### open-source-rideshare — Cooperative Member Dividend / Profit-Sharing COMPLETE (commit `b827b33`)
 - **63 new tests; Total: 4,316 tests passing** (up from 4,253), 0 failing
 
-### Accomplished (Session 141)
-
-#### open-source-rideshare — Cooperative Governance / Driver Voting System COMPLETE (commit `348e002`)
-- **76 new tests; Total: 4,253 tests passing** (up from 4,177), 0 failing
-
 ### Needs Your Input
 
-#### open-source-rideshare — PR: Sessions 129–144 (many features)
-Branch: `feature/corporate-business-accounts` — **4,419 tests passing**. Features since last push:
-- Lost and Found System (cb508dd) ← new
+#### open-source-rideshare — PR: Sessions 129–146 (many features)
+Branch: `feature/corporate-business-accounts` — **4,467 tests passing**. Features since last push:
+- Driver Rating Appeal System (1d3f1db) ← new
+- Ride Cancellation Policies and Fees (c2c332e)
+- Lost and Found System (cb508dd)
 - Driver Minimum Earnings Guarantee (8c7f28a)
 - Cooperative Member Dividend / Profit-Sharing (b827b33)
 - Cooperative Governance / Driver Voting System (348e002)
@@ -87,7 +101,7 @@ Paper trading live since April 14. No autonomous path without `STOCKBOT_API_KEY`
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User decides commission vs. build route → operational checklist setup
 2. **stockbot**: Share cycle logs to unblock model performance assessment
-3. **open-source-rideshare**: Next feature TBD (4,419 tests, local commits ready)
+3. **open-source-rideshare**: Next feature TBD (4,467 tests, local commits ready)
 4. **resistance-research**: No autonomous work remaining unless user directs a new thread
 
 ---

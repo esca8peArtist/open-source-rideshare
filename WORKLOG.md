@@ -4,6 +4,71 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 146 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — **Driver Rating Appeal System**
+
+### Rationale
+Cooperative differentiation from Uber/Lyft. Drivers receiving retaliatory 1-star ratings (common after disputes or denied surge) have zero recourse on existing platforms. An admin-reviewable appeal process with rating nullification on approval is a meaningful promise to drivers: the cooperative takes fairness seriously. Built on existing `RideFeedback` (role="driver") records.
+
+### open-source-rideshare — Driver Rating Appeal System COMPLETE (commit `1d3f1db`)
+- New model: `app/models/driver_rating_appeal.py`
+  - `DriverRatingAppeal`: driver_id, feedback_id (unique — one appeal per rating), reason, status (pending/approved/rejected), admin_notes, reviewed_by, rating_nullified, reviewed_at
+  - `AppealStatus` enum
+- New service: `app/services/driver_rating_appeal.py`
+  - `submit_appeal`: validates feedback exists, is driver-role, belongs to driver, no duplicate
+  - `review_appeal`: admin approves (sets rating_nullified=True) or rejects; guards against re-review
+  - `list_driver_appeals`, `list_all_appeals` (with status filter), `get_appeal_summary`
+- New router: `app/api/v1/driver_rating_appeals.py` — 5 endpoints
+  - Driver: POST /drivers/me/rating-appeals, GET /drivers/me/rating-appeals
+  - Admin: GET /admin/rating-appeals (status filter), POST /admin/rating-appeals/{id}/review, GET /admin/rating-appeals/summary
+- New schemas: `app/schemas/driver_rating_appeal.py`
+- Migration: `b3c4d5e6f7g8` (follows a2b3c4d5e6f7)
+- Also added `RideFeedback` and `Dispute` to `app/models/__init__.py` (were missing)
+- 38 tests (16 passing + 22 skipped — no live DB); **Total: 4,467 tests passing** (up from 4,451), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
+## Session 145 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: waiting on STOCKBOT_API_KEY — no autonomous path
+- mfg-farm: waiting on user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — **Ride Cancellation Policies and Fees**
+
+### Rationale
+Cancellation policy is foundational platform economics. Riders who cancel late cost drivers real income (opportunity cost of a declined trip). The platform had no enforcement layer. This builds driver trust and protects earnings — a core cooperative value.
+
+### open-source-rideshare — Ride Cancellation Policies and Fees COMPLETE (commit `c2c332e`)
+- New model: `app/models/cancellation.py`
+  - `CancellationPolicy`: platform-level singleton config — rider grace period (default 120s), flat fee ($5), percent-of-fare option, driver free-cancel daily limit (3/day), driver penalty ($2 when exceeded)
+  - `CancellationRecord`: one per cancelled ride — who cancelled, reason, whether grace period expired, fee amount/status, waive fields
+  - Enums: CancelledBy (rider/driver/admin/system), FeeChargedTo (rider/driver/none), FeeStatus (pending/charged/waived/refunded)
+- Updated service: `app/services/cancellation.py` (pre-existing pure `evaluate_cancellation()` preserved; DB-backed layer added)
+  - `get_active_policy`, `calculate_rider_fee`, `calculate_driver_fee` (daily limit check), `record_cancellation`, `waive_fee`, `admin_get_all`
+- New router: `app/api/v1/cancellation_policies.py` — 9 endpoints
+  - Rider: POST cancel ride, GET own history
+  - Driver: POST cancel their ride, GET own history
+  - Admin: GET/POST policy, list all cancellations (fee_status filter), POST waive, GET summary stats
+- New schemas: `app/schemas/cancellation.py`
+- Migration: `a2b3c4d5e6f7` (down_revision: `y1z2a3b4c5d6`)
+- 85 tests (53 passing + 32 skipped — no live DB, consistent with project); **Total: 4,451 tests passing** (up from 4,419), 0 failing
+
+#### Session end
+- PROJECTS.md updated
+- CHECKIN.md updated
+
 ## Session 139 — 2026-04-15
 
 ### Orient
