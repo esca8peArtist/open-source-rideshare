@@ -6,6 +6,98 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/corporate-business-accounts — corporate business accounts system
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `71401f6`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-15
+
+**Summary:**
+Implements a full corporate business account management system. Companies can register corporate accounts, add employee riders with role-based access (admin vs. member), set per-member and account-level monthly spend limits, and receive consolidated billing via invoices (draft → issued → paid lifecycle).
+
+**Architecture decisions:**
+- The existing `CorporateAccount`/`CorporateMembership` models in `corporate_account.py` follow a different design (invitation flow, float amounts). The new system uses distinct Python class names (`BusinessAccount`, `BusinessAccountMember`, `BusinessInvoice`) to avoid SQLAlchemy mapper registry collisions, but the same `Base` and separate table names (`corporate_accounts_v2`, `corporate_account_members`, `corporate_invoices`).
+- `Decimal` used for all monetary fields (not float) to prevent rounding issues in billing.
+- Members have a unique constraint `(account_id, user_id)` — a user can only be added once per account. A separate check prevents them from joining a second account simultaneously.
+- Last-admin guard: an account admin cannot be removed if they are the only active admin, preventing orphaned accounts.
+- Max 500 active members per account enforced in the service layer.
+- Platform admin routes use `requesting_user_id=-1` sentinel to bypass membership checks.
+- `generate_invoice` creates a draft with zero totals (ride data aggregation is a future extension point); spend summary is derived from issued/paid invoices in the current calendar month.
+
+**Files changed:**
+- `backend/app/models/corporate.py` — BusinessAccount, BusinessAccountMember, BusinessInvoice models with CorporateAccountStatus, MemberRole, InvoiceStatus enums
+- `backend/app/schemas/corporate.py` — Create/Update/Response schemas, InvoiceGenerateRequest, CorporateSpendSummary, CorporatePlatformSummary
+- `backend/app/services/corporate_account_mgmt.py` — full service layer: account CRUD, member management, invoice lifecycle, spend tracking
+- `backend/app/api/v1/corporate.py` — 17 endpoints across account-admin and platform-admin roles
+- `backend/app/db/migrations/versions/d5e6f7g8h9i0_add_corporate_accounts.py` — migration (down_revision: a2b3c4d5e6f7)
+- `backend/app/main.py` — registered corporate.router
+- `backend/tests/test_corporate_business_accounts.py` — 39 passing service/schema unit tests + 6 skipped API tests
+
+**Endpoints added:**
+- `POST   /api/v1/corporate/accounts` — create account (caller becomes account admin)
+- `GET    /api/v1/corporate/accounts/me` — get own account
+- `PUT    /api/v1/corporate/accounts/me` — update own account (account admin only)
+- `GET    /api/v1/corporate/accounts/me/members` — list active members
+- `POST   /api/v1/corporate/accounts/me/members` — add member (account admin only)
+- `PUT    /api/v1/corporate/accounts/me/members/{user_id}` — update member
+- `DELETE /api/v1/corporate/accounts/me/members/{user_id}` — soft-remove member
+- `GET    /api/v1/corporate/accounts/me/invoices` — list invoices
+- `GET    /api/v1/corporate/accounts/me/spend` — spend summary
+- `GET    /api/v1/admin/corporate/accounts` — list all accounts (filter by status)
+- `GET    /api/v1/admin/corporate/accounts/{id}` — get account
+- `PUT    /api/v1/admin/corporate/accounts/{id}/suspend` — suspend
+- `PUT    /api/v1/admin/corporate/accounts/{id}/activate` — activate
+- `POST   /api/v1/admin/corporate/accounts/{id}/invoices` — generate draft invoice
+- `PUT    /api/v1/admin/corporate/invoices/{id}/issue` — issue invoice
+- `PUT    /api/v1/admin/corporate/invoices/{id}/paid` — mark paid
+- `GET    /api/v1/admin/corporate/summary` — platform-wide summary
+
+**Test results:** 4,531 passing, 0 failing (full suite, no regressions from previous 4,492)
+
+---
+
+### feature/corporate-business-accounts — ride cancellation policies and fee system
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `c2c332e`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-15
+
+**Summary:**
+Implements a complete DB-backed ride cancellation policy and fee system. When a rider cancels after a configurable grace period they are charged a flat fee plus an optional percentage of the estimated fare. Drivers get a configurable number of free cancellations per day; exceeding the limit incurs a penalty. Admin can configure the policy, view all cancellation records, and waive individual fees.
+
+**Architecture decisions:**
+- The existing `evaluate_cancellation()` pure function (used by dispatch layer) is preserved intact. The new system adds DB persistence on top without breaking anything.
+- One active policy at a time: creating a new policy via `POST /admin/cancellation-policy` deactivates the previous one. Old policies are kept for audit.
+- `CancellationRecord` has a unique constraint on `ride_id` — exactly one record per ride, preventing double-recording.
+- No-fee records (grace period, admin/system cancel) start with `fee_status=waived` immediately so the admin queue only surfaces records that need action.
+
+**Files changed:**
+- `backend/app/models/cancellation.py` — CancellationPolicy + CancellationRecord models with enums (CancelledBy, FeeChargedTo, FeeStatus)
+- `backend/app/schemas/cancellation.py` — typed request/response schemas for riders, drivers, and admin
+- `backend/app/services/cancellation.py` — service layer: policy retrieval, fee calculation, record creation, waive, admin list/summary
+- `backend/app/api/v1/cancellation_policies.py` — 9 endpoints across rider/driver/admin roles
+- `backend/app/db/migrations/versions/a2b3c4d5e6f7_add_cancellation_policies.py` — migration (down_revision: y1z2a3b4c5d6)
+- `backend/app/models/__init__.py` — registered new models
+- `backend/app/main.py` — wired up new router
+- `backend/tests/test_cancellation.py` — 85 tests total: 53 pass (service unit + legacy engine), 32 skip (API, require live DB)
+
+**Endpoints added:**
+- `POST /api/v1/rides/{ride_id}/cancel` — rider cancels; returns fee and grace status
+- `GET  /api/v1/riders/me/cancellations` — rider's own cancellation history
+- `POST /api/v1/drivers/me/rides/{ride_id}/cancel` — driver cancels; returns penalty if over limit
+- `GET  /api/v1/drivers/me/cancellations` — driver's own cancellation history
+- `GET  /api/v1/admin/cancellation-policy` — get active policy
+- `POST /api/v1/admin/cancellation-policy` — create/update policy (upsert)
+- `GET  /api/v1/admin/cancellations` — list all records with optional fee_status filter
+- `POST /api/v1/admin/cancellations/{id}/waive` — waive a fee with reason
+- `GET  /api/v1/admin/cancellations/summary` — aggregate stats
+
+**Test results:** 4,451 passing, 0 failing (full suite, no regressions)
+
+---
+
 ### feature/corporate-business-accounts — lost and found system
 
 **Branch:** `feature/corporate-business-accounts`
