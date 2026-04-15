@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, validator
 
 
 class FeedbackCreate(BaseModel):
@@ -42,6 +43,14 @@ class FeedbackResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @field_validator("categories", mode="before")
+    @classmethod
+    def parse_categories(cls, v: object) -> list[str] | None:
+        """Accept either a list or a comma-separated string (ORM storage)."""
+        if isinstance(v, str):
+            return [c for c in v.split(",") if c]
+        return v  # type: ignore[return-value]
 
 
 class DisputeCreate(BaseModel):
@@ -119,3 +128,16 @@ class DisputeListResponse(BaseModel):
 class FeedbackListResponse(BaseModel):
     feedback: list[FeedbackResponse]
     total: int
+
+
+# Alias used by the dedicated ride_feedback router.
+SubmitFeedbackRequest = FeedbackCreate
+
+
+class FeedbackPaginatedResponse(BaseModel):
+    """Paginated list returned by /riders/me/feedback and /drivers/me/feedback."""
+
+    items: list[FeedbackResponse]
+    total: int
+    limit: int
+    offset: int
