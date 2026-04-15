@@ -9,45 +9,39 @@
 ## Since Last Check-in
 
 **Period**: April 15, 2026
-**Sessions**: 129–131
+**Sessions**: 129–132
+
+### Accomplished (Session 132)
+
+#### open-source-rideshare — Accessibility / WAV Certification System COMPLETE (commit `8e20c40`)
+Regulatory-required accessibility layer — ADA/TfL compliance, missing from the platform entirely:
+- **`GET /riders/me/accessibility`** — get accessibility profile (auto-creates blank if none exists)
+- **`PUT /riders/me/accessibility`** — set needs_wav, has_mobility_device, visual_impairment, hearing_impairment, other_needs
+- **`GET /drivers/me/wav`** — get WAV certification status (404 if not submitted)
+- **`PUT /drivers/me/wav`** — submit/update WAV certification; resets rejected/expired → pending; preserves verified status (allows doc renewal before expiry)
+- **`GET /admin/accessibility/stats`** — platform WAV coverage: riders needing WAV, drivers by status, coverage_ratio (verified/needing_wav, capped 1.0)
+- **`POST /admin/drivers/{driver_id}/wav/verify`** — admin approve (→ verified) or reject with note + optional expiry date
+- **`GET /admin/drivers/wav`** — list all certifications, filter by status, paginated
+- Migration `s1t2u3v4w5x6_add_accessibility`: `rider_accessibility_profiles` + `driver_wav_certifications` tables, 3 indexes
+- 59 unit tests; **Total: 3,808 tests passing** (up from 3,749)
+- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
 
 ### Accomplished (Session 131)
 
 #### open-source-rideshare — Driver Payout / Disbursement System COMPLETE (commit `373168d`)
-Full payout lifecycle for drivers — cooperative's answer to Uber's opaque weekly settlements:
-- **`GET /drivers/me/payouts/pending-earnings`** — calculates unpaid earnings for any date range (defaults to last 7 days); respects 0% commission for subscribed drivers, 15% standard otherwise; deducts rides already covered by an existing payout
-- **`GET /drivers/me/payouts`** — paginated payout history (skip/limit)
-- **`POST /drivers/me/payouts`** — request a payout; returns 400 if nothing to pay out or if a pending/processing payout already overlaps the period
-- **`GET /admin/payouts`** — all payouts with optional status filter (pending/processing/completed/failed)
-- **`GET /admin/payouts/stats`** — aggregate: total pending USD, total completed USD, pending/completed/failed counts, avg payout USD
-- **`POST /admin/payouts/{payout_id}/process`** — moves pending → processing → completed; records processed_at timestamp
-- **`POST /admin/payouts/{payout_id}/fail`** — marks pending or processing payout as failed with a reason string
-- **Commission integration**: calls `get_driver_commission_pct` from driver_subscriptions service (0.0 for active subscribers, 15.0 otherwise)
-- **Decimal precision**: all monetary fields use `Decimal` with `ROUND_HALF_UP` to 2 d.p.; DB columns are `NUMERIC(10, 2)`
-- Migration `r1s2t3u4v5w6_add_driver_payouts`: `driver_disbursements` table with status/method enums, 3 indexes
-- 65 unit tests; **Total: 3,749 tests passing** (up from 3,684)
-- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
+- 7 endpoints (3 driver, 4 admin); commission integration (0% subscribed / 15% standard); Decimal precision
+- Migration `r1s2t3u4v5w6_add_driver_payouts`; 65 unit tests; Total was 3,749 (up from 3,684)
 
 ### Accomplished (Session 130)
 
 #### open-source-rideshare — Rider Loyalty Rewards Programme COMPLETE (commit `42b393f`)
-Points-based reward system — a cooperative differentiator vs Uber/Lyft's ~2% cashback:
-- **`GET /riders/me/rewards`** — account balance, lifetime stats, dollar value of current balance (auto-creates account on first call)
-- **`GET /riders/me/rewards/history`** — paginated transaction history (earn/redeem events with ride linkage)
-- **`POST /riders/me/rewards/redeem`** — burn points for a dollar discount; returns discount_value_usd + new balance
-- **`GET /admin/rewards/stats`** — platform-wide totals: accounts, outstanding points, liability USD, lifetime earned/redeemed
-- **`POST /admin/rewards/adjust`** — manually credit or debit a rider's balance (capped at zero, audit logged)
-- **Earn rate**: 10 pts per $1 fare (floor rounding; zero-fare rides earn nothing)
-- **Point value**: $0.01 each → 10% effective cashback
-- **Rules**: min redemption 500 pts ($5); points may cover up to 50% of single fare; balance cannot go below 0
-- Migration `q1r2s3t4u5v6_add_rider_rewards`: `rider_reward_accounts` + `rider_reward_transactions` tables, 4 indexes
-- 58 unit tests; **Total: 3,684 tests passing** (up from 3,626)
-- **Note**: GitHub push still blocked — SSH key for `esca8peArtist` lacks access to `SuperClaude-Org/SuperClaude_Framework`
+- 5 endpoints; earn 10 pts/$1 (10% cashback); min 500 pts redemption; 50% fare cap
+- Migration `q1r2s3t4u5v6_add_rider_rewards`; 58 unit tests; Total was 3,684 (up from 3,626)
 
 ### Accomplished (Session 129)
 
 #### open-source-rideshare — Driver Subscription / Flat-Fee Plan COMPLETE (commit `479219c`)
-- Weekly ($49) or monthly ($149) flat-fee plan; 0% commission while active
+- Weekly ($49) / monthly ($149) flat-fee; 0% commission while active
 - 8 endpoints; 49 unit tests; Total was 3,626 (up from 3,577)
 
 ---
@@ -64,7 +58,7 @@ Drop the direction in INBOX.md and the orchestrator will set up the next operati
 Paper trading has been live since April 14. The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. Share cycle log output in INBOX.md or drop a screenshot path from the Trading page (`http://127.0.0.1:8000`) to unblock model assessment.
 
 **open-source-rideshare — PR ready to push + SSH key issue**
-`feature/corporate-business-accounts` now includes all features through Session 131 (3,749 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
+`feature/corporate-business-accounts` now includes all features through Session 132 (3,808 tests passing). The orchestrator's SSH key (`esca8peArtist`) can't push to `SuperClaude-Org/SuperClaude_Framework`. You'll need to push manually or confirm the correct credentials.
 
 **resistance-research — proposal is done; what next?**
 `democratic-renewal-proposal.md` is publication-ready. Let me know if you want PDF export, sharing, or to file it and move on.

@@ -4,6 +4,53 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 132 — 2026-04-15
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: still blocked on STOCKBOT_API_KEY / cycle logs from user
+- mfg-farm: awaiting user decision (commission vs build route)
+- Selected: open-source-rideshare — **Accessibility / WAV Support**
+
+### open-source-rideshare — Accessibility / WAV Certification System COMPLETE (commit 8e20c40)
+
+Feature: regulatory-required accessibility support for riders with disabilities and
+Wheelchair Accessible Vehicle (WAV) certification workflow for drivers. Many
+jurisdictions (ADA, TfL) require rideshare platforms to offer accessible rides.
+
+- New model: `app/models/accessibility.py`
+  - RiderAccessibilityProfile: rider_id (unique), needs_wav, has_mobility_device,
+    visual_impairment, hearing_impairment, other_needs (text); created lazily
+  - DriverWAVCertification: driver_id (unique), status enum (pending/verified/rejected/expired),
+    vehicle_make/model/year, certification_document_url, certification_number, expires_at,
+    verified_by_admin_id, admin_note
+- Migration: `s1t2u3v4w5x6_add_accessibility` — 2 tables, 3 indexes
+- New schema: `app/schemas/accessibility.py`
+  - RiderAccessibilityProfileUpdate/Response, DriverWAVCertificationSubmit/Response,
+    AdminWAVVerifyRequest, WAVPlatformStats (coverage_ratio)
+- New service: `app/services/accessibility.py`
+  - get_or_create_rider_profile: lazy creation with explicit Python-level defaults
+  - update_rider_profile: full upsert
+  - get_driver_wav: returns None if not submitted
+  - submit_driver_wav: creates new or updates; resets rejected/expired → pending;
+    does NOT reset verified (allows doc renewal before expiry)
+  - admin_verify_wav: approve/reject with note + expiry; raises on missing or wrong status
+  - get_wav_platform_stats: counts by status + coverage_ratio (verified/needing_wav, capped 1.0)
+- New router: `app/api/v1/accessibility.py`
+  - GET/PUT /riders/me/accessibility — self-service accessibility profile
+  - GET/PUT /drivers/me/wav — WAV cert submission
+  - GET    /admin/accessibility/stats — platform coverage metrics
+  - POST   /admin/drivers/{driver_id}/wav/verify — admin approve/reject
+  - GET    /admin/drivers/wav — list all certs (filter by status, paginated)
+- 59 unit tests; **Total: 3,808 tests passing** (up from 3,749)
+  - Fix: explicit boolean defaults at Python level in service constructor
+    (SQLAlchemy `mapped_column(default=False)` not applied at Python instantiation)
+
+#### Session end
+- GitHub push still blocked (SSH key issue — pre-existing)
+- PROJECTS.md, CHECKIN.md to be updated
+
 ## Session 130 — 2026-04-15
 
 ### Orient
