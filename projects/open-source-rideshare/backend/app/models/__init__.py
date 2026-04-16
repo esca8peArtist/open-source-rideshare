@@ -65,3 +65,4 @@ from app.models.corporate_member_onboarding import CorporateMemberOnboarding  # 
 from app.models.corporate_billing_currency import CorporateBillingCurrency, CorporateInvoiceFXSnapshot  # noqa: F401
 from app.models.corporate_fleet_vehicle import CorporateFleetVehicle, CorporateFleetAssignment  # noqa: F401
 from app.models.corporate_vehicle_reservation import CorporateVehicleReservation, ReservationStatus  # noqa: F401
+from app.models.corporate_mileage_reimbursement import CorporateMileagePolicy, CorporateMileageClaim, ClaimStatus  # noqa: F401
