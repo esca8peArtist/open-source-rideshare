@@ -4,6 +4,49 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 213 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Booking Eligibility Check
+
+### Task: Corporate Booking Eligibility Check — COMPLETE (commit `5c986d1`)
+
+The capstone orchestration feature that ties together all corporate policy
+infrastructure into a single pre-booking validator. Before booking a ride,
+members and admins call this to get a full eligibility verdict.
+
+Orchestration sequence:
+  1. Effective 3-tier policy check (account → dept → member override)
+  2. Active blackout period check
+  3. Daily / weekly / monthly ride quota checks
+  4. Current-month spend limit check (vs member.monthly_spend_limit)
+  5. Auto-approval rule evaluation (first-match priority scan)
+  6. Approval chain lookup (if not auto-approved)
+
+Eligibility formula:
+  eligible = policy_passed AND not any_quota_exceeded
+             AND not spend_exceeded AND not blackout_hard_block
+
+- BookingRideParams schema (vehicle_category, estimated_cost_usd > 0,
+  trip_purpose_id, trip_purpose_code, cost_center_id, ride_dt)
+- QuotaCheckSummary schema (per-period embedded result)
+- BookingEligibilityResponse schema (full verdict with all 6 check breakdowns,
+  denial_reasons list, auto_approval_rule_id, approval_chain_id)
+- check_booking_eligibility(db, account_id, member_id, params) service
+- _get_current_month_member_spend helper (rides query by rider+account+month)
+- 3 endpoints: member self-check / admin check-for-member / platform admin
+- No migration — read-only orchestration over existing tables
+- 40 tests → Total: 7,233 passing (was 7,193)
+
+#### Session end
+
+---
+
 ## Session 212 — 2026-04-16
 
 ### Orient

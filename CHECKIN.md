@@ -9,30 +9,39 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Session**: 210
+**Sessions**: 211–213
 
-### Accomplished (Session 210)
+### Accomplished (Sessions 211–213)
 
-#### open-source-rideshare — Corporate Travel Itinerary Management (commit `2c7c0ae`)
+#### open-source-rideshare — Corporate Booking Eligibility Check (commit `5c986d1`)
 
-Employees can now create named business trips (e.g., "Q2 Sales Conference NYC") that group multiple rides under a single itinerary for consolidated expense reporting. Each itinerary can carry default cost center and trip purpose that apply to all rides under it. Admins can cancel or complete itineraries; members add and view rides and a summary.
+The capstone feature that makes all 30+ corporate policy features actually useful at booking time. A single endpoint evaluates six policy layers in sequence and returns a structured verdict: eligible or not, why, and what happens next.
 
-- **`CorporateTravelItinerary` model**: `account_id` FK CASCADE; `created_by_id` FK SET NULL; `title` String(200); `description` Text; `start_date` / `end_date` Date; `cost_center_id` FK SET NULL; `trip_purpose_id` FK SET NULL; `status` String(20) default "draft" (draft/active/completed/cancelled); `is_active`; 4 indexes
-- **`CorporateItineraryRide` join model**: `itinerary_id` FK CASCADE; `ride_id` FK SET NULL (persists after ride deletion); `added_by_id` FK SET NULL; `notes`; UniqueConstraint on `(itinerary_id, ride_id)`)
-- **11 service functions**: `create_itinerary` / `get_itinerary` (404 wrong account) / `update_itinerary` (409 if cancelled) / `cancel_itinerary` (409 if already cancelled) / `complete_itinerary` (409 if cancelled) / `list_itineraries` (status+created_by filters) / `add_ride_to_itinerary` (409 if duplicate or cancelled) / `remove_ride_from_itinerary` (404 if not found) / `list_itinerary_rides` / `get_itinerary_summary` (total_rides + ride_ids) / `list_all_itineraries_platform`
-- **12 endpoints**: member create/list/get/update/add-ride/list-rides/summary; admin cancel/complete/remove-ride; 2 platform-admin
-- **Migration `g8h9i0j1k2l3`** (revises `f7g8h9i0j1k2`)
-- **40 tests** → **Total: 7,093 passing** (was 7,053)
+- **Checks performed** (in order): effective 3-tier ride policy (account → dept → member override) · active blackout periods · daily/weekly/monthly ride quotas · current-month member spend limit · auto-approval rule evaluation · approval chain lookup
+- **Eligibility formula**: `eligible = policy_passed AND not any_quota_exceeded AND not spend_exceeded AND not blackout_hard_block`
+- **`BookingRideParams`**: `vehicle_category`, `estimated_cost_usd > 0`, `trip_purpose_id`, `trip_purpose_code`, `cost_center_id`, `ride_dt` (defaults to now)
+- **`BookingEligibilityResponse`**: `eligible` / `requires_approval` / `auto_approved` / `auto_approval_rule_id` / `approval_chain_id`; policy_check_passed + violation_reason; blackout breakdown; quota_checks list (3 periods); spend_limit breakdown; `denial_reasons` list (all human-readable reasons)
+- **3 endpoints**: `POST /corporate/accounts/me/rides/check-eligibility` (self) · `POST /corporate/accounts/me/members/{id}/rides/check-eligibility` (admin) · `POST /platform/corporate/accounts/{id}/members/{id}/rides/check-eligibility` (platform-admin)
+- **No migration** — read-only orchestration over existing tables
+- **40 tests** → **Total: 7,233 passing** (was 7,193)
+
+#### open-source-rideshare — Corporate Department-Level Ride Policies (commit `6847e59`, Session 212)
+
+Middle tier of the 3-tier policy hierarchy: each department can carry its own ride policy constraints between the account-level default and per-member overrides. Multi-department members get most-restrictive-wins merge. 49 tests. Total was 7,193.
+
+#### open-source-rideshare — Corporate Auto-Approval Rules (commit `a3f1089`, Session 211)
+
+Priority-ordered rules that auto-approve corporate rides meeting all specified conditions (max cost, trip purpose, cost center, employee group, day/hour range). 51 tests. Total was 7,144.
 
 ---
 
 ### Needs Your Input
 
-Nothing blocking. All three top priorities (stockbot, mfg-farm, resistance-research) need user action before the orchestrator can advance them:
+Nothing blocking. Top priorities still need user action:
 
-- **stockbot**: Paper trading has been live since April 14. Share cycle logs or a Trading page screenshot and the orchestrator can assess model performance.
-- **mfg-farm**: Business plan is complete. Ready to launch with cable management (month 1). Decision needed: commission initial designs from Fiverr/Upwork, or start Fusion 360 learning path yourself?
-- **resistance-research**: Publication-ready. No further autonomous work identified. Your call on sharing, PDF conversion, or professional layout.
+- **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance.
+- **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
+- **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
 
 ### Suggested priorities for next session
 
