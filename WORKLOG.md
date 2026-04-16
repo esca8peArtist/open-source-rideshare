@@ -4,6 +4,57 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 235 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Shuttle Routes & Seat Booking
+
+### Task: Corporate Shuttle Routes & Seat Booking — COMPLETE (commit `5998d9e`)
+
+Enterprise accounts define fixed shuttle routes (e.g., "Downtown HQ → North Campus"),
+attach recurring schedules (days-of-week, departure time, seat capacity),
+and employees book seats on upcoming runs with conflict detection and lifecycle management.
+
+Models:
+  CorporateShuttleRoute (table: corporate_shuttle_routes;
+    name unique/account UniqueConstraint; origin/destination name+address+lat/lng;
+    route_stops JSONB; default_capacity; is_active; created_by_id SET NULL; 3 indexes)
+
+  CorporateShuttleSchedule (table: corporate_shuttle_schedules;
+    route_id CASCADE; account_id CASCADE; schedule_name; days_of_week JSONB;
+    departure_time String HH:MM; estimated_duration_minutes; seat_capacity;
+    is_active; created_by_id SET NULL; 3 indexes)
+
+  CorporateShuttleBooking (table: corporate_shuttle_bookings;
+    schedule_id CASCADE; account_id CASCADE; member_id SET NULL; booking_date Date;
+    ShuttleBookingStatus enum 5 values: pending/confirmed/cancelled/no_show/completed;
+    cancelled_at+cancelled_by_id+cancellation_reason audit;
+    unique (schedule_id, member_id, booking_date); 4 indexes)
+
+Service (14 functions):
+  create_route (409-dup-name) / get_route / list_routes / update_route (409-collision) /
+  deactivate_route (cascades to active schedules, 409-if-inactive) /
+  add_schedule (404-route+409-inactive-route) / get_schedule / list_schedules / 
+  book_seat (409-inactive+409-duplicate+409-capacity-exceeded) /
+  cancel_booking (409-if-completed-or-no_show) /
+  get_schedule_roster / get_route_summary / list_all_platform
+
+API (14 endpoints):
+  member GET routes + route/{id} + schedule/{id} + POST book + GET my-bookings + POST cancel
+  admin POST create-route + PUT route/{id} + POST deactivate + GET summary +
+        POST add-schedule + GET roster
+  platform-admin GET all
+
+Migration g6h7i8j9k0l1 (3 tables + ShuttleBookingStatus enum + indexes; down_revision f5g6h7i8j9k0)
+79 tests → Total: 8,757 passing (was 8,678)
+
+---
+
 ## Session 234 — 2026-04-16
 
 ### Orient

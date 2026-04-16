@@ -9,29 +9,33 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 218–234
+**Sessions**: 218–235
 
-### Accomplished (Session 234)
+### Accomplished (Session 235)
 
-#### open-source-rideshare — Corporate Parking Management (commit `1ef5017`)
+#### open-source-rideshare — Corporate Shuttle Routes & Seat Booking (commit `5998d9e`)
 
-Enterprise accounts manage physical parking facilities for employees. Admins define named facilities (surface lots, garages, covered structures, underground), add individual spots with type classification (standard, accessible, EV charging, motorcycle, oversized, reserved, visitor), and assign spots to employees with full lifecycle management (start/end dates, permit numbers, audit trail). Employees can view their own active spot assignments.
+Enterprise accounts define fixed shuttle routes with recurring schedules and employees book seats on upcoming runs. Distinct from: individual ride bookings (point-to-point), fleet reservations (self-drive), and carpool groups (informal). Shuttles are company-operated, fixed-route, fixed-schedule, capacity-limited.
 
-- **`CorporateParkingFacility`**: name unique/account; description; full address fields + lat/lng; FacilityType enum (4 values); is_active; created_by_id SET NULL; 3 indexes
-- **`CorporateParkingSpot`**: facility_id CASCADE; spot_identifier unique/facility UniqueConstraint; SpotType enum (7 values); floor_level; **is_assigned auto-managed** — set True on assign, False on end-assignment; is_active; 4 indexes
-- **`CorporateParkingAssignment`**: spot_id CASCADE; member_id/assigned_by_id/ended_by_id SET NULL; permit_number; start_date/end_date Date; is_active; ended_at+ended_by_id audit fields; 4 indexes
-- **13 service functions**: create_facility (409-dup) / list / get / update (409-collision) / deactivate (409-if-inactive) / add_spot (404-facility+409-dup-identifier) / list_spots (facility+type+assigned+active filters) / get_spot / assign_spot_to_member (409-if-assigned) / end_assignment (404-if-no-active) / get_member_parking / get_facility_summary (total+active+assigned+available+by_type) / list_all_platform
-- **14 endpoints**: member GET facilities+my-spots · admin POST create-facility+GET all+GET/PUT {id}+deactivate+summary+POST spots+GET spots+GET spots/{id}+assign+end-assignment · platform-admin GET all
-- **Migration `f5g6h7i8j9k0`** (3 tables + 2 enums + indexes; down_revision e4f5g6h7i8j9)
-- **75 tests** → **Total: 8,678 passing** (was 8,603)
+- **`CorporateShuttleRoute`**: name unique/account; origin+destination name/address/lat/lng; route_stops JSONB; default_capacity; is_active; 3 indexes
+- **`CorporateShuttleSchedule`**: route_id CASCADE; schedule_name; days_of_week JSONB; departure_time HH:MM; estimated_duration_minutes; seat_capacity; is_active; 3 indexes
+- **`CorporateShuttleBooking`**: schedule_id CASCADE; member_id SET NULL; booking_date Date; ShuttleBookingStatus enum (5 values: pending/confirmed/cancelled/no_show/completed); cancelled_at+cancelled_by_id+cancellation_reason audit; unique (schedule+member+date); 4 indexes
+- **14 service functions**: create_route (409-dup) / get / list / update (409-collision) / deactivate-route (cascades to schedules) / add_schedule (404-route+409-inactive-route) / get_schedule / list_schedules / book_seat (409-inactive+409-duplicate+409-capacity-exceeded) / cancel_booking (409-if-completed-or-no_show) / get_schedule_roster / get_route_summary (upcoming 7-day run dates) / list_all_platform
+- **14 endpoints**: member GET routes+route/{id}+schedule/{id}+POST book+my-bookings+cancel · admin POST create-route+PUT+deactivate+GET summary+add-schedule+GET roster · platform-admin GET all
+- **Migration `g6h7i8j9k0l1`** (3 tables + enum + indexes; down_revision f5g6h7i8j9k0)
+- **79 tests** → **Total: 8,757 passing** (was 8,678)
+
+### Accomplished (Session 234) — archived from previous check-in
+
+- **Corporate Parking Management** (commit `1ef5017`): facilities + spots + assignments; 75 tests; total 8,678
 
 ### Accomplished (Session 233) — archived from previous check-in
 
-- **Corporate Driver Performance SLA** (commit `88826f3`): per-driver KPI tracking with on-time/rating/cancellation/acceptance thresholds + evaluation records + flagging; 71 tests; total 8,603
+- **Corporate Driver Performance SLA** (commit `88826f3`): per-driver KPI tracking with on-time/rating/cancellation/acceptance thresholds; 71 tests; total 8,603
 
 ### Accomplished (Session 232) — archived from previous check-in
 
-- **Corporate Vehicle Maintenance Log** (commit `c356e50`): fleet service history with upcoming alerts + maintenance summary; 68 tests; total 8,532
+- **Corporate Vehicle Maintenance Log** (commit `c356e50`): fleet service history with upcoming alerts; 68 tests; total 8,532
 
 ### Accomplished (Sessions 228–231) — archived from previous check-in
 
@@ -44,7 +48,7 @@ Enterprise accounts manage physical parking facilities for employees. Admins def
 
 ### Needs Your Input
 
-- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `1ef5017` — Corporate Parking Management (75 new tests, **8,678 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `5998d9e` — Corporate Shuttle Routes & Seat Booking (79 new tests, **8,757 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
 - **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
@@ -56,8 +60,8 @@ Enterprise accounts manage physical parking facilities for employees. Admins def
 
 **Next rideshare feature candidates**:
 - Corporate driver blacklist (accounts block specific drivers from being dispatched on their rides — complement to preferred driver pool)
-- Corporate parking permit management (extend parking with permit issuance workflow, renewal reminders, waitlist for spots)
-- Corporate reporting push (scheduled delivery of invoice/budget/SLA summary reports to external HRIS/ERP endpoints)
+- Corporate parking permit management (permit issuance workflow, renewal reminders, waitlist for spots)
+- Corporate reporting push (scheduled delivery of reports to external HRIS/ERP endpoints via webhook)
 
 ---
 
