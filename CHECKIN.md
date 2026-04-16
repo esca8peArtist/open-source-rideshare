@@ -9,7 +9,35 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 129–206
+**Sessions**: 129–208
+
+### Accomplished (Session 208)
+
+#### open-source-rideshare — Corporate Member Policy Overrides (commit `cda549d`)
+
+Admins can now grant per-member exceptions to the account-level ride policy. An executive can be allowed premium vehicles when company policy restricts to standard; a contractor can have a tighter per-ride cost cap. The `GET /corporate/accounts/me/effective-policy` endpoint returns the merged effective policy for any employee.
+
+- **`CorporateMemberPolicyOverride` model**: unique on `(account_id, member_id)`; all override fields nullable (null = inherit account policy); `is_active` soft-delete; `valid_from` / `valid_until` window; 4 indexes; CASCADE FKs on account + member; SET NULL on `overridden_by_id`
+- **9 service functions**: `create_member_override` (409 if active override exists; 404 if member not in account); `get_member_override`; `update_member_override` (404 if no row); `deactivate_member_override` (409 if already inactive); `delete_member_override`; `get_effective_policy` (merges account policy + active member override); `list_member_overrides` (is_active filter); `list_all_overrides_platform`; `get_members_with_overrides`
+- **10 endpoints**: admin create/list/get/update/delete/deactivate; member `GET /me/effective-policy`; 2 platform-admin
+- **Migration `e6f7a8b9c0d1`** (revises `d4e5f6a7b8c9`)
+- **45 tests** → **Total: 7,015 passing** (was 6,970)
+
+---
+
+### Accomplished (Session 207)
+
+#### open-source-rideshare — Corporate Manager Hierarchy (commit `9168751`)
+
+Enterprise admins can now define employee→manager reporting relationships within a corporate account. Enables manager-aware approval routing, org chart visibility, and violation notification workflows.
+
+- **`CorporateManagerRelationship` model**: two types — `direct` (at most one active per employee per account; replaced on reassignment) and `dotted_line` (multiple allowed); `check constraint` prevents self-reporting; unique on `(account_id, employee_member_id, manager_member_id)`; soft-delete; 4 indexes
+- **10 service functions**: `create_relationship` (cycle detection by BFS up manager's direct chain; 400 on self-manager; 409 on cycle or duplicate dotted-line; auto-deactivates previous direct manager); `get/update/remove_relationship`; `list_relationships` (type+is_active filters); `get_managers` / `get_direct_reports` / `get_all_reports`; `get_reporting_chain` (BFS upward to root, max_depth=10); `get_org_summary` (counts + top-level manager IDs); `list_all_relationships_platform` (cross-account)
+- **12 endpoints**: admin CRUD + member-managers + member-direct-reports + member-reporting-chain + org-summary; member own-managers + own-reporting-chain + own-direct-reports; platform-admin list-all
+- **Migration `d4e5f6a7b8c9`** (revises `c3d4e5f6a7b8`)
+- **54 tests** → **Total: 6,970 passing** (was 6,916)
+
+---
 
 ### Accomplished (Session 206)
 
@@ -186,8 +214,11 @@ Enterprise accounts can now configure how they are billed. This is the last majo
 #### open-source-rideshare — PR: feature/corporate-business-accounts
 
 Branch now includes (most recent first):
-- Corporate Member Ride Quotas (c08f12d) ← new
+- Corporate Manager Hierarchy (9168751) ← new
+- Corporate Multi-Level Approval Chains (a365044)
+- Corporate Policy Violation Tracking (19f0c47)
 - Corporate Account Tags (8f2a8e9)
+- Corporate Member Ride Quotas (c08f12d)
 - Corporate Account Notes (94fd249)
 - Corporate Account Health Score (c0b4d1d)
 - Corporate Invoice Dispute Resolution (d0f793c)

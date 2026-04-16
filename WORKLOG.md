@@ -8415,3 +8415,121 @@ Platform admins can annotate corporate accounts with CRM-style freeform notes.
 **37 tests** — all passing. **Total: 6,724 passing**.
 
 #### Session end
+
+## Session 207 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — continuing corporate feature track (6,916 tests passing)
+
+### Task selected: Corporate Manager Hierarchy
+Corporate accounts need a way to define employee reporting relationships — who reports
+to whom. This enables manager-aware workflows: expense approval routing, violation
+notifications to managers, org chart visibility. A `CorporateManagerRelationship` model
+maps employee→manager with type (direct/dotted_line); cycle detection prevents invalid
+hierarchies; a reporting-chain walker traces the org up to the root.
+
+
+### Task: Corporate Manager Hierarchy (commit `9168751`)
+
+Corporate accounts can now define employee→manager reporting relationships.
+
+**Model** (`corporate_manager_hierarchy.py`):
+- `CorporateManagerRelationship`: two types (direct / dotted_line); check
+  constraint employee≠manager; unique on (account, employee, manager);
+  soft-delete; 4 indexes; CASCADE FKs on account + both member rows
+
+**Service** (`corporate_manager_hierarchy.py`) — 10 functions:
+- `create_relationship` — cycle detection via BFS up manager's direct chain;
+  self-manager → 400; cycle → 409; duplicate dotted-line → 409; setting
+  a new direct manager auto-deactivates the previous one
+- `get/update/remove_relationship` — standard CRUD scoped to account
+- `list_relationships` — type + is_active filters + pagination
+- `get_managers` — all managers for a given employee (direct first)
+- `get_direct_reports` — employees who report to a manager (direct only by default)
+- `get_all_reports` — direct + dotted-line reports
+- `get_reporting_chain` — BFS upward to org root (max_depth=10 safety valve)
+- `get_org_summary` — total/direct/dotted counts + top-level manager IDs
+- `list_all_relationships_platform` — cross-account platform-admin view
+
+**API** (`corporate_manager_hierarchy.py`) — 12 endpoints:
+  POST   /corporate/accounts/{id}/manager-relationships     (admin create)
+  GET    /corporate/accounts/{id}/manager-relationships     (admin list)
+  GET    /corporate/accounts/{id}/manager-relationships/{id} (admin get)
+  PUT    /corporate/accounts/{id}/manager-relationships/{id} (admin update)
+  DELETE /corporate/accounts/{id}/manager-relationships/{id} (admin delete, 204)
+  GET    /corporate/accounts/{id}/members/{id}/managers     (admin)
+  GET    /corporate/accounts/{id}/members/{id}/direct-reports (admin)
+  GET    /corporate/accounts/{id}/members/{id}/reporting-chain (admin)
+  GET    /corporate/accounts/{id}/org-summary               (admin)
+  GET    /corporate/accounts/me/managers                    (member)
+  GET    /corporate/accounts/me/reporting-chain             (member)
+  GET    /corporate/accounts/me/direct-reports              (member)
+  GET    /admin/corporate/manager-relationships             (platform-admin)
+
+**Migration `d4e5f6a7b8c9`** (revises `c3d4e5f6a7b8`)
+
+**54 tests** — all passing. **Total: 6,970 passing**.
+
+#### Session end
+
+## Session 208 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Member Policy Overrides
+
+### Task: Corporate Member Policy Overrides — COMPLETE (commit `cda549d`)
+
+Per-member exceptions to the account-level ride policy. Admins grant
+overrides for specific employees — e.g. executives allowed premium
+vehicles when policy restricts to standard; contractors with tighter
+per-ride cost caps. The `get_effective_policy` endpoint merges account
+policy + member override, with override fields taking precedence when
+the override is active and the field is non-null.
+
+**Model** (`corporate_member_policy_override.py`):
+- `CorporateMemberPolicyOverride`: unique on (account_id, member_id);
+  override fields all nullable (null = inherit from account policy);
+  is_active soft-delete; valid_from / valid_until window; 4 indexes;
+  CASCADE FKs on account + member; SET NULL on overridden_by_id
+
+**Schemas**: `MemberPolicyOverrideCreate`, `MemberPolicyOverrideUpdate`,
+  `MemberPolicyOverrideResponse`, `MemberPolicyOverrideListResponse`,
+  `EffectivePolicyResponse` (merged account + member view)
+
+**Service** — 9 functions:
+- `create_member_override` — 409 if active override exists; 404 if member not in account
+- `get_member_override` — returns None if not found
+- `update_member_override` — updates non-None fields; 404 if no override row
+- `deactivate_member_override` — soft-delete; 409 if already inactive
+- `delete_member_override` — hard delete; 404 if no override
+- `get_effective_policy` — merges account policy + active member override
+- `list_member_overrides` — account-scoped with is_active filter
+- `list_all_overrides_platform` — cross-account platform-admin
+- `get_members_with_overrides` — list member_ids with active overrides
+
+**API** (`corporate_member_policy_overrides.py`) — 10 endpoints:
+  POST   /corporate/accounts/{id}/member-policy-overrides          (admin create, 201)
+  GET    /corporate/accounts/{id}/member-policy-overrides          (admin list)
+  GET    /corporate/accounts/{id}/member-policy-overrides/{mid}    (admin get)
+  PUT    /corporate/accounts/{id}/member-policy-overrides/{mid}    (admin update)
+  DELETE /corporate/accounts/{id}/member-policy-overrides/{mid}    (admin delete, 204)
+  POST   /corporate/accounts/{id}/member-policy-overrides/{mid}/deactivate (admin)
+  GET    /corporate/accounts/me/effective-policy                   (member)
+  GET    /admin/corporate/member-policy-overrides                  (platform-admin all)
+  GET    /admin/corporate/accounts/{id}/member-policy-overrides    (platform-admin scoped)
+
+**Migration `e6f7a8b9c0d1`** (revises `d4e5f6a7b8c9`)
+
+**45 tests** — all passing. **Total: 7,015 passing**.
+
+#### Session end
