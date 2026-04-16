@@ -4,6 +4,47 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 214 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Event Management
+
+### Task: Corporate Event Management — COMPLETE (commit `7182eb7`)
+
+Enterprise coordinators organize company events (team offsites, conferences,
+client dinners, holiday parties), invite employees, and link rides for
+consolidated billing.
+
+Models:
+  CorporateEvent (account CASCADE; organizer_id; title; event_location_name;
+    address fields; event_datetime; status draft/active/completed/cancelled;
+    budget_usd; max_attendees; auto_approve_rides; notes; is_active; 4 indexes)
+  CorporateEventAttendee (event+member unique; status invited/confirmed/
+    declined/cancelled; ride_id SET NULL; invited_by_id; notes)
+
+Service (11 functions):
+  create / get / list / update (409 if terminal) / activate (409 if not draft) /
+  cancel (409 if completed) / complete (409 if not active) /
+  invite_attendees (bulk, skip existing) / update_attendee_status /
+  get_event_summary / list_all_platform
+
+Endpoints (12):
+  Member: create / list / get / update / summary
+  Admin: activate / cancel / complete / invite / update-attendee-status
+  Platform-admin: list-all / list-for-account
+
+Migration: k3l4m5n6o7p8_corporate_events.py
+  53 tests → Total: 7,286 passing (was 7,233)
+
+#### Session end
+
+---
+
 ## Session 213 — 2026-04-16
 
 ### Orient

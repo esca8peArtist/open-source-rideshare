@@ -9,29 +9,32 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 211–213
+**Sessions**: 211–214
 
-### Accomplished (Sessions 211–213)
+### Accomplished (Sessions 211–214)
 
-#### open-source-rideshare — Corporate Booking Eligibility Check (commit `5c986d1`)
+#### open-source-rideshare — Corporate Event Management (commit `7182eb7`, Session 214)
 
-The capstone feature that makes all 30+ corporate policy features actually useful at booking time. A single endpoint evaluates six policy layers in sequence and returns a structured verdict: eligible or not, why, and what happens next.
+Enterprise coordinators can now create named company events (team offsites, conferences, client dinners, holiday parties), invite employees, track attendance, and link rides to the event for consolidated billing.
 
-- **Checks performed** (in order): effective 3-tier ride policy (account → dept → member override) · active blackout periods · daily/weekly/monthly ride quotas · current-month member spend limit · auto-approval rule evaluation · approval chain lookup
-- **Eligibility formula**: `eligible = policy_passed AND not any_quota_exceeded AND not spend_exceeded AND not blackout_hard_block`
-- **`BookingRideParams`**: `vehicle_category`, `estimated_cost_usd > 0`, `trip_purpose_id`, `trip_purpose_code`, `cost_center_id`, `ride_dt` (defaults to now)
-- **`BookingEligibilityResponse`**: `eligible` / `requires_approval` / `auto_approved` / `auto_approval_rule_id` / `approval_chain_id`; policy_check_passed + violation_reason; blackout breakdown; quota_checks list (3 periods); spend_limit breakdown; `denial_reasons` list (all human-readable reasons)
-- **3 endpoints**: `POST /corporate/accounts/me/rides/check-eligibility` (self) · `POST /corporate/accounts/me/members/{id}/rides/check-eligibility` (admin) · `POST /platform/corporate/accounts/{id}/members/{id}/rides/check-eligibility` (platform-admin)
-- **No migration** — read-only orchestration over existing tables
-- **40 tests** → **Total: 7,233 passing** (was 7,193)
+- **`CorporateEvent`**: title, event_location_name + full address, event_datetime, budget_usd, max_attendees, auto_approve_rides flag; status lifecycle `draft → active → completed` (cancel from any non-completed state)
+- **`CorporateEventAttendee`**: junction table (event+member unique); status `invited/confirmed/declined/cancelled`; ride_id FK links the attendee's actual ride to the event
+- **11 service functions**: create / get / list / update (blocks on terminal status) / activate / cancel / complete / invite_attendees (bulk, skips duplicates silently) / update_attendee_status / get_event_summary / list_all_platform
+- **12 endpoints**: member (create/list/get/update/summary) · admin (activate/cancel/complete/invite/update-attendee-status) · platform-admin (2)
+- **Migration `k3l4m5n6o7p8`**
+- **53 tests** → **Total: 7,286 passing** (was 7,233)
+
+#### open-source-rideshare — Corporate Booking Eligibility Check (commit `5c986d1`, Session 213)
+
+The capstone orchestration feature — a single pre-booking validator checking all 6 corporate policy layers (ride policy, blackout, quotas, spend limit, auto-approval, approval chain). Returns a structured verdict: eligible / requires_approval / auto_approved with `denial_reasons`. 40 tests. Total was 7,233.
 
 #### open-source-rideshare — Corporate Department-Level Ride Policies (commit `6847e59`, Session 212)
 
-Middle tier of the 3-tier policy hierarchy: each department can carry its own ride policy constraints between the account-level default and per-member overrides. Multi-department members get most-restrictive-wins merge. 49 tests. Total was 7,193.
+Middle tier of the 3-tier policy hierarchy. Multi-department members get most-restrictive-wins merge. 49 tests. Total was 7,193.
 
 #### open-source-rideshare — Corporate Auto-Approval Rules (commit `a3f1089`, Session 211)
 
-Priority-ordered rules that auto-approve corporate rides meeting all specified conditions (max cost, trip purpose, cost center, employee group, day/hour range). 51 tests. Total was 7,144.
+Priority-ordered rules that auto-approve corporate rides meeting all specified conditions. 51 tests. Total was 7,144.
 
 ---
 
@@ -51,6 +54,12 @@ Nothing blocking. Top priorities still need user action:
 ---
 
 ## History
+
+### Accomplished (Sessions 211–213) — archived from previous check-in
+
+- **Corporate Booking Eligibility Check** (commit `5c986d1`): capstone orchestration feature, 6-layer policy validator, 40 tests, total 7,233
+- **Corporate Department-Level Ride Policies** (commit `6847e59`): middle tier 3-level policy hierarchy, most-restrictive-wins merge, 49 tests, total 7,193
+- **Corporate Auto-Approval Rules** (commit `a3f1089`): priority-ordered auto-approval, 51 tests, total 7,144
 
 ### Accomplished (Session 209)
 
