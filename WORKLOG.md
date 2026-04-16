@@ -4,6 +4,56 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 233 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Driver Performance SLA
+
+### Task: Corporate Driver Performance SLA — COMPLETE (commit `88826f3`)
+
+Per-driver KPI tracking within corporate accounts. Tracks on-time rate,
+corporate ride rating, cancellation rate, and acceptance rate against
+configurable account-level thresholds. Separate from ride-level SLA policies
+(CorporateSLAPolicy) which measure ride outcomes — this measures driver behavior.
+
+Models:
+  CorporateDriverPerformanceSLA (table: corporate_driver_performance_slas;
+    name unique/account; description; min_on_time_rate_pct/min_avg_rating/
+    max_cancellation_rate_pct/min_acceptance_rate_pct Numeric thresholds;
+    evaluation_window_days default 30; is_active one-per-account;
+    created_by_id SET NULL; 3 indexes: account, is_active, created_at)
+
+  CorporateDriverSLARecord (table: corporate_driver_sla_records;
+    account_id CASCADE; sla_policy_id SET NULL; driver_profile_id SET NULL;
+    evaluated_at DateTime(tz); evaluation_window_days snapshot;
+    total_corporate_rides; on_time_rate_pct/avg_rating/cancellation_rate_pct/
+    acceptance_rate_pct metrics; per-dimension met booleans (null=not configured);
+    overall_sla_met; flagged_for_review + audit fields; 4 indexes)
+
+Service (12 functions):
+  create (deactivates prev active + 409-dup-name) / get / list is_active-filter /
+  update (409-name-collision) / activate (deactivates-prev 409-if-active) /
+  deactivate (409-if-inactive) / delete (409-if-active) /
+  record_driver_evaluation (finds-active-policy evaluates-dims persists-record) /
+  get_driver_sla_summary (last-N-records with pass-rate trend) /
+  flag_driver_for_review (409-if-already-flagged) /
+  list_flagged_drivers / list_all_platform
+
+API (13 endpoints):
+  member GET active-policy
+  admin POST create + GET list + GET {id} + PUT {id} + activate + deactivate +
+         DELETE + POST drivers/{id}/evaluate + GET drivers/{id}/summary +
+         GET flagged + POST records/{id}/flag
+  platform-admin GET all
+
+Migration e4f5g6h7i8j9 (2 tables + indexes; down_revision d3e4f5g6h7i8)
+71 tests → Total: 8,603 passing (was 8,532)
+
 ## Session 232 — 2026-04-16
 
 ### Orient

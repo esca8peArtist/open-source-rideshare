@@ -9,28 +9,28 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 218–232
+**Sessions**: 218–233
 
-### Accomplished (Session 232)
+### Accomplished (Session 233)
 
-#### open-source-rideshare — Corporate Vehicle Maintenance Log (commit `c356e50`)
+#### open-source-rideshare — Corporate Driver Performance SLA (commit `88826f3`)
 
-Fleet managers track service history for company vehicles — oil changes, inspections, tire rotations, brake services, and other maintenance events. Records support both scheduled (future) and completed (historical) entries, with next-due date/odometer alerts for proactive fleet management.
+Enterprise accounts track individual driver performance against KPI thresholds. Admins configure on-time rate, average rating, cancellation rate, and acceptance rate floors/ceilings; the system evaluates drivers against the active policy and records per-dimension pass/fail results with an overall SLA verdict. Admins can flag underperforming drivers for review.
 
-- **`CorporateVehicleMaintenanceLog`**: fleet_vehicle_id CASCADE; `MaintenanceType` enum (9 values: oil_change/tire_rotation/brake_service/inspection/battery/fluid_check/filter_change/wiper_replacement/other); title; description/notes nullable; scheduled_date/completed_at/next_due_date DateTime(tz); odometer_miles/next_due_odometer nullable; cost_usd Numeric(10,2); vendor_name nullable; is_completed Boolean; created_by_id/completed_by_id SET NULL; 4 indexes (account, vehicle, scheduled_date, next_due_date)
-- **10 service functions**: create (404-vehicle / 409-inactive) / get (404) / list (vehicle+type+is_completed+date-range filters) / list_vehicle_maintenance / update / complete (409-if-already-done) / delete (409-if-done) / get_upcoming_maintenance (N-day window, urgency-ordered) / get_maintenance_summary (overdue+due_within_30+total_cost+by_type counts) / list_all_platform
-- **11 endpoints**: member GET vehicle-history+upcoming+summary · admin POST create+GET list+GET {id}+PUT {id}+POST {id}/complete+DELETE {id} · platform-admin GET all+GET {account_id}
-- **Migration `d3e4f5g6h7i8`** (revises `c2d3e4f5g6h7`; maintenancetype enum + table + 4 indexes)
-- **68 tests** → **Total: 8,532 passing** (was 8,464)
+- **`CorporateDriverPerformanceSLA`**: name unique/account; description; min_on_time_rate_pct / min_avg_rating / max_cancellation_rate_pct / min_acceptance_rate_pct Numeric thresholds (all nullable — unset = not measured); evaluation_window_days default 30; is_active one-per-account; created_by_id SET NULL; 3 indexes
+- **`CorporateDriverSLARecord`**: account+policy+driver FKs; evaluated_at; metrics snapshot (on_time_rate_pct / avg_rating / cancellation_rate_pct / acceptance_rate_pct); per-dimension met booleans (null if threshold not configured); overall_sla_met; flagged_for_review + audit fields; 4 indexes
+- **12 service functions**: create (deactivates-prev + 409-dup-name) / get / list / update (409-collision) / activate (deactivates-prev 409-if-active) / deactivate (409-if-inactive) / delete (409-if-active) / record_driver_evaluation (finds-active-policy evaluates-all-dims persists-record) / get_driver_sla_summary (last-N with pass-rate trend) / flag_driver_for_review (409-if-flagged) / list_flagged_drivers / list_all_platform
+- **13 endpoints**: member GET active-policy · admin POST create + GET list + GET/PUT/activate/deactivate/DELETE + POST drivers/{id}/evaluate + GET drivers/{id}/summary + GET flagged + POST records/{id}/flag · platform-admin GET all
+- **Migration `e4f5g6h7i8j9`** (2 tables + indexes; down_revision d3e4f5g6h7i8)
+- **71 tests** → **Total: 8,603 passing** (was 8,532)
 
-**Note**: Files were written in a prior incomplete session; this session fixed a broken auth mock pattern in the API tests (patch vs `app.dependency_overrides`) and committed.
+### Accomplished (Session 232) — archived from previous check-in
 
-### Accomplished (Session 231) — archived from previous check-in
+- **Corporate Vehicle Maintenance Log** (commit `c356e50`): fleet service history with upcoming alerts + maintenance summary; 68 tests; total 8,532
 
-- **Corporate Vehicle Reservation Booking** (commit `f947dd1`): `CorporateVehicleReservation` + conflict detection; 12 service functions; 13 endpoints; migration c2d3e4f5g6h7; 65 tests; total 8,464
+### Accomplished (Sessions 228–231) — archived from previous check-in
 
-### Accomplished (Sessions 228–230) — archived from previous check-in
-
+- **Corporate Vehicle Reservation Booking** (commit `f947dd1`): conflict detection, lifecycle; 65 tests; total 8,464
 - **Corporate Fleet Vehicle Management** (commit `485f578`): 63 tests; total 8,399
 - **Corporate Multi-Currency Billing** (commit `ea522ab`): 59 tests; total 8,336
 - **Corporate Shift Auto-Booking** (commit `fb57c51`): 62 tests; total 8,277
@@ -39,7 +39,7 @@ Fleet managers track service history for company vehicles — oil changes, inspe
 
 ### Needs Your Input
 
-- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `c356e50` — Vehicle Maintenance Log (68 new tests, **8,532 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `88826f3` — Driver Performance SLA (71 new tests, **8,603 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
 - **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
@@ -50,8 +50,8 @@ Fleet managers track service history for company vehicles — oil changes, inspe
 2. If user drops input in INBOX.md → process and act on it
 
 **Next rideshare feature candidates**:
-- Corporate reporting webhooks (push invoice/budget/SLA events to external HRIS/ERP on a schedule — scheduled push separate from event-driven webhooks)
-- Corporate driver performance SLA (track driver KPIs per corporate account — on-time rate, corporate ride rating, cancellation rate vs SLA thresholds)
+- Corporate reporting webhooks (scheduled push of invoice/budget/SLA events to external HRIS/ERP — distinct from event-driven webhooks)
+- Corporate driver blacklist (accounts block specific drivers from being dispatched on their rides — complement to preferred driver pool)
 
 ---
 
