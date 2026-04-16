@@ -4,6 +4,78 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 244 — 2026-04-16
+
+### Task: Corporate Vehicle Incident Reports — COMPLETE
+
+Fleet managers document incidents involving company vehicles (collision, parking_damage,
+vandalism, theft, mechanical_failure, other) and track resolution through a structured
+workflow: draft → reported → under_review → resolved → closed. Optional insurance
+policy linkage for claim number tracking.
+
+IncidentType enum 6 values; IncidentStatus enum 5 values;
+CorporateVehicleIncidentReport (account CASCADE; fleet_vehicle CASCADE;
+incident_type; incident_status default draft; incident_date Date; incident_time Time
+nullable; incident_location String(500); description Text; estimated_damage_usd
+Numeric(10,2); police_report_number String(100); driver_id SET NULL; insurance_policy_id
+SET NULL → corporate_fleet_insurance_policies; insurance_claim_number String(100);
+witness_info Text; reported_by_id SET NULL; reviewed_by_id SET NULL; resolved_at
+DateTime(tz); notes; 5 indexes on account_id/fleet_vehicle_id/incident_status/
+incident_date/insurance_policy_id)
+
+Service (11 fns): create_incident_report 404-vehicle+409-inactive+404-invalid-policy /
+get_incident_report 404 / list_vehicle_incidents type+status+from_date+to_date / 
+list_account_incidents multi-filter / update_incident_report 409-if-closed-or-resolved /
+submit_incident draft→reported 409-not-draft / mark_under_review reported→under_review
+409-not-reported / resolve_incident under_review→resolved+resolved_at 409-not-under_review /
+close_incident resolved→closed 409-not-resolved / get_incident_summary
+total+open_count+by_status+by_type+damage-sums-open-only /
+list_all_platform account+type+status-filters
+
+API (12 endpoints): member vehicle-incidents list+get+create+update+submit;
+admin review+resolve+close+list-account+summary; platform-admin list-all;
+migration p5q6r7s8t9u0
+
+45 tests → Total: 9,247 passing (was 9,157)
+Pre-existing failure: test_corporate_guest_pass::test_validate_token_not_yet_valid (unrelated)
+
+---
+
+## Session 243 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Fleet Insurance Tracking
+
+### Task: Corporate Fleet Insurance Tracking — COMPLETE (commit `94174d3`)
+
+Fleet managers track insurance policies for company vehicles (liability, collision,
+comprehensive, commercial_auto, uninsured_motorist, other) with expiry date alerts
+and per-account summary aggregation.
+
+InsuranceType enum 6 values; CorporateFleetInsurancePolicy (account CASCADE;
+fleet_vehicle CASCADE; policy_number unique/account; insurance_type; provider_name;
+coverage_amount_usd/deductible_usd/premium_annual_usd Numeric nullable; policy_start/end_date
+Date; is_active; notes; created_by_id SET NULL; 3 indexes + UniqueConstraint)
+
+Service (10 fns): add_policy 404-vehicle 409-inactive-vehicle 409-dup-policy-number /
+get_policy 404 / list_vehicle_policies is_active-filter / list_account_policies
+is_active+type-filter / update_policy 409-number-collision / deactivate_policy 409-if-inactive /
+reactivate_policy 409-if-active / get_expiring_policies N-day-window active-only /
+get_insurance_summary active/inactive/expiring/total-premium/by-type / list_all_platform
+
+API (11 endpoints): member vehicle-insurance+expiring+summary+get; admin add+list+update+
+deactivate+reactivate; platform-admin list+list-by-account; migration o4p5q6r7s8t9
+
+39 tests → Total: 9,157 passing (was 9,118)
+Pre-existing failure: test_corporate_guest_pass::test_validate_token_not_yet_valid (unrelated)
+
+---
+
 ## Session 242 — 2026-04-16
 
 ### Orient
