@@ -4,6 +4,604 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 232 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Found: 5 untracked files for corporate_vehicle_maintenance_log from prior incomplete session
+- Selected: open-source-rideshare — complete corporate vehicle maintenance log
+
+### Task: Corporate Vehicle Maintenance Log — COMPLETE (commit `c356e50`)
+
+Fleet managers track service history for company vehicles — oil changes,
+inspections, tire rotations, brake services, and other maintenance events.
+Files were fully drafted in a prior session but never committed. Auth mock
+pattern in tests was broken (patch vs app.dependency_overrides); fixed all
+25 API tests to use the correct FastAPI DI override pattern.
+
+Model:
+  CorporateVehicleMaintenanceLog (table: corporate_vehicle_maintenance_logs;
+    account_id CASCADE; fleet_vehicle_id CASCADE;
+    MaintenanceType enum 9 values;
+    title/description/notes; scheduled_date/completed_at/next_due_date DateTime(tz);
+    odometer_miles/next_due_odometer Integer; cost_usd Numeric(10,2);
+    vendor_name; is_completed Boolean default False;
+    created_by_id/completed_by_id SET NULL; 4 indexes)
+
+Service (10 functions):
+  create (404/409-inactive) / get / list (vehicle+type+is_completed+date filters) /
+  list_vehicle_maintenance / update / complete (409-if-done) / delete (409-if-done) /
+  get_upcoming_maintenance (N-day window, urgency-ordered) /
+  get_maintenance_summary (overdue/due_30/cost/by_type) / list_all_platform
+
+API (11 endpoints):
+  member GET vehicle-history + upcoming alerts + summary
+  admin POST create + GET list + GET/PUT/complete/DELETE {id}
+  platform-admin GET all + GET per-account
+
+Migration d3e4f5g6h7i8 (maintenancetype enum + table + 4 indexes)
+68 tests → Total: 8,532 passing (was 8,464)
+
+## Session 231 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Vehicle Reservation Booking
+
+### Task: Corporate Vehicle Reservation Booking — COMPLETE (commit `f947dd1`)
+
+Employees reserve company fleet vehicles for self-drive use during specified time
+windows (internal Zipcar). Conflict detection prevents overlapping reservations.
+
+Model:
+  CorporateVehicleReservation (table: corporate_vehicle_reservations;
+    account_id CASCADE; fleet_vehicle_id CASCADE;
+    reserved_by_id SET NULL; approved_by_id SET NULL;
+    start_time/end_time DateTime(timezone=True);
+    purpose String(200) nullable; pickup_location/dropoff_location String(300) nullable;
+    notes Text nullable; trip_purpose_id SET NULL; cost_center_id SET NULL;
+    ReservationStatus enum: pending/confirmed/cancelled/completed/no_show;
+    cancelled_at/cancelled_by_id/cancellation_reason;
+    4 indexes: account, vehicle, member, status)
+
+Service (12 functions):
+  create_reservation (404-vehicle-not-in-account / 409-inactive-vehicle /
+    409-overlap-conflict) / get (404) / list (vehicle+member+status+date filters) /
+  list_member_reservations / update (409-if-not-pending; re-checks overlap excl. self) /
+  confirm (409-if-not-pending; sets approved_by_id) / cancel (409-if-completed-or-no-show) /
+  complete (409-if-not-confirmed) / no_show (409-if-not-confirmed) /
+  check_vehicle_availability (returns is_available + conflicts list) /
+  get_reservation_summary (counts by status) / list_all_platform
+
+API (13 endpoints):
+  member: POST create / GET list / GET my / GET summary / GET {id} / POST cancel-own
+  admin: PUT update / POST confirm / POST complete / POST no-show /
+         GET fleet-vehicles/{id}/availability
+  platform-admin: GET all / GET {account_id}
+
+Migration c2d3e4f5g6h7 (revises b1c2d3e4f5g6; reservationstatus enum + table + 4 indexes)
+65 tests → Total: 8,464 passing (was 8,399)
+
+---
+
+## Session 230 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Fleet Vehicle Management
+
+### Task: Corporate Fleet Vehicle Management — COMPLETE (commit `485f578`)
+
+Enterprise accounts define a pool of company-owned/leased vehicles and assign
+drivers to them for dedicated corporate transportation.
+
+Models:
+  CorporateFleetVehicle (table: corporate_fleet_vehicles;
+    account_id CASCADE; name String(100); vehicle_type nullable;
+    make/model_name/year/license_plate/color nullable; capacity default 4;
+    is_wav default False; notes; is_active; created_by_id SET NULL;
+    UniqueConstraint account_id+name; 2 indexes)
+  CorporateFleetAssignment (table: corporate_fleet_assignments;
+    fleet_vehicle_id CASCADE; account_id CASCADE;
+    driver_profile_id SET NULL; assigned_by_id SET NULL;
+    is_active default True; notes; created_at; 3 indexes)
+
+Service (13 functions):
+  create_fleet_vehicle (409 dup name) / get (404) / list (is_active+is_wav filter) /
+  update (409 collision) / deactivate (409-if-inactive) / reactivate (409-if-active) /
+  delete (409-if-active) / assign_driver (deactivates prev, creates new) /
+  end_assignment (404-if-no-active) / get_active_assignment / list_vehicle_assignments /
+  get_fleet_summary / list_all_platform
+
+API (13 endpoints):
+  member: GET list / GET summary / GET {vehicle_id}
+  admin: POST create / PUT update / deactivate / reactivate / DELETE /
+         POST assign-driver / DELETE assignment / GET assignments
+  platform-admin: GET all / GET {account_id}
+
+Migration b1c2d3e4f5g6 (revises a0b1c2d3e4f5; 2 tables + 5 indexes)
+63 tests → Total: 8,399 passing (was 8,336)
+Also added missing CorporateBillingCurrency/CorporateInvoiceFXSnapshot imports to models/__init__.py
+
+---
+
+## Session 229 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Multi-Currency Billing
+
+### Task: Corporate Multi-Currency Billing Support — COMPLETE (commit `ea522ab`)
+
+Enterprise accounts operating internationally can set a preferred billing currency
+(one of 20 ISO 4217 currencies) and record FX rate snapshots at invoice time.
+
+Models:
+  CorporateBillingCurrency (table: corporate_billing_currencies;
+    account_id CASCADE unique; billing_currency String(3) default "USD";
+    auto_convert_invoices bool default True; preferred_fx_provider nullable;
+    is_active; created_at/updated_at; 2 indexes)
+  CorporateInvoiceFXSnapshot (table: corporate_invoice_fx_snapshots;
+    invoice_id FK CASCADE unique; account_id CASCADE; source_currency String(3);
+    target_currency String(3); exchange_rate Numeric(16,8); rate_captured_at;
+    rate_source nullable; original_amount_usd Numeric(10,2);
+    converted_amount Numeric(12,2); created_at; 3 indexes)
+
+Allowed currency set (20 codes): USD EUR GBP CAD AUD JPY CHF SEK NOK DKK
+  NZD SGD HKD MXN BRL ZAR INR KRW CNY AED
+
+Service (9 functions):
+  get_or_create_billing_currency (upsert on read) /
+  update_billing_currency (partial update) /
+  get_billing_currency (404 if absent) /
+  set_billing_currency (validates allowed set; updates or creates) /
+  create_fx_snapshot (returns None for USD accounts; upserts otherwise) /
+  get_fx_snapshot (returns None if none) /
+  list_account_fx_snapshots (newest-first; paginated) /
+  get_currency_summary (config + invoice count + total converted amounts) /
+  list_all_platform (currency filter; paginated)
+
+API (9 endpoints):
+  member: GET / · GET invoices/{id}/fx-snapshot
+  admin: PUT / · POST set-currency · POST invoices/{id}/fx-snapshot ·
+         GET fx-snapshots · GET summary
+  platform-admin: GET all (currency filter) · GET {account_id}
+
+Migration a0b1c2d3e4f5 (revises z9a0b1c2d3e4; 2 tables + 5 indexes)
+59 tests → Total: 8,336 passing (was 8,277)
+Pre-existing failure: test_corporate_guest_pass.py::test_validate_token_not_yet_valid
+
+---
+
+## Session 228 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Shift Auto-Booking
+
+### Task: Corporate Shift Auto-Booking — COMPLETE (commit `fb57c51`)
+
+Closes the loop on the existing `auto_request_rides` preference flag on
+`CorporateShiftAssignment` — which was stored but never acted on since Session 215.
+
+Model:
+  CorporateShiftAutoBooking (table: corporate_shift_auto_bookings;
+    shift_id CASCADE; assignment_id CASCADE; member_id SET NULL; account_id CASCADE;
+    shift_date Date; ride_direction enum to_work/from_work;
+    scheduled_for DateTime; status enum pending/booked/failed/skipped/cancelled;
+    ride_id SET NULL nullable; failure_reason; booked_at; cancelled_at; created_at;
+    unique constraint on assignment_id+shift_date+ride_direction; 6 indexes)
+
+Service (9 functions):
+  generate_shift_auto_bookings (scans active assignments with auto_request_rides=True;
+    computes upcoming shift dates from days_of_week; creates pending records;
+    duplicate runs silently skip via IntegrityError unique guard) /
+  get_shift_auto_booking (404) / list_shift_auto_bookings (4 filters; paginated) /
+  list_member_auto_bookings / cancel_shift_auto_booking (409 if non-pending) /
+  process_shift_auto_booking (resolves member user_id; builds pickup/dropoff
+    from shift+assignment addresses; creates scheduled Ride; marks booked or failed) /
+  get_shift_auto_booking_summary (per-status + per-direction counts) /
+  list_all_platform / _upcoming_dates_for_shift helper
+
+API (10 endpoints):
+  member: GET my / GET {booking_id} / POST {booking_id}/cancel
+  admin: POST generate / GET list / GET shift/{id}/auto-bookings /
+         GET shift/{id}/auto-bookings/summary / POST {booking_id}/process
+  platform-admin: GET all / GET accounts/{id}/auto-bookings
+
+Migration z9a0b1c2d3e4 (revises y8z9a0b1c2d3; 2 enums + 1 table + 6 indexes)
+62 tests → Total: 8,277 passing (was 8,215)
+Pre-existing failure: test_corporate_guest_pass.py::test_validate_token_not_yet_valid (not caused by this session)
+
+---
+
+## Session 226 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Member Offboarding Workflow
+
+### Task: Corporate Member Offboarding Workflow — COMPLETE (commit `55bdef0`)
+
+Structured, trackable offboarding checklist for when employees leave a corporate account.
+Complements the existing onboarding checklist (Session 98).
+
+Model:
+  CorporateMemberOffboarding (table: corporate_member_offboardings;
+    account_id CASCADE; member_id SET NULL (nullable — employee may be deleted);
+    member_email String(255) stored at creation for audit; member_name String(255);
+    initiated_by_id SET NULL; OffboardingStatus enum pending/in_progress/completed/cancelled;
+    reason Text nullable; last_day Date nullable;
+    steps_completed JSONB — dict of 10 step entries each with completed/completed_at/count/notes;
+    completed_at nullable; cancelled_at nullable; cancelled_by_id SET NULL;
+    is_active; 6 indexes)
+
+10 offboarding steps (tracked per JSONB entry with count of affected records):
+  1. deactivate_membership — deactivates BusinessAccountMember
+  2. close_pending_approvals — denies pending CorporateRideApproval records
+  3. cancel_pending_invitations — revokes CorporateEmployeeInvitation by this member
+  4. deactivate_recurring_rides — deactivates CorporateRecurringRide records
+  5. remove_from_carpool_groups — sets CorporateCarpoolMember is_active=False
+  6. remove_from_shifts — sets CorporateShiftAssignment is_active=False
+  7. revoke_delegations — deactivates CorporateDelegate records (principal or delegate)
+  8. remove_expense_reports — withdraws pending CorporateExpenseReport records
+  9. transfer_approval_chain_steps — flags CorporateApprovalChainStep where member is approver
+  10. data_export_generated — manual flag that export was run
+
+Service (10 functions):
+  create (409-dup-active-offboarding; 404-member-not-in-account; init all steps as pending) /
+  get (404) / list (status filter; newest-first) /
+  execute_step (404; 422-invalid-step; 409-already-done; 409-terminal-status; performs cleanup; sets in_progress) /
+  complete (409-if-terminal) / cancel (409-if-terminal) /
+  get_offboarding_summary (step counts + pending list) /
+  list_pending_steps / list_account_offboardings_with_status / list_all_platform
+
+Endpoints (14):
+  Admin: POST create / GET list (status?) / GET {id} / PUT {id} /
+    POST {id}/execute-step / POST {id}/complete / POST {id}/cancel /
+    GET {id}/summary / GET {id}/pending-steps / GET overview /
+    GET members/{member_id}/offboarding
+  Platform-admin: GET all (account_id?) / GET {id} / GET accounts/{id}/offboarding
+
+Migration x7y8z9a0b1c2 (revises w6x7y8z9a0b1). 78 tests. Total: 8,122 passing.
+
+---
+
+## Session 225 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Carpool Groups
+
+### Task: Corporate Carpool Groups — COMPLETE (commit `f9531c8`)
+
+Corporate employees can create named carpool groups for commute sharing.
+Groups define routing preferences (home base, destination, departure time, days of week),
+and employees are added with personal pickup addresses and sequencing order.
+
+Models:
+  CorporateCarpoolGroup (table: corporate_carpool_groups;
+    account_id CASCADE; name String(120) unique/account enforced at service layer;
+    description; max_members nullable; home_base_address+lat/lng; destination_address+lat/lng;
+    departure_time HH:MM; days_of_week JSONB; vehicle_type; cost_center+trip_purpose FKs SET NULL;
+    is_active; created_by_id SET NULL; 4 indexes)
+
+  CorporateCarpoolMember (table: corporate_carpool_members;
+    carpool_group_id CASCADE UUID; account_id CASCADE; member_id CASCADE;
+    pickup_address+lat/lng; pickup_sequence nullable; is_active; added_by_id SET NULL;
+    notes; joined_at; UniqueConstraint group+member; 3 indexes)
+
+Service (13 functions):
+  create (409-dup-name) / get (404) / list (is_active filter; name-ordered) /
+  update (404; 409-name-collision; partial) / deactivate (404; 409-already-inactive) /
+  reactivate (404; 409-already-active) / delete (404; 409-if-active) /
+  add_member (404-group; 409-already-member) / remove_member (404) /
+  list_members (404-group; is_active filter; pickup_sequence NULLS LAST then joined_at) /
+  get_member_carpools (active groups for member; name-ordered) /
+  get_group_summary (total+active member counts; 404) /
+  list_all_platform (account_id filter)
+
+Endpoints (16):
+  Member: GET list / GET my-groups / GET {group_id}
+  Admin: POST create / GET list (is_active?) / GET {id} / PUT {id} /
+    POST {id}/deactivate / POST {id}/reactivate / DELETE {id} /
+    POST {id}/members / DELETE {id}/members/{member_id} /
+    GET {id}/members / GET {id}/summary
+  Platform-admin: GET all (account_id?) / GET account/{id}
+
+Migration w6x7y8z9a0b1 (revises v5w6x7y8z9a0). 72 tests. Total: 8,044 passing.
+
+---
+
+## Session 224 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Account Hierarchy
+
+### Task: Corporate Account Hierarchy — COMPLETE (commit `6544353`)
+
+Enterprise accounts define parent/child relationships (subsidiary/division/franchise/partner)
+enabling consolidated reporting across account groups.
+
+Model:
+  CorporateAccountHierarchy (table: corporate_account_hierarchies;
+    parent_account_id + child_account_id CASCADE; unique constraint uq_corp_hierarchy_parent_child;
+    HierarchyRelationshipType enum 4 values; notes; created_by_id SET NULL;
+    is_active; 4 indexes)
+
+Service (9 functions):
+  create (422-self-link / 409-duplicate / 422-cycle-detected BFS depth-10) /
+  get (404) / list_children (is_active filter; child_account_id order) /
+  list_parents (is_active filter; parent_account_id order) /
+  remove (404; hard-delete) / update (404; partial) /
+  get_account_hierarchy_tree (BFS downward; depth-10 cap; nested HierarchyTreeNode) /
+  get_consolidated_summary (BFS; total_accounts + direct_children + all_descendants + account_ids) /
+  list_all_platform (account_id filter)
+
+Endpoints (11):
+  Platform-admin: POST create / GET all / GET {link_id} / PUT {link_id} /
+    DELETE {link_id} / GET account/{id}/tree / GET account/{id}/children /
+    GET account/{id}/parents / GET account/{id}/consolidated
+  Admin: GET hierarchy/children / GET hierarchy/parents
+
+Migration v5w6x7y8z9a0. 70 tests. Total: 7,972 passing.
+
+---
+
+## Session 223 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Recurring Ride Schedules
+
+### Task: Corporate Recurring Ride Schedules — COMPLETE (commit `68bb13a`)
+
+Employees configure personal recurring ride schedules with booking history tracking.
+
+Models:
+  CorporateRecurringRide (account+member CASCADE; name unique/member+account;
+    pickup/dropoff address+lat/lng; vehicle_type nullable; RecurrenceType enum
+    daily/weekly/monthly; days_of_week JSONB; day_of_month nullable;
+    scheduled_time HH:MM; advance_booking_minutes; cost_center/trip_purpose FKs;
+    is_active; 4 indexes)
+  CorporateRecurringRideBooking (recurring_ride_id CASCADE; account_id CASCADE;
+    member_id CASCADE; ride_id SET NULL; scheduled_for; status enum
+    pending/booked/failed/skipped; failure_reason nullable; 3 indexes)
+
+Service (10 functions):
+  create (409-dup-name-per-member+account) / get (404) / list (is_active-filter) /
+  update (409-collision) / activate (409-if-active) / deactivate (409-if-inactive) /
+  delete (409-if-active) / record_booking_attempt (links ride_id+failure_reason) /
+  list_booking_history (newest-first; limit+offset) / list_account_recurring_rides (admin) /
+  list_all_platform
+
+Endpoints (12):
+  Member: POST create / GET list / GET {id} / PUT {id} / activate / deactivate /
+          DELETE / GET {id}/bookings
+  Admin: GET all / GET active
+  Platform-admin: GET all / GET account/{id}
+
+Migration u4v5w6x7y8z9. 75 tests. Total: 7,902 passing.
+
+---
+
+## Session 222 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate SLA Policies & Compliance Reporting
+
+### Task: Corporate SLA Policies & Compliance Reporting — COMPLETE (commit `c2c792f`)
+
+Enterprise corporate accounts define SLA policies (max wait time, min driver rating,
+on-time arrival window, target completion rate); rides are individually evaluated against
+the active policy; admins view compliance summaries, monthly trends, and breach lists.
+
+Models:
+  CorporateSLAPolicy (account CASCADE; name; max_wait_time_minutes nullable;
+    min_driver_rating Numeric(3,2) nullable; on_time_window_minutes nullable;
+    target_completion_rate_pct Numeric(5,2) nullable; is_active; effective_from/until;
+    created_by_id SET NULL; 3 indexes)
+  CorporateSLARideRecord (account CASCADE; policy SET NULL; ride SET NULL; member SET NULL;
+    wait_time_minutes; driver_rating_at_time; was_scheduled_ride; scheduled_pickup_at;
+    actual_pickup_at; arrival_delta_minutes; wait_time_met/driver_rating_met/on_time_met
+    nullable booleans; overall_sla_met; evaluated_at; 4 indexes)
+
+Service (12 functions):
+  create (409-dup-name-in-active) / get (404) / list (is_active filter) /
+  update (409-name-collision) / activate (deactivates-prev; 409-if-active) /
+  deactivate (409-if-inactive) / delete (409-if-active) /
+  record_sla_evaluation (finds active policy; evaluates all configured dimensions;
+    overall_sla_met = all configured dims met; stores record) /
+  get_sla_compliance_summary (total/met/breach counts + compliance_pct + by_dimension breakdown;
+    optional year/month filter) /
+  get_sla_compliance_trend (month-over-month compliance %; configurable months) /
+  list_sla_breaches (overall_sla_met=False; year/month/limit/offset filters) /
+  list_all_platform
+
+Endpoints (14):
+  Member: GET active-policy / GET summary / GET trend
+  Admin: POST create / GET list / GET {id} / PUT {id} / POST {id}/activate /
+         POST {id}/deactivate / DELETE {id} / POST rides/{ride_id}/evaluate /
+         GET breaches
+  Platform-admin: GET platform/all / GET platform/account/{id}/summary
+
+Migration: s1t2u3v4w5x6_corporate_sla_policies.py (2 tables + indexes)
+  76 tests → Total: 7,827 passing (was 7,751)
+
+## Session 221 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Ride Satisfaction Surveys
+
+### Task: Corporate Ride Satisfaction Surveys — COMPLETE (commit `0927479`)
+
+Enterprise admins create named post-ride surveys with configurable questions
+(rating/text/boolean/multiple_choice); employees submit responses; admins view
+per-question analytics (avg rating, text responses list, boolean counts,
+choice frequency dict).
+
+Models:
+  CorporateRideSurvey (account CASCADE; title unique/account; description;
+    questions JSON list [{question_id, text, type, options}]; is_active;
+    valid_from/valid_until nullable; created_by_id SET NULL; 3 indexes)
+  CorporateRideSurveyResponse (survey CASCADE; member SET NULL; account CASCADE;
+    ride_id SET NULL nullable; responses JSON list [{question_id, answer}];
+    submitted_at; unique (survey_id, member_id); 3 indexes)
+
+Service (11 functions):
+  create (409-duplicate-title) / get (404) / list (is_active filter) /
+  update (409-title-collision) / deactivate (409-if-inactive) /
+  reactivate (409-if-active) / delete (409-if-active) /
+  submit_response (404-survey-not-found/inactive; 409-duplicate) /
+  list_responses (404-survey-not-found) /
+  get_survey_analytics (per-question metrics across all responses) /
+  list_all_platform
+
+Endpoints (13):
+  Member: GET list / GET {id} / POST respond / GET my-responses
+  Admin: POST create / PUT {id} / deactivate / reactivate / DELETE /
+         GET {id}/responses / GET {id}/analytics
+  Platform-admin: GET all / GET for-account/{id}
+
+Migration: r0s1t2u3v4w5_corporate_ride_surveys.py (2 tables + indexes)
+  66 tests → Total: 7,751 passing (was 7,685)
+
+## Session 220 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Office Locations
+
+### Task: Corporate Office Locations — COMPLETE (commit `9b98d1d`)
+
+Enterprise accounts with multiple offices define named office locations,
+assign employees to specific offices, and track which is their primary site.
+Headquarters flag is account-wide (only one allowed; setting new HQ clears old).
+Primary-office flag is per-member (clearing old primary on new assignment).
+
+Models:
+  CorporateOfficeLocation (account CASCADE; name unique/account; description;
+    address fields; lat/lng; default_cost_center_id SET NULL; is_headquarters;
+    is_active; created_by_id SET NULL; 4 indexes)
+  CorporateOfficeMembership (office CASCADE; member CASCADE; account CASCADE;
+    is_primary; assigned_by_id SET NULL; notes; is_active;
+    unique (office_id, member_id); 4 indexes)
+
+Service (13 functions):
+  create (409-duplicate-name) / get (404 if missing) / list (is_active+is_hq
+  filters, name-sorted) / update (409-name-collision; clears prev HQ if
+  is_headquarters=True) / deactivate (409-if-inactive) / reactivate
+  (409-if-active) / delete (409-if-active) / assign_member (409-if-duplicate;
+  clears existing primary if is_primary=True) / remove_member (404-if-missing)
+  / list_office_members (is_active filter) / get_member_offices (is_primary
+  filter) / get_office_summary (total+active member counts) / list_all_platform
+
+Endpoints (13):
+  Member: GET offices / GET offices/{id} / GET offices/my-office
+  Admin: POST create / PUT {id} / POST deactivate / POST reactivate /
+         DELETE {id} / POST {id}/members / DELETE {id}/members/{member_id} /
+         GET {id}/members / GET {id}/summary
+  Platform-admin: GET all (account_id filter) / GET for-account/{account_id}
+
+Migration: q9r0s1t2u3v4_corporate_office_locations.py
+  74 tests → Total: 7,685 passing (was 7,611)
+
+## Session 219 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Travel Policy & Acknowledgement
+
+### Task: Corporate Travel Policy & Acknowledgement — COMPLETE (commit `019b3dc`)
+
+Admins publish versioned travel policy documents for their corporate account.
+One policy may be active per account at a time.  Activating a new policy
+automatically deactivates the previously active one.  Employees acknowledge
+the active policy — acknowledgements are append-only compliance records.
+The `requires_acknowledgement` flag on the policy signals whether employees
+must ack before booking corporate rides.
+
+Models:
+  CorporateTravelPolicy (account CASCADE; title; content Text;
+    version_number; is_active; requires_acknowledgement; effective_date
+    nullable; created_by_id FK SET NULL; 3 indexes)
+  CorporatePolicyAcknowledgement (policy CASCADE; member SET NULL;
+    account CASCADE; acknowledged_at server_default=now();
+    unique (policy,member); 3 indexes)
+
+Service (12 functions):
+  create (draft; is_active=False) / get (404 if missing) / get_active (None
+  if none) / list (is_active filter; newest-first) / update (draft-only;
+  409 if active) / activate (deactivates prev active; 409 if already active) /
+  deactivate (409 if inactive) / delete (409 if active) /
+  acknowledge (404 if inactive; 409 if duplicate) /
+  get_member_acknowledgement_status (active-policy + ack lookup) /
+  get_acknowledgement_summary (all acks + count) / list_all_platform
+
+Endpoints (13):
+  Member: GET active-policy / GET my-status / POST acknowledge
+  Admin: POST create / GET list / GET {id} / PUT {id} / POST activate /
+         POST deactivate / DELETE {id} / GET {id}/acknowledgements
+  Platform-admin: GET all (account_id filter) / GET for-account
+
+Migration: p8q9r0s1t2u3_corporate_travel_policy.py
+  74 tests → Total: 7,611 passing (was 7,537)
+
+#### Session end
+
+---
+
 ## Session 217 — 2026-04-16
 
 ### Orient
@@ -8891,3 +9489,121 @@ the override is active and the field is non-null.
 **45 tests** — all passing. **Total: 7,015 passing**.
 
 #### Session end
+
+## Session 218 — 2026-04-16
+
+### Orient
+- INBOX: empty
+- stockbot: blocked (no STOCKBOT_API_KEY in env)
+- mfg-farm: awaiting user decision
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Employee Transport Preferences
+
+### Task: Corporate Employee Transport Preferences — IN PROGRESS
+
+One-per-member preference profile per corporate account.  Stores preferred
+vehicle type, accessibility needs (JSONB list), home address + lat/lng,
+default cost center + trip purpose FKs, pickup note for driver, SMS notify
+number.  Auto-populates booking defaults for corporate rides.  Admin can
+view all members' preferences and filter by accessibility needs / WAV.
+
+
+### Task: Corporate Employee Transport Preferences — COMPLETE (commit `76d42d2`)
+
+One-per-member preference profile per corporate account.  Stores preferred
+vehicle type (sedan/suv/luxury/wav), accessibility needs (JSONB: 5 known tags),
+home address + lat/lng (for shift/commuter rides), default cost centre + trip
+purpose FKs, pickup note for driver, SMS notify number.  Admin can view all
+members' preferences and filter by accessibility needs / WAV requirement.
+Includes booking-defaults endpoint that pre-populates booking forms with
+member preferences; returns safe all-None defaults if no row exists.
+
+Model:
+  CorporateEmployeeTransportPreference (account+member CASCADE unique;
+  preferred_vehicle_type; accessibility_needs JSONB; home_address/lat/lng;
+  default_cost_center_id FK SET NULL; default_trip_purpose_id FK SET NULL;
+  preferred_pickup_note; notify_sms_number; is_active; 3 indexes)
+
+Service (9 functions):
+  get_or_create (upsert-on-read) / update (partial, creates-if-missing) /
+  get (404-if-absent) / list (has_accessibility_needs+is_active filters) /
+  delete / get_members_with_accessibility_needs / get_members_needing_wav /
+  get_booking_defaults (safe defaults when inactive/missing) / list_all_platform
+
+Endpoints (11):
+  Member: GET/PUT/DELETE me; GET me/booking-defaults
+  Admin: list+accessibility+wav-required+GET+PUT for member_id
+  Platform-admin: list-all + list-for-account
+
+Migration: o7p8q9r0s1t2_corporate_transport_preferences.py
+62 tests → Total: 7,537 passing (was 7,475)
+
+#### Session end — 2026-04-16
+
+---
+
+## Session 227 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path  
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Member Onboarding Tracker
+  (natural companion to Session 226 offboarding workflow)
+
+### Task: Corporate Member Onboarding Tracker — IN PROGRESS
+
+Per-member onboarding checklist that tracks 10 setup steps with auto-detection
+from existing data. Mirrors the offboarding tracker architecture.
+
+10 steps:
+  1. membership_activated — BAM.is_active for (account_id, user_id)
+  2. transport_preferences_set — CorporateEmployeeTransportPreference exists + active
+  3. department_assigned — CorporateDepartmentMember via dept.account_id + user_id
+  4. office_assigned — CorporateOfficeMembership via BAM id + is_active
+  5. group_assigned — CorporateGroupMembership via BAM id
+  6. policy_acknowledged — CorporatePolicyAcknowledgement for account + user
+  7. manager_assigned — CorporateManagerRelationship via BAM id + is_active
+  8. cost_center_configured — transport pref has default_cost_center_id set
+  9. first_corporate_ride — Ride with corporate_account_id + rider_id
+  10. onboarding_complete_confirmed — manual admin step
+
+Migration: y8z9a0b1c2d3
+
+### Task: Corporate Member Onboarding Tracker — COMPLETE (commit `80defca`)
+
+Per-member checklist that tracks 10 setup steps with auto-detection from
+existing data. Natural companion to the offboarding workflow (Session 226).
+
+Model:
+  CorporateMemberOnboarding (table: corporate_member_onboardings;
+    account_id CASCADE; member_id SET NULL (nullable — may be deleted later);
+    member_email + member_name stored at creation for audit;
+    invitation_id UUID FK SET NULL optional link to invitation;
+    created_by_id SET NULL; OnboardingStatus enum pending/in_progress/completed;
+    steps_completed JSONB (10 steps: completed/completed_at/completed_by_id/notes/auto_detected);
+    completed_at; is_active; 6 indexes)
+
+10 onboarding steps (9 auto-detectable, 1 manual):
+  1. membership_activated — BAM.is_active
+  2. transport_preferences_set — CorporateEmployeeTransportPreference active
+  3. department_assigned — CorporateDepartmentMember via dept.account_id + user_id
+  4. office_assigned — CorporateOfficeMembership via BAM id + is_active
+  5. group_assigned — CorporateGroupMembership via BAM id
+  6. policy_acknowledged — CorporatePolicyAcknowledgement
+  7. manager_assigned — CorporateManagerRelationship via BAM id + is_active
+  8. cost_center_configured — transport pref has default_cost_center_id
+  9. first_corporate_ride — Ride with corporate_account_id + rider_id completed
+  10. onboarding_complete_confirmed — manual admin confirmation
+
+Service (12 functions):
+  create / get / get_for_member / list / mark_step_complete /
+  auto_detect_progress / complete / update / get_onboarding_summary /
+  list_pending_steps / list_account_onboardings_with_status / list_all_platform
+
+15 endpoints: member me/onboarding | admin create/list/overview/detail/update/
+  detect/steps/complete/summary/pending-steps/member-onboarding | platform-admin 3
+
+Migration: y8z9a0b1c2d3 | 93 tests | Total: 8,215 passing

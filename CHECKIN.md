@@ -9,35 +9,38 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 216–217
+**Sessions**: 218–232
 
-### Accomplished (Session 217)
+### Accomplished (Session 232)
 
-#### open-source-rideshare — Corporate Service Zone Restrictions (commit `1936c46`)
+#### open-source-rideshare — Corporate Vehicle Maintenance Log (commit `c356e50`)
 
-Enterprise accounts can now define named circular geographic zones that gate or restrict employee ride bookings. Three zone types: **allowed** (explicit permit), **restricted** (booking blocked outright), **approval_required** (admin approval needed). Zones are circles defined by centre lat/lng + radius_km. `applies_to` controls whether the zone evaluates pickup, dropoff, or both endpoints. Optional `group_ids` scopes a zone to specific employee groups.
+Fleet managers track service history for company vehicles — oil changes, inspections, tire rotations, brake services, and other maintenance events. Records support both scheduled (future) and completed (historical) entries, with next-due date/odometer alerts for proactive fleet management.
 
-- **`CorporateServiceZone`**: name (unique per account), description, ZoneType enum (3 values), center_latitude/longitude Numeric(9,6), radius_km Numeric(8,3), ZoneAppliesTo enum (pickup/dropoff/both), group_ids JSONB nullable, is_active soft-disable, created_by_id FK SET NULL; 4 indexes
-- **10 service functions**: create (409 duplicate name) / get / list (is_active + zone_type filters) / update (409 name collision, partial PATCH) / deactivate (409 if already inactive) / reactivate (409 if already active) / delete / `check_ride_zones` (Haversine distance check; returns pickup_matches, dropoff_matches, is_restricted, requires_approval, denial_reasons) / `get_zone_coverage_summary` (count breakdown by type + applies_to) / list_all_platform
-- **11 endpoints**: member (list / summary / get / check-coords POST) · admin (create / update / deactivate / reactivate / delete) · platform-admin (list-all / list-for-account)
-- **Migration `n6o7p8q9r0s1`** (zonetype + zoneappliesto enums; 4 indexes)
-- **64 tests** → **Total: 7,475 passing** (was 7,411)
+- **`CorporateVehicleMaintenanceLog`**: fleet_vehicle_id CASCADE; `MaintenanceType` enum (9 values: oil_change/tire_rotation/brake_service/inspection/battery/fluid_check/filter_change/wiper_replacement/other); title; description/notes nullable; scheduled_date/completed_at/next_due_date DateTime(tz); odometer_miles/next_due_odometer nullable; cost_usd Numeric(10,2); vendor_name nullable; is_completed Boolean; created_by_id/completed_by_id SET NULL; 4 indexes (account, vehicle, scheduled_date, next_due_date)
+- **10 service functions**: create (404-vehicle / 409-inactive) / get (404) / list (vehicle+type+is_completed+date-range filters) / list_vehicle_maintenance / update / complete (409-if-already-done) / delete (409-if-done) / get_upcoming_maintenance (N-day window, urgency-ordered) / get_maintenance_summary (overdue+due_within_30+total_cost+by_type counts) / list_all_platform
+- **11 endpoints**: member GET vehicle-history+upcoming+summary · admin POST create+GET list+GET {id}+PUT {id}+POST {id}/complete+DELETE {id} · platform-admin GET all+GET {account_id}
+- **Migration `d3e4f5g6h7i8`** (revises `c2d3e4f5g6h7`; maintenancetype enum + table + 4 indexes)
+- **68 tests** → **Total: 8,532 passing** (was 8,464)
 
-### Accomplished (Session 216)
+**Note**: Files were written in a prior incomplete session; this session fixed a broken auth mock pattern in the API tests (patch vs `app.dependency_overrides`) and committed.
 
-#### open-source-rideshare — Corporate Ride Templates (commit `c66075a`)
+### Accomplished (Session 231) — archived from previous check-in
 
-- **`CorporateRideTemplate`**: name (unique per account), description, pickup + dropoff location name + full address + lat/lng, vehicle_type, default_cost_center_id/default_trip_purpose_id FKs, notes, use_count, is_active
-- **10 service functions** · **11 endpoints** · **Migration `m5n6o7p8q9r0`**
-- **56 tests** → **7,411 passing** (was 7,355)
+- **Corporate Vehicle Reservation Booking** (commit `f947dd1`): `CorporateVehicleReservation` + conflict detection; 12 service functions; 13 endpoints; migration c2d3e4f5g6h7; 65 tests; total 8,464
+
+### Accomplished (Sessions 228–230) — archived from previous check-in
+
+- **Corporate Fleet Vehicle Management** (commit `485f578`): 63 tests; total 8,399
+- **Corporate Multi-Currency Billing** (commit `ea522ab`): 59 tests; total 8,336
+- **Corporate Shift Auto-Booking** (commit `fb57c51`): 62 tests; total 8,277
 
 ---
 
 ### Needs Your Input
 
-Nothing blocking. Top priorities still need user action:
-
-- **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `c356e50` — Vehicle Maintenance Log (68 new tests, **8,532 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
 
@@ -46,13 +49,36 @@ Nothing blocking. Top priorities still need user action:
 1. If stockbot/mfg-farm stay blocked → another corporate rideshare feature
 2. If user drops input in INBOX.md → process and act on it
 
+**Next rideshare feature candidates**:
+- Corporate reporting webhooks (push invoice/budget/SLA events to external HRIS/ERP on a schedule — scheduled push separate from event-driven webhooks)
+- Corporate driver performance SLA (track driver KPIs per corporate account — on-time rate, corporate ride rating, cancellation rate vs SLA thresholds)
+
 ---
 
 ## History
 
-### Accomplished (Session 215) — archived from previous check-in
+### Accomplished (Sessions 220–223) — archived from previous check-in
+
+- **Corporate Recurring Ride Schedules** (commit `68bb13a`): personal recurring commute/airport/offsite schedules + booking history, 75 tests, total 7,902
+- **Corporate SLA Policies** (commit `c2c792f`): named SLA policies + per-ride evaluation + compliance reporting, 76 tests, total 7,827
+- **Corporate Ride Satisfaction Surveys** (commit `0927479`): configurable question types + per-question analytics, 66 tests, total 7,751
+- **Corporate Office Locations** (commit `9b98d1d`): named offices with HQ flag + employee-to-office assignments, 74 tests, total 7,685
+
+### Accomplished (Sessions 219–221) — archived from previous check-in
+
+- **Corporate Travel Policy & Acknowledgement** (commit `019b3dc`): versioned policies + append-only acknowledgements, 12 service functions, 13 endpoints, 74 tests, total 7,611
+- **Corporate Ride Satisfaction Surveys** (commit `0927479`): configurable question types + per-question analytics, 11 service functions, 13 endpoints, 66 tests, total 7,751
+
+### Accomplished (Sessions 217–219) — archived from previous check-in
+
+- **Corporate Service Zone Restrictions** (commit `1936c46`): CorporateServiceZone with ZoneType enum, Haversine distance check, 10 service functions, 11 endpoints, 64 tests, total 7,475
+- **Corporate Employee Transport Preferences** (commit `76d42d2`): CorporateEmployeeTransportPreference upsert-on-read, accessibility needs JSONB, 9 service functions, 11 endpoints, 62 tests, total 7,537
+- **Corporate Travel Policy & Acknowledgement** (commit `019b3dc`): versioned policies + append-only acknowledgements, 12 service functions, 13 endpoints, 74 tests, total 7,611
+
+### Accomplished (Sessions 215–216) — archived from previous check-in
 
 - **Corporate Shift-Based Ride Scheduling** (commit `ee2c734`): CorporateShift + CorporateShiftAssignment, 14 service functions, 14 endpoints, 69 tests, total 7,355
+- **Corporate Ride Templates** (commit `c66075a`): CorporateRideTemplate, 10 service functions, 11 endpoints, 56 tests, total 7,411
 
 ### Accomplished (Sessions 211–214) — archived from previous check-in
 
