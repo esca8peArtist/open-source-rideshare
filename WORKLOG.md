@@ -10175,3 +10175,37 @@ Migration m2n3o4p5q6r7 (cardnetwork + fueltype enums + 2 tables + 8 indexes)
 50 tests → Total: 9,070 passing (was 9,020)
 
 Session 241 complete.
+
+## Session 247 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- Selected: open-source-rideshare — Corporate Fleet Vehicle Registration Tracking
+
+### Task: Corporate Fleet Vehicle Registration Tracking — COMPLETE (commit `334c869`)
+
+Fleet managers register vehicle registration records per state/jurisdiction
+with expiration date alerts and account summary.
+
+CorporateFleetVehicleRegistration (fleet_vehicle CASCADE; account CASCADE;
+  registration_number String(100) unique per account; registration_state String(100);
+  registration_date Date; expiration_date Date; annual_fee_usd Numeric(10,2)
+  nullable; registered_owner_name String(200) nullable; is_active; notes; 3 indexes)
+10 service functions: register_vehicle 404-missing-vehicle 409-dup-number /
+  get_registration 404 / list_vehicle_registrations is_active-filter /
+  list_account_registrations is_active+state-filters / update_registration
+  409-dup-number / deactivate_registration 409-if-inactive /
+  reactivate_registration 409-if-active / get_expiring_registrations
+  days_until_expiry-in-Python active-only vehicle-filter /
+  get_account_registration_summary counts+total-fee+per_state_breakdown /
+  list_all_platform
+11 endpoints: member vehicle-list+expiring+summary+get-one; admin create+list+update+
+  deactivate+reactivate; platform-admin list+by-account
+Migration s8t9u0v1w2x3 (no enum; 1 table + 3 indexes + unique constraint)
+43 tests → Total: 9,337 passing (was 9,294)
+Pushed to: rideshare/feature/corporate-business-accounts
+
+Session 247 complete.
