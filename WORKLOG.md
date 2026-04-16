@@ -9919,3 +9919,48 @@ Service (12 functions):
   detect/steps/complete/summary/pending-steps/member-onboarding | platform-admin 3
 
 Migration: y8z9a0b1c2d3 | 93 tests | Total: 8,215 passing
+
+## Session 240 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Mileage Reimbursement
+
+### Task: Corporate Mileage Reimbursement — IN PROGRESS
+Employees who use personal vehicles for corporate trips submit mileage reimbursement
+claims. Admins configure per-mile rates (IRS standard or custom) and approval thresholds.
+
+### Task: Corporate Mileage Reimbursement — COMPLETE (commit `2125269`)
+
+Employees who use personal vehicles for corporate trips submit mileage
+reimbursement claims. Admins configure per-mile rates (IRS standard or
+custom) and approval thresholds; full claim lifecycle.
+
+CorporateMileagePolicy (one per account; rate_per_mile Numeric(6,4) default
+  0.6700; max_miles_per_claim int nullable; requires_approval_above_usd
+  Numeric(8,2) nullable; requires_approval_above_miles int nullable;
+  require_trip_purpose bool; is_active; created_by_id SET NULL; unique
+  account_id; 1 index)
+CorporateMileageClaim (account CASCADE; member SET NULL; trip_date Date;
+  miles Numeric(8,2); rate_used_usd Numeric(6,4) snapshot; amount_usd
+  Numeric(10,2) computed; description String(500); trip_purpose_id SET NULL;
+  cost_center_id SET NULL; ClaimStatus enum 5 values draft/submitted/
+  approved/rejected/paid; submitted_at; reviewed_by_id SET NULL; reviewed_at;
+  review_note String(500); paid_at; 4 indexes)
+12 service functions: get_or_create_policy upsert-on-read / update_policy /
+  get_policy 404 / create_claim 422-max-miles snapshots-rate computes-amount /
+  get_claim 404 / list_member_claims status-filter / update_claim 409-if-not-draft
+  recomputes-amount / submit_claim 409-not-draft 422-missing-purpose
+  auto-approves-under-thresholds / review_claim 409-if-not-submitted /
+  mark_claim_paid 409-if-not-approved / get_account_claim_summary /
+  list_all_platform
+12 endpoints: member policy+create+list+get+update+submit; admin policy-update+
+  all+summary+review+paid; platform-admin list
+Migration l1m2n3o4p5q6 (claimstatus enum + 2 tables + 5 indexes)
+47 tests → Total: 9,020 passing (was 8,973)
+
+Session 240 complete.
