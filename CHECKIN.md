@@ -9,20 +9,25 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 218–233
+**Sessions**: 218–234
 
-### Accomplished (Session 233)
+### Accomplished (Session 234)
 
-#### open-source-rideshare — Corporate Driver Performance SLA (commit `88826f3`)
+#### open-source-rideshare — Corporate Parking Management (commit `1ef5017`)
 
-Enterprise accounts track individual driver performance against KPI thresholds. Admins configure on-time rate, average rating, cancellation rate, and acceptance rate floors/ceilings; the system evaluates drivers against the active policy and records per-dimension pass/fail results with an overall SLA verdict. Admins can flag underperforming drivers for review.
+Enterprise accounts manage physical parking facilities for employees. Admins define named facilities (surface lots, garages, covered structures, underground), add individual spots with type classification (standard, accessible, EV charging, motorcycle, oversized, reserved, visitor), and assign spots to employees with full lifecycle management (start/end dates, permit numbers, audit trail). Employees can view their own active spot assignments.
 
-- **`CorporateDriverPerformanceSLA`**: name unique/account; description; min_on_time_rate_pct / min_avg_rating / max_cancellation_rate_pct / min_acceptance_rate_pct Numeric thresholds (all nullable — unset = not measured); evaluation_window_days default 30; is_active one-per-account; created_by_id SET NULL; 3 indexes
-- **`CorporateDriverSLARecord`**: account+policy+driver FKs; evaluated_at; metrics snapshot (on_time_rate_pct / avg_rating / cancellation_rate_pct / acceptance_rate_pct); per-dimension met booleans (null if threshold not configured); overall_sla_met; flagged_for_review + audit fields; 4 indexes
-- **12 service functions**: create (deactivates-prev + 409-dup-name) / get / list / update (409-collision) / activate (deactivates-prev 409-if-active) / deactivate (409-if-inactive) / delete (409-if-active) / record_driver_evaluation (finds-active-policy evaluates-all-dims persists-record) / get_driver_sla_summary (last-N with pass-rate trend) / flag_driver_for_review (409-if-flagged) / list_flagged_drivers / list_all_platform
-- **13 endpoints**: member GET active-policy · admin POST create + GET list + GET/PUT/activate/deactivate/DELETE + POST drivers/{id}/evaluate + GET drivers/{id}/summary + GET flagged + POST records/{id}/flag · platform-admin GET all
-- **Migration `e4f5g6h7i8j9`** (2 tables + indexes; down_revision d3e4f5g6h7i8)
-- **71 tests** → **Total: 8,603 passing** (was 8,532)
+- **`CorporateParkingFacility`**: name unique/account; description; full address fields + lat/lng; FacilityType enum (4 values); is_active; created_by_id SET NULL; 3 indexes
+- **`CorporateParkingSpot`**: facility_id CASCADE; spot_identifier unique/facility UniqueConstraint; SpotType enum (7 values); floor_level; **is_assigned auto-managed** — set True on assign, False on end-assignment; is_active; 4 indexes
+- **`CorporateParkingAssignment`**: spot_id CASCADE; member_id/assigned_by_id/ended_by_id SET NULL; permit_number; start_date/end_date Date; is_active; ended_at+ended_by_id audit fields; 4 indexes
+- **13 service functions**: create_facility (409-dup) / list / get / update (409-collision) / deactivate (409-if-inactive) / add_spot (404-facility+409-dup-identifier) / list_spots (facility+type+assigned+active filters) / get_spot / assign_spot_to_member (409-if-assigned) / end_assignment (404-if-no-active) / get_member_parking / get_facility_summary (total+active+assigned+available+by_type) / list_all_platform
+- **14 endpoints**: member GET facilities+my-spots · admin POST create-facility+GET all+GET/PUT {id}+deactivate+summary+POST spots+GET spots+GET spots/{id}+assign+end-assignment · platform-admin GET all
+- **Migration `f5g6h7i8j9k0`** (3 tables + 2 enums + indexes; down_revision e4f5g6h7i8j9)
+- **75 tests** → **Total: 8,678 passing** (was 8,603)
+
+### Accomplished (Session 233) — archived from previous check-in
+
+- **Corporate Driver Performance SLA** (commit `88826f3`): per-driver KPI tracking with on-time/rating/cancellation/acceptance thresholds + evaluation records + flagging; 71 tests; total 8,603
 
 ### Accomplished (Session 232) — archived from previous check-in
 
@@ -39,7 +44,7 @@ Enterprise accounts track individual driver performance against KPI thresholds. 
 
 ### Needs Your Input
 
-- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `88826f3` — Driver Performance SLA (71 new tests, **8,603 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `1ef5017` — Corporate Parking Management (75 new tests, **8,678 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
 - **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
@@ -50,8 +55,9 @@ Enterprise accounts track individual driver performance against KPI thresholds. 
 2. If user drops input in INBOX.md → process and act on it
 
 **Next rideshare feature candidates**:
-- Corporate reporting webhooks (scheduled push of invoice/budget/SLA events to external HRIS/ERP — distinct from event-driven webhooks)
 - Corporate driver blacklist (accounts block specific drivers from being dispatched on their rides — complement to preferred driver pool)
+- Corporate parking permit management (extend parking with permit issuance workflow, renewal reminders, waitlist for spots)
+- Corporate reporting push (scheduled delivery of invoice/budget/SLA summary reports to external HRIS/ERP endpoints)
 
 ---
 

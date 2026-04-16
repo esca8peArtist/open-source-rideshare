@@ -4,6 +4,60 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 234 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Parking Management
+
+### Task: Corporate Parking Management — COMPLETE (commit `1ef5017`)
+
+Enterprise accounts manage physical parking facilities for employees.
+Admins define named facilities (garages, surface lots, underground structures),
+add individual spots with type classification, and assign spots to employees
+with lifecycle management (start/end dates, permit numbers, audit trail).
+
+Models:
+  CorporateParkingFacility (table: corporate_parking_facilities;
+    name unique/account UniqueConstraint; description; address fields + lat/lng;
+    FacilityType enum 4 values: surface_lot/parking_garage/covered_structure/underground;
+    notes; is_active; created_by_id SET NULL; 3 indexes: account, is_active, created_at)
+
+  CorporateParkingSpot (table: corporate_parking_spots;
+    account_id CASCADE; facility_id CASCADE; spot_identifier unique/facility
+    UniqueConstraint; SpotType enum 7 values:
+    standard/accessible/ev_charging/motorcycle/oversized/reserved/visitor;
+    floor_level nullable; is_assigned Boolean auto-managed on assign/end; is_active; 4 indexes)
+
+  CorporateParkingAssignment (table: corporate_parking_assignments;
+    account_id CASCADE; spot_id CASCADE; member_id/assigned_by_id/ended_by_id SET NULL;
+    permit_number nullable; start_date/end_date Date; is_active;
+    ended_at+ended_by_id audit; 4 indexes)
+
+Service (13 functions):
+  create_facility (409-dup-name) / get_facility / list_facilities is_active-filter /
+  update_facility (409-name-collision) / deactivate_facility (409-if-inactive) /
+  add_spot (404-facility+409-dup-identifier) / get_spot /
+  list_spots facility+type+assigned+active-filters /
+  assign_spot_to_member (409-if-already-assigned sets-is_assigned=True) /
+  end_assignment (404-if-no-active sets-is_assigned=False) /
+  get_member_parking / get_facility_summary total+active+assigned+available+by_type /
+  list_all_platform
+
+API (14 endpoints):
+  member GET facilities + GET my-spots
+  admin POST create-facility + GET facilities/all + GET/PUT facilities/{id} +
+         POST deactivate + GET summary + POST spots + GET spots + GET spots/{id} +
+         POST spots/{id}/assign + POST spots/{id}/end-assignment
+  platform-admin GET all
+
+Migration f5g6h7i8j9k0 (3 tables + enums + indexes; down_revision e4f5g6h7i8j9)
+75 tests → Total: 8,678 passing (was 8,603)
+
 ## Session 233 — 2026-04-16
 
 ### Orient
