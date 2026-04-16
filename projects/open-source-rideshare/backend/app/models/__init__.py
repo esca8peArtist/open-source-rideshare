@@ -58,3 +58,4 @@ from app.models.corporate_member_policy_override import CorporateMemberPolicyOve
 from app.models.corporate_travel_itinerary import CorporateTravelItinerary, CorporateItineraryRide  # noqa: F401
 from app.models.corporate_event import CorporateEvent, CorporateEventAttendee  # noqa: F401
 from app.models.corporate_office_location import CorporateOfficeLocation, CorporateOfficeMembership  # noqa: F401
+from app.models.corporate_account_hierarchy import CorporateAccountHierarchy  # noqa: F401
