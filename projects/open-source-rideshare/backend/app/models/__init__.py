@@ -61,3 +61,4 @@ from app.models.corporate_office_location import CorporateOfficeLocation, Corpor
 from app.models.corporate_account_hierarchy import CorporateAccountHierarchy  # noqa: F401
 from app.models.corporate_carpool_group import CorporateCarpoolGroup, CorporateCarpoolMember  # noqa: F401
 from app.models.corporate_member_offboarding import CorporateMemberOffboarding  # noqa: F401
+from app.models.corporate_member_onboarding import CorporateMemberOnboarding  # noqa: F401
