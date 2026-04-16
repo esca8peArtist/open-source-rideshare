@@ -6,6 +6,169 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/corporate-business-accounts — corporate department-level ride policies
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `6847e59`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Adds the middle tier of the corporate policy hierarchy — each department can now
+carry its own ride policy, filling the gap between account-level and per-member
+overrides. Policy resolution: account (base) → department (most restrictive field
+wins when member is in multiple departments) → member override (highest precedence).
+
+**Architecture decisions:**
+- `CorporateDepartmentRidePolicy` has a unique constraint on `department_id` (one
+  policy per department). Upsert semantics: PUT replaces the entire row if one exists.
+- All override fields are nullable — `NULL` means "inherit from the account policy".
+  Admins only need to set the fields they want to constrain.
+- Multi-department merge strategy: **most restrictive field wins** — True wins for
+  booleans (require_purpose, business_hours_only), lower value wins for max_per_ride_usd,
+  intersection wins for list fields (allowed_vehicle_categories, approved_purposes).
+  An empty intersection means no vehicle type / purpose is allowed — admins should be
+  aware when two departments have non-overlapping constraints.
+- `get_effective_policy_for_member` performs a 4-query fetch (member → account policy →
+  dept memberships → dept policies → member override) and merges in Python. Suitable for
+  low-to-moderate call volume; a materialized view could optimize if this becomes a hot
+  path.
+- `is_active` soft-disable: inactive department policies are excluded from effective
+  policy resolution without losing audit history.
+- Platform-admin bypass: `requesting_user_id=-1` sentinel skips the admin membership
+  check, consistent with all other corporate service functions.
+
+**Files changed:**
+- `backend/app/models/corporate_department_ride_policy.py` — ORM model
+- `backend/app/schemas/corporate_department_ride_policy.py` — Pydantic schemas (Set, Update, Response, ListResponse, EffectiveDepartmentPolicyResponse)
+- `backend/app/services/corporate_department_ride_policy.py` — 9 service functions
+- `backend/app/api/v1/corporate_department_ride_policy.py` — 11 endpoints
+- `backend/app/db/migrations/versions/i0j1k2l3m4n5_corporate_department_ride_policies.py` — Alembic migration
+- `backend/tests/test_corporate_department_ride_policy.py` — 49 tests
+- `backend/app/main.py` — registered corporate_department_ride_policy.router
+
+**Endpoints added:**
+- `PUT    /api/v1/corporate/accounts/me/departments/{id}/ride-policy` — admin: upsert policy
+- `GET    /api/v1/corporate/accounts/me/departments/{id}/ride-policy` — member: get policy
+- `PATCH  /api/v1/corporate/accounts/me/departments/{id}/ride-policy` — admin: partial update
+- `DELETE /api/v1/corporate/accounts/me/departments/{id}/ride-policy` — admin: delete (204)
+- `POST   /api/v1/corporate/accounts/me/departments/{id}/ride-policy/activate` — admin: activate
+- `POST   /api/v1/corporate/accounts/me/departments/{id}/ride-policy/deactivate` — admin: deactivate
+- `GET    /api/v1/corporate/accounts/me/department-ride-policies` — member: list all policies
+- `GET    /api/v1/corporate/accounts/me/effective-department-policy` — member: get own effective policy
+- `GET    /api/v1/platform/corporate/department-ride-policies` — platform-admin: list all
+- `GET    /api/v1/platform/corporate/accounts/{id}/department-ride-policies` — platform-admin: account
+- `GET    /api/v1/platform/corporate/accounts/{id}/members/{mid}/effective-department-policy` — platform-admin
+
+**Test results:** 7,193 passing, 1 pre-existing failing (test_corporate_guest_pass.py::test_validate_token_not_yet_valid), 1082 skipped. New tests: 49/49 passing.
+
+---
+
+### feature/corporate-business-accounts — corporate auto-approval rules
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `a3f1089`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Admins configure priority-ordered rules that automatically approve corporate rides
+when all specified conditions are met — bypassing the manual multi-step approval
+chain for routine, low-risk rides (e.g., any ride under $25 for a sales rep going
+to a client site on a weekday).
+
+**Architecture decisions:**
+- Multi-condition AND logic within a single rule; OR across rules. If ANY active
+  rule matches, the ride is auto-approved. Rules are evaluated in priority DESC
+  order (ties broken by created_at ASC) and short-circuit on first match.
+- Null condition fields mean "no constraint" — a rule with all nulls is always
+  a match.
+- `start_hour` and `end_hour` are enforced as a pair (both set or both None)
+  via a Pydantic `model_validator` at the schema layer.
+- Employee group check queries `CorporateGroupMembership` at evaluation time —
+  no denormalization to keep rule data from going stale.
+- `evaluate` endpoint resolves the calling user's `CorporateAccountMember.id`
+  before delegating to the service so that group membership can be checked
+  correctly.
+- 409 on duplicate active rule name within an account; activate/deactivate
+  also raise 409 to prevent double-state transitions.
+
+**Files changed:**
+- `backend/app/models/corporate_auto_approval_rule.py` — ORM model
+- `backend/app/schemas/corporate_auto_approval_rule.py` — Pydantic schemas
+- `backend/app/services/corporate_auto_approval_rule.py` — 9 service functions
+- `backend/app/api/v1/corporate_auto_approval_rule.py` — 10 endpoints
+- `backend/app/db/migrations/versions/h9i0j1k2l3m4_corporate_auto_approval_rules.py` — Alembic migration
+- `backend/tests/test_corporate_auto_approval_rule.py` — 51 tests
+- `backend/app/main.py` — registered corporate_auto_approval_rule.router
+
+**Endpoints added:**
+- `POST   /api/v1/corporate/accounts/me/auto-approval-rules` — admin: create rule
+- `GET    /api/v1/corporate/accounts/me/auto-approval-rules` — member: list (filter by is_active)
+- `GET    /api/v1/corporate/accounts/me/auto-approval-rules/{rule_id}` — member: get
+- `PUT    /api/v1/corporate/accounts/me/auto-approval-rules/{rule_id}` — admin: update
+- `POST   /api/v1/corporate/accounts/me/auto-approval-rules/{rule_id}/activate` — admin: activate
+- `POST   /api/v1/corporate/accounts/me/auto-approval-rules/{rule_id}/deactivate` — admin: deactivate
+- `DELETE /api/v1/corporate/accounts/me/auto-approval-rules/{rule_id}` — admin: delete (204)
+- `POST   /api/v1/corporate/accounts/me/auto-approval-rules/evaluate` — member: evaluate hypothetical ride
+- `GET    /api/v1/platform/corporate/auto-approval-rules` — platform-admin: list all
+- `GET    /api/v1/platform/corporate/accounts/{account_id}/auto-approval-rules` — platform-admin: list for account
+
+**Test results:** 7,144 passing, 1 pre-existing failing (test_corporate_guest_pass.py::test_validate_token_not_yet_valid), 1082 skipped. New tests: 51/51 passing.
+
+---
+
+### feature/corporate-business-accounts — corporate receipt template customization
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `09119f7`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Implements per-account branded receipt templates for the corporate enterprise
+feature set.  Finance teams can configure company name/logo, a reference number
+prefix, header and footer messages, driver details and route map toggles, and
+arbitrary custom line items (e.g. project codes, cost centre tags).
+
+**Architecture decisions:**
+- One row per corporate account (`uq_corp_receipt_template_account_id`).
+  Follows the upsert-on-read pattern from billing settings and carbon budget:
+  the first GET creates a default row so callers always receive a well-formed
+  response.
+- `custom_line_items` stored as JSONB `[{"label": str, "value": str}]` — keeps
+  the schema flexible for future label types without additional migrations.
+- `logo_url` validated at the Pydantic layer (must start with `http://` or
+  `https://`); internal sanitisation only, not content-fetched on write.
+- `reference_prefix` capped at 20 chars in both the schema validator and the
+  `String(20)` column to prevent long reference numbers.
+- `deactivate` raises 409 when already inactive (prevents double-deactivation).
+- `delete_receipt_template` is a hard delete — only admins reach this endpoint.
+- `get_receipt_template_for_ride` returns `None` (not a 404) so the receipt
+  generation layer can fall back to the platform default cleanly.
+- Migration `f7g8h9i0j1k2` revises `e6f7a8b9c0d1` (member policy overrides).
+
+**Files changed:**
+- `backend/app/models/corporate_receipt_template.py` — ORM model
+- `backend/app/schemas/corporate_receipt_template.py` — Pydantic schemas (CustomLineItem, ReceiptTemplateUpdate, ReceiptTemplateResponse, ReceiptTemplateListResponse)
+- `backend/app/services/corporate_receipt_template.py` — 6 service functions
+- `backend/app/api/v1/corporate_receipt_template.py` — 6 endpoints
+- `backend/app/db/migrations/versions/f7g8h9i0j1k2_corporate_receipt_templates.py` — Alembic migration
+- `backend/tests/test_corporate_receipt_template.py` — 38 tests
+- `backend/app/main.py` — registered corporate_receipt_template.router
+
+**Endpoints added:**
+- `GET    /api/v1/corporate/accounts/me/receipt-template` — member: view template
+- `PUT    /api/v1/corporate/accounts/me/receipt-template` — admin: create/update
+- `POST   /api/v1/corporate/accounts/me/receipt-template/deactivate` — admin: deactivate (409 if already inactive)
+- `DELETE /api/v1/corporate/accounts/me/receipt-template` — admin: hard-delete (204)
+- `GET    /api/v1/platform/corporate/receipt-templates` — platform-admin: paginated list
+- `GET    /api/v1/platform/corporate/accounts/{account_id}/receipt-template` — platform-admin: get for any account
+
+**Test results:** 7053 passing, 1 pre-existing failing (test_corporate_guest_pass.py::test_validate_token_not_yet_valid — pre-dates this session), 1082 skipped. New tests: 38/38 passing.
+
+---
+
 ### feature/corporate-business-accounts — driver certification badges
 
 **Branch:** `feature/corporate-business-accounts`

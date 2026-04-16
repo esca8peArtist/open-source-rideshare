@@ -4,6 +4,79 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 212 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Department-Level Ride Policies
+
+### Task: Corporate Department-Level Ride Policies — COMPLETE (commit `6847e59`)
+
+Added the missing middle tier to the corporate policy hierarchy:
+  Account policy (base) → Department policy (new) → Member override (highest)
+
+This closes a design gap: departments like Sales vs. Engineering can have
+different ride constraints without an admin having to set per-member overrides
+for every employee in those departments.
+
+- CorporateDepartmentRidePolicy model (unique per department CASCADE; all
+  override fields nullable = inherit from account; is_active soft-disable;
+  set_by_id FK SET NULL; 3 indexes including composite account+is_active)
+- Merge strategy for multi-department members: most restrictive wins per field
+  (True wins for booleans; min() for max_per_ride_usd; intersection for lists)
+- 9 service functions: set (upsert replace-on-exist) / get / update / delete /
+  activate 409-if-active / deactivate 409-if-inactive / list /
+  get_effective_policy_for_member (4-query fetch + Python merge) /
+  list_all_platform
+- 11 endpoints: member GET+PATCH+DELETE+activate+deactivate+list+effective;
+  admin PUT; 3 platform-admin
+- Migration i0j1k2l3m4n5 (revises h9i0j1k2l3m4)
+- 49 tests → Total: 7,193 passing (was 7,144)
+
+#### Session end
+
+---
+
+## Session 211 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Auto-Approval Rules
+
+### Task: Corporate Auto-Approval Rules — COMPLETE (commit `a3f1089`)
+
+Admins configure rules that automatically approve corporate rides meeting all
+specified conditions — bypassing the manual approval chain for routine,
+low-risk rides (e.g., any ride under $25 for a sales rep going to a client
+site during business hours).
+
+- CorporateAutoApprovalRule model (account_id FK CASCADE; name String(200);
+  is_active; max_cost_usd Numeric(10,2) nullable; trip_purpose_ids JSONB;
+  cost_center_ids JSONB; employee_group_ids JSONB; allowed_days_of_week JSONB;
+  start_hour/end_hour int nullable paired; priority int default 0;
+  created_by_id FK SET NULL; 3 indexes)
+- 9 service functions: create (409 duplicate name) / get (404) / list /
+  update (409 name collision) / activate (409 if active) / deactivate (409 if
+  inactive) / delete / evaluate_auto_approval (priority-ordered scan; checks
+  cost/purpose/cost_center/group/day/hour; first match wins) /
+  list_all_platform
+- 10 endpoints: member create/list/get/update/activate/deactivate/delete/
+  evaluate; platform-admin list-all + list-by-account
+- Migration h9i0j1k2l3m4 (revises g8h9i0j1k2l3)
+- 51 tests → Total: 7,144 passing (was 7,093; 1 pre-existing unrelated failure)
+
+#### Session end
+
+---
+
 ## Session 210 — 2026-04-16
 
 ### Orient
