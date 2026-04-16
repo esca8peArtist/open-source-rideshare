@@ -62,3 +62,5 @@ from app.models.corporate_account_hierarchy import CorporateAccountHierarchy  # 
 from app.models.corporate_carpool_group import CorporateCarpoolGroup, CorporateCarpoolMember  # noqa: F401
 from app.models.corporate_member_offboarding import CorporateMemberOffboarding  # noqa: F401
 from app.models.corporate_member_onboarding import CorporateMemberOnboarding  # noqa: F401
+from app.models.corporate_billing_currency import CorporateBillingCurrency, CorporateInvoiceFXSnapshot  # noqa: F401
+from app.models.corporate_fleet_vehicle import CorporateFleetVehicle, CorporateFleetAssignment  # noqa: F401
