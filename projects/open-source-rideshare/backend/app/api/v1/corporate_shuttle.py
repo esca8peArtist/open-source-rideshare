@@ -64,6 +64,9 @@ from app.services.corporate_shuttle_service import (
     list_schedules,
     update_route,
 )
+from app.services.corporate_shuttle_waitlist_service import (
+    promote_from_waitlist,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -385,13 +388,21 @@ async def cancel_booking_endpoint(
     Any authenticated account member may cancel their own booking.
     """
     await get_account(db, account_id)
-    return await cancel_booking(
+    cancelled = await cancel_booking(
         db,
         booking_id=booking_id,
         account_id=account_id,
         cancelled_by_id=user.id,
         reason=data.reason,
     )
+    # Automatically promote the first waiter when a seat opens up.
+    await promote_from_waitlist(
+        db,
+        schedule_id=cancelled.schedule_id,
+        account_id=account_id,
+        booking_date=cancelled.booking_date,
+    )
+    return cancelled
 
 
 # ---------------------------------------------------------------------------

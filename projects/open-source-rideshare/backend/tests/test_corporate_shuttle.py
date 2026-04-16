@@ -1519,6 +1519,7 @@ def test_api_cancel_booking_200():
     with (
         _patch_get_account(),
         patch(f"{_ROUTER}.cancel_booking", new_callable=AsyncMock, return_value=cancelled),
+        patch(f"{_ROUTER}.promote_from_waitlist", new_callable=AsyncMock, return_value=None),
     ):
         app.dependency_overrides.update(_dep_overrides())
         resp = _client.post(f"{_BASE}/bookings/{BOOKING_ID}/cancel", json={})
