@@ -4,6 +4,47 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 239 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Member Fine-Grained Permissions
+
+### Task: Corporate Member Fine-Grained Permissions — COMPLETE (commit `7d33336`)
+
+Enterprise accounts grant named permission scopes to individual members
+beyond the binary admin/member role.  Allows department-specific admins
+(finance, HR, fleet, SSO) without full account-admin elevation.
+
+PermissionScope enum (7 values): billing_admin / hr_admin /
+  fleet_manager / report_viewer / booking_approver / data_exporter /
+  sso_admin
+
+Model: CorporateMemberPermission (account CASCADE; member CASCADE;
+  permission_scope SAEnum; granted_by SET NULL; granted_at;
+  expires_at nullable; is_active soft-delete; notes String(500);
+  UniqueConstraint account+member+scope; 3 indexes)
+
+Service (9 fns): grant 409-dup/upsert-revoked-or-expired expiry-aware /
+  revoke 404-if-not-active / get 404 / list_member_permissions /
+  list_account_permissions scope+active_only-filters /
+  has_permission expiry-aware-bool / get_members_with_scope /
+  get_permission_summary counts-by-scope / list_all_platform account+scope-filters
+
+API (11 endpoints): member my+member-list+check; admin grant+list+
+  summary+scope-list+member-list+revoke; platform-admin list+member-list+revoke;
+  migration k0l1m2n3o4p5
+
+43 tests → Total: 8,973 passing (was 8,930)
+Pre-existing failure: test_corporate_guest_pass::test_validate_token_not_yet_valid
+  (mock.name AttributeError — unrelated to this feature, present before changes)
+
+---
+
 ## Session 238 — 2026-04-16
 
 ### Orient

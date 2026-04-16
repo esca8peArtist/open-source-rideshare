@@ -9,9 +9,21 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 218–238
+**Sessions**: 218–239
 
-### Accomplished (Session 238)
+### Accomplished (Session 239)
+
+#### open-source-rideshare — Corporate Member Fine-Grained Permissions (commit `7d33336`)
+
+Enterprise accounts grant specific named permission scopes to individual members beyond the binary admin/member role. Allows department-specific admins (billing, HR, fleet, SSO) without elevating to full account-admin.
+
+- **`CorporateMemberPermission`**: account CASCADE; member CASCADE; permission_scope SAEnum (7 values: billing_admin/hr_admin/fleet_manager/report_viewer/booking_approver/data_exporter/sso_admin); granted_by SET NULL; granted_at; expires_at nullable; is_active soft-delete; notes String(500); UniqueConstraint account+member+scope; 3 indexes
+- **9 service functions**: grant (409-dup / upsert-revoked-or-expired; expiry-aware) / revoke (404-if-not-active) / get (404) / list_member_permissions / list_account_permissions (scope+active_only filters) / has_permission (expiry-aware bool) / get_members_with_scope / get_permission_summary (counts by scope) / list_all_platform (account+scope filters)
+- **11 endpoints**: member my+member-list+check · admin grant+list+summary+scope-list+member-list+revoke · platform-admin list+member-list+revoke
+- **Migration `k0l1m2n3o4p5`** (permissionscope enum + 1 table + unique constraint + 3 indexes)
+- **43 tests** → **Total: 8,973 passing** (was 8,930)
+
+### Accomplished (Session 238) — archived from previous check-in
 
 #### open-source-rideshare — Corporate Driver Blacklist (commit `29bac78`)
 
@@ -68,7 +80,7 @@ Enterprise accounts define fixed shuttle routes with recurring schedules and emp
 
 ### Needs Your Input
 
-- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `29bac78` — Corporate Driver Blacklist (34 new tests, **8,930 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `7d33336` — Corporate Member Fine-Grained Permissions (43 new tests, **8,973 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
 - **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
