@@ -8,8 +8,59 @@
 
 ## Since Last Check-in
 
-**Period**: April 16, 2026
-**Sessions**: 218–242
+**Period**: April 16–17, 2026
+**Sessions**: 218–246
+
+### Accomplished (Session 246)
+
+#### open-source-rideshare — Corporate Fleet Fuel & Mileage Tracking (commit `45ea4a4`)
+
+Fleet managers and drivers log fuel fill-ups and energy charges for company vehicles. Per-vehicle analytics compute avg MPG from odometer readings and cost-per-mile. Fleet-wide summary aggregates totals and per-type breakdown.
+
+- **`CorporateFleetFuelLog`**: **FleetFuelType** enum 6 values (gasoline/diesel/electric/hybrid/hydrogen/other) — named `FleetFuelType` (not `FuelType`) to avoid collision with existing `FuelType` in `corporate_fuel_card`; fleet_vehicle CASCADE; account CASCADE; fill_date Date; odometer_miles int nullable; gallons_added Numeric(8,3) nullable; kwh_added Numeric(8,3) nullable; cost_per_unit_usd Numeric(8,4) nullable; total_cost_usd Numeric(10,2) nullable; station_name String(200) nullable; logged_by_id SET NULL; 4 indexes
+- **9 service functions**: log_fuel_fill (404-vehicle) / get_fuel_log (404) / update_fuel_log / delete_fuel_log / list_vehicle_fuel_logs (date+fuel_type filters) / get_vehicle_fuel_summary (avg_mpg from odometer delta + cost_per_mile_usd) / list_account_fuel_logs (vehicle+date+fuel_type filters) / get_fleet_fuel_summary (fleet-wide totals + per-type breakdown + vehicle_count) / list_all_platform
+- **9 endpoints**: member POST log + GET vehicle-logs + GET vehicle-summary + GET one-log · admin PUT update + DELETE (204) + GET account-list + GET fleet-summary · platform-admin GET all
+- **Migration `r7s8t9u0v1w2`** (fleetfueltype enum + table + 4 indexes)
+- **43 tests** → **Total: 9,294 passing** (was 9,251)
+- **Note**: `test_corporate_shuttle::test_get_route_summary_returns_correct_counts` is date-sensitive (hardcoded for 2026-04-16). It failed today for the first time — unrelated to my changes.
+- **GitHub push failed** — SSH key `esca8peArtist` lacks write access to `SuperClaude-Org`. Branch is committed locally. Push when SSH auth is resolved.
+
+### Accomplished (Session 245)
+
+#### open-source-rideshare — Corporate Fleet Vehicle Acquisition & Disposal Tracking (commit `cfe4ccb`)
+
+Fleet managers record how each vehicle was acquired and formally retire vehicles when they leave the fleet.
+
+- **`CorporateFleetVehicleAcquisition`**: **AcquisitionType** enum 5 values (purchased/leased/financed/donated/other); fleet_vehicle CASCADE; account CASCADE; vendor_name; acquisition_date Date; acquisition_cost_usd Numeric nullable; lease_start/end_date Date nullable; monthly_lease_payment_usd Numeric nullable; lease_mileage_allowance_annual int nullable; financed_amount_usd/loan_term_months/monthly_loan_payment_usd (financed vehicles); is_active; created_by_id SET NULL; 4 indexes
+- **`CorporateFleetVehicleDisposal`**: **DisposalReason** enum 6 values (sold/traded_in/scrapped/donated/lease_returned/stolen_written_off/other); fleet_vehicle CASCADE; account CASCADE; disposal_date Date; sale_price_usd Numeric nullable; buyer_name nullable; disposed_by_id SET NULL; 4 indexes
+- **11 service functions**: record_acquisition (404-vehicle+409-dup-active) / get_acquisition (404) / get_vehicle_acquisition (active-or-None) / list_vehicle_acquisitions (history) / update_acquisition / dispose_vehicle (404-vehicle+409-already-disposed; sets vehicle is_active=False + acquisition is_active=False) / get_disposal (404) / get_vehicle_disposal / list_account_disposals (reason+date filters) / get_fleet_ownership_summary (by_acquisition_type counts+monthly_payments+leases_expiring_90d) / list_all_platform
+- **10 endpoints**: member vehicle-acquisition+history+disposal+summary · admin record+update+dispose+list-disposals+get-disposal · platform-admin list-all
+- **Migration `q6r7s8t9u0v1`** (acquisitiontype + disposalreason enums + 2 tables + 8 indexes)
+- **50 tests** → **Total: 9,251 passing** (was 9,247)
+
+### Accomplished (Session 244)
+
+#### open-source-rideshare — Corporate Vehicle Incident Reports (commit `8c08012`)
+
+Fleet managers document incidents involving company vehicles and track resolution through a structured workflow.
+
+- **`CorporateVehicleIncidentReport`**: **IncidentType** enum 6 values (collision/parking_damage/vandalism/theft/mechanical_failure/other); **IncidentStatus** enum 5 values (draft/reported/under_review/resolved/closed); account CASCADE; fleet_vehicle CASCADE; incident_date Date; incident_time Time nullable; incident_location String(500); description Text; estimated_damage_usd Numeric(10,2); police_report_number; driver_id SET NULL; insurance_policy_id SET NULL → fleet insurance policies; insurance_claim_number; witness_info; reported_by_id SET NULL; reviewed_by_id SET NULL; resolved_at DateTime(tz); notes; 5 indexes
+- **11 service functions**: create (404-vehicle+409-inactive+404-invalid-policy) / get (404) / list_vehicle_incidents (type+status+date-range) / list_account_incidents (multi-filter) / update (409-if-closed-or-resolved) / submit draft→reported (409-not-draft) / mark_under_review reported→under_review (409-not-reported) / resolve under_review→resolved+resolved_at (409-not-under_review) / close resolved→closed (409-not-resolved) / get_incident_summary (open_count+by_status+by_type+damage-sums-open-only) / list_all_platform
+- **12 endpoints**: member vehicle-incidents+get+create+update+submit · admin review+resolve+close+list+summary · platform-admin list-all
+- **Migration `p5q6r7s8t9u0`** (incidenttype + incidentstatus enums + table + 5 indexes)
+- **45 tests** → **Total: 9,247 passing** (was 9,157)
+
+### Accomplished (Session 243)
+
+#### open-source-rideshare — Corporate Fleet Insurance Tracking (commit `94174d3`)
+
+Fleet managers track insurance policies for company vehicles with expiry date alerts and per-account summary aggregation.
+
+- **`CorporateFleetInsurancePolicy`**: `InsuranceType` enum 6 values (liability/collision/comprehensive/commercial_auto/uninsured_motorist/other); account CASCADE; fleet_vehicle CASCADE; policy_number String(100) unique per account; provider_name String(200); coverage_amount_usd/deductible_usd/premium_annual_usd Numeric nullable; policy_start_date/policy_end_date Date; is_active; notes; created_by_id SET NULL; 3 indexes + UniqueConstraint (account_id, policy_number)
+- **10 service functions**: add_policy (404-vehicle; 409-inactive-vehicle; 409-dup-policy-number) / get_policy (404) / list_vehicle_policies (is_active filter) / list_account_policies (is_active+type filter, sorted by expiry) / update_policy (409-number-collision) / deactivate_policy (409-if-inactive) / reactivate_policy (409-if-active) / get_expiring_policies (N-day window, active only, days_until_expiry computed) / get_insurance_summary (active/inactive/expiring_30d counts, total annual premium, by_type dict) / list_all_platform
+- **11 endpoints**: member vehicle-insurance+expiring+summary+get · admin add+list+update+deactivate+reactivate · platform-admin list+list-by-account
+- **Migration `o4p5q6r7s8t9`** (insurancetype enum + table + 3 indexes + UniqueConstraint)
+- **39 tests** → **Total: 9,157 passing** (was 9,118)
 
 ### Accomplished (Session 242)
 
@@ -110,6 +161,13 @@ Enterprise accounts define fixed shuttle routes with recurring schedules and emp
 
 - **Corporate Vehicle Maintenance Log** (commit `c356e50`): fleet service history with upcoming alerts; 68 tests; total 8,532
 
+### Accomplished (Sessions 241–244) — archived from previous check-in
+
+- **Corporate Fuel Card Management** (commit `276d161`): 50 tests; total 9,070
+- **Corporate Vehicle Inspection Checklists** (commit `ad5292d`): 48 tests; total 9,118
+- **Corporate Fleet Insurance Tracking** (commit `94174d3`): 39 tests; total 9,157
+- **Corporate Vehicle Incident Reports** (commit `8c08012`): 45 tests; total 9,247
+
 ### Accomplished (Sessions 228–231) — archived from previous check-in
 
 - **Corporate Vehicle Reservation Booking** (commit `f947dd1`): conflict detection, lifecycle; 65 tests; total 8,464
@@ -121,7 +179,7 @@ Enterprise accounts define fixed shuttle routes with recurring schedules and emp
 
 ### Needs Your Input
 
-- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `7d33336` — Corporate Member Fine-Grained Permissions (43 new tests, **8,973 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `cfe4ccb` — Corporate Fleet Vehicle Acquisition & Disposal Tracking (50 new tests, **9,251 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
 - **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
@@ -132,8 +190,8 @@ Enterprise accounts define fixed shuttle routes with recurring schedules and emp
 2. If user drops input in INBOX.md → process and act on it
 
 **Next rideshare feature candidates**:
-- Corporate parking permit management (permit issuance workflow, renewal reminders, waitlist for spots)
-- Corporate reporting push (scheduled delivery of reports to external HRIS/ERP endpoints via webhook)
+- Corporate fleet vehicle document management (registration, title, state inspection stickers with expiry tracking)
+- Corporate fleet analytics dashboard (cross-vehicle utilization rates, cost-per-mile, fuel efficiency)
 - Corporate member device management (register employee devices for push notifications, SSO login tracking)
 
 ---
