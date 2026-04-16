@@ -4,6 +4,51 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 217 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Service Zone Restrictions
+
+### Task: Corporate Service Zone Restrictions — COMPLETE (commit `1936c46`)
+
+Enterprise accounts define named circular geographic zones that gate or
+restrict employee ride bookings.  Zone types: allowed (explicit permit),
+restricted (block outright), approval_required (needs admin OK).  Zones
+are circles (centre lat/lng + radius_km) evaluated via Haversine formula.
+applies_to controls which endpoint (pickup/dropoff/both) is checked.
+group_ids JSONB scopes zone to specific employee groups (NULL = all).
+
+Model:
+  CorporateServiceZone (account CASCADE; name unique/account; ZoneType
+    enum allowed/restricted/approval_required; center_lat/lng Numeric(9,6);
+    radius_km Numeric(8,3); ZoneAppliesTo enum pickup/dropoff/both;
+    group_ids JSONB nullable; is_active; created_by_id FK SET NULL;
+    4 indexes + unique constraint)
+
+Service (10 functions):
+  create (409 duplicate name) / get / list (is_active+zone_type filters) /
+  update (409 name collision, partial PATCH) / deactivate (409 if already
+  inactive) / reactivate (409 if already active) / delete /
+  check_ride_zones (Haversine; returns pickup_matches, dropoff_matches,
+  is_restricted, requires_approval, denial_reasons) /
+  get_zone_coverage_summary (count by type+applies_to) / list_all_platform
+
+Endpoints (11):
+  Member: list / summary / get / check (POST pickup+dropoff coords)
+  Admin: create / update / deactivate / reactivate / delete
+  Platform-admin: list-all (account_id filter) / list-for-account
+
+Migration: n6o7p8q9r0s1_corporate_service_zones.py
+  64 tests → Total: 7,475 passing (was 7,411)
+
+#### Session end
+
+---
+
 ## Session 216 — 2026-04-16
 
 ### Orient

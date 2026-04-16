@@ -9,19 +9,27 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 216
+**Sessions**: 216–217
+
+### Accomplished (Session 217)
+
+#### open-source-rideshare — Corporate Service Zone Restrictions (commit `1936c46`)
+
+Enterprise accounts can now define named circular geographic zones that gate or restrict employee ride bookings. Three zone types: **allowed** (explicit permit), **restricted** (booking blocked outright), **approval_required** (admin approval needed). Zones are circles defined by centre lat/lng + radius_km. `applies_to` controls whether the zone evaluates pickup, dropoff, or both endpoints. Optional `group_ids` scopes a zone to specific employee groups.
+
+- **`CorporateServiceZone`**: name (unique per account), description, ZoneType enum (3 values), center_latitude/longitude Numeric(9,6), radius_km Numeric(8,3), ZoneAppliesTo enum (pickup/dropoff/both), group_ids JSONB nullable, is_active soft-disable, created_by_id FK SET NULL; 4 indexes
+- **10 service functions**: create (409 duplicate name) / get / list (is_active + zone_type filters) / update (409 name collision, partial PATCH) / deactivate (409 if already inactive) / reactivate (409 if already active) / delete / `check_ride_zones` (Haversine distance check; returns pickup_matches, dropoff_matches, is_restricted, requires_approval, denial_reasons) / `get_zone_coverage_summary` (count breakdown by type + applies_to) / list_all_platform
+- **11 endpoints**: member (list / summary / get / check-coords POST) · admin (create / update / deactivate / reactivate / delete) · platform-admin (list-all / list-for-account)
+- **Migration `n6o7p8q9r0s1`** (zonetype + zoneappliesto enums; 4 indexes)
+- **64 tests** → **Total: 7,475 passing** (was 7,411)
 
 ### Accomplished (Session 216)
 
 #### open-source-rideshare — Corporate Ride Templates (commit `c66075a`)
 
-Corporate admins can now define named, reusable booking configurations — saved routes with pre-filled pickup/dropoff addresses, preferred vehicle type, and default cost centre / trip purpose. Employees browse templates to get pre-filled booking data, reducing friction for frequent corporate trips (airport runs, hotel transfers, office-to-client-site routes, etc.).
-
-- **`CorporateRideTemplate`**: name (unique per account), description, pickup + dropoff location name + full address + lat/lng, vehicle_type, default_cost_center_id (FK SET NULL), default_trip_purpose_id (FK SET NULL), notes, use_count (auto-incremented on booking), is_active soft-disable
-- **10 service functions**: create (409 duplicate name) / get / list (is_active filter, name-ordered) / update (409 name collision, partial PATCH) / deactivate (409 if already inactive) / reactivate (409 if already active) / delete / record_template_use (409 if inactive, increments use_count) / get_popular_templates (use_count desc, configurable limit 1–50) / list_all_platform (account filter)
-- **11 endpoints**: member (list / popular / get / use) · admin (create / update / deactivate / reactivate / delete) · platform-admin (list-all / list-for-account)
-- **Migration `m5n6o7p8q9r0`**
-- **56 tests** → **Total: 7,411 passing** (was 7,355)
+- **`CorporateRideTemplate`**: name (unique per account), description, pickup + dropoff location name + full address + lat/lng, vehicle_type, default_cost_center_id/default_trip_purpose_id FKs, notes, use_count, is_active
+- **10 service functions** · **11 endpoints** · **Migration `m5n6o7p8q9r0`**
+- **56 tests** → **7,411 passing** (was 7,355)
 
 ---
 
