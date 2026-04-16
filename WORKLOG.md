@@ -4,6 +4,75 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 210 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Travel Itinerary Management
+
+### Task: Corporate Travel Itinerary Management — COMPLETE (commit `2c7c0ae`)
+
+Employees can now create named business trips (e.g., "Q2 Sales Conference NYC") that
+group multiple rides for consolidated expense reporting and approval.
+
+- CorporateTravelItinerary model (account_id FK CASCADE; created_by_id FK SET NULL;
+  title String(200); description Text; start_date/end_date Date; cost_center_id FK
+  SET NULL; trip_purpose_id FK SET NULL; status String(20) default "draft";
+  is_active; created_at/updated_at; 4 indexes)
+- CorporateItineraryRide join model (itinerary_id FK CASCADE; ride_id FK SET NULL;
+  added_by_id FK SET NULL; notes; added_at; UniqueConstraint itinerary+ride; 2 indexes)
+- 11 service functions: create (draft status) / get (404 wrong account) / update
+  (409 if cancelled) / cancel (409 if already cancelled) / complete (409 if cancelled) /
+  list (status+created_by filters) / add_ride (409 duplicate or cancelled itinerary) /
+  remove_ride / list_rides / get_summary (total_rides + ride_ids) / list_all_platform
+- 12 endpoints: member create/list/get/update; admin cancel/complete/remove-ride;
+  member list-rides/add-ride/summary; platform-admin list-all + list-by-account
+- Migration g8h9i0j1k2l3 (revises f7g8h9i0j1k2)
+- 40 tests → Total: 7,093 passing (was 7,053; 1 pre-existing unrelated failure)
+
+#### Session end
+
+---
+
+## Session 209 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Receipt Template Customization
+
+### Task: Corporate Receipt Template Customization — COMPLETE (commit `09119f7`)
+
+Finance teams need branded receipts with company identity applied to all employee
+ride receipts from a corporate account.
+
+- CorporateReceiptTemplate model (unique account_id; CASCADE delete; company_name;
+  logo_url; header_message; footer_message; reference_prefix String(20);
+  show_driver_details bool default True; show_route_map bool default True;
+  custom_line_items JSONB; is_active; created_by_id + updated_by_id FK SET NULL;
+  created_at / updated_at)
+- 6 service functions: get_or_create_receipt_template (upsert-on-read returns
+  defaults if none configured) / update_receipt_template (partial PUT) /
+  deactivate_receipt_template (409 if already inactive) / delete_receipt_template
+  (hard delete; admin-only) / get_receipt_template_for_ride (returns None for
+  fallback in receipt generation logic) / list_all_receipt_templates (platform-admin
+  paginated)
+- 6 endpoints: member GET /corporate/accounts/me/receipt-template; admin PUT +
+  POST deactivate + DELETE; platform-admin list-all + get-by-account
+- Migration f7g8h9i0j1k2 (revises e6f7a8b9c0d1)
+- 38 tests → Total: 7,053 passing (was 7,015; 1 pre-existing unrelated failure)
+
+#### Session end
+
+---
+
 ## Session 206 — 2026-04-16
 
 ### Orient

@@ -9,7 +9,53 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 129–208
+**Session**: 210
+
+### Accomplished (Session 210)
+
+#### open-source-rideshare — Corporate Travel Itinerary Management (commit `2c7c0ae`)
+
+Employees can now create named business trips (e.g., "Q2 Sales Conference NYC") that group multiple rides under a single itinerary for consolidated expense reporting. Each itinerary can carry default cost center and trip purpose that apply to all rides under it. Admins can cancel or complete itineraries; members add and view rides and a summary.
+
+- **`CorporateTravelItinerary` model**: `account_id` FK CASCADE; `created_by_id` FK SET NULL; `title` String(200); `description` Text; `start_date` / `end_date` Date; `cost_center_id` FK SET NULL; `trip_purpose_id` FK SET NULL; `status` String(20) default "draft" (draft/active/completed/cancelled); `is_active`; 4 indexes
+- **`CorporateItineraryRide` join model**: `itinerary_id` FK CASCADE; `ride_id` FK SET NULL (persists after ride deletion); `added_by_id` FK SET NULL; `notes`; UniqueConstraint on `(itinerary_id, ride_id)`)
+- **11 service functions**: `create_itinerary` / `get_itinerary` (404 wrong account) / `update_itinerary` (409 if cancelled) / `cancel_itinerary` (409 if already cancelled) / `complete_itinerary` (409 if cancelled) / `list_itineraries` (status+created_by filters) / `add_ride_to_itinerary` (409 if duplicate or cancelled) / `remove_ride_from_itinerary` (404 if not found) / `list_itinerary_rides` / `get_itinerary_summary` (total_rides + ride_ids) / `list_all_itineraries_platform`
+- **12 endpoints**: member create/list/get/update/add-ride/list-rides/summary; admin cancel/complete/remove-ride; 2 platform-admin
+- **Migration `g8h9i0j1k2l3`** (revises `f7g8h9i0j1k2`)
+- **40 tests** → **Total: 7,093 passing** (was 7,053)
+
+---
+
+### Needs Your Input
+
+Nothing blocking. All three top priorities (stockbot, mfg-farm, resistance-research) need user action before the orchestrator can advance them:
+
+- **stockbot**: Paper trading has been live since April 14. Share cycle logs or a Trading page screenshot and the orchestrator can assess model performance.
+- **mfg-farm**: Business plan is complete. Ready to launch with cable management (month 1). Decision needed: commission initial designs from Fiverr/Upwork, or start Fusion 360 learning path yourself?
+- **resistance-research**: Publication-ready. No further autonomous work identified. Your call on sharing, PDF conversion, or professional layout.
+
+### Suggested priorities for next session
+
+1. If stockbot/mfg-farm stay blocked → another corporate rideshare feature
+2. If user drops input in INBOX.md → process and act on it
+
+---
+
+## History
+
+### Accomplished (Session 209)
+
+#### open-source-rideshare — Corporate Receipt Template Customization (commit `09119f7`)
+
+Corporate accounts can now define a branded receipt template applied to all employee ride receipts. Finance teams get company-name, logo, header/footer message, a custom reference-number prefix (e.g. `ACME-2026-001`), toggles for driver details and route map, and JSONB custom line items (e.g. project codes). The template is a single "one per account" row with upsert-on-read defaults so members always get a valid response.
+
+- **`CorporateReceiptTemplate` model**: unique `account_id`; CASCADE delete; `company_name`; `logo_url`; `header_message`; `footer_message`; `reference_prefix` String(20); `show_driver_details` bool (default True); `show_route_map` bool (default True); `custom_line_items` JSONB; `is_active`; `created_by_id` + `updated_by_id` FK SET NULL; `created_at` / `updated_at`
+- **6 service functions**: `get_or_create_receipt_template` (upsert-on-read, returns sensible defaults if none configured); `update_receipt_template` (partial PUT); `deactivate_receipt_template` (409 if already inactive); `delete_receipt_template` (hard delete, admin-only); `get_receipt_template_for_ride` (returns None for receipt-generation fallback); `list_all_receipt_templates` (platform-admin, paginated)
+- **6 endpoints**: member `GET /corporate/accounts/me/receipt-template`; admin `PUT + POST /deactivate + DELETE`; platform-admin `GET list-all + GET /accounts/{id}/receipt-template`
+- **Migration `f7g8h9i0j1k2`** (revises `e6f7a8b9c0d1`)
+- **38 tests** → **Total: 7,053 passing** (was 7,015)
+
+---
 
 ### Accomplished (Session 208)
 
