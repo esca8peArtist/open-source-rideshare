@@ -55,3 +55,4 @@ from app.models.corporate_notification_settings import CorporateNotificationConf
 from app.models.corporate_employee_group import CorporateEmployeeGroup, CorporateGroupMembership  # noqa: F401
 from app.models.corporate_commuter_benefit import CorporateCommuterProgram, CorporateCommuterAllotment  # noqa: F401
 from app.models.corporate_member_policy_override import CorporateMemberPolicyOverride  # noqa: F401
+from app.models.corporate_travel_itinerary import CorporateTravelItinerary, CorporateItineraryRide  # noqa: F401
