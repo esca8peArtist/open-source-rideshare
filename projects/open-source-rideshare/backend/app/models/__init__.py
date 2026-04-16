@@ -59,3 +59,4 @@ from app.models.corporate_travel_itinerary import CorporateTravelItinerary, Corp
 from app.models.corporate_event import CorporateEvent, CorporateEventAttendee  # noqa: F401
 from app.models.corporate_office_location import CorporateOfficeLocation, CorporateOfficeMembership  # noqa: F401
 from app.models.corporate_account_hierarchy import CorporateAccountHierarchy  # noqa: F401
+from app.models.corporate_carpool_group import CorporateCarpoolGroup, CorporateCarpoolMember  # noqa: F401
