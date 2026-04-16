@@ -4,6 +4,39 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 238 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Driver Blacklist
+
+### Task: Corporate Driver Blacklist — COMPLETE (commit `29bac78`)
+
+Enterprise accounts block specific drivers from being dispatched on their
+corporate rides — the inverse of the preferred driver pool (Session 203).
+
+Model: CorporateDriverBlacklist (account CASCADE; driver CASCADE;
+  reason String(500) nullable; blacklisted_by SET NULL; is_active soft-delete;
+  UniqueConstraint account+driver; 3 indexes)
+
+Service (7 fns): add_driver_to_blacklist 409-dup/upsert-inactive /
+  remove_driver_from_blacklist 404 / get_blacklist_entry 404 /
+  list_blacklisted_drivers active_only-filter / is_driver_blacklisted bool /
+  get_blacklist_summary counts / list_all_platform account-filter
+
+API (10 endpoints): member list+get+check; admin add+lift+summary;
+  platform-admin list+lift; migration j9k0l1m2n3o4
+
+34 tests → Total: 8,930 passing (was 8,896)
+Pre-existing failure: test_corporate_guest_pass::test_validate_token_not_yet_valid
+  (mock.name AttributeError — unrelated to this feature, present before changes)
+
+---
+
 ## Session 237 — 2026-04-16
 
 ### Orient

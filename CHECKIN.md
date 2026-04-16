@@ -9,9 +9,29 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 218–235
+**Sessions**: 218–238
 
-### Accomplished (Session 235)
+### Accomplished (Session 238)
+
+#### open-source-rideshare — Corporate Driver Blacklist (commit `29bac78`)
+
+Enterprise accounts can block specific drivers from being dispatched on their corporate rides — the inverse of the preferred driver pool.
+
+- **`CorporateDriverBlacklist`**: account CASCADE; driver CASCADE; reason String(500) nullable; blacklisted_by SET NULL; is_active soft-delete; UniqueConstraint account+driver; 3 indexes
+- **7 service functions**: add (409-dup / upsert-inactive) / remove (404-if-not-active) / get (404) / list (active_only filter) / is_blacklisted (bool for matching engine) / summary (active+total counts) / list_all_platform (account filter)
+- **10 endpoints**: member list+get+check · admin add+lift+summary · platform-admin list+lift
+- **Migration `j9k0l1m2n3o4`** (1 table + unique constraint + 3 indexes)
+- **34 tests** → **Total: 8,930 passing** (was 8,896)
+
+### Accomplished (Session 237) — archived from previous check-in
+
+#### open-source-rideshare — Corporate Shuttle Pass Management (commit `36d2a02`)
+
+### Accomplished (Session 236) — archived
+
+#### open-source-rideshare — Corporate Shuttle Waitlist (commit `441a2c7`)
+
+### Accomplished (Session 235) — archived
 
 #### open-source-rideshare — Corporate Shuttle Routes & Seat Booking (commit `5998d9e`)
 
@@ -48,7 +68,7 @@ Enterprise accounts define fixed shuttle routes with recurring schedules and emp
 
 ### Needs Your Input
 
-- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `5998d9e` — Corporate Shuttle Routes & Seat Booking (79 new tests, **8,757 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
+- **open-source-rideshare PR**: `feature/corporate-business-accounts` ready to merge. Latest commit `29bac78` — Corporate Driver Blacklist (34 new tests, **8,930 total passing**). GitHub push blocked (SSH key `esca8peArtist` lacks access to `SuperClaude-Org`). Please push and open the PR manually, or grant push access.
 - **stockbot**: Paper trading live since April 14. Share cycle logs or a Trading page screenshot → orchestrator can assess model performance and determine next steps.
 - **mfg-farm**: Business plan complete. Decision: commission cable management designs (Fiverr/Upwork) or start Fusion 360 learning path?
 - **resistance-research**: Publication-ready. No further autonomous work. Your call on sharing, PDF, or professional layout.
@@ -59,9 +79,9 @@ Enterprise accounts define fixed shuttle routes with recurring schedules and emp
 2. If user drops input in INBOX.md → process and act on it
 
 **Next rideshare feature candidates**:
-- Corporate driver blacklist (accounts block specific drivers from being dispatched on their rides — complement to preferred driver pool)
 - Corporate parking permit management (permit issuance workflow, renewal reminders, waitlist for spots)
 - Corporate reporting push (scheduled delivery of reports to external HRIS/ERP endpoints via webhook)
+- Corporate member device management (register employee devices for push notifications, SSO login tracking)
 
 ---
 
