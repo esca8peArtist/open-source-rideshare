@@ -6,7 +6,247 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
-### feature/corporate-business-accounts — corporate ride templates (latest)
+### feature/corporate-business-accounts — corporate shuttle pass management (latest)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `36d2a02`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Enterprise accounts define pre-paid shuttle pass types and issue digital passes to
+employees. Employees redeem passes when booking shuttle seats; each redemption is
+recorded in an append-only usage ledger. Admins get an aggregate summary of pass
+stats (type counts, issued/active/expired counts, ride totals) for reporting.
+
+**Architecture decisions:**
+- Three-table design: `corporate_shuttle_pass_types` (admin-defined templates),
+  `corporate_shuttle_passes` (issued per-employee passes), and
+  `corporate_shuttle_pass_usages` (append-only redemption ledger).
+- `rides_remaining` is a computed field (`rides_total - rides_used`) not stored on
+  the row — `PassResponse` uses a custom `from_orm_pass()` classmethod instead of
+  plain `model_validate` to populate it.
+- Route ordering: `/passes/my` and `/passes/summary` are placed before
+  `/passes/{pass_id}` in the router to prevent FastAPI path conflicts.
+- `expires_at` is computed at issue time: `now + timedelta(days=validity_days)` if
+  `validity_days` is set on the pass type; otherwise NULL (never expires).
+- `redeem_pass` validates: pass is active, belongs to the calling member, not
+  expired, and has rides remaining — returning 409 for each failure case.
+- `get_account_pass_summary` runs 5 aggregate queries and returns totals in a
+  single `PassSummaryResponse`.
+
+**Files created:**
+- `backend/app/models/corporate_shuttle_pass.py`
+- `backend/app/schemas/corporate_shuttle_pass.py`
+- `backend/app/services/corporate_shuttle_pass_service.py`
+- `backend/app/api/v1/corporate_shuttle_pass.py`
+- `backend/app/db/migrations/versions/i8j9k0l1m2n3_corporate_shuttle_pass.py`
+- `backend/tests/test_corporate_shuttle_pass.py`
+
+**Files modified:**
+- `backend/app/main.py` — imported + registered corporate_shuttle_pass.router
+
+**Endpoints added:**
+- `GET  /api/v1/corporate/{account_id}/shuttle/pass-types`
+  — member: list pass types (is_active filter)
+- `GET  /api/v1/corporate/{account_id}/shuttle/passes/my`
+  — member: list own passes (is_active filter)
+- `GET  /api/v1/corporate/{account_id}/shuttle/passes/{pass_id}`
+  — member: get one pass
+- `POST /api/v1/corporate/{account_id}/shuttle/passes/{pass_id}/redeem`
+  — member: redeem a ride from a pass
+- `POST /api/v1/corporate/{account_id}/shuttle/pass-types`
+  — admin: create pass type
+- `GET  /api/v1/corporate/{account_id}/shuttle/pass-types/{type_id}`
+  — admin: get pass type detail
+- `PUT  /api/v1/corporate/{account_id}/shuttle/pass-types/{type_id}`
+  — admin: update pass type
+- `POST /api/v1/corporate/{account_id}/shuttle/pass-types/{type_id}/deactivate`
+  — admin: deactivate pass type
+- `POST /api/v1/corporate/{account_id}/shuttle/members/{member_id}/passes/issue`
+  — admin: issue pass to member
+- `GET  /api/v1/corporate/{account_id}/shuttle/passes/summary`
+  — admin: aggregate pass statistics
+- `GET  /api/v1/platform/corporate/shuttle/passes/all`
+  — platform-admin: all passes across accounts
+
+**Tests:** 74 new tests (service: 30, schema: 8, API: 28, integration: 8) — all passing.
+Full suite: 8,896 passing, 1 pre-existing failure (test_corporate_guest_pass::test_validate_token_not_yet_valid), 1082 skipped.
+
+**Ready to merge when:** you decide to push this feature branch.
+
+---
+
+### feature/corporate-business-accounts — corporate shuttle waitlist (previous)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `441a2c7`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+When a shuttle schedule run is at full capacity, employees can join a
+waitlist for a specific date. Cancelling a confirmed booking automatically
+promotes the first waiting member to a confirmed seat — no manual admin
+action needed.
+
+**Architecture decisions:**
+- `queue_position` is assigned as max(existing)+1 at join time — lightweight
+  and correct for typical waitlist volumes. No resequencing on cancel; existing
+  queue positions are stable identifiers.
+- Auto-promotion is triggered in the API layer (cancel_booking endpoint) after
+  `cancel_booking` succeeds. It calls `promote_from_waitlist` which re-checks
+  capacity before acting — safe if called multiple times.
+- `member_id=None` waiters (user deleted) are skipped by promote; the next
+  waiter with a valid member_id would be found on the next call.
+- `WaitlistStatus.expired` is defined for future use (e.g., past-date entries)
+  but not auto-set — a scheduled job could set it later.
+- Unique constraint `(schedule_id, member_id, booking_date)` prevents duplicate
+  waiting entries; leaving and re-joining is allowed (new row with new position).
+
+**Files created:**
+- `backend/app/models/corporate_shuttle_waitlist.py`
+- `backend/app/schemas/corporate_shuttle_waitlist.py`
+- `backend/app/services/corporate_shuttle_waitlist_service.py`
+- `backend/app/api/v1/corporate_shuttle_waitlist.py`
+- `backend/app/db/migrations/versions/h7i8j9k0l1m2_corporate_shuttle_waitlist.py`
+- `backend/tests/test_corporate_shuttle_waitlist.py`
+
+**Files modified:**
+- `backend/app/main.py` — imported + registered corporate_shuttle_waitlist.router
+- `backend/app/api/v1/corporate_shuttle.py` — imported promote_from_waitlist;
+  cancel_booking endpoint now calls it after successful cancel
+- `backend/tests/test_corporate_shuttle.py` — patched promote_from_waitlist in
+  test_api_cancel_booking_200 (existing test hit the new code path)
+
+**Endpoints added:**
+- `POST /api/v1/corporate/{account_id}/shuttle/schedules/{schedule_id}/waitlist`
+  — member: join waitlist (201)
+- `GET  /api/v1/corporate/{account_id}/shuttle/my-waitlists`
+  — member: own waitlist entries (status filter)
+- `GET  /api/v1/corporate/{account_id}/shuttle/waitlist/{entry_id}`
+  — member: get one entry
+- `POST /api/v1/corporate/{account_id}/shuttle/waitlist/{entry_id}/leave`
+  — member: cancel waitlist entry
+- `GET  /api/v1/corporate/{account_id}/shuttle/schedules/{schedule_id}/waitlist`
+  — admin: list waitlist for schedule+date (status filter)
+- `GET  /api/v1/corporate/{account_id}/shuttle/schedules/{schedule_id}/waitlist/summary`
+  — admin: waiting_count/promoted_count/total for schedule+date
+- `GET  /api/v1/platform/corporate/shuttle/waitlist/all`
+  — platform-admin: cross-account listing (account_id+status filters)
+
+**Tests:** 65 new tests (service: 31, schema: 9, API: 21, integration: 4) — all passing.
+Full suite: 8,822 passing, 1 pre-existing failure (test_corporate_guest_pass::test_validate_token_not_yet_valid), 1082 skipped.
+
+**Ready to merge when:** you decide to push this feature branch.
+
+---
+
+### feature/corporate-business-accounts — corporate vehicle reservation booking (latest)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `f947dd1`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Employees can reserve company fleet vehicles for self-drive use during specified
+time windows — like an internal Zipcar. Reservations must not overlap for the same
+vehicle (pending or confirmed). Admins can confirm, complete, or mark no-shows.
+Members can cancel their own reservations; admins can cancel any.
+
+**Architecture decisions:**
+- Overlap check uses the standard interval intersection condition:
+  `existing.start_time < new.end_time AND existing.end_time > new.start_time`,
+  filtered to active statuses (pending, confirmed). Self-exclusion applied during
+  updates to avoid false conflicts.
+- Status lifecycle: `pending` → `confirmed` (admin) → `completed` / `no_show` (admin).
+  Cancel is allowed from pending or confirmed; completed and no_show are terminal.
+- `check_vehicle_availability` returns `{is_available, conflicts}` so the frontend
+  can surface exactly which reservations are blocking a window.
+- `get_reservation_summary` counts in Python over one query (adequate for expected
+  reservation volumes; can be replaced with GROUP BY if needed at scale).
+- Member cancel endpoint checks ownership (`reserved_by_id == current_user.id`);
+  gracefully elevates to admin cancel if `_require_account_admin` does not raise.
+- Migration `c2d3e4f5g6h7` creates the `reservationstatus` PG enum before the
+  table, and drops it explicitly on downgrade.
+
+**Files created:**
+- `backend/app/models/corporate_vehicle_reservation.py`
+- `backend/app/schemas/corporate_vehicle_reservation.py`
+- `backend/app/services/corporate_vehicle_reservation_service.py`
+- `backend/app/api/v1/corporate_vehicle_reservation.py`
+- `backend/app/db/migrations/versions/c2d3e4f5g6h7_corporate_vehicle_reservations.py`
+- `backend/tests/test_corporate_vehicle_reservation.py`
+
+**Files modified:**
+- `backend/app/models/__init__.py` — registered CorporateVehicleReservation, ReservationStatus
+- `backend/app/main.py` — registered corporate_vehicle_reservation.router
+
+**Endpoints added:**
+- `POST   /api/v1/corporate/{account_id}/vehicle-reservations/` — member: create (201)
+- `GET    /api/v1/corporate/{account_id}/vehicle-reservations/` — member: list (filters: fleet_vehicle_id, status, from_time, to_time)
+- `GET    /api/v1/corporate/{account_id}/vehicle-reservations/my` — member: own reservations
+- `GET    /api/v1/corporate/{account_id}/vehicle-reservations/summary` — member: counts by status
+- `GET    /api/v1/corporate/{account_id}/vehicle-reservations/{reservation_id}` — member: get one
+- `POST   /api/v1/corporate/{account_id}/vehicle-reservations/{reservation_id}/cancel` — member/admin: cancel
+- `PUT    /api/v1/corporate/{account_id}/vehicle-reservations/{reservation_id}` — admin: update pending
+- `POST   /api/v1/corporate/{account_id}/vehicle-reservations/{reservation_id}/confirm` — admin: confirm
+- `POST   /api/v1/corporate/{account_id}/vehicle-reservations/{reservation_id}/complete` — admin: complete
+- `POST   /api/v1/corporate/{account_id}/vehicle-reservations/{reservation_id}/no-show` — admin: no-show
+- `GET    /api/v1/corporate/{account_id}/fleet-vehicles/{vehicle_id}/availability` — admin: availability check
+- `GET    /api/v1/platform/corporate/vehicle-reservations/` — platform-admin: all reservations
+- `GET    /api/v1/platform/corporate/vehicle-reservations/{account_id}` — platform-admin: per account
+
+**Tests:** 65 new tests (service: 29, schema: 9, API: 27) — all passing.
+Full suite: 8,464 passing, 1 pre-existing failure (test_corporate_guest_pass::test_validate_token_not_yet_valid), 1082 skipped.
+
+**Ready to merge when:** you decide to push this feature branch.
+
+---
+
+### feature/corporate-business-accounts — multi-currency billing (latest)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `ea522ab`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Adds multi-currency billing support for corporate accounts operating internationally.
+Corporate accounts can configure a preferred ISO 4217 billing currency (20 supported:
+USD, EUR, GBP, CAD, AUD, JPY, CHF, SEK, NOK, DKK, NZD, SGD, HKD, MXN, BRL, ZAR,
+INR, KRW, CNY, AED). When invoices are issued in a non-USD currency, an FX rate
+snapshot is recorded for audit and reporting.
+
+**Architecture decisions:**
+- `CorporateBillingCurrency`: one record per account; created with USD defaults on
+  first read (get_or_create semantics). Unique constraint on account_id.
+- `CorporateInvoiceFXSnapshot`: one record per non-USD invoice. Unique constraint
+  prevents duplicate snapshots; the router returns 409 and existing snapshot is
+  returned if a duplicate is attempted (upsert-style).
+- `create_fx_snapshot` returns None for USD-billed accounts so no snapshot is stored.
+- `get_currency_summary` aggregates non-USD invoice count and totals by currency.
+- Currency validation rejects unsupported codes with HTTP 422 at both schema and
+  service layer, keeping errors consistent.
+- Migration: `a0b1c2d3e4f5` revises `z9a0b1c2d3e4`.
+
+**Files created:**
+- `app/models/corporate_billing_currency.py`
+- `app/schemas/corporate_billing_currency.py`
+- `app/services/corporate_billing_currency_service.py`
+- `app/api/v1/corporate_billing_currency.py`
+- `app/db/migrations/versions/a0b1c2d3e4f5_corporate_billing_currency.py`
+- `tests/test_corporate_billing_currency.py`
+
+**Tests:** 59 new tests → **total 8,336 passing**
+Pre-existing failure (unrelated): `test_corporate_guest_pass::test_validate_token_not_yet_valid`
+
+**Ready to merge when:** you decide to push this feature branch.
+
+---
+
+### feature/corporate-business-accounts — corporate ride templates
 
 **Branch:** `feature/corporate-business-accounts`
 **Commit:** `c66075a`

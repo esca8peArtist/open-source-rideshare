@@ -4,6 +4,89 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 237 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Shuttle Pass Management
+
+### Task: Corporate Shuttle Pass Management — COMPLETE (commit `36d2a02`)
+
+Pre-paid digital passes for the shuttle network. Admins define named pass
+types (ride count, validity, price), issue passes to employees, and employees
+redeem passes against shuttle bookings. Each redemption is recorded in an
+append-only usage ledger.
+
+Models: CorporateShuttlePassType (account CASCADE; name unique/account;
+  ride_count; validity_days nullable; price_usd nullable; 3 indexes)
+  CorporateShuttlePass (pass_type_id CASCADE; rides_total/rides_used;
+  issued_at; expires_at computed from validity_days; is_active; 4 indexes)
+  CorporateShuttlePassUsage (pass_id CASCADE; booking_id SET NULL;
+  rides_remaining_after snapshot; 4 indexes)
+
+Service (11 fns): create_pass_type 409-dup-name / get / list is_active-filter /
+  update 409-collision / deactivate 409-inactive / issue_pass 404+409-inactive
+  computes-expires_at / get_pass 404 / list_member_passes / redeem_pass
+  409-inactive+wrong-member+expired+no-rides / get_account_pass_summary /
+  list_all_platform
+
+API (11 endpoints): member list-types+my-passes+get-pass+redeem;
+  admin create-type+get-type+update-type+deactivate+issue+summary;
+  platform-admin list-all
+
+Migration i8j9k0l1m2n3 (3 tables + 11 indexes; down h7i8j9k0l1m2)
+74 tests → Total: 8,896 passing (was 8,822)
+
+---
+
+## Session 236 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Shuttle Waitlist
+
+### Task: Corporate Shuttle Waitlist — COMPLETE (commit `441a2c7`)
+
+When a shuttle schedule run is at full capacity employees can join a waitlist
+for a specific date. When a confirmed booking is cancelled, the first waiting
+member is automatically promoted to a confirmed seat.
+
+Model:
+  CorporateShuttleWaitlist (table: corporate_shuttle_waitlists;
+    schedule_id CASCADE; account_id CASCADE; member_id SET NULL; booking_date Date;
+    WaitlistStatus enum 4 values: waiting/promoted/expired/cancelled;
+    queue_position int auto-assigned (max+1 per schedule+date);
+    notes; promoted_at+promoted_booking_id SET NULL audit;
+    cancelled_at+cancellation_reason audit;
+    unique (schedule_id, member_id, booking_date); 4 indexes)
+
+Service (8 functions):
+  join_waitlist / leave_waitlist / get_waitlist_entry / get_schedule_waitlist /
+  promote_from_waitlist (auto-called on cancel; books seat + marks entry promoted) /
+  get_member_waitlists / get_waitlist_summary / list_all_platform
+
+API (9 endpoints):
+  member POST join + GET my-waitlists + GET entry/{id} + POST leave
+  admin  GET schedule-waitlist + GET summary
+  platform-admin GET all
+
+cancel_booking endpoint now calls promote_from_waitlist automatically when
+a seat opens — no-op if no waiters or still full.
+
+Migration h7i8j9k0l1m2 (waitliststatus enum + table + 4 indexes;
+  down_revision g6h7i8j9k0l1)
+65 tests → Total: 8,822 passing (was 8,757)
+
+---
+
 ## Session 235 — 2026-04-16
 
 ### Orient
