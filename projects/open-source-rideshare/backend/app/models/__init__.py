@@ -66,3 +66,4 @@ from app.models.corporate_billing_currency import CorporateBillingCurrency, Corp
 from app.models.corporate_fleet_vehicle import CorporateFleetVehicle, CorporateFleetAssignment  # noqa: F401
 from app.models.corporate_vehicle_reservation import CorporateVehicleReservation, ReservationStatus  # noqa: F401
 from app.models.corporate_mileage_reimbursement import CorporateMileagePolicy, CorporateMileageClaim, ClaimStatus  # noqa: F401
+from app.models.corporate_fuel_card import CorporateFuelCard, CorporateFuelCardTransaction, CardNetwork, FuelType  # noqa: F401
