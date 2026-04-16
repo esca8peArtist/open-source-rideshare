@@ -4,6 +4,93 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 216 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Ride Templates
+
+### Task: Corporate Ride Templates — COMPLETE (commit `c66075a`)
+
+Corporate admins define named, reusable booking configurations (saved routes
+with pre-filled pickup/dropoff addresses, preferred vehicle type, cost centre,
+and trip purpose).  Employees browse templates to get pre-filled booking data,
+reducing friction for frequent trips (airport runs, hotel transfers, etc.).
+
+Model:
+  CorporateRideTemplate (account CASCADE; name unique/account; description;
+    pickup + dropoff address fields + lat/lng; vehicle_type; default_cost_center_id
+    FK SET NULL; default_trip_purpose_id FK SET NULL; notes; use_count (increments
+    on each record_template_use call); is_active soft-disable; created_by_id FK
+    SET NULL; 4 indexes + unique constraint)
+
+Service (10 functions):
+  create (409 duplicate name) / get / list (is_active filter, name-ordered) /
+  update (409 name collision, partial PATCH) / deactivate (409 if already inactive) /
+  reactivate (409 if already active) / delete / record_template_use (409 if
+  inactive, increments use_count) / get_popular_templates (use_count desc,
+  configurable limit, total reflects all active count) / list_all_platform
+
+Endpoints (11):
+  Member: list / popular (limit 1–50) / get / use (records use_count++)
+  Admin: create / update / deactivate / reactivate / delete
+  Platform-admin: list-all (account_id filter) / list-for-account (is_active filter)
+
+Migration: m5n6o7p8q9r0_corporate_ride_templates.py
+  56 tests → Total: 7,411 passing (was 7,355)
+
+#### Session end
+
+---
+
+## Session 215 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Shift-Based Ride Scheduling
+
+### Task: Corporate Shift-Based Ride Scheduling — COMPLETE (commit `ee2c734`)
+
+Companies with shift workers (healthcare, manufacturing, security) can now define
+named shifts with timing and work location, assign employees with their personal
+pickup addresses, and employees can view their upcoming shift schedule.
+
+Models:
+  CorporateShift (account CASCADE; name; description; work_location_name + full
+    address + lat/lng; shift_start_time; shift_end_time; days_of_week JSON int list
+    0–6; is_active; created_by_id; 4 indexes — unique account+name)
+  CorporateShiftAssignment (shift+member unique; pickup address + lat/lng;
+    auto_request_rides preference flag; advance_booking_minutes; is_active;
+    assigned_by_id; notes; 3 indexes)
+
+Service (14 functions):
+  create (409 duplicate name) / get / list / update (409 name collision) /
+  deactivate (409 if already inactive) / reactivate (409 if already active) / delete /
+  assign_member (409 duplicate) / get_assignment / update_assignment /
+  remove_assignment / list_shift_members / get_member_shifts /
+  get_shift_summary (total/active/inactive members + auto_request count) /
+  list_all_platform
+
+Endpoints (14):
+  Member: list / get / my-assignments / summary
+  Admin: create / update / deactivate / reactivate / delete / assign / list-members /
+    update-assignment / delete-assignment
+  Platform-admin: list-all / list-for-account
+
+Migration: l4m5n6o7p8q9_corporate_shifts.py
+  69 tests → Total: 7,355 passing (was 7,286)
+
+#### Session end
+
+---
+
 ## Session 214 — 2026-04-16
 
 ### Orient

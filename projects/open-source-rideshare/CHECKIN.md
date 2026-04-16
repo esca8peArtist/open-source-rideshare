@@ -6,6 +6,96 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/corporate-business-accounts — corporate ride templates (latest)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `c66075a`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Adds Corporate Ride Templates — corporate admins define named, reusable booking
+configurations with pre-filled pickup/dropoff addresses, preferred vehicle type,
+and default cost centre / trip purpose.  Employees browse templates and get
+pre-filled booking data, reducing friction for frequent corporate trips (airport
+runs, hotel transfers, office-to-client-site routes, etc.).
+
+**Architecture decisions:**
+- Single `corporate_ride_templates` table; name is unique per account.
+- `use_count` field is incremented by the service layer (`record_template_use`)
+  whenever a member selects a template — powers the `/popular` endpoint.
+- `get_popular_templates` returns the top-N active templates by use_count (desc)
+  and also emits the total count of all active templates so callers can implement
+  "showing top 10 of N" displays.
+- `record_template_use` raises 409 on inactive templates (prevent ghost bookings).
+- Both `default_cost_center_id` and `default_trip_purpose_id` are SET NULL FKs
+  so deleting the referenced resource doesn't cascade-delete the template.
+- Lat/lng stored as Numeric(9,6); `_to_response` converts to float for JSON.
+
+**Tests:** 56 new tests → **total 7,411 passing**
+
+**Ready to merge when:** you decide to push this feature branch.
+
+---
+
+### feature/corporate-business-accounts — corporate event management (previous)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `7182eb7`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Adds Corporate Event Management — enterprise coordinators can organize company events
+(team offsites, conferences, client dinners, holiday parties), invite employees, and
+link rides for consolidated billing.
+
+**Architecture decisions:**
+- Two-table design: `corporate_events` (the event) + `corporate_event_attendees` (junction
+  linking members and optionally their rides to the event). Mirrors the travel itinerary
+  pattern used throughout the corporate feature set.
+- Status string fields (not PG enums) for both events and attendees, consistent with all
+  other corporate features — values can be extended without a migration.
+- Event lifecycle: `draft` → `activate` → `active` → `complete` → `completed`.
+  Cancel is allowed from any non-completed state.
+- `update_event` blocks writes when status is `cancelled` or `completed` (both are terminal).
+- `invite_attendees` silently skips members already in the attendee list — safe to call
+  repeatedly with the same member IDs.
+- `corporate_address_id` FK stored without a SQLAlchemy relationship on `CorporateEvent`
+  because `CorporateAddress` is not in `models/__init__.py`. The FK is preserved in the
+  migration and can be used for joins directly; the relationship can be added later when the
+  address model is registered.
+- `EventSummaryResponse` counts by status in Python (one query for all attendees) rather
+  than four COUNT subqueries — simpler and adequate for expected attendee counts.
+
+**Files changed:**
+- `backend/app/models/corporate_event.py` — CorporateEvent + CorporateEventAttendee models
+- `backend/app/schemas/corporate_event.py` — Pydantic schemas (EventCreate, EventUpdate, EventResponse, EventListResponse, AttendeeStatusUpdate, AttendeeResponse, AttendeeListResponse, InviteAttendeesRequest, EventSummaryResponse)
+- `backend/app/services/corporate_event.py` — 11 service functions
+- `backend/app/api/v1/corporate_events.py` — 12 endpoints
+- `backend/app/db/migrations/versions/k3l4m5n6o7p8_corporate_events.py` — Alembic migration (revises i0j1k2l3m4n5)
+- `backend/tests/test_corporate_events.py` — 53 tests
+- `backend/app/models/__init__.py` — registered new models
+- `backend/app/main.py` — registered corporate_events.router
+
+**Endpoints added:**
+- `POST   /api/v1/corporate/accounts/me/events` — member: create event (201)
+- `GET    /api/v1/corporate/accounts/me/events` — member: list events
+- `GET    /api/v1/corporate/accounts/me/events/{event_id}` — member: get event
+- `PUT    /api/v1/corporate/accounts/me/events/{event_id}` — member: update event
+- `GET    /api/v1/corporate/accounts/me/events/{event_id}/summary` — member: get summary
+- `POST   /api/v1/corporate/accounts/me/events/{event_id}/activate` — admin: activate
+- `POST   /api/v1/corporate/accounts/me/events/{event_id}/cancel` — admin: cancel
+- `POST   /api/v1/corporate/accounts/me/events/{event_id}/complete` — admin: complete
+- `POST   /api/v1/corporate/accounts/me/events/{event_id}/attendees/invite` — admin: invite members
+- `PATCH  /api/v1/corporate/accounts/me/events/{event_id}/attendees/{member_id}` — admin: update attendee status
+- `GET    /api/v1/platform/corporate/events` — platform-admin: list all events
+- `GET    /api/v1/platform/corporate/accounts/{account_id}/events` — platform-admin: list for account
+
+**Test results:** 53/53 new tests passing. Full suite: 7,286 passing, 1 pre-existing failing (test_corporate_guest_pass.py::test_validate_token_not_yet_valid), 1082 skipped.
+
+---
+
 ### feature/corporate-business-accounts — corporate department-level ride policies
 
 **Branch:** `feature/corporate-business-accounts`

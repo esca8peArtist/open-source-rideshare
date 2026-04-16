@@ -9,32 +9,19 @@
 ## Since Last Check-in
 
 **Period**: April 16, 2026
-**Sessions**: 211–214
+**Sessions**: 216
 
-### Accomplished (Sessions 211–214)
+### Accomplished (Session 216)
 
-#### open-source-rideshare — Corporate Event Management (commit `7182eb7`, Session 214)
+#### open-source-rideshare — Corporate Ride Templates (commit `c66075a`)
 
-Enterprise coordinators can now create named company events (team offsites, conferences, client dinners, holiday parties), invite employees, track attendance, and link rides to the event for consolidated billing.
+Corporate admins can now define named, reusable booking configurations — saved routes with pre-filled pickup/dropoff addresses, preferred vehicle type, and default cost centre / trip purpose. Employees browse templates to get pre-filled booking data, reducing friction for frequent corporate trips (airport runs, hotel transfers, office-to-client-site routes, etc.).
 
-- **`CorporateEvent`**: title, event_location_name + full address, event_datetime, budget_usd, max_attendees, auto_approve_rides flag; status lifecycle `draft → active → completed` (cancel from any non-completed state)
-- **`CorporateEventAttendee`**: junction table (event+member unique); status `invited/confirmed/declined/cancelled`; ride_id FK links the attendee's actual ride to the event
-- **11 service functions**: create / get / list / update (blocks on terminal status) / activate / cancel / complete / invite_attendees (bulk, skips duplicates silently) / update_attendee_status / get_event_summary / list_all_platform
-- **12 endpoints**: member (create/list/get/update/summary) · admin (activate/cancel/complete/invite/update-attendee-status) · platform-admin (2)
-- **Migration `k3l4m5n6o7p8`**
-- **53 tests** → **Total: 7,286 passing** (was 7,233)
-
-#### open-source-rideshare — Corporate Booking Eligibility Check (commit `5c986d1`, Session 213)
-
-The capstone orchestration feature — a single pre-booking validator checking all 6 corporate policy layers (ride policy, blackout, quotas, spend limit, auto-approval, approval chain). Returns a structured verdict: eligible / requires_approval / auto_approved with `denial_reasons`. 40 tests. Total was 7,233.
-
-#### open-source-rideshare — Corporate Department-Level Ride Policies (commit `6847e59`, Session 212)
-
-Middle tier of the 3-tier policy hierarchy. Multi-department members get most-restrictive-wins merge. 49 tests. Total was 7,193.
-
-#### open-source-rideshare — Corporate Auto-Approval Rules (commit `a3f1089`, Session 211)
-
-Priority-ordered rules that auto-approve corporate rides meeting all specified conditions. 51 tests. Total was 7,144.
+- **`CorporateRideTemplate`**: name (unique per account), description, pickup + dropoff location name + full address + lat/lng, vehicle_type, default_cost_center_id (FK SET NULL), default_trip_purpose_id (FK SET NULL), notes, use_count (auto-incremented on booking), is_active soft-disable
+- **10 service functions**: create (409 duplicate name) / get / list (is_active filter, name-ordered) / update (409 name collision, partial PATCH) / deactivate (409 if already inactive) / reactivate (409 if already active) / delete / record_template_use (409 if inactive, increments use_count) / get_popular_templates (use_count desc, configurable limit 1–50) / list_all_platform (account filter)
+- **11 endpoints**: member (list / popular / get / use) · admin (create / update / deactivate / reactivate / delete) · platform-admin (list-all / list-for-account)
+- **Migration `m5n6o7p8q9r0`**
+- **56 tests** → **Total: 7,411 passing** (was 7,355)
 
 ---
 
@@ -55,8 +42,13 @@ Nothing blocking. Top priorities still need user action:
 
 ## History
 
-### Accomplished (Sessions 211–213) — archived from previous check-in
+### Accomplished (Session 215) — archived from previous check-in
 
+- **Corporate Shift-Based Ride Scheduling** (commit `ee2c734`): CorporateShift + CorporateShiftAssignment, 14 service functions, 14 endpoints, 69 tests, total 7,355
+
+### Accomplished (Sessions 211–214) — archived from previous check-in
+
+- **Corporate Event Management** (commit `7182eb7`): CorporateEvent + CorporateEventAttendee, organizer creates events and invites employees, 53 tests, total 7,286
 - **Corporate Booking Eligibility Check** (commit `5c986d1`): capstone orchestration feature, 6-layer policy validator, 40 tests, total 7,233
 - **Corporate Department-Level Ride Policies** (commit `6847e59`): middle tier 3-level policy hierarchy, most-restrictive-wins merge, 49 tests, total 7,193
 - **Corporate Auto-Approval Rules** (commit `a3f1089`): priority-ordered auto-approval, 51 tests, total 7,144
