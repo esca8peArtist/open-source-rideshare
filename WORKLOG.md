@@ -4,6 +4,49 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 242 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready, no autonomous work
+- Selected: open-source-rideshare — Corporate Vehicle Inspection Checklists
+
+### Task: Corporate Vehicle Inspection Checklists — COMPLETE (commit `ad5292d`)
+
+Fleet managers define reusable inspection templates; drivers/managers submit
+pre-trip and post-trip checklists for fleet vehicles. Required item failures
+auto-classify as failed; optional-only failures set requires_attention.
+Template items pre-populate inspection records.
+
+CorporateVehicleInspectionTemplate (account CASCADE; name unique/account;
+  inspection_items JSONB; is_active; created_by_id SET NULL; 3 indexes)
+CorporateVehicleInspection (template SET NULL; fleet_vehicle CASCADE;
+  account CASCADE; reservation SET NULL; InspectionType enum 4 values
+  pre_trip/post_trip/scheduled/incident; InspectionStatus enum 4 values
+  pending/passed/failed/requires_attention; inspected_by SET NULL;
+  inspected_at; odometer_miles; fuel_level_pct; items_checked JSONB;
+  defects_noted JSONB; overall_notes; maintenance_log SET NULL; 7 indexes)
+
+Service (11 fns): create_template 409-dup-name / get_template 404 /
+  list_templates is_active-filter / update_template 409-collision /
+  deactivate_template 409-if-inactive / create_inspection 404-vehicle
+  409-inactive-vehicle pre-populates-items-from-template / get_inspection 404 /
+  submit_inspection 409-if-not-pending evaluates-pass-fail-requires_attention /
+  list_vehicle_inspections multi-filter / get_account_inspection_summary /
+  list_all_platform
+
+API (13 endpoints): member list-templates+get-template+create+get+submit+list+summary;
+  admin create-template+update-template+deactivate-template;
+  platform-admin list+list-templates; migration n3o4p5q6r7s8
+
+48 tests → Total: 9,118 passing (was 9,070)
+Pre-existing failure: test_corporate_guest_pass::test_validate_token_not_yet_valid (mock.name AttributeError — unrelated)
+
+---
+
 ## Session 239 — 2026-04-16
 
 ### Orient
@@ -9964,3 +10007,50 @@ Migration l1m2n3o4p5q6 (claimstatus enum + 2 tables + 5 indexes)
 47 tests → Total: 9,020 passing (was 8,973)
 
 Session 240 complete.
+
+## Session 241 — 2026-04-16
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED: no active blocks
+- stockbot: STOCKBOT_API_KEY not in env — no autonomous path
+- mfg-farm: awaiting user decision — no autonomous path
+- resistance-research: publication-ready — no autonomous work
+- Selected: open-source-rideshare — Corporate Fuel Card Management
+
+### Task: Corporate Fuel Card Management — IN PROGRESS
+Fleet managers assign company fuel cards (Visa, Mastercard, WEX, Voyager, etc.)
+to fleet vehicles and/or drivers. Track per-card spending limits and record
+fuel transactions (merchant, fuel type, gallons, amount, odometer).
+
+### Task: Corporate Fuel Card Management — COMPLETE (commit `276d161`)
+
+Fleet managers register company fuel cards (Visa, Mastercard, WEX,
+Voyager, fleet_card, other), assign them to fleet vehicles and/or
+drivers, configure per-card monthly spending limits, and record fuel
+transactions (merchant, fuel type, gallons, amount, odometer).
+
+CorporateFuelCard (account CASCADE; card_last_four String(4);
+  CardNetwork enum 6 values; nickname String(100) unique per account;
+  assigned_vehicle_id UUID FK SET NULL to fleet vehicles;
+  assigned_driver_id SET NULL to users; monthly_limit_usd Numeric(10,2)
+  nullable; is_active; issued_by_id SET NULL; notes; 4 indexes)
+CorporateFuelCardTransaction (fuel_card_id CASCADE; account CASCADE;
+  transaction_date; merchant_name String(200); FuelType enum 5 values
+  regular/premium/diesel/electric/other; gallons nullable; amount_usd;
+  odometer_miles nullable; recorded_by_id SET NULL; 4 indexes)
+14 service functions: issue_card 409-dup-nickname / get_card 404 /
+  list_cards vehicle+driver+is_active-filters / update_card 409-collision /
+  assign_to_vehicle 409-same-vehicle / assign_to_driver 409-same-driver /
+  unassign clears-both / deactivate_card 409-if-inactive /
+  reactivate_card 409-if-active / record_transaction 409-if-inactive /
+  list_card_transactions date-range-filter / get_card_summary
+  utilization-pct-when-limit-set / get_account_fuel_summary /
+  list_all_platform
+14 endpoints: member list+summary+get+transactions; admin issue+update+
+  assign-vehicle+assign-driver+unassign+deactivate+reactivate+
+  record-txn+card-summary; platform-admin list
+Migration m2n3o4p5q6r7 (cardnetwork + fueltype enums + 2 tables + 8 indexes)
+50 tests → Total: 9,070 passing (was 9,020)
+
+Session 241 complete.
