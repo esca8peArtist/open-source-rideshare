@@ -70,3 +70,4 @@ from app.models.corporate_fuel_card import CorporateFuelCard, CorporateFuelCardT
 from app.models.corporate_vehicle_inspection import CorporateVehicleInspectionTemplate, CorporateVehicleInspection, InspectionType, InspectionStatus  # noqa: F401
 from app.models.corporate_fleet_insurance import CorporateFleetInsurancePolicy, InsuranceType  # noqa: F401
 from app.models.corporate_fleet_fuel_log import CorporateFleetFuelLog, FleetFuelType  # noqa: F401
+from app.models.corporate_fleet_registration import CorporateFleetVehicleRegistration  # noqa: F401
