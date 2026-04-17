@@ -84,3 +84,29 @@ class AdminDriverLocationsResponse(BaseModel):
     drivers: list[AdminDriverLocationItem]
     total: int = Field(..., ge=0)
     as_of: datetime
+
+
+# ---------------------------------------------------------------------------
+# Rider-tracking view — assigned driver during an active ride
+# ---------------------------------------------------------------------------
+
+
+class AssignedDriverLocationResponse(BaseModel):
+    """Rider's view of their assigned driver's position during an active ride.
+
+    Returned by GET /rides/{ride_id}/driver-location.  The rider sees exact
+    coordinates (no fuzzing) for their own assigned driver — this is the live
+    tracking map used during MATCHED / DRIVER_EN_ROUTE / ARRIVED phases.
+
+    lat/lng are null when the driver hasn't pushed a location yet.
+    distance_to_pickup_m is null when coordinates are unavailable or the ride
+    is outside a trackable status.
+    """
+
+    ride_status: str = Field(..., description="Current ride status")
+    lat: float | None = Field(None, description="Driver's last-known latitude")
+    lng: float | None = Field(None, description="Driver's last-known longitude")
+    updated_at: datetime | None = Field(None, description="When the driver last updated their position")
+    distance_to_pickup_m: float | None = Field(
+        None, ge=0, description="Haversine distance from driver to pickup point in metres"
+    )

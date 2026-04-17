@@ -8,11 +8,15 @@ Covers:
 - get_nearby_available_drivers:   join + filter logic (mocked DB)
 - get_all_online_driver_locations: admin query (mocked DB)
 - get_single_driver_location_admin: single driver, not-found returns None
+- get_assigned_driver_location:   ride not found, wrong rider, non-trackable, no driver id,
+                                  driver no location, driver has location + distance calc
 - PUT  /drivers/me/location       — auth, validation, success, redis failure tolerance
 - GET  /drivers/me/location       — auth, no location, with location
 - GET  /riders/nearby-drivers     — auth, query param validation, response shape
 - GET  /admin/drivers/locations   — admin auth, list shape
 - GET  /admin/drivers/{id}/location — admin auth, 404, exact fields
+- GET  /rides/{id}/driver-location — auth, 403 wrong rider, 404 missing ride, non-trackable,
+                                     null location, exact coords + distance
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ from app.services.driver_location import (
     MAX_NEARBY_LIMIT,
     fuzz_coordinate,
     get_all_online_driver_locations,
+    get_assigned_driver_location,
     get_driver_location_db,
     get_nearby_available_drivers,
     get_single_driver_location_admin,
@@ -732,3 +737,303 @@ class TestAdminGetSingleDriverLocation:
 
         assert resp.lat is None
         assert resp.lng is None
+
+
+# ---------------------------------------------------------------------------
+# get_assigned_driver_location (service)
+# ---------------------------------------------------------------------------
+
+
+class TestGetAssignedDriverLocation:
+    @pytest.mark.anyio
+    async def test_returns_none_when_ride_not_found(self):
+        result = MagicMock()
+        result.one_or_none.return_value = None
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=result)
+
+        out = await get_assigned_driver_location(db, ride_id=99, rider_user_id=1)
+        assert out is None
+
+    @pytest.mark.anyio
+    async def test_raises_permission_error_for_wrong_rider(self):
+        ride_row = _row(id=1, rider_id=5, driver_id=10, status="matched", pickup_lat=40.71, pickup_lng=-74.00)
+        result = MagicMock()
+        result.one_or_none.return_value = ride_row
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=result)
+
+        with pytest.raises(PermissionError):
+            await get_assigned_driver_location(db, ride_id=1, rider_user_id=999)
+
+    @pytest.mark.anyio
+    async def test_returns_base_dict_for_non_trackable_status(self):
+        from app.models.ride import RideStatus
+
+        ride_row = _row(id=1, rider_id=5, driver_id=10, status=RideStatus.REQUESTED, pickup_lat=40.71, pickup_lng=-74.00)
+        result = MagicMock()
+        result.one_or_none.return_value = ride_row
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=result)
+
+        out = await get_assigned_driver_location(db, ride_id=1, rider_user_id=5)
+        assert out is not None
+        assert out["lat"] is None
+        assert out["lng"] is None
+        assert out["distance_to_pickup_m"] is None
+
+    @pytest.mark.anyio
+    async def test_returns_base_dict_when_no_driver_assigned(self):
+        from app.models.ride import RideStatus
+
+        ride_row = _row(id=1, rider_id=5, driver_id=None, status=RideStatus.MATCHED, pickup_lat=40.71, pickup_lng=-74.00)
+        result = MagicMock()
+        result.one_or_none.return_value = ride_row
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=result)
+
+        out = await get_assigned_driver_location(db, ride_id=1, rider_user_id=5)
+        assert out is not None
+        assert out["lat"] is None
+
+    @pytest.mark.anyio
+    async def test_returns_null_coords_when_driver_has_no_location(self):
+        from app.models.ride import RideStatus
+
+        ride_row = _row(id=1, rider_id=5, driver_id=10, status=RideStatus.DRIVER_EN_ROUTE, pickup_lat=40.71, pickup_lng=-74.00)
+        driver_row = _row(lat=None, lng=None, updated_at=None)
+
+        call_count = 0
+
+        async def _execute(stmt):
+            nonlocal call_count
+            call_count += 1
+            result = MagicMock()
+            if call_count == 1:
+                result.one_or_none.return_value = ride_row
+            else:
+                result.one_or_none.return_value = driver_row
+            return result
+
+        db = AsyncMock()
+        db.execute = _execute
+
+        out = await get_assigned_driver_location(db, ride_id=1, rider_user_id=5)
+        assert out["lat"] is None
+        assert out["lng"] is None
+        assert out["distance_to_pickup_m"] is None
+
+    @pytest.mark.anyio
+    async def test_returns_exact_coords_and_distance(self):
+        from app.models.ride import RideStatus
+
+        pickup_lat, pickup_lng = 40.7128, -74.006
+        driver_lat, driver_lng = 40.720, -74.010
+        ts = _utcnow()
+
+        ride_row = _row(
+            id=1, rider_id=5, driver_id=10,
+            status=RideStatus.DRIVER_EN_ROUTE,
+            pickup_lat=pickup_lat, pickup_lng=pickup_lng,
+        )
+        driver_row = _row(lat=driver_lat, lng=driver_lng, updated_at=ts)
+
+        call_count = 0
+
+        async def _execute(stmt):
+            nonlocal call_count
+            call_count += 1
+            result = MagicMock()
+            if call_count == 1:
+                result.one_or_none.return_value = ride_row
+            else:
+                result.one_or_none.return_value = driver_row
+            return result
+
+        db = AsyncMock()
+        db.execute = _execute
+
+        out = await get_assigned_driver_location(db, ride_id=1, rider_user_id=5)
+        assert out["lat"] == pytest.approx(driver_lat)
+        assert out["lng"] == pytest.approx(driver_lng)
+        assert out["updated_at"] == ts
+        assert out["distance_to_pickup_m"] is not None
+        expected_dist = haversine_m(driver_lat, driver_lng, pickup_lat, pickup_lng)
+        assert out["distance_to_pickup_m"] == pytest.approx(round(expected_dist, 1), rel=1e-3)
+
+    @pytest.mark.anyio
+    async def test_works_for_arrived_status(self):
+        """ARRIVED is trackable — driver is at pickup, distance should be ~0."""
+        from app.models.ride import RideStatus
+
+        lat, lng = 40.7128, -74.006
+        ts = _utcnow()
+
+        ride_row = _row(
+            id=2, rider_id=7, driver_id=15,
+            status=RideStatus.ARRIVED,
+            pickup_lat=lat, pickup_lng=lng,
+        )
+        driver_row = _row(lat=lat, lng=lng, updated_at=ts)
+
+        call_count = 0
+
+        async def _execute(stmt):
+            nonlocal call_count
+            call_count += 1
+            result = MagicMock()
+            if call_count == 1:
+                result.one_or_none.return_value = ride_row
+            else:
+                result.one_or_none.return_value = driver_row
+            return result
+
+        db = AsyncMock()
+        db.execute = _execute
+
+        out = await get_assigned_driver_location(db, ride_id=2, rider_user_id=7)
+        assert out["lat"] == pytest.approx(lat)
+        assert out["distance_to_pickup_m"] == pytest.approx(0.0, abs=1.0)
+
+
+# ---------------------------------------------------------------------------
+# API: GET /rides/{ride_id}/driver-location
+# ---------------------------------------------------------------------------
+
+
+class TestGetRideDriverLocation:
+    @pytest.mark.anyio
+    async def test_returns_404_when_ride_not_found(self):
+        from fastapi import HTTPException
+
+        from app.api.v1.driver_location import get_ride_driver_location
+
+        user = _FakeUser(user_id=5, role="rider")
+        db = AsyncMock()
+
+        with patch(
+            "app.api.v1.driver_location.get_assigned_driver_location",
+            new=AsyncMock(return_value=None),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await get_ride_driver_location(ride_id=99, user=user, db=db)
+
+        assert exc_info.value.status_code == 404
+        assert "99" in exc_info.value.detail
+
+    @pytest.mark.anyio
+    async def test_returns_403_for_wrong_rider(self):
+        from fastapi import HTTPException
+
+        from app.api.v1.driver_location import get_ride_driver_location
+
+        user = _FakeUser(user_id=5, role="rider")
+        db = AsyncMock()
+
+        with patch(
+            "app.api.v1.driver_location.get_assigned_driver_location",
+            new=AsyncMock(side_effect=PermissionError("Not your ride")),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await get_ride_driver_location(ride_id=1, user=user, db=db)
+
+        assert exc_info.value.status_code == 403
+
+    @pytest.mark.anyio
+    async def test_returns_null_coords_for_non_trackable_status(self):
+        from app.api.v1.driver_location import get_ride_driver_location
+
+        user = _FakeUser(user_id=5, role="rider")
+        db = AsyncMock()
+        data = {
+            "ride_status": "completed",
+            "lat": None,
+            "lng": None,
+            "updated_at": None,
+            "distance_to_pickup_m": None,
+        }
+
+        with patch(
+            "app.api.v1.driver_location.get_assigned_driver_location",
+            new=AsyncMock(return_value=data),
+        ):
+            resp = await get_ride_driver_location(ride_id=1, user=user, db=db)
+
+        assert resp.lat is None
+        assert resp.lng is None
+        assert resp.distance_to_pickup_m is None
+        assert resp.ride_status == "completed"
+
+    @pytest.mark.anyio
+    async def test_returns_exact_coords_during_en_route(self):
+        from app.api.v1.driver_location import get_ride_driver_location
+
+        ts = _utcnow()
+        user = _FakeUser(user_id=5, role="rider")
+        db = AsyncMock()
+        data = {
+            "ride_status": "driver_en_route",
+            "lat": 40.720,
+            "lng": -74.010,
+            "updated_at": ts,
+            "distance_to_pickup_m": 854.3,
+        }
+
+        with patch(
+            "app.api.v1.driver_location.get_assigned_driver_location",
+            new=AsyncMock(return_value=data),
+        ):
+            resp = await get_ride_driver_location(ride_id=1, user=user, db=db)
+
+        assert resp.lat == pytest.approx(40.720)
+        assert resp.lng == pytest.approx(-74.010)
+        assert resp.updated_at == ts
+        assert resp.distance_to_pickup_m == pytest.approx(854.3)
+        assert resp.ride_status == "driver_en_route"
+
+    @pytest.mark.anyio
+    async def test_returns_null_when_driver_has_no_location_yet(self):
+        from app.api.v1.driver_location import get_ride_driver_location
+
+        user = _FakeUser(user_id=5, role="rider")
+        db = AsyncMock()
+        data = {
+            "ride_status": "matched",
+            "lat": None,
+            "lng": None,
+            "updated_at": None,
+            "distance_to_pickup_m": None,
+        }
+
+        with patch(
+            "app.api.v1.driver_location.get_assigned_driver_location",
+            new=AsyncMock(return_value=data),
+        ):
+            resp = await get_ride_driver_location(ride_id=1, user=user, db=db)
+
+        assert resp.lat is None
+        assert resp.ride_status == "matched"
+
+    @pytest.mark.anyio
+    async def test_returns_arrived_with_near_zero_distance(self):
+        from app.api.v1.driver_location import get_ride_driver_location
+
+        ts = _utcnow()
+        user = _FakeUser(user_id=7, role="rider")
+        db = AsyncMock()
+        data = {
+            "ride_status": "arrived",
+            "lat": 40.7128,
+            "lng": -74.006,
+            "updated_at": ts,
+            "distance_to_pickup_m": 0.0,
+        }
+
+        with patch(
+            "app.api.v1.driver_location.get_assigned_driver_location",
+            new=AsyncMock(return_value=data),
+        ):
+            resp = await get_ride_driver_location(ride_id=2, user=user, db=db)
+
+        assert resp.ride_status == "arrived"
+        assert resp.distance_to_pickup_m == pytest.approx(0.0)

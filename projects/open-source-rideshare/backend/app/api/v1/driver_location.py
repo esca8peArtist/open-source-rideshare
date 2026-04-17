@@ -27,6 +27,7 @@ from app.models.user import User
 from app.schemas.driver_location import (
     AdminDriverLocationItem,
     AdminDriverLocationsResponse,
+    AssignedDriverLocationResponse,
     DriverLocationResponse,
     LocationUpdateRequest,
     NearbyDriverItem,
@@ -39,6 +40,7 @@ from app.services.driver_location import (
     MIN_RADIUS_M,
     fuzz_coordinate,
     get_all_online_driver_locations,
+    get_assigned_driver_location,
     get_driver_location_db,
     get_nearby_available_drivers,
     get_single_driver_location_admin,
@@ -201,6 +203,54 @@ async def get_nearby_drivers(
         total=len(drivers),
         as_of=datetime.now(timezone.utc),
     )
+
+
+# ---------------------------------------------------------------------------
+# Rider tracking — assigned driver during an active ride
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/rides/{ride_id}/driver-location",
+    response_model=AssignedDriverLocationResponse,
+    summary="Poll assigned driver's current position during an active ride",
+)
+async def get_ride_driver_location(
+    ride_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the authenticated rider's assigned driver's current GPS position.
+
+    Designed for polling from the rider app so the map can update the driver
+    pin in real time while the driver is en route to pick up the rider.
+
+    Access rules:
+    - The authenticated user must be the ride's rider.
+    - Returns exact (unfuzzed) coordinates — only the ride's own rider can
+      call this endpoint, so no stranger can track a specific driver.
+
+    Status semantics:
+    - MATCHED / DRIVER_EN_ROUTE / ARRIVED → lat/lng returned (may be null if
+      the driver has not yet pushed a location update).
+    - Any other status → lat/lng are null; distance_to_pickup_m is null.
+
+    Clients should poll at ~5-second intervals while the ride is active and
+    stop once status reaches IN_PROGRESS.
+    """
+    try:
+        data = await get_assigned_driver_location(db, ride_id, user.id)
+    except PermissionError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not the rider for this ride.",
+        )
+    if data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ride {ride_id} not found.",
+        )
+    return AssignedDriverLocationResponse(**data)
 
 
 # ---------------------------------------------------------------------------

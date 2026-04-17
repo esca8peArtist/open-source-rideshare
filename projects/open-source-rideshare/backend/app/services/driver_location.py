@@ -28,6 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.driver import DriverProfile
 from app.models.driver_availability import DriverOnlineStatus
+from app.models.ride import Ride, RideStatus
 
 logger = logging.getLogger(__name__)
 
@@ -243,6 +244,98 @@ async def get_all_online_driver_locations(
         }
         for row in rows
     ]
+
+
+# Ride statuses for which a rider may track their assigned driver's position.
+_TRACKABLE_STATUSES: frozenset[RideStatus] = frozenset(
+    {RideStatus.MATCHED, RideStatus.DRIVER_EN_ROUTE, RideStatus.ARRIVED}
+)
+
+
+async def get_assigned_driver_location(
+    db: AsyncSession,
+    ride_id: int,
+    rider_user_id: int,
+) -> dict | None:
+    """Return the assigned driver's current location for an active ride.
+
+    Used by the rider polling endpoint so they can watch their driver approach
+    on the map during MATCHED / DRIVER_EN_ROUTE / ARRIVED phases.
+
+    Returns
+    -------
+    None
+        If no Ride row with *ride_id* exists.
+    dict
+        With keys: ride_status, lat, lng, updated_at, distance_to_pickup_m.
+        lat/lng are None when the driver hasn't submitted a location yet.
+        distance_to_pickup_m is None when coordinates are unavailable or the
+        ride is not in a trackable status.
+
+    Raises
+    ------
+    PermissionError
+        If *rider_user_id* does not match the ride's rider_id.
+    """
+    ride_result = await db.execute(
+        select(
+            Ride.id,
+            Ride.rider_id,
+            Ride.driver_id,
+            Ride.status,
+            ST_Y(Ride.pickup_location).label("pickup_lat"),
+            ST_X(Ride.pickup_location).label("pickup_lng"),
+        ).where(Ride.id == ride_id)
+    )
+    ride_row = ride_result.one_or_none()
+    if ride_row is None:
+        return None
+
+    if ride_row.rider_id != rider_user_id:
+        raise PermissionError("Not your ride")
+
+    base: dict = {
+        "ride_status": ride_row.status,
+        "lat": None,
+        "lng": None,
+        "updated_at": None,
+        "distance_to_pickup_m": None,
+    }
+
+    if ride_row.status not in _TRACKABLE_STATUSES or ride_row.driver_id is None:
+        return base
+
+    driver_result = await db.execute(
+        select(
+            ST_Y(DriverProfile.current_location).label("lat"),
+            ST_X(DriverProfile.current_location).label("lng"),
+            DriverProfile.updated_at,
+        ).where(DriverProfile.user_id == ride_row.driver_id)
+    )
+    driver_row = driver_result.one_or_none()
+
+    lat = float(driver_row.lat) if driver_row and driver_row.lat is not None else None
+    lng = float(driver_row.lng) if driver_row and driver_row.lng is not None else None
+    updated_at = driver_row.updated_at if driver_row else None
+
+    distance_to_pickup_m: float | None = None
+    if (
+        lat is not None
+        and lng is not None
+        and ride_row.pickup_lat is not None
+        and ride_row.pickup_lng is not None
+    ):
+        distance_to_pickup_m = round(
+            haversine_m(lat, lng, float(ride_row.pickup_lat), float(ride_row.pickup_lng)), 1
+        )
+
+    return {
+        "ride_status": ride_row.status,
+        "lat": lat,
+        "lng": lng,
+        "updated_at": updated_at,
+        "distance_to_pickup_m": distance_to_pickup_m,
+    }
 
 
 async def get_single_driver_location_admin(
