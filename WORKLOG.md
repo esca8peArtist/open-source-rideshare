@@ -4,6 +4,40 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 294 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no API key to pull cycle logs — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: April 20 framework waiting (3 days out)
+- Selected: open-source-rideshare — driver earnings comparison API
+
+### open-source-rideshare — Driver earnings comparison API COMPLETE
+
+**Commit**: `f58b341`
+
+**Files created**:
+- `app/schemas/driver_earnings_comparison.py` — `EarningsPercentile`, `DriverEarningsComparison`
+- `app/services/driver_earnings_comparison.py` — single aggregating query (GROUP BY driver_id, last 4 weeks); pure-Python ranking/percentile logic; `_compute_percentile`, `_compute_difference_pct`, `_build_comparison_note`
+- `app/api/v1/driver_earnings_comparison.py` — `GET /driver/me/earnings-comparison`
+- `tests/test_driver_earnings_comparison.py` — **52 tests** across 6 classes
+
+**Key design**:
+- 1 DB query (GROUP BY driver_id over last COMPARISON_WEEKS=4 weeks); no N+1 queries
+- Percentile: count of drivers earning strictly less / total × 100 (higher = better)
+- Rank: 1-based, count of drivers earning strictly more + 1 (ties share same rank)
+- If driver had no rides in window: included in all_avgs with avg=0, excluded from active_drivers count
+- difference_pct=None when platform_avg=0 (avoids division-by-zero)
+- comparison_note has three specialised paths: no-platform-data, no-rides-at-all, driver-has-no-rides
+
+**Test count**: 52 new → **3,076 unit-passing** (52/52 new, all existing passing)
+
+### PROJECTS.md + CHECKIN.md update
+
+---
+
 ## Session 293 — 2026-04-17
 
 ### Orient
