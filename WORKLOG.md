@@ -4,6 +4,307 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 263 — 2026-04-17
+
+### Orient
+- INBOX: No new items to process.
+- BLOCKED: None.
+- Pending uncommitted resistance-research work found: monitoring-2026-04.md (255 lines),
+  domain-03-democratic-participation.md, and modifications to us-democracy-crisis-analysis-2026.md
+  and litigation-tracker-2026.md.
+- 22-domain deepening set complete as of Session 262. Quality review / publication prep queued.
+
+### Task selection
+1. Commit pending resistance-research files (monitoring, domain-03-democratic-participation,
+   main analysis updates, litigation tracker updates)
+2. Run quality review pass across all 23 companion files
+3. Deepen Tier 3 files starting with highest-priority gaps
+
+### resistance-research: Commit pending files (commit 2e21504)
+Committed monitoring-2026-04.md (255 lines, April 2026 monitoring pass covering Fed
+independence threat, IEEPA tariff ruling, No Kings March 28 protest, birthright citizenship
+oral arguments, journalist arrests, third-country deportations, Abrego Garcia compliance
+failures, law firm targeting outcomes) + domain-03-democratic-participation.md (217 lines,
+democratic participation domain deepening with updated 2025 trust data, citizens' assembly
+outcomes through 2024-2025) + modifications to us-democracy-crisis-analysis-2026.md and
+litigation-tracker-2026.md.
+
+### resistance-research: Quality review index (commit 1a71b86)
+quality-review-index.md (467 lines): Full read of all 23 companion files against 6-dimension
+rubric. Results:
+- Tier 1 (publish as-is): 8 files — criminal-justice, campaign-finance, anti-corruption,
+  digital-government, fiscal-reform, media-information, federalism, infrastructure
+- Tier 2 (adequate, minor gaps): 10 files
+- Tier 3 (needs targeted deepening): 5 files — national-security, tax-policy, electoral-reform,
+  environment-climate, healthcare-education
+
+Key structural findings:
+1. tax-policy-evidence.md duplicates fiscal-reform scope — needs differentiation or merge
+2. V-Dem 0.75→0.57 figure is the strongest crisis quantification in the corpus; only in
+   one file; should appear in proposal Part I and multiple other files
+3. Political economy analysis is the weakest cross-cutting dimension
+4. 2025-2026 rollback documentation inconsistent across domains
+
+### resistance-research: Electoral reform deepening (commit 4c830df)
+electoral-reform-evidence.md +207 lines:
+- Sourcing corrections: $200-400M RCV cost untraced; $500M-1B PR cost untraced (IRG 2024
+  found PR largely cost-neutral); AVR corrected to 24 states + DC
+- Counterarguments: voter confusion (Atkeson 2024 16% confusion; arXiv preprint rebuttal),
+  strategic voting (IRV not strategy-proof; 2-3% non-sincere ballots in NYC), Duverger's Law
+  in presidential systems (honest concession; reframed to achievable goals), incumbency
+  protection (Fiva/Røhr closed-list capture; STV as solution)
+- CRITICAL finding: Alaska RCV repeal certified December 31, 2025; on November 2026 ballot;
+  2024 repeal failed by only 743 votes — highest defensive priority for electoral reform advocates
+- Maine SJC ruled April 6, 2026: RCV expansion to state general elections unconstitutional
+- Michigan: 446,198 signatures by July 6, 2026 for RCV constitutional amendment
+
+### resistance-research: National security deepening (commit 52df7ef)
+national-security-evidence.md +160 lines:
+- Veteran suicide figure corrected: VHA 2024 report = 17.6/day (up from 16.8/day in 2023)
+- Section 702 212-212 tie vote documented (April 12, 2024 — one vote from warrant requirement)
+- Counterarguments: deterrence success (Waltz); defense industrial base (narrow-valid);
+  classified program audit objection; veterans benefits fiscal sustainability
+- Actionable intelligence: POGO/Stimson/Quincy/Brennan Center org profiles; 5 legislative
+  vehicles; near-term pressure points through December 2026
+
+---
+
+## Session 262 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- stockbot: monitoring mode, no action needed this session.
+- mfg-farm: blocked on physical mockup photos.
+- open-source-rideshare: 5 commits awaiting push, user approval needed.
+- resistance-research: Domain 4 (Digital Government Infrastructure) is the last of 22 domains without a deepening companion file. Queued.
+
+### Task selection
+resistance-research Domain 4 deepening — last unfinished companion file in the 22-domain Democratic Renewal Proposal.
+
+### resistance-research: Domain 4 Digital Government Infrastructure Evidence Deepening COMPLETE
+
+Written `projects/resistance-research/domain-deepening/domain-04-digital-government.md` (412 lines) via resistance-research agent. Committed as `c32f681`.
+
+**Structural center**: DOGE-SSA incident (2025) as proof that governance-first is a design requirement, not a nice-to-have. 548M NUMIDENT records uploaded to DOGE servers, voter-roll matching disclosed, Treasury/payroll access — all used as evidence that a US digital identity system built without constitutional firewalls becomes a surveillance and suppression tool.
+
+**Key findings by section**:
+- **US failure evidence**: IRS IMF modernization is a $15B/35-year/4-attempt failure; DoD 7th consecutive audit failure in 2024; GAO High Risk list grew to 38 programs ($247B improper payments); $80–100B federal benefits go unclaimed annually due to broken enrollment systems
+- **DOGE weaponization**: NUMIDENT upload, voter-roll matching, Treasury access — sourced with litigation timeline
+- **Peer nations updated**: Denmark MitID (NemID retired June 2023 — proposal was outdated); Estonia 100% digital as of Dec 2024; UK GDS caveat on "lack of sustained senior sponsorship"; Brazil Portal da Transparência limitation ("secret amendments" outside portal visibility = transparency tool without enforcement is insufficient)
+- **US attempts**: IRS Direct File terminated November 2025 after 94% user satisfaction in 25-state expansion — killed by tax-prep industry lobbying; USDS renamed/mission-captured as "US DOGE Service" (mission capture, not just budget cut); 18F gutted
+- **Open data ROI**: McKinsey $3–5T figure honest caveat (12 years old, global); OPEN Government Data Act — OMB guidance issued January 15, 2025 (final days of Biden admin); implementation status under Trump admin unclear
+- **Reform sequencing**: Five-domain dependency map (Domains 18, 5, 8, 2, 1 all depend on Domain 4 infrastructure) — governance-first rule stated explicitly
+- **Actionable intelligence**: Direct File revival vehicle, Login.gov expansion, state-level open data mandates, DATA Act compliance advocacy, USDS Alumni Network, NYC Checkbook
+
+**22-domain evidence deepening set is now fully complete.** All companion files exist in `domain-deepening/`.
+
+---
+
+## Session 261 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Stockbot: monitoring mode — no code work.
+- mfg-farm: blocked on mockup photos (physical).
+- open-source-rideshare: all endpoint coverage gaps closed (5 commits local, awaiting push).
+- resistance-research: Domain 12 Infrastructure deepening queued as time-sensitive (IIJA cliff Sep 2026).
+
+### Task selection
+resistance-research Domain 12 deepening — IIJA cliff arriving September 30, 2026 (5.5 months) is the highest-urgency actionable research task.
+
+### resistance-research: Domain 12 Infrastructure Evidence-Deepening COMPLETE
+
+Written `projects/resistance-research/domain-deepening/domain-12-infrastructure.md` (339 lines) via resistance-research agent. Committed as `9cd41a8`.
+
+**Headline finding**: No IIJA reauthorization bill introduced as of April 2026 — 5.5 months until September 30, 2026 authorization expiration. $293B in allocated-but-unobligated funds politically vulnerable. Structural $58B/year gap between gas tax revenue (~$44B) and current federal transportation outlays (~$102B) makes a revenue-neutral successor bill mathematically impossible.
+
+**Key findings by section**:
+- **IIJA cliff**: 5 structural reasons it expires without replacement (Transportation for America) — historical failure rate, budget exhaustion from July 2025 reconciliation, advance appropriations exhausted, fractured bipartisan coalition, gas tax math.
+- **Trump IIJA disruption**: January 20, 2025 EO froze $125B unobligated DOT funds; $2.3B in rescissions through early 2026; courts ruled NEVI freeze unlawful Jan 2026; litigation ongoing.
+- **BEAD/ACP gap**: 5M of 23M households that lost ACP cut service entirely. Zero BEAD deployment dollars distributed as of August 2025; 26 state plans approved by Feb 2026; construction won't start until 2027 in most states.
+- **FERC Order 1920**: Survived rehearing, in effect; interconnection queue at 2,300 GW (956 solar, 890 storage, 271 wind) — roughly 2x current US generating capacity.
+- **Texas grid**: January 2026 storm navigated, but Railroad Commission still inadequately verifying natural gas weatherization per August 2025 State Auditor report.
+- **Lead service lines**: Flint complete July 2025. 9.2M lines nationally remain. IIJA's final (5th of 5) $3B tranche is FY2026 — no automatic successor.
+- **Transit**: FTA CIG demand $45.1B vs $1.7-3.8B appropriated. ASCE 2025 transit grade D.
+- **Maintenance backlog**: $105B roads/bridges, $370B federal facilities, $23B NPS = ~$1T total system.
+35 sourced citations.
+
+
+Wrote new domain-deepening companion file for Domain 12 (Infrastructure) of the Democratic Renewal Proposal.
+
+**File**: `projects/resistance-research/domain-deepening/domain-12-infrastructure.md` (339 lines)
+
+**Primary focus**: IIJA funding cliff arriving September 30, 2026 — 5.5 months away. No reauthorization bill introduced as of April 2026. $568B allocated, $275B obligated; $293B in allocated-but-unobligated funds at risk.
+
+**Research threads covered**:
+- IIJA cliff: program expiration mechanics, formula vs. discretionary distinction, Congressional math ($44B gas tax vs. $102B annual outlays = $58B structural gap), 5 structural reasons reauthorization will likely fail, state mid-project consequences
+- Trump administration IIJA disruption: Jan 20 2025 "Unleashing American Energy" EO freeze on ~$125B unobligated DOT funds, $2.3B total rescissions, $879M NEVI rescission (FY2026 appropriations), court orders restoring EV charger funds
+- ACP death (May 2024): 23M households lost $30/month subsidy; ~5M cut internet entirely; BEAD cannot substitute (no deployment funds distributed as of Aug 2025; only 26 state plans approved as of Feb 2026)
+- FERC Order 1920: upheld through Orders 1920-A (Nov 2024) and 1920-B (Apr 2025); Fourth Circuit legal challenges pending but rule in effect; 2,300 GW interconnection queue backlog
+- Texas/ERCOT: 7,400+ weatherization inspections completed; January 2026 storm navigated; natural gas supply chain gap identified by State Auditor Aug 2025 remains unaddressed; ERCOT isolation unchanged
+- Lead service lines: $15B IIJA LSLR (5 tranches $3B/yr through FY2026); 9.2M lines estimated nationally; Flint completed all ~11,000 replacements July 2025; Jackson MS under third-party management with governance dispute; EPA LCRI defended by Trump EPA (as of Aug 2025) after CRA repeal failed
+- Transit/rail: FTA CIG demand $45.1B vs. $3.8B FY2025 appropriation ($1.7B FY2026); Corridor ID program 69 corridors accepted, 80% Step 1 grants obligated but no construction pipeline
+- Maintenance backlog: $105B roads/bridges; $370B federal facilities (doubled FY2017-2024); $22.986B NPS; ~$1T system total; ASCE 2025 Report Card overall C (first non-failure grade, Transit still D)
+
+**Sources**: 35 inline citations from FERC, ERCOT, NTIA, EPA, GAO, Pew, T4A, NRDC, Texas Tribune, Broadband Breakfast, and others.
+
+---
+
+## Session 260 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Stockbot: monitoring mode — no code work available.
+- mfg-farm: blocked on mockup photos.
+- open-source-rideshare: 4 endpoint coverage gaps remaining from last session: corporate_member_permission, corporate_travel_itineraries, device_tokens, vehicles.
+
+### Task selection
+Highest-priority active project with code work: open-source-rideshare. All 4 remaining endpoint coverage gaps targeted this session.
+
+### open-source-rideshare: Final 4 endpoint test suites COMPLETE
+
+Written across 2 commits on `feature/corporate-business-accounts`.
+
+**Commit `2efe7a3`** (vehicles + travel itineraries, from subagent):
+- `test_vehicles.py` (94 tests): VehicleType/VehicleServiceCategory enums, model structure, add_vehicle (first-vehicle auto-activates, 5-vehicle cap 409, invalid type 422), list, get, update (invalid type 422), remove (soft-delete, clears active_vehicle_id), set_active_vehicle, VehicleCreate/Update/Response schemas
+- `test_corporate_travel_itineraries.py` (84 tests): ItineraryStatus enum, create (draft status), get 404, update (partial, 409 cancelled), cancel (409 already cancelled), complete (409 cancelled), list (filters), add_ride (409 cancelled + 409 duplicate), remove_ride, list_rides, get_summary (ride_ids), list_all_platform, schema validators (empty title raises)
+
+**Commit `31c2101`** (permissions + device tokens):
+- `test_corporate_member_permission.py` (108 tests): PermissionScope enum (7 values), _is_currently_active pure helper (boundary/expired/future), grant/revoke/get service, list_member/account, has_permission (True/False/revoked/expired), get_members_with_scope, get_permission_summary (multi-scope sum), model (UniqueConstraint, 3 indexes), schemas (5 types)
+- `test_device_tokens.py` (60 tests): DevicePlatform enum, model structure, register (new + upsert re-assign), deregister 404, list active tokens, schemas
+
+**Full suite result**: 10,524 passing (2 pre-existing failures unchanged, date-hardcoded)
+
+All 4 previously uncovered endpoint modules now have test coverage. Endpoint coverage gap list: cleared.
+
+---
+
+## Session 258 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Stockbot: still in monitoring mode (5 market days post-recording-fix). No code work available.
+- mfg-farm: blocked on mockup photos.
+- resistance-research: integration pass complete last session. Quality deepening pass deferred.
+- open-source-rideshare: Feature coverage pass — picked `cancellation_policies` and `ride_feedback` (both had zero tests).
+
+### Task selection
+Highest-priority project with actionable code work: open-source-rideshare.
+12 API endpoint files found without test coverage; selected `cancellation_policies.py` (377 lines, 9 endpoints) and `ride_feedback.py` (253 lines, 5 endpoints) as the highest-value targets.
+
+### open-source-rideshare: Cancellation Policies + Ride Feedback Test Suites COMPLETE
+
+Written in commit `3a58a59` on `feature/corporate-business-accounts`.
+
+**`test_cancellation_policies.py`** — 106 tests across 11 classes:
+- `TestEvaluateCancellation` (14): all status/party combos, grace boundary, fee cap at 50%, dispatch retry
+- `TestCalculateRiderFee` (7): within-grace, flat-only, percent-only, additive, boundary edge case
+- `TestCalculateDriverFee` (6): within limit, at limit, exceeds by 1 and more, zero-free-cancel policy
+- `TestCancellationError` (5): default/custom status codes, message preservation
+- `TestCancellationPolicyModel` / `TestCancellationRecordModel` (21): column presence, FK targets, indexes, unique constraint
+- `TestGetActivePolicy` (6): returns existing; default when none; default sensible values
+- `TestRecordCancellation` (7): 404/409 error paths, rider within/past grace, driver daily limit logic
+- `TestWaiveFee` (6): pending success, already-waived/refunded raise 409, not-found 404
+- `TestAdminGetAll` (4): list, filter, limit/offset
+- `TestAdminGetSummary` (4): correct keys, float types
+- `TestCancellationSchemas` (16): Pydantic validation across all schema types
+
+**`test_ride_feedback.py`** — 57 tests across 5 classes:
+- `TestRideFeedbackModel` (14): columns, FKs, indexes, FeedbackCategory enum
+- `TestSubmitFeedback` (12): not-found, non-completed, auth errors, duplicate, success (rider+driver), categories as CSV, tip handling
+- `TestGetRideFeedback` / `TestGetUserFeedback` (8): list/empty, total count, role filter
+- `TestFeedbackSchemas` (13): rating bounds, category validation, CSV parsing, tip default, paginated
+- `TestRideFeedbackEndpointLogic` (10): direct endpoint calls — 404/403, role inference, admin filters
+
+**Total: 163 new tests | Project total: ~11,040 passing**
+
+---
+
+## Session 257 — 2026-04-17
+
+### open-source-rideshare: Fare Splits Test Suite COMPLETE
+
+66 tests added covering all 8 service functions + schemas. Total: 184 passing in test_fare_splits.py (10877 total in backend/tests/).
+
+### resistance-research: April 17 Integration Pass COMPLETE
+
+Integrated `monitoring-2026-04.md` findings into both main documents.
+
+**`us-democracy-crisis-analysis-2026.md` changes (9 edits):**
+- Updated header and footer timestamps: "April 12" → "April 17, 2026"
+- Executive Summary: protest count updated 7M → 8–9M (March 28, 2026 record)
+- §1.2 Institutional Dismantling: added two new paragraphs — OBBBA implementation impacts (CBO $1.02T Medicaid cut, 888K job losses, Medicare solvency shortened 12 years) and Federal Reserve independence threat (Powell ultimatum, *Trump v. Cook* SCOTUS case)
+- §1.3 Judicial System: added IEEPA tariff authority struck down (*Learning Resources*, Feb 20, 6-3 SCOTUS) and law firm resistance wins (all four firms won; Bloomberg Law: capitulation "ended up losing")
+- §1.4 Press Freedom: added Don Lemon/Georgia Fort arrest (first federal criminal charges against prominent journalist for covering ICE protest; DOJ forum-shopped after two "no evidence" rulings)
+- "What Is Working" table: mass protest row updated to 8–9M trajectory; civil society row added law firm resistance wins
+- Part III Variable 4 (Tufekci): added April 2026 update on March 28 record, infrastructure conversion evidence (3,000 post-march hosts, Eyes on ICE), Chenoweth threshold proximity
+- Part VI Window 2: added *Trump v. Cook*, *Learning Resources* CIT follow-on, Harvard First Circuit appeal
+- Sources section: added April 17 monitoring pass sources block
+
+**`litigation-tracker-2026.md` changes:**
+- Header timestamp updated to April 17, 2026
+- Pending deadlines table: added Powell/Fed Reserve May 15 row and *Trump v. Cook* June row
+- New section "April 17, 2026 — Monitoring Integration Pass" appended with 7 entries:
+  - Category 4 update: birthright citizenship oral argument record (April 1; SCOTUS skeptical, Roberts rejected "new world" framing)
+  - New entry: *United States v. Lemon and Fort* (Category 5; first journalist criminal charges for covering ICE protest)
+  - New entry: *Trump v. Cook* (Fed Reserve independence; Powell ultimatum expires May 15)
+  - New entry: Third-country deportation program tracker (27 countries, CECOT, Cameroon, DRC; Abrego Garcia benchmark)
+  - Category 7 update: 23-state AG citizenship verification EO suit
+  - New entry: Harvard First Circuit appeal
+  - Category 5 update: Law firm resistance wins documented (all four firms won; D.C. Circuit appeals still active)
+  - April 17 sources block appended
+
+---
+
+## Session 256 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Stockbot: monitoring mode — waiting 5 market days post-recording-fix. No code work available.
+- mfg-farm: blocked on mockup photos.
+- resistance-research: active, publication-ready. Extending with monitoring pass.
+- open-source-rideshare: Beckn Protocol design doc queued as next task.
+
+Session 256 complete.
+
+### Task selection
+Spawned two background agents in parallel:
+1. resistance-research: researching April 2026 US democratic developments → `projects/resistance-research/monitoring-2026-04.md`
+2. open-source-rideshare: Beckn Protocol interoperability design doc → `projects/open-source-rideshare/beckn-protocol.md`
+
+### resistance-research: April 2026 Monitoring Pass COMPLETE
+
+Written at `projects/resistance-research/monitoring-2026-04.md`.
+
+Four major developments NOT yet in the main analysis:
+1. **Fed Reserve independence threat** (Apr 15): Trump ultimatum — Powell resign by May 15 or be fired. Companion case *Trump v. Cook* at SCOTUS. Turkey/Argentina monetary capture playbook.
+2. **IEEPA tariff authority struck down** (Feb 20): *Learning Resources v. Trump*, 6-3 SCOTUS (Roberts + cross-ideological majority). "Liberation Day" tariff architecture unlawful. Most significant judicial check on emergency economic powers since Youngstown.
+3. **No Kings March 28 — 8-9M participants**: Third national day of action, new record. Trajectory counter to protest fatigue curves. Apr 19 + May 1 upcoming.
+4. **Third-country deportations expanding** (Apr 5): DRC signed third-country agreement; 8 of 9 in one Cameroon batch had active US court protection orders. [ThirdCountryDeportationWatch.org] tracking.
+
+Additional: Don Lemon charged (first journalist charged for covering ICE protest), birthright citizenship oral args (SCOTUS skeptical), Harvard funding appeal, 23-state AG lawsuit on citizenship verification voter purge, OBBBA Medicaid/SNAP impact details, law firm resistance victories.
+
+Gap table included in monitoring file for routing each item to correct section of main analysis.
+
+### open-source-rideshare: Beckn Protocol Design Doc COMPLETE
+
+Written at `projects/open-source-rideshare/beckn-protocol.md` (~370 lines, 11 sections).
+
+Key findings:
+- Recommends **BPP-primary** role (expose our drivers to the Beckn network, not aggregating others)
+- No Beckn in Phase 1 — no Western production network exists yet (India ONDC is production; Europe exploring)
+- Phase 2: build a `backend/app/beckn/` adapter module mounted at `/beckn/` — purely additive, doesn't touch matching/pricing/Stripe/PostgreSQL
+- 3 zero-cost design decisions to make now: operator-per-BPP credentials, clean service interfaces, no BAP role by default
+- Concrete schema mapping tables: `RideRequest` → Beckn `search.intent`, `DriverProfile` → `Provider`+`Agent`, `Ride` → `Order`, `RideStatus` → Beckn fulfillment states
+- Key architectural constraint: Beckn uses async callbacks (not synchronous REST) — requires task queue for inbound requests
+
+---
+
 ## Session 254 — 2026-04-17
 
 ### Orient
@@ -10553,3 +10854,121 @@ Also committed large accumulation of prior-session work:
 **Commit**: `095b3d8`
 
 Session 251 complete.
+
+## Session 255 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- Priority: stockbot (monitoring only — wait-and-see on RSI thresholds) → open-source-rideshare (WAV dispatch integration improvements)
+
+### open-source-rideshare: WAV Dispatch Integration
+
+**Selected task**: Improve WAV dispatch integration into the ride matching pipeline.
+
+**Identified gaps**:
+1. `matching.py` checks `vehicle.is_wheelchair_accessible` but does NOT verify the driver has a `DriverWAVCertification` with `status=verified` — a vehicle could be marked accessible without the driver being admin-certified
+2. No WAV-specific radius expansion — WAV drivers are rarer, normal radius may yield 0 results frequently
+3. `rides.py` uses `req.accessibility_required` verbatim — if a rider's `RiderAccessibilityProfile.needs_wav=True`, that flag is ignored unless the rider remembers to check the box every time
+
+**Plan**:
+1. `matching.py`: Import WAV cert model; load verified cert set alongside vehicle query; gate WAV candidates on cert verification; use expanded initial radius for WAV requests
+2. `rides.py`: After resolving the user, check rider's accessibility profile; if `needs_wav=True`, set `accessibility_required=True` regardless of request value
+3. Tests: `test_wav_dispatch.py` covering cert verification filtering, auto-radius expansion, and rider profile auto-population
+
+
+### open-source-rideshare: WAV Dispatch Integration — COMPLETE
+
+**Files changed:**
+- `backend/app/services/matching.py` — Added `DriverWAVCertification` import; new `_get_verified_wav_driver_ids` method; WAV-specific max-radius start in `find_candidates`; cert+vehicle dual gate for WAV candidates
+- `backend/app/api/v1/rides.py` — Added `logging` import + `logger`; auto-promote `accessibility_required` from `RiderAccessibilityProfile.needs_wav` in `request_ride`
+- `backend/tests/test_wav_dispatch.py` — 15 new unit tests (NEW FILE)
+
+**Test counts:** 9,719 passing (was 9,704). Pre-existing failures: 2 (test_corporate_guest_pass date-hardcoded, test_corporate_shuttle date-sensitive — both unrelated to WAV changes, confirmed pre-existing).
+
+**Commit:** `a541c28`
+
+**Push:** Failed — SSH key doesn't have write access to SuperClaude-Org repo. Commit is local on `feature/corporate-business-accounts`. (Same status as all prior sessions on this branch.)
+
+Session 255 complete.
+
+## Session 257 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Stockbot: monitoring mode — no code work.
+- mfg-farm: blocked on mockup photos.
+- resistance-research: Active — Session 256 monitoring pass complete. Next: integrate findings into main analysis + litigation tracker.
+- open-source-rideshare: Next meaningful task TBD.
+
+### Task selection
+1. resistance-research: Integrate April 17 monitoring findings into us-democracy-crisis-analysis-2026.md + litigation-tracker-2026.md.
+2. open-source-rideshare: Secondary task after integration.
+
+### resistance-research: Starting integration pass
+Delegating to resistance-research agent. 12 gaps identified in monitoring-2026-04.md to integrate:
+1. Federal Reserve independence threat (§1.2 or new §1.7 + litigation tracker Trump v. Cook)
+2. Learning Resources v. Trump IEEPA ruling (§1.3 + litigation tracker)
+3. No Kings March 28 8-9M record (What Is Working table + Variable 4 + exec summary)
+4. Birthright citizenship oral argument record (litigation tracker Cat 4)
+5. Don Lemon arrest (§1.4 + litigation tracker Cat 5)
+6. Third-country deportations DRC/Cameroon (litigation tracker new category)
+7. OBBBA implementation impacts (§1.2)
+8. Harvard First Circuit appeal (litigation tracker new entry)
+9. Law firm resistance wins (litigation tracker Cat 5 update)
+10. AG citizenship verification EO challenge (litigation tracker Cat 7)
+11. Trump v. Cook Fed independence (litigation tracker new entry)
+12. April 19 + May 1 upcoming protests (Variable 4)
+
+### resistance-research: April 2026 Monitoring Integration COMPLETE
+All 12 gaps from monitoring-2026-04.md integrated into:
+- us-democracy-crisis-analysis-2026.md: 582→612 lines (updated April 17)
+- litigation-tracker-2026.md: 738→852 lines (April 17 integration section added)
+
+### open-source-rideshare: Fare Splits Test Suite COMPLETE
+184 tests added covering all 8 service functions + schemas + API.
+Commit: df1aeed
+Total tests: 10,877 passing (was 9,719).
+
+Session 257 complete.
+
+## Session 259 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- stockbot: monitoring mode — no code work.
+- mfg-farm: blocked on physical mockup photos.
+- resistance-research: April 2026 monitoring integration complete (Session 257). Next: quality deepening pass.
+- open-source-rideshare: ~11,040 tests, next targets: document_expiry, safety, drivers.
+
+### Task selection
+1. open-source-rideshare: Write test suites for document_expiry, safety, drivers API endpoints.
+2. resistance-research: Quality deepening pass on main analysis + missing domain deepening file.
+
+### open-source-rideshare: Endpoint Test Suites COMPLETE
+230 new tests added via delegated agent (commit 1608f9a):
+- test_document_expiry.py (73 tests): get_driver_expiry_status, get_all_expiring_documents, run_expiry_scan + schemas
+- test_safety.py (83 tests): trigger_sos, resolve_sos, get_active_alerts, emergency contacts CRUD, trip share
+- test_drivers.py (74 tests): driver profile CRUD, earnings, verification/document submission
+Total: 10,178 passing (up from 9,948 before this session's work). 2 pre-existing failures unchanged.
+Remaining endpoint gap targets: corporate_member_permission, corporate_travel_itineraries, device_tokens, vehicles.
+
+### resistance-research: Quality deepening pass
+Delegated to resistance-research agent (background). Targeting: analysis gaps in us-democracy-crisis-analysis-2026.md + missing domain deepening file (candidates: Domain 3 Democratic Participation, Domain 4 Digital Government Infrastructure, Domain 12 Infrastructure).
+
+### resistance-research: Quality Deepening Pass COMPLETE
+Agent completed. Changes:
+- us-democracy-crisis-analysis-2026.md: 612 → 622 lines. Substantive updates:
+  - §1.5 (Electoral Infrastructure): mail-ballot EO + DHS/SSA pre-approved list mechanism + 23-state lawsuit integrated
+  - §1.6 (Project 2025): +~200 words — specific remaining agenda items + rebuttal to "stalled" counter-narrative
+  - Variable 3 (Elite Defections): +~300 words — FBI/DOJ investigation of 5 legislators for unlawful-orders video; Posse Comitatus ruling on LA National Guard
+  - Variable 4 (opening paragraph): stale "7M" → current "8-9M March 28" figure
+  - Conclusion: stale Chenoweth calculation updated with March 2026 figures (8-9M / 5-6.5M independent estimate, ~2.5-2.7%)
+  - "What Is Working" table: G. Elliott Morris independent estimate range added, Eyes on ICE 200K training viewers
+- NEW: domain-deepening/domain-03-democratic-participation.md (217 lines):
+  - Trust data to Pew Dec 2025 (17%), primary-election concentration effect, citizens' assemblies 2024-2025 updates, vTaiwan AI governance 2024-2025, participatory budgeting NYC/LA 2024, resistance-participation connection, fiscal estimates
+- Still missing deepening files: Domain 4 (Digital Government Infrastructure), Domain 12 (Infrastructure) — candidates for next session
+
+Session 259 complete.

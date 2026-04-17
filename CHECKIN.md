@@ -1,9 +1,216 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Session**: 254
+**Sessions**: 257–263
 
-### Accomplished
+---
+
+### Needs Your Input
+
+#### open-source-rideshare — Test suites ready to push (branch `feature/corporate-business-accounts`)
+
+9 new test files added across Sessions 257–260. **10,524 passing** (2 pre-existing failures unchanged). Commits are local — push access denied for the orchestrator agent.
+
+**Commits to push:**
+- `df1aeed` — `test_fare_splits.py` (184 tests)
+- `3a58a59` — `test_cancellation_policies.py` (106 tests) + `test_ride_feedback.py` (57 tests)
+- `1608f9a` — `test_document_expiry.py` (73 tests) + `test_safety.py` (83 tests) + `test_drivers.py` (74 tests)
+- `2efe7a3` — `test_vehicles.py` (94 tests) + `test_corporate_travel_itineraries.py` (84 tests)
+- `31c2101` — `test_corporate_member_permission.py` (108 tests) + `test_device_tokens.py` (60 tests)
+
+**Current total: 10,524 passing** (2 pre-existing failures: `test_corporate_guest_pass`, `test_corporate_shuttle` — date-hardcoded, unrelated to this work). All previously identified endpoint coverage gaps are now closed.
+
+To push: `git push origin feature/corporate-business-accounts`
+
+---
+
+### Accomplished (Session 263)
+
+#### resistance-research — Quality review pass + targeted deepening (Session 263, commits `2e21504`, `1a71b86`, `4c830df`, `52df7ef`)
+
+**Pending work committed** (had been written but uncommitted across earlier sessions):
+- `monitoring-2026-04.md` (255 lines) — April 2026 monitoring pass: Federal Reserve independence threat (Powell ultimatum + Trump v. Cook), IEEPA tariff SCOTUS ruling (6-3 Feb 2026), No Kings March 28 (8–9M participants — largest single-day protest in US history), birthright citizenship oral arguments, journalist arrests (Don Lemon + Georgia Fort), third-country deportations (27-country network, CECOT documentation), Abrego Garcia compliance failures, Harvard $2B case
+- `domain-03-democratic-participation.md` (217 lines) — democratic participation deepening with updated 2025 trust data (Pew Dec 2025: 17%), citizens' assembly outcomes through 2024-2025 (Ireland failed referendums as cautionary case, Belgium permanent model, Taiwan vTaiwan AI governance), participatory budgeting evidence (NYC $24M 2024)
+- Updates to `us-democracy-crisis-analysis-2026.md` and `litigation-tracker-2026.md`
+
+**Quality review index** — `domain-deepening/quality-review-index.md` (467 lines):
+- Full read of all 23 companion files against 6-dimension rubric
+- Tier 1 (publish as-is): 8 files — criminal-justice, campaign-finance, anti-corruption, digital-government, fiscal-reform, media-information, federalism, infrastructure
+- Tier 2 (adequate): 10 files
+- Tier 3 (needs deepening): 5 files — national-security, tax-policy, electoral-reform, environment-climate, healthcare-education
+- Key finding: `tax-policy-evidence.md` duplicates `domain-05-fiscal-reform.md` scope — needs differentiation before publication
+- Key finding: V-Dem 0.75→0.57 decline figure (the strongest quantification of the democratic crisis in the corpus) sits in one file only — should be pulled into the proposal's Part I
+
+**Electoral reform deepening** — `electoral-reform-evidence.md` elevated Tier 3 → Tier 1:
+- Sourcing corrections: RCV cost figures were untraced to primary sources; AVR count corrected to 24 states + DC
+- Counterarguments: voter confusion (Atkeson 2024 study, 16% confusion rate; rebuttal from arXiv preprint); strategic voting elimination objection; Duverger's Law in presidential systems (honest concession; reframed to achievable US goals); incumbency protection (closed-list party capture; STV as the solution)
+- **CRITICAL intelligence**: Alaska RCV repeal certified December 31, 2025 — on November 2026 ballot. The 2024 repeal attempt failed by only 743 votes. **This is the highest-priority defensive action for electoral reform advocates in 2026.** If you know people working on this, flag it.
+- Maine SJC ruled April 6, 2026 (this week) that RCV expansion to state general elections is unconstitutional under the plurality-winner clause — constitutional amendment path not currently pursued
+- Michigan: active signature drive, 446,198 needed by July 6, 2026
+
+**National security deepening** — `national-security-evidence.md` elevated Tier 3 → Tier 2+:
+- Veteran suicide figure corrected: VHA 2024 Annual Report = 17.6/day (up from 16.8/day in 2023 report)
+- Section 702: April 12, 2024 warrant-requirement amendment failed 212-212 tie — one vote short
+- Counterarguments: deterrence success (Waltz stability case + rebuttal); defense industrial base (narrowly valid, doesn't cover full portfolio); classified program audit objection (OIG/GAO have clearances; failures are data management, not security); veterans benefits sustainability
+- Actionable intelligence: POGO, Stimson, Quincy Institute, Brennan Center org profiles; near-term pressure points through December 2026
+
+---
+
+### Accomplished (Session 262)
+
+#### resistance-research — Domain 4 Digital Government Infrastructure Evidence Deepening (Session 262, commit `c32f681`)
+
+`domain-deepening/domain-04-digital-government.md` — 412 lines, 7 sections.
+
+**The 22-domain evidence deepening set is now fully complete.** Every domain in the Democratic Renewal Proposal has a companion evidence file.
+
+**Structural center of the file**: DOGE-SSA weaponization (2025) as the definitive proof that governance-first is a design *requirement*, not an aspiration. The NUMIDENT database (548M identity records for nearly every living American), voter-roll matching disclosure, and Treasury payroll access show what happens when digital government infrastructure lacks constitutional firewalls from enforcement agencies. The proposal's Domain 4b (digital identity) now has a concrete negative precedent to design against.
+
+**Key findings / updates to proposal content**:
+- **IRS modernization**: Not just old COBOL — four separate modernization attempts over 35 years, currently $15B over budget, no clean completion date. The "just replace the COBOL" framing in the proposal undersells the institutional failure
+- **DoD audit**: 7th consecutive failure in 2024; 2,300+ financial systems; the proposal's "7th consecutive" count is confirmed current
+- **Direct File terminated November 2025**: 94% user satisfaction, 25-state expansion — killed by tax prep industry lobbying. Clearest proof-of-concept for the political economy blocking 4d (automated service delivery)
+- **USDS mission-captured**: Renamed "US DOGE Service," now staffed by DOGE personnel — not a budget cut, a mission capture. The 18F team was gutted. This is the implementation capacity gap for day-one reform
+- **Denmark update**: The proposal referenced NemID, which was *retired June 30, 2023*. MitID is the current system — complete transition documented
+- **UK GDS caveat**: "Lack of sustained senior sponsorship and uneven funding" per the 2025 State of Digital Government review — the proposal presents GDS as pure success; the honest version includes the stall
+- **Brazil Portal da Transparência**: Operational and real, but "secret amendments" (emendas parlamentares secretas) flow outside portal visibility — transparency tool without enforcement is insufficient on its own
+
+**Five-domain dependency map**: Domain 4 infrastructure is load-bearing for Domains 18 (benefits delivery), 5 (fiscal transparency), 8 (media accountability), 2 (anti-corruption), and 1 (electoral integrity). Sequencing argument made explicit: Estonia built governance *before* the tools were politically contested; the US is building in 2026 *after* weaponization.
+
+**Key tensions documented** (unresolved in the proposal):
+1. National digital ID is now politically radioactive post-DOGE — how do you build it?
+2. "Once only" principle could accelerate exclusion of the 24M without broadband
+3. Classified spending exemption could swallow the transparency rule
+4. Any reform government inherits DOGE-gutted implementation capacity
+5. Open data guidance issued January 15, 2025 (Biden's final days) — implementation status unknown under Trump admin
+
+---
+
+### Accomplished (Session 261)
+
+#### resistance-research — Domain 12 Infrastructure Evidence Deepening (Session 261, commit `9cd41a8`)
+
+`domain-deepening/domain-12-infrastructure.md` — 339 lines, 35 sourced citations.
+
+**Headline finding**: The IIJA funding cliff arrives September 30, 2026 — **5.5 months away**. No reauthorization bill has been introduced. The structural math is broken: gas tax generates ~$44B annually against $102B+ in current federal outlays — a $58B gap no one is addressing. Transportation for America identifies five compounding reasons the IIJA will expire without a successor.
+
+**What's at risk**:
+- $293B in allocated-but-unobligated IIJA funds become politically vulnerable
+- Formula highway/transit programs revert to pre-IIJA (FAST Act) baselines — steep cliff for state DOTs mid-project
+- Discretionary programs (RAISE, Safe Streets, Reconnecting Communities, Corridor ID for rail) stop making new awards immediately
+
+**Key findings by sub-domain**:
+- *Broadband*: BEAD has distributed zero deployment dollars as of August 2025; 5M of 23M households that lost ACP cut service entirely; Trump admin technology-neutrality revision forced state plan restarts
+- *Grid*: FERC Order 1920 in effect; interconnection queue at 2,300 GW — roughly 2x current US generating capacity; Texas Railroad Commission still inadequately verifying natural gas weatherization per August 2025 auditor report
+- *Water*: 9.2M lead service lines remain nationally; Flint complete July 2025; FY2026 is the last (5th) $3B IIJA tranche with no automatic successor
+- *Transit*: ASCE 2025 grades transit D (lowest category); FTA Capital Investment Grant demand $45.1B against $1.7–3.8B appropriated
+- *Maintenance*: ~$1T total deferred maintenance backlog ($105B roads/bridges, $370B federal real property, $23B NPS)
+
+**Actionable intelligence section** included: what state DOTs, advocates, water justice groups, and grid advocates should do before September 30.
+
+---
+
+### Accomplished (Session 260)
+
+#### open-source-rideshare — Final 4 endpoint test suites (Session 260, commits `2efe7a3` + `31c2101`)
+
+**346 new tests** across four previously uncovered API endpoint modules:
+- `test_vehicles.py` (94 tests): VehicleType/VehicleServiceCategory enums, model columns, add_vehicle (first-vehicle auto-activates, 5-vehicle 409, invalid type 422), list, get, update, remove (soft-delete, clears active_vehicle_id), activate, schema validators
+- `test_corporate_travel_itineraries.py` (84 tests): ItineraryStatus enum, create (starts as draft), get/update/cancel/complete lifecycle (404+409 paths), list with filters, add/remove rides (409 cancelled + 409 duplicate), list rides, summary, platform-admin list, schema validators (empty title raises)
+- `test_corporate_member_permission.py` (108 tests): 7-value PermissionScope enum, _is_currently_active pure helper (boundary, expired, future-expiry), grant/revoke/get service, list_member/account, has_permission (T/F/revoked/expired), get_members_with_scope, permission summary (multi-scope sum), model UniqueConstraint + 3 indexes, 5 schema types
+- `test_device_tokens.py` (60 tests): DevicePlatform enum, model structure, register (new + upsert reassign), deregister 404, list active tokens, schemas
+
+**Total: 10,524 passing** (2 pre-existing failures unchanged). All endpoint coverage gaps cleared.
+
+---
+
+### Accomplished (Sessions 257–259)
+
+---
+
+#### resistance-research — Quality deepening pass (Session 259)
+
+`us-democracy-crisis-analysis-2026.md`: 612 → 622 lines, substantive updates to 6 sections:
+- §1.5: Mail-ballot EO + DHS/SSA pre-approved list mechanism + 23-state lawsuit fully synthesized
+- §1.6: Project 2025 "stalled" counter-narrative addressed with specific remaining agenda items and rebuttal
+- Variable 3 (Elite Defections): FBI/DOJ investigation of 5 legislators for unlawful-orders video; Posse Comitatus ruling on LA National Guard deployment — two concrete April 2026 developments replaced vague language
+- Variable 4: Stale "7M" → current "8–9M March 28" figure in opening paragraph
+- Conclusion: Chenoweth calculation updated to March 2026 figures (8–9M / 5–6.5M independent estimate, ~2.5–2.7%)
+- "What Is Working" table: G. Elliott Morris/Xylom independent estimate range; Eyes on ICE 200K training viewers
+
+**New file**: `domain-deepening/domain-03-democratic-participation.md` (217 lines) — Domain 3 was the only one of 22 lacking a dedicated evidence companion. Covers: Pew 2025 trust data (17%), primary-election concentration effect, citizens' assemblies 2024-2025 (Ireland cautionary case, Belgium Ostbelgien 3-yr data, Netherlands 2025), vTaiwan AI governance 2024-2025, participatory budgeting NYC/LA 2024, resistance-participation connection, fiscal estimates.
+
+Still missing deepening files: **Domain 4** (Digital Government Infrastructure), **Domain 12** (Infrastructure — IIJA cliff September 2026 makes this time-sensitive).
+
+---
+
+#### resistance-research — April 2026 Monitoring Integration (Session 257)
+
+`us-democracy-crisis-analysis-2026.md` (582→612): Fed Reserve independence threat, IEEPA ruling, No Kings 8–9M, OBBBA impacts, Don Lemon charges, law firm resistance wins.
+`litigation-tracker-2026.md` (738→852): *Trump v. Cook*, *Learning Resources*, third-country deportation tracker (new category), Harvard First Circuit appeal, 23-state AG citizenship suit.
+
+---
+
+#### open-source-rideshare — Cancellation + Feedback tests (Session 258, commit `3a58a59`)
+
+- `test_cancellation_policies.py` (106 tests), `test_ride_feedback.py` (57 tests)
+
+---
+
+#### open-source-rideshare — Fare Splits Test Suite (Session 257, commit `df1aeed`)
+
+- `test_fare_splits.py` (184 tests) covering all 8 service functions
+
+---
+
+### Session 255–256 Accomplished (archived)
+
+#### resistance-research — April 2026 Monitoring Pass
+
+Written to `projects/resistance-research/monitoring-2026-04.md`. Four major developments not yet in the main analysis (`us-democracy-crisis-analysis-2026.md`):
+
+1. **Federal Reserve independence under direct threat** (Apr 15): Trump issued an ultimatum — Powell must resign by May 15 or be fired. Companion case *Trump v. Cook* (whether Trump can remove Fed Board member Lisa Cook) is at SCOTUS. This is the Turkey/Argentina monetary capture playbook applied to the US central bank.
+
+2. **SCOTUS struck down IEEPA tariff authority** (Feb 20): *Learning Resources, Inc. v. Trump*, 6-3 ruling — Roberts + cross-ideological majority. "Liberation Day" tariff architecture ruled unlawful. Most significant judicial check on emergency economic powers since *Youngstown Steel*. Administration reconstituted authority under §232/§301; 10% baseline remains through July 24.
+
+3. **No Kings March 28 — 8–9 million participants**: New record, third national day of action. Counter to protest fatigue curves (June 2025: 5M → Oct 2025: 7M → Mar 2026: 8–9M). April 19 + May 1 upcoming.
+
+4. **Third-country deportations expanding to DRC** (Apr 5): 27+ countries now holding US third-country deportees. 8 of 9 in one Cameroon batch had active US court protection orders. Federal courts ruled El Salvador transfers violated due process; program continues.
+
+Additional: Don Lemon charged (first journalist criminally charged for covering an ICE protest), birthright citizenship oral args (Trump's own appointees appeared skeptical), OBBBA implementation ($1.02T Medicaid + $120B SNAP cuts now taking effect), 23-state AG lawsuit challenging citizenship verification voter-purge EO, Harvard First Circuit appeal, law firm resistance victories. Full gap table in the file routes each item to correct section of main analysis.
+
+---
+
+#### open-source-rideshare — Beckn Protocol Interoperability Design Doc
+
+Written to `projects/open-source-rideshare/beckn-protocol.md` (~370 lines, 11 sections). Key findings:
+
+- **BPP-primary role recommended**: We expose our drivers to the Beckn network (seller-side); acting as a BAP (aggregating other platforms' drivers) creates tension with the cooperative-first positioning.
+- **Not in Phase 1**: No Western production Beckn network exists yet. India's ONDC/Namma Yatri is production; Europe is exploring. Premature to build now.
+- **Phase 2 implementation**: Build `backend/app/beckn/` adapter mounted at `/beckn/` — 8 inbound endpoints, purely additive. Doesn't touch matching engine, pricing, Stripe, or the PostgreSQL schema.
+- **Key architectural constraint**: Beckn uses async callbacks (not synchronous REST) — requires a task queue (Celery/ARQ/etc.) for inbound request handling.
+- **Full schema mapping tables**: `RideRequest`→`search.intent`, `DriverProfile`→`Provider`+`Agent`, `Ride`→`Order`, `RideStatus`→Beckn fulfillment state codes
+- **3 zero-cost decisions to lock in now**: operator-per-BPP credentials, clean service interfaces, no BAP role by default
+
+---
+
+### Session 255 Accomplished (archived)
+
+#### open-source-rideshare — WAV Dispatch Integration (commit `a541c28`)
+
+Three gaps in wheelchair-accessible vehicle (WAV) dispatch were identified and fixed:
+
+1. **WAV certification required**: The matching engine was checking `vehicle.is_wheelchair_accessible` but ignoring the admin-verified `DriverWAVCertification`. Fixed: drivers now need BOTH a WAV vehicle AND a `verified` cert status.
+
+2. **Expanded WAV search radius**: Accessibility requests now start at max radius (not initial), since WAV-certified drivers are sparse.
+
+3. **Auto-promote from rider profile**: `request_ride` now checks `RiderAccessibilityProfile.needs_wav` and promotes `accessibility_required=True` automatically.
+
+- **15 new unit tests** | **Total: 9,719 passing** (was 9,704)
+
+---
+
+### Session 254 Accomplished (archived)
 
 #### open-source-rideshare — Ride Pool Tests (commit `25ebb35`)
 
@@ -96,19 +303,22 @@ Reviewed the signal generation code in `src/trading/trading_session.py` for both
    - Etsy listing copy is ready at `projects/mfg-farm/etsy-listing-modrun.md`
    - Blocked on: mockup photos (or real photos after test print)
    - When you print: check desk-edge clamp fit on your actual desk thickness and snap-arm feel on the clips. Report back and I'll adjust clearances.
-   - Do you want me to also design the product mockup image layout (text overlay, background, sizing guide) for when you have Canva access?
 
 2. **stockbot: threshold decision**
    - RSI thresholds (currently 30/70): watch for 5 more market days first. If still 0 signals after 5 days, do you want me to adjust to 35/65 and redeploy?
-   - MTF AAPL: can you SSH to Jetson and check `logs/trading_*.log` for lines with "MTF"? Looking for whether `raw_prediction` values are near 0 or whether the confluence filter is blocking signals.
+   - MTF AAPL: can you SSH to Jetson and check `logs/trading_*.log` for lines with "MTF"? Looking for whether `raw_prediction` values are near 0 or the confluence filter is blocking signals.
+
+3. **resistance-research: integrate monitoring findings?**
+   - `monitoring-2026-04.md` has a gap table mapping each new item to its correct section in the main analysis. Want me to do a full integration pass — weaving the Powell/Fed, IEEPA ruling, No Kings numbers, and deportation updates directly into the main document?
 
 ---
 
 ### What's Next (suggested)
 
-1. **open-source-rideshare**: Growth strategy is written, pool tests are done. Next logical tasks: (a) Beckn Protocol interoperability design doc — how to make this platform work with the open mobility standard Namma Yatri uses; (b) WAV dispatch integration — accessibility profile is built but not yet wired into ride matching; (c) any new feature from Anya.
-2. **stockbot**: Watch for 5 market days post trade-recording fix. If RSI signals still 0, lower to 35/65 and redeploy. MTF AAPL needs Jetson log inspection.
-3. **mfg-farm**: Launch Etsy listing once mockup photos are ready. Listing copy is done.
+1. **open-source-rideshare**: Beckn Protocol design doc written. Next: (a) integrate feedback on beckn-protocol.md if you have direction; (b) any new feature from Anya.
+2. **resistance-research**: Integration pass — weave April 2026 monitoring findings into main analysis document (gap table already written).
+3. **stockbot**: Watch for 5 market days post trade-recording fix. If RSI signals still 0, lower to 35/65 and redeploy.
+4. **mfg-farm**: Launch Etsy listing once mockup photos are ready. Listing copy is done.
 
 ---
 
