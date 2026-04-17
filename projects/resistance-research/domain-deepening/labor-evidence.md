@@ -625,6 +625,112 @@ Sources: [Neumark, Shirley, Terry (2022 ILR Review): Tipped and Minimum Wages: E
 
 ---
 
+## Section 9: Actionable Intelligence — Campaigns, Organizations, and Pressure Points
+
+### 9.1 The NLRB Crisis — The Enforcement Infrastructure Is Under Attack
+
+Understanding the current state of the labor law enforcement infrastructure is prerequisite to any organizing strategy.
+
+**What the Trump administration has done to the NLRB (2025)**:
+- On January 27, 2025, President Trump fired NLRB Member Gwynne Wilcox — the first time a president has removed a sitting Board member before the end of their statutory term — and fired General Counsel Jennifer Abruzzo. Wilcox's firing left the Board without a quorum (only two of five seats filled), paralyzed for 345 days without authority to issue decisions.
+- During the quorum gap, approximately 20,000 pending unfair labor practice cases sat without action. Workers illegally fired during organizing campaigns had no enforcement mechanism.
+- The new Acting General Counsel rescinded the Biden-era GC memoranda that had directed the NLRB to seek stronger remedies, restrict employer surveillance of organizing activity, and pursue sectoral relief in cases of pervasive violations.
+- NLRB-overseen union elections fell to 1,498 in 2025 — a 30% decrease from 2024 — directly attributable to the quorum paralysis and employer confidence that enforcement had collapsed.
+- The Senate confirmed new Board members (James Murphy, Scott Mayer) and a new General Counsel (Crystal Carey) on December 18, 2025, restoring quorum. But the Biden-era enforcement posture is gone; the replacement GC is management-side.
+
+**Strategic implication**: Federal labor law enforcement is structurally compromised for the duration of this administration. Organizing campaigns that depend on NLRB protection against illegal employer conduct face a hostile enforcement environment. This makes card check strategy (majority sign-up without an election), consumer-facing pressure campaigns (the CIW model), and state-level labor law advocacy more important than NLRB petition-based organizing for the next two to three years.
+
+**Where to follow developments**: [Center for American Progress: NLRB Election Tracker](https://www.americanprogress.org/article/nlrb-overseen-union-elections-fell-in-2025-amid-trump-administration-attacks/) | [OnLabor (Harvard): Real-time labor law coverage](https://onlabor.org)
+
+---
+
+### 9.2 Live Organizing Campaigns — Status as of April 2026
+
+**Starbucks Workers United**:
+- As of early 2026, approximately 535 Starbucks cafes have voted to unionize across at least 40 states — the largest service-sector organizing drive in US history by location count.
+- Workers are still without a ratified contract four years after the first union vote in Buffalo (December 2021). Starbucks and Workers United have been in national contract negotiations since February 2024, but no agreement has been reached.
+- The absence of a first contract — after four years — is the central organizing lesson of this campaign: winning a union election is the beginning, not the end. Employer delay strategy is the dominant counter-tactic.
+- In November 2025, Workers United launched a multi-city unfair labor practice strike on "Red Cup Day," involving more than 2,000 workers in 65 cities within a week. The strikes demonstrated sustained capacity for coordinated action.
+- Starbucks Workers United has filed hundreds of ULP charges against Starbucks for illegal firings during organizing, refusal to bargain, and captive audience meeting conduct. The NLRB enforcement gap in 2025 delayed resolution of these charges.
+- **What advocates can do**: Support the contract campaign directly (Workers United's contract campaign has a public action infrastructure). Follow the ULP charge outcomes as NLRB quorum is restored — the volume of pending charges represents a backlog of documented employer illegality.
+
+Sources: [CNN Business: Starbucks Workers Still Without Contract (December 2025)](https://www.cnn.com/2025/12/09/business/starbucks-workers-union-four-years-without-contract) | [Starbucks Workers United: SBWorkersUnited.org](https://www.sbworkersunited.org) | [Center for American Progress: The Fight to Unionize Starbucks](https://www.americanprogress.org/article/the-fight-to-unionize-starbucks-by-the-numbers/)
+
+**Amazon Labor Union**:
+- The ALU won the first Amazon union election in US history at the JFK8 warehouse on Staten Island in April 2022. Amazon has refused to recognize the result and has continued to contest the certification through NLRB appeals.
+- Subsequent Amazon elections — including a large facility in North Carolina (the CAUSE campaign at RDU1 in Garner) — lost by wide margins (roughly three-to-one), reflecting Amazon's intensive anti-union campaign and the difficulty of organizing dispersed warehouse workplaces with high worker turnover.
+- As of May 2025, the ALU was in leadership transition, reorganizing its internal governance.
+- **The strategic lesson from Amazon**: The EPI finding that 41.5% of organizing campaigns involve illegal employer firings is most visible in the Amazon context. Amazon's documented campaign tactics — mandatory anti-union meetings, surveillance of communications, termination of known organizers — are the textbook case for why the PRO Act's captive audience meeting ban, card check, and penalty increases are necessary.
+- **What advocates can do**: The most direct near-term action is supporting state-level legislation that mirrors PRO Act provisions. Several states (including Illinois and Minnesota) have enacted state-level card check or expedited election rules that do not depend on NLRB administration.
+
+Sources: [NC Newsline: The Tough Fight to Unionize Amazon (March 2025)](https://ncnewsline.com/2025/03/17/the-tough-fight-to-unionize-amazon/) | [EPI: Corporate Union-Busting (Amazon, Starbucks, Trader Joe's)](https://www.epi.org/publication/corporate-union-busting/)
+
+**Coalition of Immokalee Workers**:
+- The CIW's Fair Food Program — operating entirely outside the NLRA framework through consumer-facing brand pressure — continues to be the most successful agricultural labor standards campaign in the US. Major fast-food purchasers (McDonald's, Whole Foods, Trader Joe's, Walmart) have signed Fair Food Agreements committing to the premium and code of conduct.
+- The Fair Food Program is the proof-of-concept that effective labor standards enforcement does not require NLRB machinery when organizing targets are consumer brands with reputational vulnerability.
+- **What advocates can do**: Support CIW campaigns targeting hold-out purchasers. The program's expansion into new supply chains is the active frontier.
+
+Sources: [Coalition of Immokalee Workers: Fair Food Program Status](https://ciw-online.org/fair-food-program/)
+
+---
+
+### 9.3 Minimum Wage — Current State and Near-Term Targets
+
+**Federal floor**: The federal minimum wage remains $7.25/hour — the longest period without a federal increase in the minimum wage's history (since 2009). No federal increase is plausible under the current Senate. State and local action is the primary near-term venue.
+
+**2026 state minimum wage ballot initiative calendar**:
+- **Oklahoma**: State Question 832 set for special election June 16, 2026 — a ballot initiative to raise Oklahoma's minimum wage from the federal $7.25 floor to $15/hour by 2029 with annual CPI adjustments thereafter. Oklahoma is one of the lowest-wage states in the country; passage would directly affect a large share of the low-wage workforce. This is the highest-priority near-term minimum wage ballot campaign.
+- **Scheduled increases taking effect in 2026**: Alaska ($13→$14, July 1, 2026, per 2024 Ballot Measure 1); Colorado ($15.16, January 1, 2026); Hawaii ($16.00, January 1, 2026).
+- Several states are in various stages of minimum wage ballot initiative qualification for 2026-2028 cycles; NELP's minimum wage tracker is the authoritative source for current status.
+
+**Tipped minimum wage campaigns**:
+- One Fair Wage (OFW) is the primary national organization running campaigns to eliminate the tipped subminimum ($2.13/hour) in the remaining 43 states that maintain one. OFW has succeeded in several state campaigns and provides model legislation and organizing infrastructure.
+- The highest-leverage near-term targets are states with large restaurant workforces, significant tip-credit employer lobbying presence, and Democratic legislative chambers or ballot initiative access: Pennsylvania, Michigan (where the One Fair Wage initiative is active), and Illinois.
+
+Sources: [Ballotpedia: Minimum Wage Increases in 2026](https://ballotpedia.org/Minimum_wage_increases_in_2026) | [NELP: Minimum Wage Tracker](https://www.nelp.org/nelp-on-minimum-wage-ballot-initiatives-in-2024/) | [One Fair Wage](https://onefairwage.site)
+
+---
+
+### 9.4 Legislative Vehicles — Federal
+
+**PRO Act (119th Congress)**:
+- The Protecting the Right to Organize Act was reintroduced in the 119th Congress (2025-2026) by Rep. Bobby Scott (D-VA), Rep. Brian Fitzpatrick (R-PA) in the House, and Sen. Bernie Sanders (I-VT) in the Senate. The bipartisan House sponsorship (Fitzpatrick is a Republican) is notable.
+- The PRO Act passed the House in the 117th Congress (2021); it has never received a Senate floor vote. The filibuster is the structural barrier — 60 votes are required for cloture.
+- **Near-term utility**: The PRO Act functions less as a realistic near-term legislative vehicle and more as a coalitional organizing frame and a menu of provisions that can be enacted individually at the state level. Advocates should track which specific provisions have the most bipartisan support (the captive audience meeting ban and penalty increases are most consistently supported) and target state-level analogs.
+
+**State-level PRO Act analogs**:
+- **Illinois**: The Illinois Workers' Rights Amendment (passed as a constitutional amendment in 2022) enshrines the right to organize in the Illinois constitution — the strongest state-level labor rights protection in the country. Illinois has subsequently enacted card check for some sectors.
+- **Minnesota**: Enacted several PRO Act provisions in 2023-2024 under the trifecta Democratic government.
+- **Washington State**: The rideshare portable benefits model (HB 2076) is the most developed US implementation of portable benefits outside traditional employment.
+
+**Filibuster reform as prerequisite**: The PRO Act cannot pass the current Senate under normal rules. Any advocate using the PRO Act as a strategic frame needs to address the filibuster question directly — the labor rights program and the filibuster reform program are not separable in the current legislative environment.
+
+Sources: [NALC: PRO Act Reintroduced (2025)](https://www.nalc.org/government-affairs/legislative-updates/pro-act-reintroduced-in-house-and-senate-2025) | [Sanders Senate: PRO Act Fact Sheet 2025](https://www.sanders.senate.gov/wp-content/uploads/PRO-Act-Fact-Sheet-2025.pdf)
+
+---
+
+### 9.5 Organizations — Landscape for Advocates
+
+**Policy and legal advocacy**:
+- **Economic Policy Institute (EPI)**: The primary source for labor economics research usable by advocates. EPI's union wage premium, ULP enforcement data, and minimum wage analyses are the most cited in legislative testimony. [epi.org](https://www.epi.org)
+- **National Employment Law Project (NELP)**: Policy advocacy organization focused on minimum wage, worker classification, and unemployment insurance. Runs minimum wage tracker and ballot initiative support. [nelp.org](https://www.nelp.org)
+- **AFL-CIO**: The primary federation representing 60 affiliated unions and 12.5 million workers. The AFL-CIO's legislative program and death-on-the-job report are essential advocacy tools. [aflcio.org](https://www.aflcio.org)
+- **Harvard Labor and Worklife Program (Clean Slate)**: The academic home of the most comprehensive US labor law reform proposal. [cleanslate.law.harvard.edu](https://cleanslate.law.harvard.edu)
+
+**Worker organizing**:
+- **Starbucks Workers United / Workers United (SEIU affiliate)**: Active contract campaign with public action infrastructure.
+- **Coalition of Immokalee Workers**: Model for non-NLRA consumer-pressure organizing; active Fair Food Program expansion campaigns.
+- **National Domestic Workers Alliance**: Campaigns for domestic worker inclusion in labor law protections and portable benefits. [domesticworkers.org](https://www.domesticworkers.org)
+- **One Fair Wage**: National campaign to eliminate the tipped minimum wage. [onefairwage.site](https://onefairwage.site)
+- **Jobs With Justice**: National network of local coalitions linking labor and community groups. Organizes both policy advocacy and direct worker support. [jwj.org](https://www.jwj.org)
+
+**State-level pressure points (highest leverage in 2026)**:
+- States with Democratic trifectas where state-level PRO Act provisions can pass: Michigan, Minnesota, Illinois, Maryland, Massachusetts, Nevada.
+- States with ballot initiative access where minimum wage increases can bypass hostile legislatures: Oklahoma (June 2026), plus multiple states in the 2026-2028 planning horizon.
+- States with Republican legislatures but Democratic governors where veto defense of existing labor protections matters: Wisconsin, Pennsylvania, North Carolina (protection of existing minimum wage laws and collective bargaining for public employees).
+
+---
+
 ## Key Numbers for Quick Reference
 
 | Data Point | Value | Source |
