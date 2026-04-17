@@ -149,6 +149,30 @@ class FuelTypeBreakdown(BaseModel):
     total_kwh: float
 
 
+class VehicleFuelSummaryAnalytics(BaseModel):
+    """Per-vehicle fuel analytics returned by the fuel-log summary endpoint.
+
+    Attributes:
+        fleet_vehicle_id: UUID of the vehicle.
+        total_fill_ups: Count of log entries.
+        total_gallons: Sum of gallons_added (ICE / hybrid vehicles).
+        total_kwh: Sum of kwh_added (EV vehicles).
+        total_cost_usd: Sum of total_cost_usd across all logs.
+        avg_cost_per_gallon_usd: Avg cost_per_unit_usd for gasoline/diesel/hybrid logs.
+        avg_cost_per_kwh_usd: Avg cost_per_unit_usd for electric logs.
+        last_fill_date: Date of the most recent fill-up.
+    """
+
+    fleet_vehicle_id: uuid.UUID
+    total_fill_ups: int
+    total_gallons: float
+    total_kwh: float
+    total_cost_usd: float
+    avg_cost_per_gallon_usd: Optional[float]
+    avg_cost_per_kwh_usd: Optional[float]
+    last_fill_date: Optional[date]
+
+
 class FleetFuelSummary(BaseModel):
     """Fleet-wide fuel analytics for a corporate account.
 
