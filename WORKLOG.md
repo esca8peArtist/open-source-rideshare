@@ -4,6 +4,126 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 274 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Previous session (273): department budget enforcement for rideshare (50 tests, commit 238ab1e); domain-03-democratic-participation elevated Tier 2→Tier 1 (commit c4eed22).
+
+### Task Selection
+1. open-source-rideshare: Onboarding checklist enforcement in booking eligibility (Step 0: block booking when policy_acknowledged is incomplete in active CorporateMemberOnboarding)
+2. resistance-research: Deepen rights-protection-evidence.md from Tier 2 → Tier 1
+
+Both delegated as parallel background agents. Both completed.
+
+### open-source-rideshare: Onboarding checklist enforcement — COMPLETE
+Commit `043c790`, pushed to `feature/corporate-business-accounts`.
+
+**Step 0 added to `check_booking_eligibility`**:
+- Queries `CorporateMemberOnboarding` where `member_id == user_id AND account_id == account_id AND status != 'completed'`
+- If found, checks `steps_completed['policy_acknowledged']['completed']`
+- If false → appends denial reason, sets `onboarding_incomplete = True`, collects all pending step names into `onboarding_pending_steps`
+- `eligible` verdict now includes `not onboarding_incomplete`
+
+**Schema** `BookingEligibilityResponse` extended: `onboarding_incomplete: bool = False`, `onboarding_pending_steps: List[str] = []`
+
+Tests: **58 passing** (was 50; 8 new tests: no record, policy_ack complete with other steps pending, policy_ack false blocks booking, completed status excluded, combined failures, correct pending step names, empty when all done, no spurious denial reason).
+
+### resistance-research: rights-protection-evidence.md elevated Tier 2 → Tier 1 — COMPLETE
+Local commit `8ba9bd0`. File: `domain-deepening/rights-protection-evidence.md` (432 → 648 lines, +50%).
+quality-review-index.md now: **20 Tier 1, 3 Tier 2, 0 Tier 3** (was 19/4/0).
+
+**Section 7g (new) — Counterargument: infrastructure security interest**
+- Legitimate security claim stated directly before being dismantled (critical infrastructure attacks carry catastrophic downside risk)
+- Overbreadth: existing statutes (ND criminal mischief, 18 U.S.C. § 2155) already covered the harms; TX SB 2138 felony trespass exceeds federal sabotage penalty in some configurations
+- Legislative record shows trigger was environmental monitoring and media access (North Dakota), not violence
+- Louisiana Act 167 drafted by industry with minimal modification — pretextual purpose documented
+- Discriminatory application: Moore County substation attack (actual infrastructure sabotage) not charged under anti-protest statutes; pipeline opponents were
+- Constitutional frame: First Amendment overbreadth doctrine + Cop City RICO as parallel overreach illustration
+
+**Section 7h (new) — International benchmarks: EU comparison**
+- EU Anti-SLAPP Directive 2024/1069 (April 2024, December 2026 implementation): early dismissal + cost-shifting + sanctions; 18-state US gap; EU compliance creates domestic advocacy leverage for SPEAK FREE Act
+- France Loi Séparatisme Constitutional Council (Decision 2021-823 DC, August 2021): dissolution provisions struck; structural contrast — weeks vs. years for constitutional review
+- Germany 2024 Versammlungsgesetz reform debate: mandatory Stellungnahme expert opinion process (BVerfG Brokdorf 1985 required reference) vs. absence of First Amendment accounting in US anti-protest legislative records
+
+**Section 7i (new) — Fiscal estimates for surveillance reform**
+- Federal Data Protection Agency: $300-500M annually + $150-250M startup (UK ICO/German BfDI per-capita methodology)
+- Federal anti-SLAPP: cost-negative (IPI $350M/year chilling effect; SPEAK FREE Act is procedural mechanism only)
+- Fusion center restructuring: 30% DHS grant reallocation = 240 GS-12 auditors at net-zero new spending
+- IMSI catcher warrant requirement: $1.5M annual compliance cost = 0.008% of DOJ budget
+
+**Sections AI-1 through AI-6 (new) — Actionable intelligence**
+- Section 702 212-212 swing vote strategy with libertarian Republican constituency mapping
+- EU Anti-SLAPP compliance as domestic SPEAK FREE Act leverage
+- Bill numbers: PRESS Act (H.R. 4250/S. 1324), 4th Amendment Is Not For Sale Act (Wyden, Senate Judiciary 13-8), SPEAK FREE Act (Eshoo)
+- State highest-leverage: Illinois BIPA defense (Spring 2026 session), Texas civil rights litigation, Minnesota pipeline cases (SCOTUS circuit split pathway)
+- Six organizations: IJ, Democracy Forward, FPF, EFF, ACLU National, Restore The Fourth
+- Five 2026 windows: Section 702 April 20 expiration, FY2027 appropriations markup, Google remedy amicus, Illinois BIPA session, Minnesota Supreme Court decision
+
+---
+
+---
+
+## Session 273 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- Previous session (272): immigration-evidence.md elevated Tier 2→Tier 1; department-level ride policy enforcement verified (101 tests passing, pushed).
+
+### Task Selection
+1. open-source-rideshare: Department budget enforcement — block bookings when dept monthly_budget exceeded (add to booking eligibility check)
+2. resistance-research: Elevate domain-03-democratic-participation from Tier 2 → Tier 1
+
+Both delegated as parallel background agents.
+
+### open-source-rideshare: Department budget enforcement — COMPLETE
+Commit `238ab1e`, pushed to `feature/corporate-business-accounts`.
+
+**New helper** `_get_department_budget_checks(db, account_id, user_id)`:
+- Finds all `CorporateDepartmentMember` rows for this user
+- For each department with a `monthly_budget`, sums current-month `Ride.actual_fare` across ALL members of that department
+- Returns list of `DeptBudgetCheckSummary`
+
+**New schema** `DeptBudgetCheckSummary`: `department_id`, `department_name`, `monthly_budget_usd`, `current_month_spend_usd`, `budget_remaining_usd`, `budget_exceeded`
+
+**`BookingEligibilityResponse`** extended: `dept_budget_exceeded: bool = False`, `dept_budget_details: list[DeptBudgetCheckSummary] = []`
+
+**Eligibility verdict** updated: `eligible = policy_check_passed and not any_quota_exceeded and not spend_limit_exceeded and not dept_budget_exceeded and not blackout_hard_block`
+
+Tests: **50 passing** (was 40; 10 new tests added covering all cases).
+
+### resistance-research: domain-03-democratic-participation elevated Tier 2 → Tier 1 — COMPLETE
+Local commit `c4eed22`. File: `domain-deepening/domain-03-democratic-participation.md` (217 → 411 lines, +89%).
+
+**Section 9 (new) — Counterargument: deliberative bodies as minority capture vectors**
+- Bagg (2024, AJPS) sortition-as-anti-corruption; agenda self-selection as fix
+- Yale ISPS (2025) selection bias in "random" recruitment
+- Journal of Deliberative Democracy (2024) — invisible facilitation power
+- arXiv (2026) — demographic quota / identity-misreporting incentives
+- Five design requirements for capture-resistant assembly vs. capture-prone
+- Structural framing: compare to actual institutional alternatives, not ideal legislature
+
+**Section 10 (new) — Fiscal estimates with named methodology**
+- GS-11 member compensation, CBO cost-per-employee for secretariat, National Academies pricing for expert witnesses
+- Revised Assembly estimate: $35-65M per 18-month cycle (median $50M)
+- PB federal match estimate grounded in NYC 7-10% ratio + Harvard Ash Center 3.5x durability finding
+
+**Section 11 (new) — 2025-2026 rollback**
+- EO 14248 citizenship documentation (21M affected, two injunctions); SAVE America Act (House 218-213, Senate 60-vote threshold)
+- 13-state RCV ban wave through March 2026
+- Two-track resistance implication: state/local infrastructure track vs. federal voting rights track
+
+**Section 12 (new) — Actionable Intelligence**
+- 5 immediately actionable items; 4 legislative vehicles with bill numbers
+- 5 active cases with current status (LULAC v. EOP, California v. Trump, LWV Ohio v. LaRose, Louisiana v. Callais, Turtle Mountain v. Howe)
+- 8 organizations with specific roles; 5 time-bounded 2026 windows
+
+quality-review-index.md updated: **19 Tier 1, 4 Tier 2, 0 Tier 3** (was 18/5/0).
+
+---
+
 ## Session 272 — 2026-04-17
 
 ### Orient
@@ -11354,3 +11474,50 @@ New files:
 Modified: `backend/app/main.py` — router registered.
 
 Session 269 complete.
+
+---
+
+## Session 275–276 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None active.
+- resistance-research: 3 Tier 2 files remaining (data-privacy-evidence, social-safety-net-evidence, reparations-evidence).
+- open-source-rideshare: Next task = invitation acceptance → auto-trigger onboarding record creation.
+
+### Task selection
+Running in parallel: (1) data-privacy-evidence.md deepening, (2) invitation→onboarding wiring, then (3) social-safety-net + reparations in parallel + expense report feature.
+
+### resistance-research: data-privacy-evidence.md elevated to Tier 1
+Commit: 924d6d3
+
+Added Section 9.5 (counterargument on data availability and beneficial uses — fraud prevention, medical research, free flow of data) and Sections AI-1 through AI-6 (actionable intelligence). Section 702 April 20 2026 expiration as highest-priority window; ADPPA/APRA successor, federal BIPA, COPPA 2.0, KOSA legislative vehicles; FTC ANPRM APA litigation path; Illinois BIPA defense (May 2026 session); seven organizations; five time-bounded 2026 windows.
+
+### open-source-rideshare: Invitation acceptance → onboarding auto-trigger
+Commit: 9cfacf2 — pushed to rideshare remote
+
+Modified `corporate_employee_invitation.py` — `accept_invitation` now calls `_onboarding_svc.create_onboarding` after flush; 409 (duplicate) absorbed silently. 3 new tests in `test_corporate_employee_invitations.py` — 48 total passing. No regressions in onboarding (93) or bulk invitations (27).
+
+### resistance-research: social-safety-net-evidence.md elevated to Tier 1
+Commit: 18d11f5
+
+Added Sections 10–13: Nordic benchmarks (25%+ GDP social spending, child poverty 3.7–9.4% vs. US 15–17%), UK Universal Credit cautionary case (36% housing arrears), Canada Mincome + Ontario pilot evidence. SNAP 0.06% fraud rate vs. 10.93% improper payment rate. EITC error rate cause analysis. Fiscal sustainability counterargument. OBBBA P.L. 119-21 SNAP/Medicaid/CTC specifics. Six organizations. Five 2026 windows.
+
+### resistance-research: reparations-evidence.md elevated to Tier 1
+Commit: 77d3eb9
+
+Added Sections 11–13: Darity-Mullen $14.3T/$10.7T + Craemer $16.4-20T fiscal methodology. Three core counterarguments ("I didn't own slaves" / fiscal burden / line-drawing). Actionable intelligence — NY Commission testimony (open now), HR 40/S.40 (99 co-sponsors), five state pressure points, six orgs, five 2026 windows, 2025-2026 rollback documentation.
+
+### Fix: quality-review-index.md tier count
+Commit: 8d5eaa3
+
+Corrected tier count from "23 Tier 1, 1 Tier 2" to "23 Tier 1, 0 Tier 2, 0 Tier 3" — race condition from parallel agents both updating the count.
+
+**resistance-research deepening queue: 100% complete. All 23 domain files are Tier 1.**
+
+### open-source-rideshare: Corporate expense report generation
+Commit: 0b07eab — pushed to rideshare remote
+
+New files: `schemas/corporate_expense_report_gen.py` (5 schemas), `services/corporate_expense_report_gen.py` (member report, account report, CSV export), `api/v1/corporate_expense_report_gen.py` (3 routes), `tests/test_corporate_expense_report_gen.py` (60 tests, all passing). Router registered in main.py.
+
+Session 275–276 complete.

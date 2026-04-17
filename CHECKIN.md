@@ -1,13 +1,110 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–272
+**Sessions**: 257–276
+
+---
+
+### Accomplished (Sessions 275–276)
+
+#### resistance-research — ALL 23 DOMAIN FILES NOW TIER 1 (deepening queue 100% complete)
+
+Three final Tier 2 files elevated this session:
+
+**data-privacy-evidence.md** (Session 275, commit `924d6d3`): Section 9.5 counterargument on data availability/beneficial uses (fraud prevention, medical research, free flow of data — each engaged directly with resolution). Sections AI-1 through AI-6 actionable intelligence — Section 702 April 2026 expiration, ADPPA successor, federal BIPA, COPPA 2.0, KOSA, FTC ANPRM litigation path, Illinois BIPA defense (May 2026), seven organizations, five 2026 windows.
+
+**social-safety-net-evidence.md** (Session 276, commit `18d11f5`): Sections 10–13 added. Nordic benchmarks (25%+ GDP spending, child poverty 3.7–9.4% vs. US 15–17%); UK Universal Credit cautionary case (5-week wait → 36% housing arrears); Canada Mincome + Ontario pilot. SNAP 0.06% fraud rate vs. 10.93% improper payment rate. Fiscal sustainability and work disincentive counterarguments. OBBBA P.L. 119-21 SNAP $295B/10yr, Medicaid work requirements 4.8M losing coverage (Jan 2027 deadline), Farm Bill Sep 30, 2026 expiration. Six organizations. Five 2026 windows.
+
+**reparations-evidence.md** (Session 276, commit `77d3eb9`): Sections 11–13 added. Darity-Mullen $14.3T/$10.7T + Craemer $16.4-20T fiscal methodologies; revenue mechanisms ($860B-$1.5T/10yr window). Three core counterarguments at full depth. Actionable intelligence — NY Commission testimony (open now), HR 40/S.40 (99 co-sponsors), five state pressure points, six orgs, five 2026 windows, 2025-2026 rollback with state/local bridge strategy.
+
+quality-review-index.md: **23 Tier 1, 0 Tier 2, 0 Tier 3**
+
+#### open-source-rideshare — Invitation → onboarding auto-trigger (48 tests, pushed, commit `9cfacf2`)
+
+`accept_invitation` now calls `create_onboarding` after flush — idempotent (409 absorbed silently). 3 new tests: creates onboarding on accept, ignores duplicate, revoke does not trigger. No regressions in onboarding (93 tests) or bulk invitations (27 tests).
+
+#### open-source-rideshare — Corporate expense report generation (60 tests, pushed, commit `0b07eab`)
+
+Three new files: schema, service, API. No new migrations. Member self-service report, admin account report with dept + member breakdowns, CSV export. 60 tests covering all paths.
 
 ---
 
 ### Needs Your Input
 
-#### open-source-rideshare — Corporate department management + policy enforcement (PR ready for merge)
+#### open-source-rideshare — Feature branch ready for review
+
+Feature branch: `feature/corporate-business-accounts`
+Pushed to: `rideshare` remote (esca8peArtist/open-source-rideshare)
+
+**Full corporate feature set** (all committed, all tests passing):
+- Three-tier policy hierarchy (account → department → member override)
+- Booking eligibility enforcement (policy, blackout, quotas, spend limit, dept budget, onboarding)
+- Invoice due dates + overdue tracking
+- Spending alerts (75%/90%/100% thresholds)
+- Member onboarding with checklist enforcement
+- Invitation → onboarding auto-trigger
+- Expense report generation (member + admin + CSV)
+
+Ready to merge to master when you approve. Sessions of work across a substantial corporate accounts feature set — worth a PR review before merging.
+
+---
+
+### Accomplished (Session 274)
+
+#### open-source-rideshare — Onboarding checklist enforcement in booking eligibility (58 tests, pushed, commit `043c790`)
+
+Added **Step 0** to `check_booking_eligibility` in `corporate_booking_eligibility.py`. Before any policy check, the service now queries for an active (non-completed) `CorporateMemberOnboarding` record for the member. If found and `policy_acknowledged` is not complete, the ride is blocked.
+
+- `BookingEligibilityResponse` schema extended: `onboarding_incomplete: bool = False`, `onboarding_pending_steps: List[str] = []`
+- `eligible` verdict now includes `not onboarding_incomplete`
+- No-onboarding-record path: `onboarding_incomplete=False` (onboarding is admin-initiated, not mandatory)
+- Completed onboarding (status='completed') excluded by query — no false positives
+- 8 new tests; 58 total passing (was 50)
+- Pushed to `rideshare` remote, `feature/corporate-business-accounts`
+
+#### resistance-research — rights-protection-evidence.md elevated Tier 2 → Tier 1 (local commit `8ba9bd0`)
+
+File: `domain-deepening/rights-protection-evidence.md` (432 → 648 lines). quality-review-index.md: **20 Tier 1, 3 Tier 2, 0 Tier 3** (was 19/4/0).
+
+Four gaps filled: (1) Counterargument on infrastructure security interest (Section 7g) — states the legitimate claim before dismantling it via overbreadth, discriminatory application pattern, and legislative record analysis; (2) EU benchmarks (Section 7h) — EU Anti-SLAPP Directive 2024/1069 with December 2026 implementation deadline as domestic leverage; France Constitutional Council Loi Séparatisme ruling; Germany mandatory constitutional expert opinion requirement vs. US legislative record; (3) Fiscal estimates (Section 7i) — Federal DPA at $300-500M (UK ICO methodology), anti-SLAPP as cost-negative ($350M/yr IPI chilling effect), fusion center restructuring at net-zero (reallocation), IMSI catcher warrants at $1.5M compliance cost; (4) Actionable intelligence (AI-1 through AI-6) — Section 702 212-212 swing vote strategy, PRESS Act / 4th Amendment Is Not For Sale Act / SPEAK FREE Act bill numbers, Illinois BIPA defense / Texas civil rights litigation / Minnesota pipeline SCOTUS pathway as state priorities, six named organizations, five time-bounded 2026 windows.
+
+---
+
+### Needs Your Input
+
+#### open-source-rideshare — Corporate department management + policy enforcement + budget enforcement + onboarding enforcement (PR ready for merge)
+
+Feature branch: `feature/corporate-business-accounts`
+Pushed to: `rideshare` remote (esca8peArtist/open-source-rideshare)
+
+**What was built** (all committed, all tests passing):
+
+Three-tier policy hierarchy fully operational + booking enforcement:
+  1. Account-level policy (CorporateRidePolicy)
+  2. Department-level override (CorporateDepartmentRidePolicy)
+  3. Member-level override (CorporateMemberPolicyOverride)
+  4. Booking eligibility enforces: effective policy, blackout periods, ride quotas, member spend limit, department budget, **onboarding checklist** (policy_acknowledged step)
+
+**Latest additions**:
+- Session 273: Department budget enforcement — blocks booking when any dept monthly_budget exceeded (`commit 238ab1e`)
+- Session 274: Onboarding checklist enforcement — blocks booking when `policy_acknowledged` incomplete in active CorporateMemberOnboarding (`commit 043c790`)
+
+Total tests: 151 dept/policy + 58 booking eligibility = **209 tests passing** across the corporate feature set.
+
+Ready to merge to master when you approve.
+
+---
+
+### Accomplished (Session 273)
+
+**Period**: 2026-04-17
+**Sessions**: 257–273
+
+---
+
+### Needs Your Input
+
+#### open-source-rideshare — Corporate department management + policy enforcement + budget enforcement (PR ready for merge)
 
 Feature branch: `feature/corporate-business-accounts`
 Pushed to: `rideshare` remote (esca8peArtist/open-source-rideshare)
@@ -35,9 +132,32 @@ Three-tier policy hierarchy is fully operational:
 - Member self-view, admin CRUD, platform-admin cross-account endpoints
 - Department spend analytics with budget utilization %
 
-**Tests**: 52 passing (`test_corporate_departments.py`) + 49 passing (`test_corporate_department_ride_policy.py`) = 101 total
+**Tests**: 52 passing (`test_corporate_departments.py`) + 49 passing (`test_corporate_department_ride_policy.py`) + 50 passing (`test_corporate_booking_eligibility.py`) = 151 total
+
+**Latest addition (Session 273)**: Department budget enforcement in booking eligibility (`commit 238ab1e`). When a ride is requested, the system now:
+1. Looks up all departments the member belongs to
+2. Sums this month's completed-ride spend across ALL members of each department
+3. Blocks the booking if any department's `monthly_budget` is exceeded
+New `DeptBudgetCheckSummary` schema; `BookingEligibilityResponse` extended with `dept_budget_exceeded` + `dept_budget_details`.
 
 Ready to merge to master when you approve.
+
+---
+
+### Accomplished (Session 273)
+
+#### open-source-rideshare — Department budget enforcement added to booking eligibility (50 tests, pushed, commit `238ab1e`)
+
+`_get_department_budget_checks(db, account_id, user_id)` added to `corporate_booking_eligibility.py`. Sums current-month `Ride.actual_fare` across all department members (via `CorporateDepartmentMember` join). Step 5b in eligibility check — blocks ride if any of the user's departments has exceeded its `monthly_budget`. New `DeptBudgetCheckSummary` schema. `BookingEligibilityResponse` extended. 10 new tests cover: exceeded, not-set, two-dept scenarios, combined failures, limit boundary, partial spend, not in any dept, schema construction, floor-at-zero.
+
+#### resistance-research — domain-03-democratic-participation elevated Tier 2 → Tier 1 (local commit `c4eed22`)
+
+File: `domain-deepening/domain-03-democratic-participation.md` (217 → 411 lines). quality-review-index.md: **19 Tier 1, 4 Tier 2, 0 Tier 3** (was 18/5/0).
+
+- **Section 9 (new)** — Counterargument: deliberative bodies as minority capture vectors. Engages Bagg (2024 AJPS), Yale ISPS (2025) selection bias, JDD (2024) invisible facilitation power, arXiv (2026) temporal panel selection. Identifies 5 design requirements for capture-resistant assemblies. Structural framing: compare to actual institutional alternatives, not ideal legislature.
+- **Section 10 (new)** — Fiscal estimates with named methodology: GS-11 member compensation, CBO cost-per-employee for secretariat, National Academies pricing for expert witnesses. Assembly estimate: $35-65M per 18-month cycle (median $50M). PB federal match grounded in NYC 7-10% ratio + Harvard Ash Center 3.5x durability finding.
+- **Section 11 (new)** — 2025-2026 rollback: EO 14248 citizenship documentation (21M affected, 2 injunctions); SAVE America Act (House 218-213, Senate 60-vote threshold); 13-state RCV ban wave through March 2026. Two-track resistance implication.
+- **Section 12 (new)** — Actionable Intelligence: 5 active cases (LULAC v. EOP, California v. Trump, LWV Ohio v. LaRose, Louisiana v. Callais, Turtle Mountain v. Howe), 4 legislative vehicles with bill numbers, 8 organizations with roles/URLs, 5 time-bounded 2026 windows.
 
 ---
 

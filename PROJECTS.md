@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 272: **immigration-evidence.md elevated to Tier 1** (local commit). Added: Canada/Germany/Australia int'l benchmarks deepened with 2024 data; Section 11 counterarguments (enforcement-deterrence Massey backfire, rule-of-law objection with Spain 2005 precedent, Card-Borjas Peri-Sparber resolution); Section 12 actionable intelligence (IRS-ICE data litigation, DREAM Act S.3348, Farm Workforce H.R.3227, sanctuary policy Tenth Amendment basis, 7 organizations, 5 named 2026 windows). quality-review-index.md now: **18 Tier 1, 5 Tier 2, 0 Tier 3**. **Next**: Deepen remaining Tier 2 files (domain-03-democratic-participation, rights-protection-evidence, social-safety-net-evidence, reparations-evidence, data-privacy-evidence) OR publication-readiness formatting pass on the democratic renewal proposal.
+**Current focus**: Session 275–276: **ALL 23 DOMAIN FILES NOW TIER 1** — data-privacy-evidence (Session 275), social-safety-net-evidence + reparations-evidence (Session 276) all elevated. quality-review-index.md: **23 Tier 1, 0 Tier 2, 0 Tier 3**. Domain deepening queue 100% complete. **Next**: Publication-readiness formatting pass on the democratic renewal proposal — unified narrative, consistent heading structure, cross-domain citations, executive summary.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 272: **Department-level policy enforcement verified** (101 tests passing, pushed). Three-tier policy hierarchy fully implemented: account policy → department override → member override. Models: `CorporateDepartment`, `CorporateDepartmentMember`, `CorporateDepartmentRidePolicy`. Services: CRUD, membership, spend analytics, `get_effective_policy_for_member`. REST endpoints for both dept management and policy. **Next**: Corporate member onboarding workflow OR department budget enforcement (block bookings when dept monthly budget exceeded).
-**Last updated by**: orchestrator on 2026-04-17 (Session 272)
+**Current focus**: Session 275–276: **Invitation → onboarding auto-trigger COMPLETE** (commit `9cfacf2`, pushed). Accept invitation now calls `create_onboarding`; 409 (duplicate) absorbed silently; 3 new tests, 48 total passing. **Expense report generation COMPLETE** (commit `0b07eab`, pushed): member self-report, admin account report, CSV export; 60 tests. **Next**: Corporate trip purpose codes — member assigns a trip purpose code at booking, admins can filter/report by purpose; useful for corporate policy enforcement and expense accounting.
+**Last updated by**: orchestrator on 2026-04-17 (Session 275–276)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
