@@ -346,3 +346,210 @@ The following table consolidates the key international reference points used acr
 ---
 
 *Sources consolidated above within each section. Primary databases: Brennan Center for Justice, MIT Election Lab, FairVote, Sentencing Project, OpenSecrets, International IDEA, OECD Society at a Glance 2024, Government Accountability Office, US Election Assistance Commission.*
+
+---
+
+## Sourcing Notes and Corrections
+
+Two fiscal estimates in the Fiscal Estimates Summary table require caveats that were not originally flagged:
+
+**RCV federal adoption cost ($200–$400M)**: The existing document states this figure comes from "state implementation cost extrapolation." No Congressional Budget Office score of any RCV bill exists as of April 2026. The figure is an inference from local data — New York City's Independent Budget Office estimated local implementation at $100,000–$500,000 upfront; the H.R. 4464 Ranked Choice Voting Act (116th Congress) proposed federal payments to states of $750,000 + $250,000 per House representative (implying roughly $120–$140M total in grant payments). The $200–$400M range is a reasonable extrapolation for voting system reprogramming and voter education at national scale, but it is not a scored estimate and should not be cited as such.
+
+**PR transition cost ($500M–$1B)**: This figure does not trace to a primary academic or government source. The Institute for Responsive Government (2024) analyzed state-level PR transition costs and found them to be largely cost-neutral trade-offs rather than net additions, with certain costs (primary runoffs, recount litigation) eliminated. No peer-reviewed estimate of federal House PR transition costs at the $500M–$1B range was locatable. The figure should be treated as a rough planning order-of-magnitude estimate, not a sourced projection.
+
+Sources: [New York City IBO: RCV Implementation Cost Estimate (October 2019)](https://ibo.nyc.ny.us/); [Institute for Responsive Government: The Cost of Better Representation (2024)](https://responsivegov.org/research/the-cost-of-better-representation-a-framework-for-understanding-the-financial-impact-of-proportional-representation-on-state-elections/)
+
+---
+
+## Counterarguments and Responses
+
+Serious objections to the electoral reforms proposed here, stated at their strongest:
+
+### Objection 1: RCV Confuses Voters and Produces Exhausted Ballots That Undermine Majority Claims
+
+**The objection**: Ranked choice voting is too complex for ordinary voters, particularly those with limited education or English fluency. When voters don't understand the ballot, they rank fewer candidates — and when the candidates they ranked are eliminated, their ballot becomes "exhausted" and stops counting. The winner in a close RCV race may have a majority of the remaining ballots, but not a majority of all ballots cast. This undermines the core pro-RCV argument that the winner has majority support.
+
+**The evidence**: The complexity concern has real empirical support for specific populations. A 2024 study in *Social Science Quarterly* (Atkeson) found that 16% of voters in the jurisdictions studied reported feeling confused when using RCV — and Hispanic voters reported confusion at significantly higher rates than white voters. Confused voters ranked fewer candidates, had lower confidence in the accuracy of ballot counting, and were less supportive of RCV overall. Ballot exhaustion is a real phenomenon: in some RCV races, 5–15% of ballots become inactive before a winner is determined, concentrated among voters who did not fill out lower-ranking choices.
+
+**The honest concession**: The majority claim is imprecise as commonly stated. The winner has a majority of *continuing* (non-exhausted) ballots — not necessarily a majority of all votes cast. In races with high ballot exhaustion rates, this distinction matters. The confusion differential by race/ethnicity also raises genuine equity concerns that reformers sometimes dismiss too quickly.
+
+**The response**: Three points constrain the force of this objection. First, a large-scale empirical study analyzing 110 real-world RCV elections across NYC (2021), Alaska (2024), and Portland (2024) found that in 107 of 110 contests, completing exhausted ballots would very likely not have changed the outcome — suggesting exhaustion rarely decides winners in practice (preprint, *arXiv* 2602.14329, February 2026). Second, Maine Secretary of State data consistently finds over 80% of Maine voters describe RCV as easy or very easy to use, with no significant increase in spoiled ballots relative to FPTP elections. Third, voter education campaigns reduce confusion markedly in the second and subsequent elections using RCV. The appropriate policy response is robust, multilingual voter education, not abandonment of a system that otherwise produces better majority-supported outcomes.
+
+Sources: [Atkeson: The Impact of Voter Confusion in Ranked Choice Voting, Social Science Quarterly (2024)](https://onlinelibrary.wiley.com/doi/10.1111/ssqu.13366); [Ballotpedia: Ballot Exhaustion](https://ballotpedia.org/Ballot_exhaustion); [arXiv preprint: Simpler Than You Think: The Practical Dynamics of RCV (February 2026)](https://arxiv.org/abs/2602.14329); [American Bar Association: What We Know About Ranked Choice Voting, Updated for 2025](https://www.americanbar.org/groups/public_interest/election_law/american-democracy/our-work/what-we-know-about-ranked-choice-voting-2025/)
+
+---
+
+### Objection 2: RCV Eliminates Strategic Voting — a Legitimate Democratic Tool
+
+**The objection**: Strategic voting — voting for a viable candidate rather than your true first choice — allows voters to exercise coalition-building judgment in real time. It is how minority factions join broader coalitions to prevent their worst outcome. By asking for sincere rankings and rewarding second-choice accumulation, RCV does not eliminate strategic voting so much as change its character in ways that are less transparent to ordinary voters. In some scenarios, the optimal RCV strategy is to rank your *least* preferred candidate first — a manipulation that is counterintuitive and, when discovered, corrodes trust in the system.
+
+**The evidence**: The objection that strategic voting persists under RCV is correct as a theoretical matter. Plurality voting creates strategic pressure that flows one direction: don't waste your vote on third-party candidates. IRV/RCV creates a different and less predictable strategic landscape. Research by Nowacki and others confirms that IRV is not strategy-proof — in certain configurations, a voter can help their preferred candidate win by strategically ranking a weak opponent first. The 2026 arXiv study (2602.14329) found evidence of non-sincere ranking strategies in 11 of 54 NYC races, though these constituted only 2–3% of ballots and involved simple one-or-two candidate additions rather than complex strategic schemes.
+
+**The honest concession**: The critique that RCV eliminates *useful* strategic voting is partially correct. In FPTP, voters in safe seats can provide a "message" vote for a third party with full knowledge the winner will be determined elsewhere. RCV changes the mechanics of this signaling. The objection that RCV strategic voting is harder to reason about than FPTP strategic voting is also well-grounded — the conditions under which ranking a weak candidate first helps your preferred candidate are not intuitive.
+
+**The response**: The comparison class matters. The relevant question is not whether RCV is perfectly strategy-proof (it is not) but whether it is better than FPTP. The Australian experience with preferential voting (functionally equivalent to IRV for single-member races) shows that voters overwhelmingly cast sincere ballots in practice, not strategic ones — and that the strategic pressure to abandon third-party candidates is substantially weaker than under FPTP. The value of tactical voting under FPTP is largely a response to the two-party trap that FPTP itself creates. The objection proves too much: it defends the need for strategic voting as a feature of a system in which sincere voting is punished.
+
+Sources: [Nowacki: Susceptibility to Strategic Voting — A Comparison of Plurality and IRV](https://tobiasnowacki.com/files/strategicvoting.pdf); [arXiv: Simpler Than You Think (2026)](https://arxiv.org/abs/2602.14329); [Institute for Responsive Government: Addressing Concerns About Instant Runoff Voting (2024)](https://www.uvu.edu/herbertinstitute/docs/web_final_addressing_concerns_about_rcv_utah.pdf)
+
+---
+
+### Objection 3: Duverger's Law — PR Doesn't Break the Duopoly in Presidential Systems
+
+**The objection**: Duverger's Law predicts that FPTP favors two-party systems, but its converse — that proportional representation produces robust multiparty competition — is only reliably observed in *parliamentary* systems, where coalition governments are feasible and the executive emerges from the legislature. In *presidential* systems with a separately elected winner-take-all executive, the presidency creates an overwhelming centripetal pressure toward two broad coalitions regardless of the legislative electoral system. The evidence from Latin America is particularly damning: every major Latin American democracy uses PR for its legislature combined with a presidential executive — and most are characterized either by persistent two-party or two-coalition dominance, or by the opposite problem: extreme multiparty fragmentation that makes governing coalitions unstable and prone to legislative-executive conflict.
+
+**The evidence**: This is the most technically serious objection in the electoral reform literature. Political scientists Matthew Shugart, John Carey, and Scott Mainwaring have documented systematically that presidential-PR combinations in Latin America produce exactly the pathologies the objection predicts: either a two-dominant-coalition structure that mirrors FPTP (Brazil, pre-reform), or fragmented multiparty systems that make legislative majorities near-impossible and drive inter-branch conflict (Peru, Ecuador). The theoretical mechanism is the "coattail effect" — presidential candidates pull their party's legislative vote, concentrating electoral competition around presidential ambitions regardless of legislative rules. A 2019 article in the *Journal of Elections, Public Opinion and Parties* (Röth et al.) confirmed that deviations from Duverger's Law in FPTP countries often trace to social cleavages strong enough to override electoral system pressures — and that the inverse (PR not producing multiparty competition) is equally socially mediated.
+
+**The honest concession**: This is partially correct. The US presidential system creates exactly the consolidating pressure the objection describes. Transitioning the US House to multi-member STV or MMP while retaining a FPTP presidential election would not automatically produce a Nordic-style multiparty legislature. Parties competing for the presidency would still have strong incentives to maintain broad coalitions in Congress.
+
+**The response**: Two responses. First, the goal of electoral reform in the US context is not necessarily to produce 8–10 viable parties but to achieve the more modest aims already demonstrated: break the structural immunity to third-party congressional representation; reduce the efficiency gap; improve minority and women's representation; and reduce the extreme polarization that FPTP primaries produce. PR in a presidential system can achieve all of these without requiring parliamentary coalitionbuilding. Second, the MMP model (as opposed to closed-list PR) gives voters both local representatives and proportional party representation — a design that preserves accountability while mitigating the worst multiparty fragmentation risk. Germany uses MMP with a presidential-adjacent chancellor system and has sustained stable coalition governance for 70 years.
+
+Sources: [Wikipedia: Duverger's Law — Limitations and Presidential Systems](https://en.wikipedia.org/wiki/Duverger%27s_law); [Electoral Reform Society: Duverger's Law — More Guidelines Than Actual Rules?](https://electoral-reform.org.uk/duvagers-law-more-guidelines-than-actual-rules/); [DTIC: Proportional Representation and Presidentialism in Latin America (academic paper)](https://apps.dtic.mil/sti/trecms/pdf/AD1114723.pdf); [Röth et al.: Duverger and the Territory, Journal of Elections, Public Opinion and Parties (2019)](https://www.tandfonline.com/doi/full/10.1080/17457289.2019.1658195)
+
+---
+
+### Objection 4: Incumbency Protection — Members Design the System That Elects Them
+
+**The objection**: Electoral reform in legislatures faces a structurally corrupting problem: the members who would vote to adopt proportional representation are the same members who were elected under FPTP and whose incumbency advantages depend on the current system. Even if PR reduces structural bias in aggregate, incumbents in closed-list party systems can entrench themselves through control of list ordering — placing themselves at the top of safe lists and marginalizing challengers. The reform that claims to democratize representation can easily become a tool of party-boss control, with voters choosing between party labels rather than individual candidates and party leadership determining who actually gets elected.
+
+**The evidence**: Incumbency advantages in PR systems are well-documented. A study of Norwegian local elections (Fiva and Røhr, *Electoral Studies*, 2015) found that barely-winning candidates had a 9 percentage point (43%) higher probability of re-election compared to barely-losing candidates in the same party, and that this advantage derived from party-elite list positioning rather than voter preference — party bosses placed incumbents at the top of safe list positions regardless of performance. A 2022 study in the *American Journal of Political Science* (Buisseret et al.) on closed-list PR systems found that parties systematically reward incumbents with safer list positions, insulating them from accountability to voters. The "designed by incumbents" problem is not hypothetical — it has produced entrenched party oligarchies in several European countries with closed-list systems.
+
+**The honest concession**: This is a real and recurring failure mode. Israel's closed-list PR, Argentina's closed-list provincial systems, and several Latin American legislatures show exactly this dynamic. The objection correctly identifies that PR design choices are not neutral: closed-list systems transfer power from voters to party leadership in ways that can entrench incumbents more effectively than FPTP does.
+
+**The response**: The objection is an argument for *open-list* or *candidate-based* PR systems, not an argument against PR. The Single Transferable Vote (STV) used in Ireland is the anti-incumbency-entrenchment model: voters rank individual candidates within and across parties, and party leadership cannot protect incumbents by manipulating list order. Ireland's STV produces intense intra-party competition that keeps incumbents accountable to constituents in ways closed-list PR does not. The Fair Representation Act's STV-based proposal is specifically designed to preserve voter choice and avoid party-boss list control. The objection should be taken seriously as a design constraint, not as a reason to retain FPTP.
+
+Sources: [Fiva and Røhr: Climbing the Ranks — Incumbency Effects in Party-List Systems, Electoral Studies (2015)](https://www.sciencedirect.com/science/article/abs/pii/S0176268015000245); [Buisseret et al.: Party Nomination Strategies in List Proportional Representation Systems, American Journal of Political Science (2022)](https://onlinelibrary.wiley.com/doi/10.1111/ajps.12691); [Gallagher: Ireland's STV System and Accountability](https://www.tcd.ie/Political_Science/people/michael_gallagher/)
+
+---
+
+## Actionable Intelligence
+
+*Current as of April 2026. This section focuses on near-term leverage points — existing bills, live campaigns, and organizations with active programs.*
+
+### Legislative Vehicles
+
+**Fair Representation Act (H.R. 4632, 119th Congress, 2025–2026)**
+- Primary sponsor: Rep. Don Beyer (D-VA-8), reintroduced in 2025 (fifth consecutive Congress)
+- Co-lead: Rep. Jamie Raskin (D-MD); original cosponsors include Reps. Earl Blumenauer (OR), Ro Khanna (CA), Barbara Lee (CA), Jim McGovern (MA), Scott Peters (CA); 6 total cosponsors as of early 2026
+- What it does: Creates 3–5 member congressional districts for US House elections using single transferable vote (STV) ranked choice voting; requires nonpartisan redistricting criteria
+- Committee status: Referred to House Administration Committee; GovTrack estimates 5% chance of clearing committee, 1% chance of enactment under current Congress
+- Strategic use: The bill is not currently passable — it functions as a platform for public education, a vehicle for cosponsor recruitment, and a policy anchor that establishes the legislative design consensus for when conditions change
+- Sources: [H.R. 4632 on Congress.gov](https://www.congress.gov/bill/119th-congress/house-bill/4632/cosponsors); [GovTrack: H.R. 4632](https://www.govtrack.us/congress/bills/119/hr4632); [Beyer.house.gov: Updated Fair Representation Act](https://beyer.house.gov/news/documentsingle.aspx?DocumentID=6094)
+
+**Register America to Vote Act of 2025 (S. 2822, 119th Congress)**
+- Federal automatic voter registration bill requiring AVR through federal agency interactions
+- Effective date: January 1, 2026, with waiver to January 1, 2028 for states certifying implementation hardship
+- Includes EAC grants to states for implementation
+- Status: Senate bill; not enacted; faces same Republican opposition as prior AVR bills
+- Sources: [S.2822 text on Congress.gov](https://www.congress.gov/bill/119th-congress/senate-bill/2822/text)
+
+**Ranked Choice Voting Act (H.R. 6589, Congressional Progressive Caucus endorsement)**
+- Endorsed by the Congressional Progressive Caucus as of December 2025
+- Would require RCV for federal primary and general elections in single-member House races
+- Narrower than Fair Representation Act (keeps single-member districts, adds RCV only)
+- Sources: [Congressional Progressive Caucus: Ranked Choice Voting Act endorsement (December 2025)](https://progressives.house.gov/2025/12/ranked-choice-voting-act)
+
+---
+
+### State-Level Campaigns
+
+**Alaska — RCV repeal on 2026 ballot (CRITICAL)**
+- Alaska's top-four primary + RCV general election system survived a 2024 repeal attempt by 743 votes (50.1% to 49.9%) — the narrowest ballot measure result in Alaska state history
+- A new repeal initiative was certified by Lt. Governor on December 31, 2025 and will appear on the November 2026 ballot
+- Supporters of repeal collected approximately 48,000 signatures for the 2026 initiative
+- Stakes: If Alaska RCV is repealed, it removes the largest and most prominent RCV laboratory in the US, undermining the evidence base and providing a narrative win to the repeal movement nationally
+- What's needed: National RCV organizations (FairVote, RepresentUs) are expected to engage in the Alaska defense campaign; this is the highest-priority defensive action in electoral reform for 2026
+- Sources: [Alaska Beacon: Defeat of Alaska voting system repeal confirmed after recount](https://alaskabeacon.com/briefs/defeat-of-alaska-voting-system-repeal-wasilla-area-house-outcome-are-unchanged-after-recount/); [Ballotpedia: Alaska Repeal Top-Four RCV Initiative (2026)](https://ballotpedia.org/Alaska_Repeal_Top-Four_Ranked-Choice_Voting_Initiative_(2026)); [Ballotpedia News: Alaska voters to consider RCV repeal in 2026 (January 2026)](https://news.ballotpedia.org/2026/01/07/alaska-voters-to-consider-ranked-choice-voting-repeal-initiative-in-2026-after-narrowest-defeat-in-state-history-in-2024/)
+
+**Maine — RCV stable for federal elections, constitutional ceiling reached**
+- Maine uses RCV for all state-level primary elections and federal general elections (US House, US Senate, President)
+- A legislative effort to expand RCV to state general elections for governor and legislature (LD 1666) was approved by both chambers but referred to the Maine Supreme Judicial Court for an advisory opinion before enrollment
+- On April 6, 2026, the Maine Supreme Judicial Court ruled the expansion unconstitutional — the Maine Constitution's plurality-winner provision blocks RCV for state general elections, as it has since a 2017 advisory opinion on the same question
+- Current status: Maine RCV is stable within its existing federal-election scope; expansion to state-level general elections is constitutionally foreclosed absent a constitutional amendment, which has not been actively pursued
+- The 2026 ruling reaffirms the 2017 precedent; there is no current legal threat to Maine's federal-election RCV use
+- Sources: [Maine Public: Maine Supreme Court says proposed RCV expansion is unconstitutional (April 2026)](https://www.mainepublic.org/politics/2026-04-06/maine-supreme-court-says-proposed-ranked-choice-voting-expansion-is-unconstitutional); [Ballotpedia News: Maine Supreme Court says expansion unconstitutional (April 2026)](https://news.ballotpedia.org/2026/04/08/maine-supreme-court-says-bill-expanding-ranked-choice-voting-is-unconstitutional/); [IVN: Why Can't Maine Use RCV in Certain Elections? (April 2026)](https://ivn.us/posts/why-cant-maine-use-ranked-choice-voting-in-certain-elections-its-supreme-court-just-answered-again-2026-04-09)
+
+**Michigan — RCV constitutional amendment signature drive (deadline July 6, 2026)**
+- A citizen initiative campaign is collecting signatures for a constitutional amendment requiring RCV for major offices, majority vote thresholds, paper ballot authorization, write-in candidate access, and a primary held at least 140 days before the general election
+- Signature threshold: 446,198 valid signatures (10% of votes cast in last gubernatorial election)
+- Deadline: July 6, 2026
+- If qualified, appears on November 2026 ballot
+- Michigan is the largest-population state with an active RCV initiative campaign; success would represent the most significant RCV adoption since Alaska (2020)
+- Sources: [Ballotpedia News: Ballot measures to change election systems in seven states for 2026 (December 2025)](https://news.ballotpedia.org/2025/12/05/ballot-measures-to-change-election-systems-proposed-in-seven-states-for-2026/)
+
+**Massachusetts — top-two primary initiative**
+- Initiative to eliminate partisan primaries and establish a top-two primary system
+- Signatures filed as of December 2025
+- Status: signature verification underway; qualification for November 2026 ballot pending
+
+**Oklahoma — top-two primary initiative**
+- Initiative for top-two primary system
+- Signature deadline: January 26, 2026 (likely passed by print date; check for qualification status)
+
+**Automatic Voter Registration — state tracker**
+- As of late 2025, 24 states and DC have enacted AVR (up from 22 noted in the main document)
+- Most recent additions: Delaware, Minnesota, and Pennsylvania (all 2023)
+- Active campaigns and pending 2026 legislation: Arizona has prefiled bills for both automatic and same-day voter registration; the Register America to Vote Act (federal, 2025) would require AVR through federal agency interactions with an effective date of January 2026 or 2028
+- Sources: [NCSL: Automatic Voter Registration](https://www.ncsl.org/elections-and-campaigns/automatic-voter-registration); [Brennan Center: State Voting Laws Roundup 2025](https://www.brennancenter.org/our-work/research-reports/state-voting-laws-roundup-2025-review); [Voting Rights Lab: AVR Tracker](https://tracker.votingrightslab.org/issues/automatic-voter-registration)
+
+---
+
+### Organizations
+
+**FairVote**
+- Primary national RCV and proportional representation advocacy organization
+- 2025–2026 focus: Fair Representation Act sponsorship and cosponsor expansion; Alaska RCV defense; Michigan initiative support; congressional and state lobbying for RCV adoption; research and public education on RCV outcomes
+- FairVote data is frequently primary-cited in this document; where possible, cross-reference FairVote claims against MIT Election Lab, ABA, and peer-reviewed sources, as FairVote is an advocacy organization with an institutional stake in positive RCV findings
+- Website: [fairvote.org](https://fairvote.org/)
+
+**RepresentUs**
+- Nonpartisan (in practice: cross-ideological) anti-corruption and electoral reform organization
+- 2025–2026 focus: ranked choice voting adoption, ending gerrymandering, open primaries, and changing how elections are funded; active in state-level ballot initiative campaigns
+- RepresentUs explicitly frames its work around uniting conservatives, progressives, and independents — strategic positioning that can be useful in state ballot campaigns where partisan framing loses
+- Website: [represent.us](https://represent.us/)
+
+**Common Cause**
+- Long-established good-government organization; member-supported
+- 2025–2026 focus: independent redistricting commissions ("still the best mechanism" for addressing gerrymandering, per Common Cause); opposition to Project 2025 voting restrictions; campaign finance disclosure advocacy
+- Less focused than FairVote or RepresentUs on RCV specifically; broader democracy protection mandate
+- Website: [commoncause.org](https://www.commoncause.org/)
+
+**Brennan Center for Justice (NYU)**
+- Research and litigation organization; not a membership or field organizing group
+- 2025–2026 output: voting rights litigation, election administration research, dark money and campaign finance analysis, election security documentation
+- The Brennan Center is the single most-cited primary source in this document and is the go-to institutional resource for litigation-adjacent electoral reform work
+
+**MIT Election Lab**
+- Academic research center; primary source for voter registration and turnout data
+- The correct citation for AVR outcome research is MIT Election Lab; FairVote often cites MIT work secondarily
+
+**Sentencing Project**
+- Primary source for felony disenfranchisement data; their *Locked Out* reports (most recent: 2024) are the authoritative estimate
+
+---
+
+### Near-Term Pressure Points
+
+**November 2026 general election — multiple electoral reform ballots**
+These are the highest-leverage near-term dates for electoral reform at the state level:
+
+| Date | State | What's at stake |
+|---|---|---|
+| July 6, 2026 | Michigan | Signature deadline for RCV constitutional amendment — must collect 446,198 signatures to qualify |
+| June 19, 2026 | Montana | Signature deadline for nonpartisan judicial election initiatives |
+| June 24, 2026 | Nevada | Signature deadline for voter participation rights amendment |
+| November 3, 2026 | Alaska | RCV repeal vote — survival of the most important RCV system in the US |
+| November 3, 2026 | Michigan | RCV constitutional amendment (if signatures qualify) |
+| November 3, 2026 | Massachusetts | Top-two primary initiative (if signatures verified) |
+| August 6, 2026 | Kansas | State supreme court election structure amendment |
+
+**Congressional pressure points**
+- Fair Representation Act cosponsor expansion: The bill has 6 cosponsors as of early 2026. Constituent pressure on House Democrats who have not cosponsored is the proximate lever — particularly members in safe blue seats who have no electoral incentive to oppose it
+- 2026 Democratic primary season: RCV advocates have successfully argued that Democratic parties should adopt RCV for their own presidential primaries (several state parties did in 2024); continuing this pressure in state party rules processes is a path to building institutional familiarity with RCV before it reaches voters
+
+**Redistricting cycle — 2030 preview**
+- The next federal redistricting cycle will follow the 2030 Census
+- Independent redistricting commission campaigns take years to build: Arizona and California both required multi-election ballot initiative campaigns before adoption
+- States without IRCs that conducted REDMAP-style gerrymandering in 2021 (Texas, Florida, Wisconsin, North Carolina, Georgia) are the targets for commission adoption campaigns that need to start now to qualify for the 2030 cycle
+- Wisconsin: The Wisconsin Supreme Court's changed composition (progressive majority since 2023) has opened state court challenges to existing maps; an IRC ballot initiative campaign is a parallel track
+
+Sources: [Ballotpedia News: Ballot Measures to Change Election Systems in Seven States for 2026 (December 2025)](https://news.ballotpedia.org/2025/12/05/ballot-measures-to-change-election-systems-proposed-in-seven-states-for-2026/); [The Fulcrum: Democrats Take Another Crack at Fair Representation Act](https://thefulcrum.us/electoral-reforms/fair-representation-act-2667582650); [Brennan Center: State Voting Laws Roundup 2025](https://www.brennancenter.org/our-work/research-reports/state-voting-laws-roundup-2025-review)
