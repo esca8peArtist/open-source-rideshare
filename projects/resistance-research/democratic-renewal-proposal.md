@@ -778,6 +778,8 @@ Create a federal Interstate Compact Commission to provide technical assistance, 
 
 *Fiscal impact*: Interstate Compact Commission: $50-100M/year. The return is in coordination gains that neither federal nor individual state action can achieve. RGGI's $7.4 billion in clean energy investment demonstrates the fiscal scale that compacts can achieve. Professional licensing reciprocity (estimated to affect 30% of U.S. workers who require some form of occupational license) could reduce labor market friction by $6-12B/year in reduced relocation costs, increased labor mobility, and reduced occupational licensing barriers. Regional water management compacts, updated for climate change projections, could prevent billions in conflict and infrastructure duplication.
 
+---
+
 ## Domain 10: Education
 
 ### The Problem
@@ -1213,6 +1215,8 @@ Mandate climate-adjusted building codes nationwide for all new construction, wit
 *Evidence*: The Netherlands' Delta Programme, investing €1.4 billion annually in flood protection and climate adaptation, is the global gold standard for national-scale climate resilience planning — it operates on a 100-year planning horizon with binding commitments. Isle de Jean Charles, Louisiana — the first federally funded climate migration, relocating a community of mostly Biloxi-Chitimacha-Choctaw residents — illustrates both the necessity and the complexity of managed retreat. The 2021 Texas grid failure (Winter Storm Uri, 246 deaths, $195 billion in damages) demonstrates the catastrophic cost of failing to climate-proof critical infrastructure.
 
 *Fiscal impact*: National Climate Adaptation Strategy (planning, federal standards, staff): $500M–1B/year. Federal Climate Resilience Fund: $5B/year for 10 years ($50B total). NFIP reform and managed retreat buyout program: $3–6B/year — replacing the current $1.7B/year average in subsidized flood insurance claims paid for properties rebuilt repeatedly in flood zones. Climate-adjusted building code adoption assistance: $500M–1B/year. Total climate adaptation investment: $9–13B/year. Return: FEMA estimates $6 in avoided disaster costs per $1 invested in pre-disaster mitigation — the clearest fiscal case in the entire climate domain. The CBO estimates climate damages will reach $100–200B/year by 2050 under current policy; this investment avoids a substantial share. The Netherlands' Delta Programme spends €1.4B/year protecting a €900B economy from existential flood risk — a 640:1 assets-protected-to-investment ratio that illustrates the logic of treating climate adaptation as insurance, not charity.
+
+---
 
 ## Domain 16: Immigration and Citizenship
 
@@ -1759,80 +1763,80 @@ These require congressional majorities:
 17. Court order enforcement architecture (automatic fiscal consequences, compliance monitors)
 18. Prohibition on weaponization of government data for partisan purposes
 19. Press freedom protections (federal shield law, anti-retaliation statute, press freedom ombudsman)
-20a. Right to Peaceful Assembly Act (preempt state anti-protest laws, mandate de-escalation)
-20b. Media literacy education mandate (condition ESEA/ESSA funding on evidence-based standards)
-20. Weighted per-pupil funding with federal equalization
-21. Universal civics education mandate (federal funding condition)
-22. Teacher minimum salary and student debt forgiveness for educators
-23. Debt-free public higher education (federal-state cost sharing)
-24. Lifelong learning Right to Learn accounts
-25. Public health insurance option with all-payer rate setting
-26. Drug price negotiation for all drugs and all payers
-27. Primary care and rural health infrastructure (NHSC expansion, FQHC funding)
-28. Administrative simplification mandate (standardized billing, universal claims)
-29. Patent reform (anti-evergreening, public-funding pricing clause)
-30. Mental health parity enforcement
-31. Universal broadband as regulated utility (last-mile funding, municipal broadband authorization)
-32. Energy grid modernization and resilience ($400B program, ERCOT integration)
-33. Water infrastructure renewal with environmental justice priority (lead pipe replacement, Water Trust Fund)
-34. Public transit operating funding and intercity rail expansion
-35. Maintenance-first federal infrastructure funding reform
-36. Federal zoning reform incentives (condition funding on exclusionary zoning removal)
-37. Social housing development program (500,000 units/decade)
-38. Federal minimum tenant protections (just-cause eviction, right to counsel)
-39. Housing First as federal homelessness funding standard
-40. Anti-speculation measures (portfolio surcharge, 1031 exchange reform, MID reform)
-41. End qualified immunity for law enforcement (statutory civil liability framework)
-42. Eliminate federal mandatory minimums for nonviolent drug offenses; equalize crack/powder sentencing
-43. Federal sentence review mechanism (resentencing petitions after 15 years served)
-44. Abolish cash bail for federal offenses; fund pretrial services
-45. Prohibit federal private prison and detention contracts
-46. Automatic federal voting rights restoration upon release from incarceration
-47. National police misconduct registry (mandatory reporting for all federally funded agencies)
-48. Public defender funding parity with prosecution
-49. Ban the box for federal employment (permanent statute)
-50. Codify EPA greenhouse gas regulatory authority with binding emissions targets (50% by 2035, net-zero by 2050)
-51. Environmental justice statute (cumulative impact assessment, private right of action, 20% burden cap)
-52. Federal clean energy standard (80% by 2035, 100% by 2045)
-53. Federal Transmission Authority with eminent domain for interstate transmission
-54. Just Transition Act (automatic wage replacement, retraining, pension bridge for fossil fuel workers)
-55. National Climate Bank ($100B capitalization for clean energy financing)
-56. Permanent moratorium on new fossil fuel leasing on federal public lands and waters
-57. National ecological restoration program ($20B annually for reforestation, wetland, coastal restoration)
-58. Tribal co-management authority for culturally significant federal lands
-59. Federal Climate Resilience Fund ($50B over 10 years for adaptation and managed retreat)
-60. NFIP reform (phase out subsidized coverage in repeatedly flooded areas, fund equitable buyouts)
-61. Climate-adjusted building code mandate for all federally funded construction
-62. NOAA independence statute (structural independence, $8-10B annual funding)
-63. Competition standard reform (replace consumer welfare with multi-factor public interest test)
-64. Structural separation mandates for dominant tech platforms
-65. Healthcare consolidation caps (30% market share per metro)
-66. Agricultural monopsony enforcement (Packers and Stockyards Act revival)
-67. Non-compete ban for workers under $150K
-68. Worker codetermination for firms with 1,000+ employees
-69. Glass-Steagall restoration (commercial-investment banking separation)
-70. Stock buyback restrictions for federal contractors and subsidy recipients
-71. Retrospective merger review authority
-72. Comprehensive federal data privacy legislation (U.S. Data Rights Act)
-73. Federal Data Protection Agency (dedicated privacy enforcement, 2,000+ staff)
-74. Section 702 FISA reform (warrant requirement for U.S. person queries)
-75. Third-party doctrine reform (warrant required for all personal data)
-76. Federal biometric privacy act (consent, private right of action, emotion recognition ban)
-77. Federal moratorium/regulation of facial recognition in public spaces
-78. Data broker registration and regulation
-79. Prohibition on warrantless government data purchases from commercial brokers
-80. Algorithmic impact assessment mandate for federal agencies
-81. Federal Reparations Commission (HR 40 with binding recommendation provisions, BRAC model)
-82. Community Reinvestment and Restoration Fund ($200B/10 years for formerly redlined census tracts)
-83. Baby bonds (progressive trust accounts for every child, $60-80B/year)
-84. Targeted first-generation homeownership grants ($25K-$50K)
-85. John Lewis Voting Rights Advancement Act (preclearance restoration)
-86. DOJ Civil Rights Division budget tripling ($170M → $500M)
-87. Disparate impact enforcement codification
-88. Federal office of racial equity with racial impact assessment mandate
-89. Algorithmic discrimination ban (housing, employment, lending, criminal justice)
-90. National Truth and Accountability Commission
-91. Estate tax restoration ($3.5M exemption, 45% rate, revenue to baby bonds)
+20. Right to Peaceful Assembly Act (preempt state anti-protest laws, mandate de-escalation)
+21. Media literacy education mandate (condition ESEA/ESSA funding on evidence-based standards)
+22. Weighted per-pupil funding with federal equalization
+23. Universal civics education mandate (federal funding condition)
+24. Teacher minimum salary and student debt forgiveness for educators
+25. Debt-free public higher education (federal-state cost sharing)
+26. Lifelong learning Right to Learn accounts
+27. Public health insurance option with all-payer rate setting
+28. Drug price negotiation for all drugs and all payers
+29. Primary care and rural health infrastructure (NHSC expansion, FQHC funding)
+30. Administrative simplification mandate (standardized billing, universal claims)
+31. Patent reform (anti-evergreening, public-funding pricing clause)
+32. Mental health parity enforcement
+33. Universal broadband as regulated utility (last-mile funding, municipal broadband authorization)
+34. Energy grid modernization and resilience ($400B program, ERCOT integration)
+35. Water infrastructure renewal with environmental justice priority (lead pipe replacement, Water Trust Fund)
+36. Public transit operating funding and intercity rail expansion
+37. Maintenance-first federal infrastructure funding reform
+38. Federal zoning reform incentives (condition funding on exclusionary zoning removal)
+39. Social housing development program (500,000 units/decade)
+40. Federal minimum tenant protections (just-cause eviction, right to counsel)
+41. Housing First as federal homelessness funding standard
+42. Anti-speculation measures (portfolio surcharge, 1031 exchange reform, MID reform)
+43. End qualified immunity for law enforcement (statutory civil liability framework)
+44. Eliminate federal mandatory minimums for nonviolent drug offenses; equalize crack/powder sentencing
+45. Federal sentence review mechanism (resentencing petitions after 15 years served)
+46. Abolish cash bail for federal offenses; fund pretrial services
+47. Prohibit federal private prison and detention contracts
+48. Automatic federal voting rights restoration upon release from incarceration
+49. National police misconduct registry (mandatory reporting for all federally funded agencies)
+50. Public defender funding parity with prosecution
+51. Ban the box for federal employment (permanent statute)
+52. Codify EPA greenhouse gas regulatory authority with binding emissions targets (50% by 2035, net-zero by 2050)
+53. Environmental justice statute (cumulative impact assessment, private right of action, 20% burden cap)
+54. Federal clean energy standard (80% by 2035, 100% by 2045)
+55. Federal Transmission Authority with eminent domain for interstate transmission
+56. Just Transition Act (automatic wage replacement, retraining, pension bridge for fossil fuel workers)
+57. National Climate Bank ($100B capitalization for clean energy financing)
+58. Permanent moratorium on new fossil fuel leasing on federal public lands and waters
+59. National ecological restoration program ($20B annually for reforestation, wetland, coastal restoration)
+60. Tribal co-management authority for culturally significant federal lands
+61. Federal Climate Resilience Fund ($50B over 10 years for adaptation and managed retreat)
+62. NFIP reform (phase out subsidized coverage in repeatedly flooded areas, fund equitable buyouts)
+63. Climate-adjusted building code mandate for all federally funded construction
+64. NOAA independence statute (structural independence, $8-10B annual funding)
+65. Competition standard reform (replace consumer welfare with multi-factor public interest test)
+66. Structural separation mandates for dominant tech platforms
+67. Healthcare consolidation caps (30% market share per metro)
+68. Agricultural monopsony enforcement (Packers and Stockyards Act revival)
+69. Non-compete ban for workers under $150K
+70. Worker codetermination for firms with 1,000+ employees
+71. Glass-Steagall restoration (commercial-investment banking separation)
+72. Stock buyback restrictions for federal contractors and subsidy recipients
+73. Retrospective merger review authority
+74. Comprehensive federal data privacy legislation (U.S. Data Rights Act)
+75. Federal Data Protection Agency (dedicated privacy enforcement, 2,000+ staff)
+76. Section 702 FISA reform (warrant requirement for U.S. person queries)
+77. Third-party doctrine reform (warrant required for all personal data)
+78. Federal biometric privacy act (consent, private right of action, emotion recognition ban)
+79. Federal moratorium/regulation of facial recognition in public spaces
+80. Data broker registration and regulation
+81. Prohibition on warrantless government data purchases from commercial brokers
+82. Algorithmic impact assessment mandate for federal agencies
+83. Federal Reparations Commission (HR 40 with binding recommendation provisions, BRAC model)
+84. Community Reinvestment and Restoration Fund ($200B/10 years for formerly redlined census tracts)
+85. Baby bonds (progressive trust accounts for every child, $60-80B/year)
+86. Targeted first-generation homeownership grants ($25K-$50K)
+87. John Lewis Voting Rights Advancement Act (preclearance restoration)
+88. DOJ Civil Rights Division budget tripling ($170M → $500M)
+89. Disparate impact enforcement codification
+90. Federal office of racial equity with racial impact assessment mandate
+91. Algorithmic discrimination ban (housing, employment, lending, criminal justice)
+92. National Truth and Accountability Commission
+93. Estate tax restoration ($3.5M exemption, 45% rate, revenue to baby bonds)
 
 ### What Can Be Done at the State Level
 
