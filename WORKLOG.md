@@ -4,6 +4,28 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 285 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- stockbot (#1): Monitoring mode — waiting on market signals, no code work available without Jetson.
+- mfg-farm (#2): Blocked on physical test print + mockup photos.
+- resistance-research (#3): All 23 domain files Tier 1. Op-ed complete. Next: publication prep.
+- open-source-rideshare (#4): 4 features on branch awaiting user review.
+
+### Task selected: resistance-research — publication preparation for electoral architecture op-ed
+
+Op-ed: `synthesis-electoral-architecture-op-ed.md` (~2,800 words)
+- "The Architecture of Collapse: Why Electoral Reform Is the Upstream Fix"
+- Synthesizes democratic-renewal-proposal Domains 1-2, Alaska RCV brief, campaign finance deep-dive
+- Argument: three reinforcing feedback loops (primary-extremism, donor-capture, info-ecosystem-collapse); electoral reform (proportional rep + RCV) as upstream statutory fix; Alaska 2026 as concrete near-term anchor
+
+Target outlets: The Atlantic, The Guardian US Opinion, Washington Post Democracy vertical
+Work: submission strategy, current guidelines research, pitch letter draft, submission package
+
+Spawning resistance-research agent for outlet research + pitch drafting.
+
 ## Session 284 — 2026-04-17
 
 ### Orient
@@ -11802,3 +11824,55 @@ New files:
 Feature: compares actual OpenRide driver payouts (from Payment records + tips) to estimated Uber UberX + Lyft Standard payouts for the same trips using 2025 published rate cards. Rides without distance/duration excluded and counted. Per-ride, per-mile, per-hour averages. Absolute + percentage advantage. Rate cards + methodology note included in response for transparency. Router registered in main.py.
 
 Session 277 complete.
+
+---
+
+## Session 285 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- stockbot: Monitoring phase — waiting on signal data from Jetson. No code work needed.
+- mfg-farm: Blocked on physical mockup photos. No code work.
+- resistance-research: All 23 domains Tier 1. Op-ed synthesis complete. Monitoring current through April 17. April 20 watch brief written April 13. Next: pre-April-20 action brief (timely — CAPE launch, FISA floor vote, Abrego Garcia DOJ brief all converging).
+- open-source-rideshare: Branch feature/rider-fare-transparency waiting user review (4 features). Starting fresh branch for new feature.
+
+### Task selection
+(1) resistance-research: Pre-April-20 action brief — timely window with CAPE launch, FISA vote reschedule, DOJ brief all converging April 20.
+(2) open-source-rideshare: Public platform transparency report endpoint — showcase cooperative model with aggregated real metrics.
+
+Both tasks in progress...
+
+### resistance-research: Pre-April-20 action brief
+File: `monitoring/2026-04-17-pre-april20-brief.md` (81 lines)
+Commit: written and committed by subagent
+
+Key content:
+- 48-hour action checklist covering CAPE, FISA, Abrego Garcia, Medicaid, May Day
+- Convergence analysis: novel CAPE↔Abrego Garcia connection — CAPE proves the admin CAN build compliance infrastructure at scale, which undermines DOJ's "facilitation is impossible" argument in Maryland
+- Media moment framing for April 20
+- April 21-28 cascade watch list
+
+Top 3 action items:
+1. Read Abrego Garcia DOJ brief the moment it drops April 20 — PACER alerts on D. Maryland + Fourth Circuit
+2. FISA/702 constituent contact calls NOW before the floor reschedule (reschedule will come with limited notice)
+3. Document Nebraska Medicaid baseline before May 1 (case studies for June 1 CMS comment window)
+
+### open-source-rideshare: Platform transparency report endpoint
+Branch: feature/platform-transparency
+Commit: 427dcfa — pushed to rideshare remote
+
+New files:
+- `schemas/platform_transparency.py` — PlatformTransparencyReport + sub-models (PlatformModel, RideVolume, EarningsSummary, RiderSummary, ServiceQuality)
+- `services/platform_transparency.py` — DB queries + calculations; imports rate constants from rider_fare_transparency.py (no duplication); graceful data_available=false when no data
+- `api/v1/platform_transparency.py` — GET /platform/transparency-report (public, no auth)
+- `tests/test_platform_transparency.py` — 61 tests passing
+
+Endpoint: `GET /platform/transparency-report?period=last_7_days|last_30_days|all_time`
+- Public (no auth) — something Uber/Lyft would never publish
+- Shows: total rides, driver earnings vs. Uber/Lyft equivalents, driver savings $, rider savings $, avg ratings, completion rate, platform commission 0%
+- Rider fare estimation: grosses up OpenRide fare by competitor inverse take rate (conservative, accurate)
+- Driver earnings estimation: competitor equivalent = total_openride_earnings × competitor_take_rate
+- Rate constants imported from rider_fare_transparency.py (no duplication)
+
+Session 285 complete.

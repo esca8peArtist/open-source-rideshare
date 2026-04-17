@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 283)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 285)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 282: **Cross-domain synthesis op-ed COMPLETE** (commit `b1dec21`, `synthesis-electoral-architecture-op-ed.md`, ~2,800 words). "The Architecture of Collapse: Why Electoral Reform Is the Upstream Fix" — synthesizes democratic-renewal-proposal Domains 1-2, Alaska RCV brief, campaign finance deep-dive, and crisis analysis. Shows three reinforcing feedback loops (primary-extremism, donor-capture, info-ecosystem-collapse) converging on primary dominance as the root mechanism; electoral reform (proportional rep + RCV) as the upstream statutory fix that disrupts all three; Alaska 2026 as concrete near-term anchor; theory of change sequenced by statutory vs. constitutional requirements. **Next**: Synthesis suitable for publication — potential outreach to The Atlantic, The Guardian opinion, or Washington Post Democracy vertical. OR domain-deepening for any remaining thin domains. OR next rideshare feature.
+**Current focus**: Session 285: **Pre-April-20 action brief** in progress (`monitoring/2026-04-17-pre-april20-brief.md`) — 48-hour action window: CAPE tariff refund system launches April 20, Abrego Garcia DOJ brief due April 20, FISA/702 expired April 20, Farm Bill floor vote imminent, Nebraska Medicaid work requirements begin May 1, May Day organizing April 29. All 23 domains Tier 1. Op-ed synthesis complete (commit `b1dec21`). Publication-readiness formatting pass complete (commit `413a917`). **Next**: April 20 results brief after events land.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 284: **Rider savings summary COMPLETE** (commit `aa8efc0`, pushed, branch `feature/rider-fare-transparency`). GET /riders/me/savings-summary — authenticated rider endpoint; shows cumulative savings vs. Uber and Lyft across completed ride history using 2025 rate cards; total/avg savings, tips tracked separately, optional date range, methodology_note + transparency_note; 31 tests passing. Branch now has: driver ratings, fare-breakdown, pre-booking fare-preview, and rider savings summary. **Waiting user review**: feature/rider-fare-transparency (4 features, all ready to merge). **Next**: Fresh feature or resistance-research domain deepening.
+**Current focus**: Session 285: **Platform transparency report COMPLETE** (commit `427dcfa`, pushed, branch `feature/platform-transparency`). `GET /platform/transparency-report` — public, unauthenticated; aggregate cooperative metrics: rides, driver earnings vs. Uber/Lyft equivalents, rider savings, service quality, 0% commission; 61 tests passing. **Waiting user review**: feature/rider-fare-transparency (4 features) + feature/platform-transparency (1 feature). **Next**: Fresh feature or resistance-research work after April 20 events land.
 **Last updated by**: orchestrator on 2026-04-17 (Session 284)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.

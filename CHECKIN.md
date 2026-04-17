@@ -1,11 +1,59 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–283
+**Sessions**: 257–285
 
 ---
 
-### Accomplished (Session 283)
+### Needs Your Review
+
+#### open-source-rideshare — Two branches ready to merge
+
+**Branch 1**: `feature/rider-fare-transparency` (4 features, all pushed, all tests passing)
+- `GET /rides/{ride_id}/fare-breakdown` — post-ride fare breakdown with competitor comparison
+- `GET /pricing/fare-preview` — pre-booking fare preview (public)
+- `GET /pricing/surge-check` — rider surge zone check (public)
+- `GET /riders/me/savings-summary` — authenticated rider cumulative savings vs. Uber/Lyft
+
+**Branch 2**: `feature/platform-transparency` (commit `427dcfa`, pushed to rideshare remote)
+- `GET /platform/transparency-report` — public, no auth; aggregate cooperative economics (rides, driver earnings vs. Uber/Lyft equivalents, rider savings, 0% commission disclosure)
+- 61 tests passing
+- Query param: `?period=last_7_days|last_30_days|all_time`
+
+---
+
+### Accomplished (Session 285)
+
+#### resistance-research — Pre-April-20 action brief (commit `fbd8802`)
+
+New file: `projects/resistance-research/monitoring/2026-04-17-pre-april20-brief.md` (81 lines)
+
+48-hour action brief covering the convergence of events landing April 20:
+- **CAPE Phase 1 launch** (CBP tariff refund system goes live in ACE Portal)
+- **Abrego Garcia DOJ brief** due April 20 — read it the moment it drops, PACER alert D. Maryland + Fourth Circuit
+- **FISA/702 expired April 20** — constituent calls NOW, before floor reschedule (reschedule will come with limited notice)
+- **Nebraska Medicaid work requirements begin May 1** — document baseline before May 1 for June 1 CMS comment window
+- **May Day / No Kings** April 29 — action prep window
+
+**Novel convergence argument**: CAPE proves the administration can build compliance infrastructure at scale (26,664 importer enrollments, $120B duty value processed). This directly undermines DOJ's "facilitation is impossible" argument in the Abrego Garcia Maryland case — it's a deliberate choice, not a practical limitation.
+
+#### open-source-rideshare — Platform transparency report (commit `427dcfa`, pushed)
+
+New endpoint: `GET /platform/transparency-report` on branch `feature/platform-transparency`
+
+Public unauthenticated endpoint showcasing the cooperative's aggregate economics — something Uber/Lyft would never publish:
+- `platform_model`: 0% commission, cooperative ownership, dividend description
+- `ride_volume`: total and period ride counts
+- `earnings_summary`: total driver earnings, always 100% payout, Uber/Lyft equivalents, driver savings $
+- `rider_summary`: unique riders, avg fares, competitor fare equivalents, rider savings per ride
+- `service_quality`: avg driver/rider ratings, completion rate
+- `data_available: false` + clean zero numerics for empty DB
+
+Design: competitor rate constants imported from `rider_fare_transparency.py` (no duplication). 61 tests passing.
+
+---
+
+### Accomplished (Session 284)
 
 #### open-source-rideshare — Pre-booking fare transparency endpoint (commit `ed939e0`, pushed)
 
