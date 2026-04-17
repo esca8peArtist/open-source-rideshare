@@ -1,13 +1,41 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–266
+**Sessions**: 257–267
 
 ---
 
 ### Needs Your Input
 
 *(None — no items awaiting user decision.)*
+
+---
+
+### Accomplished (Session 267)
+
+#### open-source-rideshare — Replace in-memory expense report store with ORM model (commit `258e794`)
+
+Removes the `_REPORT_STORE` dict and replaces it with a proper SQLAlchemy model + Alembic migration. 65 tests passing. Pushed to rideshare remote.
+
+**New files:**
+- `backend/app/models/corporate_generated_expense_report.py` — `CorporateGeneratedExpenseReport` ORM model; JSONB columns for `by_member`/`by_category`; FK to `corporate_accounts_v2` (CASCADE) and `users`
+- `backend/app/db/migrations/versions/a1b2c3d4e5f6_corporate_generated_expense_reports.py` — Alembic migration, revision `a1b2c3d4e5f6`, down_revision `z9a0b1c2d3e4`
+
+**Updated files:**
+- `services/corporate_expense_report_service.py` — removed all in-memory store infrastructure; `generate_expense_report` uses `db.add/flush/refresh`; `list_generated_reports` runs count + paginated DB query; `get_generated_report` selects by id + corp_id
+- `tests/test_corporate_expense_report_aggregates.py` — mocks updated for DB-backed implementation; all 65 tests pass
+
+#### resistance-research — judicial-independence-evidence.md deepened to Tier 1 (commit `7a23670`)
+
+File: `domain-deepening/judicial-independence-evidence.md` (406 → ~720 lines). Three new sections (~2,300 words):
+
+**Section 12 — Fiscal Estimates for Reform Options**: SCOTUS expansion at ~$1-1.2M annual recurring per seat + $2-4M one-time chamber renovation (2-3% of $174.5M SCOTUS budget for 4 seats); term limits as "indeterminate but modest" (CRS); ethics IG at $15-30M SCOTUS-specific or $30-50M full bench; full reform program at $150-260M annually — rounding error in $9B judiciary budget.
+
+**Section 13 — Canada and South Africa Benchmarks**: Canada's 2016 Trudeau JAAC reforms (open applications, lay membership, three-tier assessment, 35-year Ontario track record); South Africa's Section 178 constitutional JSC (public hearings, 23-member composition with opposition protection, Constitutional Court independence record). Combined lesson: transparency alone doesn't solve politicization; bloc pressure insulation is the unsolved design challenge.
+
+**Section 14 — Counterargument (court reform as politicization)**: Full-strength norm erosion objection developed (FDR 1937, no-limiting-principle arms race, Tribe/Biden commission caution); counter-counter (Garland blockade, ACB self-contradiction, V-Dem empirical record); policy resolution sequencing procedural → structural reform with 72% public support for ethics requirements as pathway.
+
+quality-review-index.md updated: judicial-independence moved Tier 2 → Tier 1 (now **13 Tier 1, 10 Tier 2, 0 Tier 3**).
 
 ---
 

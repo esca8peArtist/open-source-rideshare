@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 265)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 267)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 266: **Quality review pass + V-Dem insertion + labor deepening complete.** quality-review-index.md updated (12 Tier 1, 11 Tier 2, 0 Tier 3). V-Dem 0.75→0.57 figure inserted into democratic-renewal-proposal.md Section 1.1. labor-evidence.md deepened to Tier 1 — Section 9 (Actionable Intelligence, ~1,400 words) added: NLRB crisis, live campaigns (Starbucks/Amazon/CIW), wage targets, PRO Act vehicles, org landscape. **Next**: Publication-readiness formatting pass across the proposal OR deepen one more Tier 2 file (judicial-independence fiscal estimates, or housing international benchmarks).
+**Current focus**: Session 267: **judicial-independence-evidence.md deepened to Tier 1** (commit `7a23670`). Sections 12-14 added (~2,300 words): fiscal estimates for reform options, Canada/South Africa international benchmarks, counterargument (court reform as politicization). quality-review-index.md now: 13 Tier 1, 10 Tier 2, 0 Tier 3. **Next**: Deepen housing-evidence.md (international benchmarks Vienna/Singapore + fiscal estimates + actionable intelligence section) OR publication-readiness formatting pass on the proposal.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 266: **Background check expiration tracking complete** (commit `3646ec7`, 43 tests passing). `BackgroundCheck` model gains `expires_at` field + `BackgroundCheckAlert` model + `background_check_expiry.py` service + 2 admin endpoints (GET expiring list, POST expiry-scan). Both S265+S266 commits pushed to rideshare remote. **Next**: ORM model + migration for `CorporateGeneratedExpenseReport` (in-memory store follow-up) OR beckn-protocol integration research.
-**Last updated by**: orchestrator on 2026-04-17 (Session 266)
+**Current focus**: Session 267: **CorporateGeneratedExpenseReport ORM model + migration complete** (commit `258e794`, 65 tests passing). `_REPORT_STORE` in-memory dict fully replaced with SQLAlchemy model + Alembic migration `a1b2c3d4e5f6`. Service updated (add/flush/refresh + DB queries). Pushed to rideshare remote. **Next**: beckn-protocol integration research OR next corporate account feature.
+**Last updated by**: orchestrator on 2026-04-17 (Session 267)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

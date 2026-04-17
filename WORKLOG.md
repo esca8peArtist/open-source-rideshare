@@ -4,6 +4,40 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 267 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None active.
+- Last session (266): resistance-research quality pass + labor deepening; rideshare background check expiration.
+
+### Task selection
+1. open-source-rideshare: CorporateGeneratedExpenseReport — replace in-memory store with ORM model + migration (delegated to rideshare agent).
+2. resistance-research: Deepen judicial-independence-evidence.md to Tier 1 (delegated to resistance-research agent).
+
+### open-source-rideshare: In-memory expense report store → ORM COMPLETE
+Commit: 258e794. Subtree pushed to rideshare remote.
+
+New files:
+- `backend/app/models/corporate_generated_expense_report.py` — SQLAlchemy ORM model with JSONB by_member/by_category
+- `backend/app/db/migrations/versions/a1b2c3d4e5f6_corporate_generated_expense_reports.py` — Alembic migration, down_revision z9a0b1c2d3e4
+
+Updated:
+- `services/corporate_expense_report_service.py` — removed _REPORT_STORE; add/flush/refresh pattern; DB queries for list/get
+- `tests/test_corporate_expense_report_aggregates.py` — mocks updated; 65/65 passing
+
+### resistance-research: judicial-independence-evidence.md deepened to Tier 1 COMPLETE
+Commit: 7a23670.
+
+Sections added (Sections 12-14, ~2,300 words):
+- §12 Fiscal Estimates: SCOTUS expansion ~$1-1.2M/seat/yr + $2-4M one-time; term limits "indeterminate but modest" (CRS); ethics IG $15-30M; full program $150-260M/yr vs. $9B judiciary budget
+- §13 International Benchmarks: Canada JAAC (2016 reforms, open apps, lay membership, Ontario 35yr track record); South Africa JSC (§178 constitutional basis, public hearings, 23-member composition, independence record + critiques)
+- §14 Counterargument: Full norm erosion objection (FDR 1937, no-limiting-principle arms race); counter-counter (Garland/ACB, V-Dem empirical record); policy sequencing (procedural first, 72% support for ethics; structural requires framing win)
+
+quality-review-index.md: 13 Tier 1, 10 Tier 2, 0 Tier 3.
+
+Session 267 complete.
+
 ## Session 264 — 2026-04-17
 
 ### Orient
