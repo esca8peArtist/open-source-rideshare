@@ -1,13 +1,45 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–268
+**Sessions**: 257–269
 
 ---
 
 ### Needs Your Input
 
 *(None — no items awaiting user decision.)*
+
+---
+
+### Accomplished (Session 269)
+
+#### resistance-research — economic-concentration-evidence.md elevated Tier 2 → Tier 1 (commit `429a246`)
+
+File: `domain-deepening/economic-concentration-evidence.md`. Added **Section 10: Actionable Intelligence** (~800 words). The only weak dimension in the quality card was "Actionable intelligence: Adequate" — now Strong.
+
+**10.1 Live Enforcement Opportunities**: Four DOJ/FTC platform cases in their specific 2026 procedural posture — Google Search (remedy phase, DOJ requesting Chrome/Android divestiture, public comment window open, 38 state AG co-plaintiffs); FTC v. Amazon (pre-trial, public complaint mechanism); DOJ v. Apple (discovery); DOJ v. Google Ad Tech (remedy after November 2024 liability finding); FTC PBM investigation (final report + congressional hearing leverage). Each entry names a concrete public participation mechanism available now.
+
+**10.2 Legislative Vehicles**: CALERA (burden shift, per se expansion, DOJ/FTC resource increase); AICOA (self-preferencing prohibition, Senate Judiciary 16-6 vote history, stalled 2022); Open App Markets Act (side-loading); Farm System Reform Act (Booker/Khanna, livestock processor cap); state-level: IL Antitrust Act, CA AB 2788 (2024), MN common ownership study. FY2027 CJS appropriations framed as higher-leverage than new legislation.
+
+**10.3 State AG Enforcement**: TX Paxton (Google Search co-plaintiff, ad tech case initiator, Meta, Google Maps); NY James (Meta/Instagram structural separation suit, Amazon labor, healthcare); CA Bonta (tech, healthcare); IL Raoul (hospital, grocery). 38-state Google coalition and 48-state pharma patterns named as templates. Section argues state AG enforcement is structurally resilient even under federal agency defunding.
+
+**10.4 Organizations**: Open Markets Institute, American Economic Liberties Project, Accountable.US, EFF, Demand Progress, state PIRGs; Senate and House Judiciary antitrust subcommittee contact mechanisms.
+
+**10.5 Near-Term Windows**: Google remedy record (closes when opinion issues, likely late 2026); FY2027 appropriations (CJS subcommittee); state AG coalition expansion.
+
+quality-review-index.md: **15 Tier 1, 8 Tier 2, 0 Tier 3** (was 14/9/0).
+
+#### open-source-rideshare — Corporate spending limit alerts (commit `fb2f2d1`)
+
+55 tests, 55 passing. Pushed to rideshare remote.
+
+**Model**: `CorporateSpendingAlert` with `AlertType` enum (`warning_75pct`, `warning_90pct`, `limit_reached`). Unique constraint on `(account_id, member_id, alert_type, period_year, period_month)` — idempotent.
+
+**Service**: `check_and_create_alerts` (threshold detection), `get_account_alerts` (admin), `get_member_alerts` (member-scoped), `get_alerts_summary` (admin dashboard). Member spend uses account-spend/active-member-count approximation (invoices lack member_id column) — documented as known limitation.
+
+**Endpoints**: POST check (admin, 201); GET alerts list (admin); GET summary (admin); GET own alerts (member); GET platform-admin cross-account view.
+
+**Migration**: `c3d4e5f6g7h8` (down_revision `b2c3d4e5f6a7`).
 
 ---
 

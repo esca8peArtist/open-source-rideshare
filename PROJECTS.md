@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 268)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 269)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 268: **housing-evidence.md deepened to Tier 1** (commits `d38edfc`, `d3b3ed2`). Vienna/Singapore sections expanded with specific outcome numbers; fiscal estimates added for zoning reform/LIHTC/CLT; actionable intelligence section added; 2025-2026 rollback documented (AFFH suspension, HUD cuts, 100k vouchers). quality-review-index.md now: 14 Tier 1, 9 Tier 2, 0 Tier 3. **Next**: Deepen economic-concentration-evidence.md (live FTC/DOJ cases, Competition and Antitrust Law Enforcement Reform Act, state AG enforcement actions) OR publication-readiness formatting pass on the proposal.
+**Current focus**: Session 269: **economic-concentration-evidence.md elevated to Tier 1** (commit `429a246`). Added Section 10 (Actionable Intelligence) — live postures for Google Search remedy, FTC v. Amazon, DOJ v. Apple, DOJ v. Google Ad Tech, FTC PBM; CALERA/AICOA/AOMA/Farm System Reform Act legislative vehicles; TX/NY/CA/IL AG enforcement + 38-state coalition model; organizations; FY2027 windows. quality-review-index.md now: 15 Tier 1, 8 Tier 2, 0 Tier 3. **Next**: Deepen remaining Tier 2 files (domain-03-democratic-participation, national-security-evidence) OR publication-readiness formatting pass on the democratic renewal proposal.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 268: **Corporate invoice due date and overdue tracking complete** (commit `41cbde3`, 55 tests passing). Added `due_date` + `payment_terms_days` to `CorporateInvoice`; Alembic migration `b2c3d4e5f6a7`; 4 new endpoints (set due date, list overdue member, list overdue admin, overdue scan); pushed to rideshare remote. **Next**: Next corporate account feature (corporate spending limit alerts OR corporate member expense policy enforcement).
-**Last updated by**: orchestrator on 2026-04-17 (Session 268)
+**Current focus**: Session 268 (continued): **Corporate spending limit alerts complete** (commit `fb2f2d1`, 55 tests passing). Added `CorporateSpendingAlert` model, `AlertType` enum (75/90/100%), idempotent `check_and_create_alerts` service, 4 admin/member API endpoints, platform-admin cross-account view, Alembic migration `c3d4e5f6g7h8`; pushed to rideshare remote. **Next**: Corporate member expense policy enforcement — per-member rules constraining ride categories, fare caps, booking windows, and approval requirements.
+**Last updated by**: orchestrator on 2026-04-17 (Session 269)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

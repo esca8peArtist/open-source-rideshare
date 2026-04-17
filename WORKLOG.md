@@ -11180,3 +11180,44 @@ New files:
 Modified: `backend/app/models/corporate_invoice.py` (payment_terms_days + due_date columns); `backend/app/main.py` (router registered).
 
 Session 268 complete.
+
+---
+
+## Session 269 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None active.
+- resistance-research: economic-concentration-evidence.md is Tier 2 — actionable intelligence dimension is "Adequate". Missing: dedicated actionable intelligence section with live case status (Google/Amazon/Apple/Ad Tech remedy phases), bill numbers (CALERA, AICOA), state AG actions, organizations.
+- open-source-rideshare: Next corporate feature — corporate spending limit alerts (75%/90%/100% threshold detection, member + account level).
+
+### Task selection
+1. resistance-research: Add Section 10 (Actionable Intelligence) to economic-concentration-evidence.md → elevate to Tier 1 (delegated to resistance-research agent).
+2. open-source-rideshare: Corporate spending limit alerts (delegated to open-source-rideshare agent).
+
+### resistance-research: economic-concentration-evidence.md elevated to Tier 1
+Commit: 429a246
+
+Added Section 10 (Actionable Intelligence) ~800 words covering:
+- **10.1 Live Enforcement Opportunities**: Google Search remedy (Chrome/Android divestiture request, 38 state AGs); FTC v. Amazon (pre-trial, public complaints); DOJ v. Apple (discovery); DOJ v. Google Ad Tech (remedy phase post-Nov 2024 liability); FTC PBM final report.
+- **10.2 Legislative Vehicles**: CALERA, AICOA (16-6 Senate Judiciary history), Open App Markets Act, Farm System Reform Act, CA AB 2788, FY2027 CJS appropriations.
+- **10.3 State AG Enforcement**: TX/NY/CA/IL AG actions; 38-state Google coalition as template; structural resilience under federal agency defunding.
+- **10.4 Organizations**: Open Markets Institute, AELP, Accountable.US, EFF, Demand Progress, PIRGs + congressional subcommittee contacts.
+- **10.5 Near-Term Windows**: Google remedy record, FY2027 appropriations, state AG coalition expansion.
+
+quality-review-index.md: Tier 1 → 15 (was 14), Tier 2 → 8 (was 9).
+
+### open-source-rideshare: Corporate spending limit alerts
+Commit: fb2f2d1 — pushed to rideshare remote (esca8peArtist/open-source-rideshare)
+
+New files:
+- `backend/app/models/corporate_spending_alert.py` — CorporateSpendingAlert + AlertType enum; unique constraint on (account_id, member_id, alert_type, period_year, period_month)
+- `backend/app/schemas/corporate_spending_alert.py` — SpendingAlertOut, SpendingAlertsListResponse, MemberSpendStatus, SpendingAlertsSummary
+- `backend/app/services/corporate_spending_alert_service.py` — check_and_create_alerts (idempotent threshold check), get_account_alerts, get_member_alerts, get_alerts_summary; member spend = account_spend / active_member_count (approximation, documented)
+- `backend/app/api/v1/corporate_spending_alerts.py` — POST check (admin 201); GET alerts (admin); GET summary (admin); GET my alerts (member); GET platform-admin cross-account
+- `backend/app/db/migrations/versions/c3d4e5f6g7h8_corporate_spending_alerts.py` — revision c3d4e5f6g7h8, down_revision b2c3d4e5f6a7
+- `backend/tests/test_corporate_spending_alerts.py` — 55 tests, 55 passing
+
+Modified: `backend/app/main.py` — router registered.
+
+Session 269 complete.
