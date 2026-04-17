@@ -71,3 +71,4 @@ from app.models.corporate_vehicle_inspection import CorporateVehicleInspectionTe
 from app.models.corporate_fleet_insurance import CorporateFleetInsurancePolicy, InsuranceType  # noqa: F401
 from app.models.corporate_fleet_fuel_log import CorporateFleetFuelLog, FleetFuelType  # noqa: F401
 from app.models.corporate_fleet_registration import CorporateFleetVehicleRegistration  # noqa: F401
+from app.models.corporate_fleet_incident import CorporateFleetIncidentReport  # noqa: F401
