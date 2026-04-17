@@ -4,6 +4,65 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 250 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED: none
+- Selected: open-source-rideshare (fleet untracked files were already created, needed commit+test fix)
+
+### Task: Corporate Fleet Toll & Transponder Management — COMPLETE (commit `8effb2c`)
+
+Untracked files from a prior session were complete but not committed. API tests (16) were all failing 401 due to wrong auth-patching pattern (`patch("app.api.deps.get_current_user", ...)` doesn't work with FastAPI DI). Fixed all 16 tests to use `app.dependency_overrides` + patched service fns via router module path. 58/58 tests pass. Total: 9,395 passing.
+
+Models: CorporateFleetTollTransponder (8 providers: ezpass/fastrak/sunpass/peach_pass/i-pass/nc_quickpass/pikepass/other) + CorporateFleetTollCharge.
+Service: 14 functions. API: 16 endpoints (member/admin/platform). Migration t9u0v1w2x3y4.
+
+### Task: Corporate Fleet Maintenance Scheduling — COMPLETE (commit `f0fe19c`)
+
+Delegated to open-source-rideshare subagent. 50 new tests pass. Total: 9,445 passing.
+
+Models: CorporateFleetMaintenanceRecord (FleetMaintenanceType 12-value: oil_change/tire_rotation/brake_inspection/air_filter/transmission_service/battery_replacement/coolant_flush/spark_plugs/wheel_alignment/state_inspection/recall_repair/other; FleetMaintenanceStatus 5-value: scheduled/in_progress/completed/cancelled/overdue).
+Service: 12 functions incl. auto-mark-overdue, vehicle summary, account summary. API: 13 endpoints. Migration u0v1w2x3y4z5. Pushed to rideshare remote.
+
+---
+
+## Session 249 — 2026-04-17
+
+### Orient
+- INBOX: 1 new item — stockbot "Projected Returns" menu feature request
+- BLOCKED: no active blocks
+- Selected: stockbot (priority #1) — new INBOX feature request
+
+### Task: stockbot — Projected Returns Feature — COMPLETE (commit `76a4142`)
+
+User requested a "Projected Returns" menu: pick a trained model, graph its future predictions influencing buy/sell decisions. Goal: see when to sell a stock you own based on model projection.
+
+**Backend** (`src/api/dashboard_api.py`):
+- New endpoint `GET /api/models/{model_id}/projected-returns?ticker=AAPL&days=90&forward_days=10`
+- Loads model via `ModelRegistry.load_model_from_file`, fetches Alpaca bars, engineers features
+- Runs `predict_proba` (or `predict` fallback) on all days in window
+- Returns per-bar: date, close, signal (buy/sell/hold), confidence (0–1), raw_prediction
+- Forward projection: re-applies model under 3 scenarios (bull +0.4%/day, flat, bear -0.4%/day)
+- Works with all model types: sklearn, LightGBM, ensemble, MTF (any model with predict or predict_proba)
+- Current signal + summary stats (buy_days/sell_days/hold_days + avg confidences)
+
+**Frontend**:
+- `web/src/pages/ProjectedReturnsPage.tsx` — new page with:
+  - Model selector (all models from `/api/models`), ticker input, history window selector, forward days selector
+  - Price line chart (top) + signal confidence bar chart (green=buy/red=sell/gray=hold)
+  - Forward projection chart: 3 scenario lines with signal-coloured dots
+  - Summary bar: current signal badge + buy/sell/hold day counts + avg confidences
+  - Recent signal log table (last 25 trading days)
+- `web/src/components/Sidebar.tsx`: "Projected Returns" entry in Core Features (ArrowTrendingUpIcon)
+- `web/src/App.tsx`: route `/projected-returns` wired to new page
+- `web/src/services/api.ts`: `getProjectedReturns(modelId, ticker, days, forwardDays)` method
+- Build: clean, no TypeScript errors, 1193KB bundle
+
+**INBOX cleared**: processed 2026-04-17 02:18 item.
+
+---
+
 ## Session 246 — 2026-04-17
 
 ### Orient

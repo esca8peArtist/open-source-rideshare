@@ -1,9 +1,55 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Session**: 248
+**Session**: 250
 
 ### Accomplished
+
+#### open-source-rideshare — Corporate Fleet Toll & Transponder Management (commit `8effb2c`)
+
+Tracks E-ZPass/FasTrak/SunPass/etc. transponders assigned to fleet vehicles and logs individual toll charges for per-vehicle and fleet-wide cost analytics.
+
+- **8 transponder providers**: ezpass, fastrak, sunpass, peach_pass, i-pass, nc_quickpass, pikepass, other
+- **14 service functions**: assign/deactivate/reactivate transponders; log/update/delete charges; vehicle toll summary; fleet toll summary; platform admin
+- **16 API endpoints** across member/admin/platform-admin tiers
+- **58 tests** (fixed 16 API tests that used incorrect auth-patch pattern)
+- **Migration**: `t9u0v1w2x3y4` | Total: 9,395 passing
+
+#### open-source-rideshare — Corporate Fleet Maintenance Scheduling (commit `f0fe19c`)
+
+Schedule and track preventive maintenance for fleet vehicles with overdue alerts and cost analytics.
+
+- **12 maintenance types**: oil change, tire rotation, brake inspection, air filter, transmission service, battery replacement, coolant flush, spark plugs, wheel alignment, state inspection, recall repair, other
+- **5 statuses**: scheduled, in_progress, completed, cancelled, overdue (auto-detected)
+- **12 service functions**: schedule/complete/cancel/delete; list by vehicle or account; get-overdue (auto-marks records); vehicle summary; account summary; platform admin
+- **13 API endpoints** across member/admin/platform-admin tiers
+- **50 tests** | **Migration**: `u0v1w2x3y4z5` | Total: **9,445 passing**
+
+Both features pushed to `feature/corporate-business-accounts` on GitHub.
+
+---
+
+### Accomplished (Session 249 — archived)
+
+#### stockbot — Projected Returns Feature (commit `76a4142`)
+
+New "Projected Returns" menu item added to the Core Features sidebar.
+
+**What it does**:
+- Pick any trained model from a dropdown + enter a ticker (e.g. AAPL)
+- Shows a price chart overlaid with the model's buy/sell/hold signal for every historical trading day
+- Bar chart below shows signal confidence over time (green = buy, red = sell, gray = hold; height = confidence)
+- Forward projection chart shows what the model would predict under 3 price scenarios: bull (+0.4%/day), flat, bear (-0.4%/day). Dots on each line are coloured by the predicted signal.
+- Summary bar: today's current signal + confidence badge, plus buy/sell/hold day counts over the history window
+- Recent signal log table with last 25 days
+
+**Works with all model types**: sklearn, LightGBM, ensemble, MTF (anything with predict or predict_proba).
+
+**Backend**: new endpoint `GET /api/models/{id}/projected-returns?ticker=AAPL&days=90&forward_days=10`
+
+---
+
+### Accomplished (Session 248 — archived)
 
 #### stockbot — Performance Assessment via SSH API
 
@@ -48,23 +94,29 @@ Built the full ModRun cable management product family in parametric CadQuery:
 
 ### Needs Your Input
 
-1. **stockbot in-app trade tracking bug** — Alpaca fills are executing but not being written to the local SQLite DB.  API shows 0 trades/PnL for all sessions even though 3 real positions are open. The cycle timeout errors (#1) on 3 sessions may be related. Want me to investigate and fix the trade persistence bug, or just monitor for now?
+1. **stockbot in-app trade tracking bug** — Alpaca fills are executing but not being written to the local SQLite DB. API shows 0 trades/PnL for all sessions even though 3 real positions are open. Want me to investigate and fix the trade persistence bug, or just monitor for now?
 
-2. **ModRun slicing and test print** — STLs are ready in . Next step is test print to validate fit/geometry. Should I update the designs based on any specific feedback after you print? Also — do you want me to draft the Etsy listing copy?
+2. **ModRun slicing and test print** — STLs are ready. Next step is test print to validate fit/geometry. Should I update the designs based on any specific feedback after you print? Also — do you want me to draft the Etsy listing copy?
 
 ---
 
 ### What's Next (suggested)
 
-1. **stockbot**: Fix in-app trade recording bug (trades executing via Alpaca but not persisted locally — chart/analytics are empty without it). Also look at why rsi_mean_reversion and MTF have 0 signals in 3 days.
-2. **mfg-farm**: Iterate on ModRun geometry if test print reveals fit issues. Draft Etsy listing (product photos still needed).
-3. **open-source-rideshare**: Continue corporate fleet feature track — next feature is Corporate Fleet Toll/Traffic Management ( already exists as a stub).
-
-
+1. **stockbot**: Try the new Projected Returns page on one of your live positions (e.g. AMZN with sma_crossover model). Also: fix in-app trade recording bug if you want DB analytics to work.
+2. **mfg-farm**: Iterate on ModRun geometry if test print reveals fit issues. Draft Etsy listing.
+3. **open-source-rideshare**: Continue corporate fleet feature track — next feature is Corporate Fleet Toll/Traffic Management (stub already exists).
 
 ---
 
 ## History
+
+### Accomplished (Session 249) — archived from previous check-in
+
+**stockbot — Projected Returns Feature (commit `76a4142`):** New "Projected Returns" menu in Core Features sidebar. Backend endpoint runs any trained model over historical Alpaca data, returns per-day buy/sell/hold signal + confidence, plus forward projection under 3 price scenarios. Frontend: model/ticker selector, price + signal confidence charts, forward projection chart with 3 scenario lines, signal log table.
+
+**stockbot — Session 248 summary:** Portfolio +$682 (+0.68%) over 3 trading days. 4 sessions running. Known issue: in-app DB trade recording broken (Alpaca account authoritative). 2 sessions (rsi_mean_reversion, MTF) show 0 trades — AAPL/NVDA conditions not met.
+
+**mfg-farm — Session 248:** Full ModRun CadQuery family built. CadQuery env fixed. STLs ready to print.
 
 ### Accomplished (Sessions 246–247) — archived from previous check-in
 
