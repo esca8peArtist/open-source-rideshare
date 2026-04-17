@@ -9,6 +9,7 @@ Public surface
 --------------
 BookingRideParams           — request body for an eligibility check.
 QuotaCheckSummary           — per-period quota result embedded in the response.
+DeptBudgetCheckSummary      — per-department budget result embedded in the response.
 BookingEligibilityResponse  — full eligibility verdict with per-check breakdowns.
 """
 
@@ -77,6 +78,30 @@ class QuotaCheckSummary(BaseModel):
     quota_exceeded: bool
 
 
+class DeptBudgetCheckSummary(BaseModel):
+    """Summary of one department's budget check embedded in the eligibility response.
+
+    Attributes:
+        department_id:            PK of the CorporateDepartment row.
+        department_name:          Human-readable department name.
+        monthly_budget_usd:       The department's monthly spend cap in USD.
+        current_month_spend_usd:  Sum of actual_fare for all rides this calendar
+                                  month by members of this department under the
+                                  corporate account.
+        budget_remaining_usd:     Remaining budget (monthly_budget_usd minus
+                                  current_month_spend_usd, floored at zero).
+        budget_exceeded:          True when current_month_spend_usd >=
+                                  monthly_budget_usd.
+    """
+
+    department_id: int
+    department_name: str
+    monthly_budget_usd: Decimal
+    current_month_spend_usd: Decimal
+    budget_remaining_usd: Decimal
+    budget_exceeded: bool
+
+
 # ---------------------------------------------------------------------------
 # Response schema
 # ---------------------------------------------------------------------------
@@ -129,6 +154,14 @@ class BookingEligibilityResponse(BaseModel):
     spend_limit_exceeded:     True when current_month_spend_usd >=
                                monthly_spend_limit_usd.
 
+    Department budget
+    -----------------
+    dept_budget_exceeded:  True when at least one department the member belongs
+                           to has exhausted its monthly_budget.
+    dept_budget_details:   One DeptBudgetCheckSummary per department that has a
+                           monthly_budget set.  Empty when the member belongs to
+                           no departments with a budget cap.
+
     Denial reasons
     --------------
     denial_reasons: Human-readable list of all reasons the ride was rejected.
@@ -160,6 +193,10 @@ class BookingEligibilityResponse(BaseModel):
     current_month_spend_usd: Decimal
     spend_remaining_usd: Optional[Decimal]
     spend_limit_exceeded: bool
+
+    # Department budget
+    dept_budget_exceeded: bool = False
+    dept_budget_details: List[DeptBudgetCheckSummary] = []
 
     # Denial summary
     denial_reasons: List[str]

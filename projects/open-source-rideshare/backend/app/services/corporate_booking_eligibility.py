@@ -14,8 +14,9 @@ Policy layers evaluated (in order):
   2. Blackout periods               (hard block or override-with-approval)
   3. Ride count quotas              (daily / weekly / monthly)
   4. Monthly spend limit            (per-member cap from BusinessAccountMember)
-  5. Auto-approval rules            (bypass manual approval when matched)
-  6. Approval chains                (manual workflow when no auto-approval)
+  5. Department monthly budget      (aggregate cap across all dept members)
+  6. Auto-approval rules            (bypass manual approval when matched)
+  7. Approval chains                (manual workflow when no auto-approval)
 
 Public surface
 --------------
@@ -36,10 +37,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.corporate import BusinessAccountMember
+from app.models.corporate_department import CorporateDepartment, CorporateDepartmentMember
 from app.models.ride import Ride
 from app.schemas.corporate_booking_eligibility import (
     BookingEligibilityResponse,
     BookingRideParams,
+    DeptBudgetCheckSummary,
     QuotaCheckSummary,
 )
 from app.services.corporate_approval_chain import find_applicable_chain
@@ -145,6 +148,83 @@ async def _get_current_month_member_spend(
     )
     raw = result.scalar_one()
     return Decimal(str(raw))
+
+
+async def _get_department_budget_checks(
+    db: AsyncSession, account_id: int, user_id: int
+) -> list[DeptBudgetCheckSummary]:
+    """Return a budget summary for each department the user belongs to that has a cap.
+
+    For each CorporateDepartment (scoped to account_id) where:
+      * the user is a CorporateDepartmentMember, AND
+      * monthly_budget IS NOT NULL
+
+    sums actual_fare for all Rides this calendar month where
+    corporate_account_id = account_id AND rider_id is any member of that
+    department.
+
+    Args:
+        db:         Database session.
+        account_id: Corporate account to scope the lookup.
+        user_id:    The user whose department memberships should be checked.
+
+    Returns:
+        One DeptBudgetCheckSummary per qualifying department; empty list when
+        the user belongs to no departments with a monthly_budget set.
+    """
+    now = datetime.now(tz=timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # Fetch all departments (with budgets) that this user belongs to
+    dept_result = await db.execute(
+        select(CorporateDepartment)
+        .join(
+            CorporateDepartmentMember,
+            CorporateDepartmentMember.department_id == CorporateDepartment.id,
+        )
+        .where(
+            CorporateDepartmentMember.user_id == user_id,
+            CorporateDepartment.account_id == account_id,
+            CorporateDepartment.monthly_budget.is_not(None),
+        )
+    )
+    departments = dept_result.scalars().all()
+
+    summaries: list[DeptBudgetCheckSummary] = []
+    for dept in departments:
+        # Sum rides this month for all members of this department
+        spend_result = await db.execute(
+            select(func.coalesce(func.sum(Ride.actual_fare), 0))
+            .join(
+                CorporateDepartmentMember,
+                CorporateDepartmentMember.user_id == Ride.rider_id,
+            )
+            .where(
+                CorporateDepartmentMember.department_id == dept.id,
+                Ride.corporate_account_id == account_id,
+                Ride.actual_fare.is_not(None),
+                Ride.completed_at.is_not(None),
+                Ride.completed_at >= month_start,
+            )
+        )
+        raw_spend = spend_result.scalar_one()
+        current_spend = Decimal(str(raw_spend))
+        budget = Decimal(str(dept.monthly_budget))
+        remaining = max(Decimal("0"), budget - current_spend)
+        exceeded = current_spend >= budget
+
+        summaries.append(
+            DeptBudgetCheckSummary(
+                department_id=dept.id,
+                department_name=dept.name,
+                monthly_budget_usd=budget,
+                current_month_spend_usd=current_spend,
+                budget_remaining_usd=remaining,
+                budget_exceeded=exceeded,
+            )
+        )
+
+    return summaries
 
 
 # ---------------------------------------------------------------------------
@@ -312,6 +392,21 @@ async def check_booking_eligibility(
             )
 
     # ------------------------------------------------------------------
+    # 5b. Department monthly budget check
+    # ------------------------------------------------------------------
+    dept_budget_details = await _get_department_budget_checks(db, account_id, user_id)
+    dept_budget_exceeded = False
+
+    for dept_summary in dept_budget_details:
+        if dept_summary.budget_exceeded:
+            dept_budget_exceeded = True
+            denial_reasons.append(
+                f"Department '{dept_summary.department_name}' monthly budget of "
+                f"${dept_summary.monthly_budget_usd} has been reached "
+                f"(current spend: ${dept_summary.current_month_spend_usd})."
+            )
+
+    # ------------------------------------------------------------------
     # 6. Auto-approval evaluation
     # ------------------------------------------------------------------
     auto_approved, matched_rule = await evaluate_auto_approval(
@@ -352,6 +447,7 @@ async def check_booking_eligibility(
         policy_check_passed
         and not any_quota_exceeded
         and not spend_limit_exceeded
+        and not dept_budget_exceeded
         and not blackout_hard_block
     )
 
@@ -373,5 +469,7 @@ async def check_booking_eligibility(
         current_month_spend_usd=current_month_spend_usd,
         spend_remaining_usd=spend_remaining_usd,
         spend_limit_exceeded=spend_limit_exceeded,
+        dept_budget_exceeded=dept_budget_exceeded,
+        dept_budget_details=dept_budget_details,
         denial_reasons=denial_reasons,
     )

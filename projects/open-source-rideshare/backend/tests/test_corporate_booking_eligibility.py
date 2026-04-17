@@ -62,6 +62,7 @@ from app.schemas.corporate_booking_eligibility import (
     BookingRideParams,
     QuotaCheckSummary,
 )
+from app.schemas.corporate_booking_eligibility import DeptBudgetCheckSummary
 from app.services.corporate_booking_eligibility import (
     _get_current_month_member_spend,
     check_booking_eligibility,
@@ -199,6 +200,7 @@ async def _run_check(
     quota_weekly=None,
     quota_monthly=None,
     spend_usd=Decimal("0"),
+    dept_budget_details=None,
     auto_approved=False,
     matched_rule=None,
     applicable_chain=None,
@@ -219,6 +221,8 @@ async def _run_check(
         quota_weekly = _make_quota_check(period="weekly")
     if quota_monthly is None:
         quota_monthly = _make_quota_check(period="monthly")
+    if dept_budget_details is None:
+        dept_budget_details = []
     if params is None:
         params = _default_params()
 
@@ -243,6 +247,7 @@ async def _run_check(
         patch(f"{_SERVICE}.get_effective_policy_for_member", new_callable=AsyncMock, return_value=effective_policy),
         patch(f"{_SERVICE}.check_booking_blackout", new_callable=AsyncMock, return_value=blackout_periods),
         patch(f"{_SERVICE}.get_quota_usage", side_effect=_fake_get_quota),
+        patch(f"{_SERVICE}._get_department_budget_checks", new_callable=AsyncMock, return_value=dept_budget_details),
         patch(f"{_SERVICE}.evaluate_auto_approval", new_callable=AsyncMock, return_value=(auto_approved, matched_rule)),
         patch(f"{_SERVICE}.find_applicable_chain", new_callable=AsyncMock, return_value=applicable_chain),
     ):
@@ -515,6 +520,219 @@ async def test_approval_chain_id_set():
 
     assert result.approval_chain_id == 99
     assert result.requires_approval is True
+
+
+# ===========================================================================
+# Department budget tests (41-50)
+# ===========================================================================
+
+
+def _make_dept_summary(
+    department_id: int = 1,
+    department_name: str = "Engineering",
+    monthly_budget_usd: Decimal = Decimal("500.00"),
+    current_month_spend_usd: Decimal = Decimal("0.00"),
+    budget_exceeded: bool = False,
+) -> DeptBudgetCheckSummary:
+    budget_remaining = max(Decimal("0"), monthly_budget_usd - current_month_spend_usd)
+    return DeptBudgetCheckSummary(
+        department_id=department_id,
+        department_name=department_name,
+        monthly_budget_usd=monthly_budget_usd,
+        current_month_spend_usd=current_month_spend_usd,
+        budget_remaining_usd=budget_remaining,
+        budget_exceeded=budget_exceeded,
+    )
+
+
+@pytest.mark.asyncio
+async def test_dept_budget_exceeded_eligible_false():
+    """Test 41: dept budget exceeded → eligible=False, dept_budget_exceeded=True, denial_reasons contains dept name."""
+    dept_summary = _make_dept_summary(
+        department_name="Sales",
+        monthly_budget_usd=Decimal("1000.00"),
+        current_month_spend_usd=Decimal("1000.00"),
+        budget_exceeded=True,
+    )
+    result = await _run_check(dept_budget_details=[dept_summary])
+
+    assert result.eligible is False
+    assert result.dept_budget_exceeded is True
+    assert any("Sales" in r for r in result.denial_reasons)
+    assert len(result.dept_budget_details) == 1
+
+
+@pytest.mark.asyncio
+async def test_dept_budget_not_set_not_enforced():
+    """Test 42: dept budget not set (no dept_budget_details) → dept_budget_exceeded=False, eligible unaffected."""
+    result = await _run_check(dept_budget_details=[])
+
+    assert result.dept_budget_exceeded is False
+    assert result.dept_budget_details == []
+    assert result.eligible is True
+
+
+@pytest.mark.asyncio
+async def test_member_in_two_depts_one_over_budget():
+    """Test 43: member in two depts, one over budget → eligible=False."""
+    under = _make_dept_summary(
+        department_id=1,
+        department_name="Engineering",
+        monthly_budget_usd=Decimal("500.00"),
+        current_month_spend_usd=Decimal("200.00"),
+        budget_exceeded=False,
+    )
+    over = _make_dept_summary(
+        department_id=2,
+        department_name="Marketing",
+        monthly_budget_usd=Decimal("300.00"),
+        current_month_spend_usd=Decimal("300.00"),
+        budget_exceeded=True,
+    )
+    result = await _run_check(dept_budget_details=[under, over])
+
+    assert result.eligible is False
+    assert result.dept_budget_exceeded is True
+    assert len(result.dept_budget_details) == 2
+    assert any("Marketing" in r for r in result.denial_reasons)
+    assert not any("Engineering" in r for r in result.denial_reasons)
+
+
+@pytest.mark.asyncio
+async def test_member_in_two_depts_both_under_budget():
+    """Test 44: member in two depts, both under budget → eligible=True."""
+    dept_a = _make_dept_summary(
+        department_id=1,
+        department_name="Engineering",
+        monthly_budget_usd=Decimal("500.00"),
+        current_month_spend_usd=Decimal("100.00"),
+        budget_exceeded=False,
+    )
+    dept_b = _make_dept_summary(
+        department_id=2,
+        department_name="Sales",
+        monthly_budget_usd=Decimal("800.00"),
+        current_month_spend_usd=Decimal("400.00"),
+        budget_exceeded=False,
+    )
+    result = await _run_check(dept_budget_details=[dept_a, dept_b])
+
+    assert result.eligible is True
+    assert result.dept_budget_exceeded is False
+    assert len(result.dept_budget_details) == 2
+    assert result.denial_reasons == []
+
+
+@pytest.mark.asyncio
+async def test_dept_budget_exceeded_combined_with_other_failures():
+    """Test 45: dept budget exceeded combined with other failures → multiple denial_reasons."""
+    policy = _make_effective_policy(allowed_vehicle_categories=["xl"])
+    dept_summary = _make_dept_summary(
+        department_name="Finance",
+        monthly_budget_usd=Decimal("200.00"),
+        current_month_spend_usd=Decimal("250.00"),
+        budget_exceeded=True,
+    )
+    params = _default_params(vehicle_category="standard")
+    result = await _run_check(
+        effective_policy=policy,
+        dept_budget_details=[dept_summary],
+        params=params,
+    )
+
+    assert result.eligible is False
+    assert result.dept_budget_exceeded is True
+    assert result.policy_check_passed is False
+    # Both policy denial and dept denial should be present
+    assert len(result.denial_reasons) >= 2
+    assert any("Finance" in r for r in result.denial_reasons)
+    assert any("vehicle" in r.lower() or "category" in r.lower() for r in result.denial_reasons)
+
+
+@pytest.mark.asyncio
+async def test_dept_budget_at_exactly_the_limit_is_exceeded():
+    """Test 46: dept budget at exactly the limit (>=) → budget_exceeded=True."""
+    dept_summary = _make_dept_summary(
+        department_name="Operations",
+        monthly_budget_usd=Decimal("750.00"),
+        current_month_spend_usd=Decimal("750.00"),
+        budget_exceeded=True,
+    )
+    result = await _run_check(dept_budget_details=[dept_summary])
+
+    assert result.eligible is False
+    assert result.dept_budget_exceeded is True
+    assert result.dept_budget_details[0].budget_exceeded is True
+    assert result.dept_budget_details[0].budget_remaining_usd == Decimal("0")
+
+
+@pytest.mark.asyncio
+async def test_dept_budget_partial_spend_not_exceeded():
+    """Test 47: dept budget with partial spend (under limit) → not exceeded."""
+    dept_summary = _make_dept_summary(
+        department_name="Research",
+        monthly_budget_usd=Decimal("1000.00"),
+        current_month_spend_usd=Decimal("499.99"),
+        budget_exceeded=False,
+    )
+    result = await _run_check(dept_budget_details=[dept_summary])
+
+    assert result.eligible is True
+    assert result.dept_budget_exceeded is False
+    assert result.dept_budget_details[0].budget_exceeded is False
+    assert result.dept_budget_details[0].budget_remaining_usd == Decimal("500.01")
+
+
+@pytest.mark.asyncio
+async def test_member_not_in_any_department():
+    """Test 48: member not in any department → dept_budget_exceeded=False, no dept_budget_details."""
+    result = await _run_check(dept_budget_details=[])
+
+    assert result.dept_budget_exceeded is False
+    assert result.dept_budget_details == []
+
+
+def test_dept_budget_check_summary_construction():
+    """Test 49: DeptBudgetCheckSummary schema construction with all fields."""
+    summary = DeptBudgetCheckSummary(
+        department_id=42,
+        department_name="Legal",
+        monthly_budget_usd=Decimal("2000.00"),
+        current_month_spend_usd=Decimal("1500.00"),
+        budget_remaining_usd=Decimal("500.00"),
+        budget_exceeded=False,
+    )
+    assert summary.department_id == 42
+    assert summary.department_name == "Legal"
+    assert summary.monthly_budget_usd == Decimal("2000.00")
+    assert summary.current_month_spend_usd == Decimal("1500.00")
+    assert summary.budget_remaining_usd == Decimal("500.00")
+    assert summary.budget_exceeded is False
+
+
+def test_dept_budget_remaining_floored_at_zero():
+    """Test 50: budget_remaining_usd is correct (budget - spend, floored at 0 when over)."""
+    # Over budget: remaining should be zero
+    over_summary = DeptBudgetCheckSummary(
+        department_id=1,
+        department_name="Overspent",
+        monthly_budget_usd=Decimal("100.00"),
+        current_month_spend_usd=Decimal("150.00"),
+        budget_remaining_usd=max(Decimal("0"), Decimal("100.00") - Decimal("150.00")),
+        budget_exceeded=True,
+    )
+    assert over_summary.budget_remaining_usd == Decimal("0")
+
+    # Under budget: remaining = budget - spend
+    under_summary = DeptBudgetCheckSummary(
+        department_id=2,
+        department_name="Underspent",
+        monthly_budget_usd=Decimal("500.00"),
+        current_month_spend_usd=Decimal("125.50"),
+        budget_remaining_usd=Decimal("500.00") - Decimal("125.50"),
+        budget_exceeded=False,
+    )
+    assert under_summary.budget_remaining_usd == Decimal("374.50")
 
 
 # ===========================================================================
