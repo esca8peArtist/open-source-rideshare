@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 247)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 248)
 
 ---
 
@@ -27,10 +27,10 @@
 ### mfg-farm
 **Goal**: Build a fully automated manufacturing business centered on 3D printing, with a path to a full print farm. Sell products on Etsy, Amazon, and similar platforms. Develop a complete business plan: product selection driven by market demand and unique value proposition, pricing strategy, fulfillment workflow, and a scaling roadmap from single printer to multi-printer farm with multiple colors and material capabilities. Explore adjacent manufacturing (laser cutting, CNC, resin printing) and integrate where demand justifies it. The north star is maximizing income — product and machine decisions should be driven by data: what sells, what margins look like, and where automation creates the highest leverage.
 **Priority**: High
-**Status**: Active — planning phase
+**Status**: Active — design phase
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/mfg-farm/`
-**Current focus**: Session 107: Market research COMPLETE (861 lines). Business plan COMPLETE (1,002 lines). **Launch-ready** with 5-product sequenced catalog: ModRun cable management (month 1) → Drift flexi animals (month 2) → planters (month 5) → pet memorials (month 6) → GearStation gaming organizer (month 9). Full cost breakdowns, price floors, design strategy (commission first, build in-house by month 5–6), machine milestones with payback periods (P1S at 19 days, xTool S1 2 months, resin as separate model). **Next**: User reviews business plan and decides first action — commission initial cable management designs or start Fusion 360 learning path.
+**Current focus**: Session 248: **ModRun CadQuery family COMPLETE** (5 STL files). Rail: desk-edge C-clamp variant + adhesive-pad variant, both parametric Python. 3 cable clips: 3mm/6mm/12mm. All STLs in projects/mfg-farm/stl/. README with parameter guide + print settings in projects/mfg-farm/cadquery/. CadQuery env fixed: cadquery-ocp 7.9.3.1, OCP hashCode patch, nlopt from apt, casadi/nptyping/typish/ezdxf installed. Background: Market research COMPLETE (861 lines). Business plan COMPLETE (1,002 lines). Launch-ready catalog: ModRun (month 1) → Drift flexi animals (month 2) → planters (month 5) → pet memorials (month 6) → GearStation gaming organizer (month 9). **Next**: Slice STLs in PrusaSlicer/Orca, do test print, iterate fit/geometry if needed, then prep Etsy listing for ModRun.
 **Blocked on**: —
 **Notes**: Automation is the core constraint — products and workflows must be designed for minimal human touchpoints per unit. Physical products mean real fulfillment costs (packaging, shipping, storage) — factor these in from the start. Etsy and Amazon have different fee structures and audiences; may want both. Scaling from 1→N printers requires thinking about file management, queue management, quality control, and packaging throughput — not just the printers themselves.
 
@@ -54,7 +54,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/stockbot/`
-**Current focus**: Paper trading LIVE since April 14. 3 sessions: momentum (SPY/QQQ/MSFT), rsi_mean_reversion (AAPL/NVDA), sma_crossover (AMZN/SPY). Orchestrator cannot pull cycle logs without STOCKBOT_API_KEY in env. **Next**: User shares cycle logs or Trading page screenshot to unblock model assessment.
+**Current focus**: Paper trading LIVE since April 14. 4 sessions running: momentum (SPY/QQQ/MSFT), rsi_mean_reversion (AAPL/NVDA), sma_crossover (AMZN/SPY), MTF Options_AAPL_LogRet_FLGBM (AAPL). Portfolio +$301 as of Apr 15. STOCKBOT_API_KEY is in ~/.claude_env but the Jetson API (100.120.18.84:8000) is unreachable from Pi directly — Jetson firewall blocks inbound Tailscale traffic on that port. **Access solution**: Use SSH tunnel — `ssh -N -L 18000:localhost:8000 xxsb-01` opens localhost:18000 → Jetson:8000 securely. STOCKBOT_API_KEY already in env. **Next**: Assess model performance across all 4 sessions and report findings.
 **Blocked on**: —
 **Notes**: Web app is in good shape. Model creation and most optimisation is operational. Paper trading has just started but has had issues — this is the current priority. iOS app is out of scope until paper trading is solid. All features must work across ALL model types (stock, options, rule-based, ensemble, MTF) — do not implement something for one type only.
 

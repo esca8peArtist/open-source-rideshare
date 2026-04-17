@@ -10,7 +10,14 @@
 ---
 
 ## New Items
+- [2026-04-17 02:18] I want to create a new menu in the stockbot project called Projected Returns and I want it to allow me to pick one of the models that I have created and have it graph the future predictions that it is making to influence its buy/sell decisions. My goal is to be able to pull up that graph for a stock that I own and see when a good time to sell would be based on the future projection
+- [2026-04-17 02:14] 
 <!-- Add tasks here. Format: - [date] [description] -->
+
+<!-- Processed 2026-04-17 Session 248:
+- [2026-04-17] mfg-farm: Build the ModRun cable management family in CadQuery. Parametric Python design: mounting rail (desk-edge clip mount, adhesive pad base, cable channel) + 3 clip variants for 3mm / 6mm / 12mm cable diameter. All parts parametric — dimensions as variables at top of script. Export STL files to projects/mfg-farm/stl/. Write a brief README in projects/mfg-farm/cadquery/ explaining how to adjust parameters and regenerate STLs. → Actioned: building CadQuery designs this session.
+- [2026-04-17] stockbot: API is unreachable from Pi directly (Jetson firewall). Use SSH tunnel: ssh -f -N -L 18000:localhost:8000 xxsb-01 then hit http://localhost:18000 with STOCKBOT_API_KEY from env. Pull cycle logs and assess model performance across all 4 sessions. → Actioned: opening tunnel and pulling logs this session.
+-->
 
 <!-- Processed 2026-04-14 Session 120:
 - [21:36] Discord notifications too frequent — user wants only the ~2-hour periodic ones, not per-session → noted in WORKLOG, feedback saved, orchestrator will limit Discord pings to once per ~2hr window going forward

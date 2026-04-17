@@ -10209,3 +10209,88 @@ Migration s8t9u0v1w2x3 (no enum; 1 table + 3 indexes + unique constraint)
 Pushed to: rideshare/feature/corporate-business-accounts
 
 Session 247 complete.
+
+## Session 248 — 2026-04-17
+
+### Orient
+- INBOX: 2 new items — mfg-farm ModRun CadQuery build + stockbot SSH tunnel/performance check
+- BLOCKED: no active blocks
+- Priority 1: stockbot (SSH tunnel → pull cycle logs → assess 4 sessions)
+- Priority 2: mfg-farm (ModRun CadQuery parametric designs → STL exports → README)
+
+### INBOX Processing
+- mfg-farm: Build ModRun cable management family in CadQuery → added to PROJECTS.md current focus, actioning this session
+- stockbot: SSH tunnel to access Jetson API + pull cycle logs → added to PROJECTS.md current focus, actioning this session
+- PROJECTS.md updated: mfg-farm status → "Active — design phase", stockbot current focus updated, session counter bumped to 248
+- INBOX cleared
+
+
+### Stockbot: Performance Assessment via SSH API
+
+**Access method**: SSH direct (tunnel not viable — server binds to 100.120.18.84:8000, not 127.0.0.1)
+Commands run: curl via `ssh xxsb-01 "curl ..."` with `Authorization: Bearer <key>`
+
+**4 sessions — all running as of 2026-04-17 00:15 UTC (Good Friday — market closed)**
+
+| Session | Strategy | Tickers | Status | Trades | Last cycle |
+|---------|----------|---------|--------|--------|-----------|
+| d2183dcc | rsi_mean_reversion | AAPL, NVDA | running | 0 | 00:15 UTC |
+| 3d342dd3 | sma_crossover | AMZN, SPY | running | 1 | 00:15 UTC |
+| 39d7762 | mtf_c49f181b (AAPL) | AAPL | running | 0 | 00:15 UTC |
+| 5e75b221 | momentum | SPY, QQQ, MSFT | running | 2 | 00:15 UTC |
+
+**Alpaca Paper Account (source of truth for P&L):**
+- Starting capital: $100,000
+- Current equity: $100,682.21 (+$682 / +0.68%) over 3 trading days (Apr 14-16)
+- Today P&L: +$413.51 (+0.41%) — last active trading day was Apr 16 (Apr 17 = Good Friday, closed)
+- Cash: -$24,057.06 (all capital deployed into positions)
+
+**Open Positions:**
+- AMZN: 34 shares @ $237.54 → $249.25 | +$398.03 unrealized (+4.93%) — sma_crossover
+- SPY: 71 shares @ $695.33 → $701.95 | +$470.28 unrealized (+0.95%) — momentum
+- QQQ: 52 shares @ $632.91 → $639.96 | +$366.37 unrealized (+1.11%) — momentum
+- MSFT: 79 shares @ $418.18 → $419.60 | +$112.18 unrealized (+0.34%) — momentum
+
+**Issues identified:**
+1. Cycle timeout #1 on 3 of 4 sessions (rsi_mean_reversion, sma_crossover, momentum).
+   MTF session clean. Sessions continue running — soft error, not fatal.
+2. In-app DB trade recording broken: session-results API shows num_trades=0 for all sessions
+   despite Alpaca showing 3 fills. Trades executing and positions held, but not persisted to SQLite.
+3. rsi_mean_reversion (AAPL/NVDA) and MTF (AAPL): 0 trades in 3 days — no signals fired.
+   May be conservative thresholds or AAPL/NVDA conditions didn't meet criteria Apr 14-16.
+4. SSH tunnel to Jetson not viable for this server (binds Tailscale IP only). Direct SSH curl works.
+
+**Overall assessment:** Healthy. Two strategies actively trading with unrealized gains. All sessions alive
+and cycling. The +$682 gain in 3 days on $100k capital is modest (+0.68%) but trending positive on a
+volatile week (Apr 14-16 saw market swings). Main concern: in-app trade DB recording bug means local
+analytics (charts, session summaries) show no data. Alpaca account is authoritative.
+
+
+### mfg-farm: ModRun CadQuery Family — COMPLETE
+
+**Files created:**
+- `projects/mfg-farm/cadquery/modrun_rail.py` — parametric rail (2 variants)
+- `projects/mfg-farm/cadquery/modrun_clips.py` — parametric clips (3 cable diameters)
+- `projects/mfg-farm/cadquery/README.md` — usage and parameter guide
+- `projects/mfg-farm/stl/modrun_rail_clip.stl` — desk-edge C-clamp mount variant
+- `projects/mfg-farm/stl/modrun_rail_adhesive.stl` — adhesive-pad base variant
+- `projects/mfg-farm/stl/modrun_clip_3mm.stl` — 3mm cable clip (phone chargers)
+- `projects/mfg-farm/stl/modrun_clip_6mm.stl` — 6mm cable clip (USB-A, mid-gauge)
+- `projects/mfg-farm/stl/modrun_clip_12mm.stl` — 12mm cable clip (monitor, power)
+
+**CadQuery environment fixes required (documented in README):**
+- cadquery-ocp 7.9.3.1 installed via pip (provides OCCT geometry kernel)
+- multimethod, typish, ezdxf, nptyping, casadi installed to satisfy cadquery 2.3.0 deps
+- nlopt: pip build fails on aarch64 — copied system .so from python3-nlopt apt package
+- CadQuery 2.3.0 uses `HashCode(max)` which was removed in OCP 7.9. Patched
+  `python_env/lib/python3.11/site-packages/cadquery/occ_impl/shapes.py` to fall back
+  to Python's `hash()` when `HashCode` attr is absent.
+
+**Design decisions:**
+- Rail uses press-fit clip slots (notches in top rim) rather than T-slot. T-slot geometry
+  caused disconnected solids due to a rail wall thickness / cut depth conflict.
+- Clip C-clamp (desk variant) attaches at one END of the rail (not full-length).
+- Clip cable bore has 0.3mm radial clearance over nominal cable diameter.
+- All major dimensions are variables at the top of each script.
+
+Session 248 complete — stockbot assessed, mfg-farm ModRun design family done.
