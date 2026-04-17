@@ -1,13 +1,49 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–269
+**Sessions**: 257–270
 
 ---
 
 ### Needs Your Input
 
 *(None — no items awaiting user decision.)*
+
+---
+
+### Accomplished (Session 270)
+
+#### resistance-research — national-security-evidence.md elevated Tier 2+ → Tier 1 (commit `4a88fe7`)
+
+The only remaining weak dimension was Actionable Intelligence. Replaced a thin placeholder with 6 comprehensive subsections (~280 lines):
+
+**AI-1 (Most Immediately Actionable)**: FY2027 NDAA markup May-August 2026 named as the single highest-leverage action window; H.R. 6751 as the parallel floor track.
+
+**AI-2 (Legislative Vehicles)**: 7 named vehicles — H.R. 6751 (Jayapal-Massie-McGovern-Griffith-Casar-Crane, 2001 AUMF 240-day sunset; Senate: Kaine/Young); FY2026 NDAA enacted December 2025 repealing 2002 Iraq + 1991 Gulf War AUMFs (first AUMF repeal since Gulf of Tonkin in 1971, establishes procedural feasibility); H.R. 7555 Audit the Pentagon Act (Pocan-Biggs, 0.5%/1% budget return — at ~$850B DoD = $4.25B first trigger); FY2024 NDAA 1.5% cancellation trigger (December 2028 enforcement deadline); RECEIPTS Act (Ernst, $150M AI audit — Republican fiscal framing); FY2027 NDAA five specific provisions.
+
+**AI-3 (Federal Agency Pressure Points)**: GAO request process (CongRel@gao.gov, any Member can trigger, 6-18 months, National Security division has clearances); DoD IG Hotline ((800) 424-9098, dodig.mil); FOIA pathways for DFAS/DCMA/SAM.gov with notes on what's reachable vs. classified.
+
+**AI-4 (Organizations)**: 12 organizations with specific roles: POGO (NDAA amendment coordination menu), National Priorities Project (Cost of War by congressional district — primary constituent outreach tool), Taxpayers for Common Sense (BWAF podcast, Republican coalition credibility), Stimson Center (Alternative Defense Budget), Quincy Institute (Responsible Statecraft daily coverage), Center for International Policy (Security Assistance Monitor arms sales database), Win Without War, FCNL (district-by-district lobby day logistics), AFSC, Council for a Livable World (candidate endorsements + Center for Arms Control staff briefings), Brennan Center, IAVA.
+
+**AI-5 (State-Level Leverage)**: AUMF resolutions in 10 achievable states (CA, CO, IL, ME, MA, MN, NM, OR, VT, WA); CalSTRS $489M in top-3 contractors → shareholder proxy vote approach (not divestment); National Guard federalization limits post-December 2025 SCOTUS ruling.
+
+**AI-6 (Near-Term Windows)**: FY2027 NDAA markup (May-Aug 2026, contact orgs in April-May now); H.R. 6751 discharge petition / NDAA attachment; Pentagon 9th consecutive audit failure (December 2026); Section 702 vote; FY2027 State/USAID appropriations for USAID reconstitution mandates.
+
+quality-review-index.md: **16 Tier 1, 7 Tier 2, 0 Tier 3** (was 15/8/0). Domain 19 card: Actionable Intelligence and Counterarguments both now Strong.
+
+#### open-source-rideshare — Corporate member expense policy enforcement (commit `d8bbe8c`)
+
+68 tests, 68 passing. Pushed to rideshare remote.
+
+Built the enforcement layer on top of the existing two-tier policy system (CorporateRidePolicy + CorporateMemberPolicyOverride + get_effective_policy):
+
+**Schemas** (`schemas/corporate_member_policy_enforcement.py`): `BookingPolicyCheckRequest` (vehicle_category, estimated_fare_usd, trip_purpose, requested_at), `PolicyViolation` (field, message, value, limit), `PolicyCheckOutcome` enum (ALLOWED/REQUIRES_APPROVAL/DENIED), `BookingPolicyCheckResponse`, `MonthlySpendResponse`.
+
+**Service** (`services/corporate_member_policy_enforcement.py`): 6 isolated check functions + `check_booking_against_policy`. Logic: vehicle category (DENIED if not in allowed list); fare cap (≤cap → allowed, cap–150% → REQUIRES_APPROVAL, >150% → DENIED, named constant `_FARE_APPROVAL_RATIO = 1.5`); business hours (Mon-Fri 07:00-21:00 UTC, DENIED otherwise); purpose required (DENIED if missing); purpose allowed (DENIED if not in list); monthly cap (REQUIRES_APPROVAL — never DENIED, manager can override). DENIED beats REQUIRES_APPROVAL.
+
+**Endpoints** (`api/v1/corporate_member_policy_enforcement.py`): `POST /corporate/accounts/me/check-booking` (member self-check); `POST /corporate/accounts/{id}/members/{id}/check-booking` (admin); `GET /corporate/accounts/{id}/members/{id}/monthly-spend` (admin).
+
+No migration required — pure service layer over existing tables.
 
 ---
 

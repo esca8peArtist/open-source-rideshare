@@ -4,6 +4,54 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 270 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Previous session (269): economic-concentration-evidence.md elevated to Tier 1; rideshare spending limit alerts complete.
+
+### Task Selection
+1. resistance-research: Elevate national-security-evidence.md Tier 2+ → Tier 1 (add Actionable Intelligence section)
+2. open-source-rideshare: Corporate member expense policy enforcement (per-member rules, fare caps, booking windows, approval requirements)
+
+Both delegated as parallel background agents.
+
+### open-source-rideshare: Corporate member expense policy enforcement COMPLETE
+Commit: d8bbe8c. Pushed to rideshare remote.
+
+**New files**:
+- `schemas/corporate_member_policy_enforcement.py` — `BookingPolicyCheckRequest`, `PolicyViolation`, `PolicyCheckOutcome` enum (ALLOWED/REQUIRES_APPROVAL/DENIED), `BookingPolicyCheckResponse`, `MonthlySpendResponse`
+- `services/corporate_member_policy_enforcement.py` — 6 isolated check functions + `check_booking_against_policy` (merges effective policy, runs all checks, DENIED beats REQUIRES_APPROVAL). Fare cap: ≤cap → allowed, cap–150% → REQUIRES_APPROVAL, >150% → DENIED. `get_member_monthly_spend` queries `rides` table (COMPLETED/IN_PROGRESS) for current UTC month.
+- `api/v1/corporate_member_policy_enforcement.py` — 3 endpoints: POST .../me/check-booking (member), POST .../accounts/{id}/members/{id}/check-booking (admin), GET .../members/{id}/monthly-spend (admin)
+
+**Modified**: `backend/app/main.py` — router registered.
+
+68 tests, all passing. No migration needed (pure service layer).
+
+### resistance-research: national-security-evidence.md elevated to Tier 1 COMPLETE
+Commit: 4a88fe7.
+
+Added Section AI-1 through AI-6 (~280 lines) replacing a thin placeholder:
+
+**AI-1 (Most Immediately Actionable)**: FY2027 NDAA markup May-August 2026 as the highest-leverage window; H.R. 6751 as parallel track converging at conference.
+
+**AI-2 (Legislative Vehicles)**: H.R. 6751 (Jayapal-Massie-McGovern-Griffith-Casar-Crane, 2001 AUMF 240-day sunset, Senate: Kaine/Young); FY2026 NDAA enacted December 2025 repealing 2002 Iraq + 1991 Gulf War AUMFs; H.R. 7555 Audit the Pentagon Act (Pocan-Biggs, 0.5%/1% budget return triggers); FY2024 NDAA 1.5% cancellation trigger (December 2028 deadline); RECEIPTS Act (Ernst, $150M AI audit automation); FY2027 NDAA five specific provisions (Nunn-McCurdy reauthorization, audit penalty enforcement, right to repair, revolving door database, AUMF sunset).
+
+**AI-3 (Federal Agency Pressure Points)**: GAO request process (CongRel@gao.gov, any Member can request, 6-18 month timeline); DoD IG Hotline (800-424-9098, dodig.mil); FOIA pathways for DFAS/DCMA/SAM.gov.
+
+**AI-4 (Organizations)**: 12 organizations with specific roles — POGO (NDAA amendment coordination), National Priorities Project (Cost of War by congressional district), Taxpayers for Common Sense (BWAF podcast, Republican coalition), Stimson Center (Alternative Defense Budget), Quincy Institute, Center for International Policy, Win Without War, FCNL, AFSC, Council for a Livable World, Brennan Center, IAVA.
+
+**AI-5 (State-Level Leverage)**: AUMF resolutions in 10 achievable states; CalSTRS $489M contractor holdings shareholder engagement approach; National Guard federalization limits post-December 2025 SCOTUS ruling.
+
+**AI-6 (Near-Term Windows)**: FY2027 NDAA markup (May-Aug 2026); H.R. 6751 floor pressure; Pentagon 9th audit cycle (December 2026); Section 702 vote; FY2027 State/USAID appropriations.
+
+quality-review-index.md: **16 Tier 1, 7 Tier 2, 0 Tier 3** (was 15/8/0). Domain 19 card: Actionable Intelligence and Counterarguments both elevated to Strong.
+
+Session 270 complete.
+
+---
+
 ## Session 267 — 2026-04-17
 
 ### Orient
