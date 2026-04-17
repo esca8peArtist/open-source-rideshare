@@ -15,15 +15,18 @@ from app.schemas.safety import (
     SOSTriggerRequest,
     TripShareRequest,
     TripShareResponse,
+    TripShareSummary,
 )
 from app.services.safety import (
     add_emergency_contact,
     create_trip_share_token,
     delete_emergency_contact,
     get_active_alerts,
-    get_shared_trip,
+    get_shared_trip_detail,
     list_emergency_contacts,
+    list_trip_share_tokens,
     resolve_sos,
+    revoke_trip_share_token,
     trigger_sos,
 )
 
@@ -157,10 +160,16 @@ async def view_shared_trip(
     token: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Public endpoint — no auth required. View a shared trip by token."""
-    ride = await get_shared_trip(token, db)
-    if not ride:
+    """Public endpoint — no auth required. View a shared trip by token.
+
+    Includes live driver location when available so friends/family can
+    track the ride in real-time.
+    """
+    detail = await get_shared_trip_detail(token, db)
+    if not detail:
         raise HTTPException(status_code=404, detail="Trip not found or link expired")
+
+    ride = detail["ride"]
 
     driver_name = None
     vehicle_info = None
@@ -179,7 +188,47 @@ async def view_shared_trip(
         driver_name=driver_name,
         vehicle_info=vehicle_info,
         started_at=ride.started_at,
+        driver_lat=detail["driver_lat"],
+        driver_lng=detail["driver_lng"],
+        driver_location_updated_at=detail["driver_location_updated_at"],
     )
+
+
+@router.get("/share", response_model=list[TripShareSummary])
+async def list_my_share_tokens(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List the caller's active (non-expired) trip share tokens."""
+    tokens = await list_trip_share_tokens(user.id, db)
+    return [
+        TripShareSummary(
+            token=t.token,
+            share_url=f"/api/v1/safety/share/{t.token}",
+            expires_at=t.expires_at,
+            ride_id=t.ride_id,
+            created_at=t.created_at,
+        )
+        for t in tokens
+    ]
+
+
+@router.delete("/share/{token}", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_share_token(
+    token: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Revoke a trip share token. Only the creator may revoke."""
+    try:
+        deleted = await revoke_trip_share_token(token, user.id, db)
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Token not found")
+
+    await db.commit()
 
 
 # ---- Emergency Contacts ----

@@ -14,6 +14,7 @@ from app.schemas.safety import (
     SOSResolveRequest,
     SOSTriggerRequest,
     TripShareRequest,
+    TripShareSummary,
 )
 
 
@@ -290,7 +291,7 @@ class TestTripShareEndpoint:
 
 class TestViewSharedTripEndpoint:
     @pytest.mark.asyncio
-    @patch("app.api.v1.safety.get_shared_trip", new_callable=AsyncMock)
+    @patch("app.api.v1.safety.get_shared_trip_detail", new_callable=AsyncMock)
     async def test_view_valid_share(self, mock_get):
         from app.api.v1.safety import view_shared_trip
 
@@ -301,7 +302,12 @@ class TestViewSharedTripEndpoint:
         ride.dropoff_address = "456 Oak Ave"
         ride.started_at = datetime.now(timezone.utc)
         ride.driver = None
-        mock_get.return_value = ride
+        mock_get.return_value = {
+            "ride": ride,
+            "driver_lat": None,
+            "driver_lng": None,
+            "driver_location_updated_at": None,
+        }
 
         db = _mock_db()
 
@@ -312,7 +318,7 @@ class TestViewSharedTripEndpoint:
         assert result.driver_name is None
 
     @pytest.mark.asyncio
-    @patch("app.api.v1.safety.get_shared_trip", new_callable=AsyncMock)
+    @patch("app.api.v1.safety.get_shared_trip_detail", new_callable=AsyncMock)
     async def test_view_share_with_driver(self, mock_get):
         from app.api.v1.safety import view_shared_trip
 
@@ -328,7 +334,12 @@ class TestViewSharedTripEndpoint:
         ride.driver = driver
         # No driver_profiles attribute on the mock
         del ride.driver.driver_profiles
-        mock_get.return_value = ride
+        mock_get.return_value = {
+            "ride": ride,
+            "driver_lat": None,
+            "driver_lng": None,
+            "driver_location_updated_at": None,
+        }
 
         db = _mock_db()
 
@@ -337,7 +348,7 @@ class TestViewSharedTripEndpoint:
         assert result.vehicle_info is None
 
     @pytest.mark.asyncio
-    @patch("app.api.v1.safety.get_shared_trip", new_callable=AsyncMock)
+    @patch("app.api.v1.safety.get_shared_trip_detail", new_callable=AsyncMock)
     async def test_view_invalid_share(self, mock_get):
         from app.api.v1.safety import view_shared_trip
 
@@ -438,3 +449,163 @@ class TestContactEndpoints:
         with pytest.raises(HTTPException) as exc:
             await remove_contact(contact_id=999, user=user, db=db)
         assert exc.value.status_code == 404
+
+
+# ---- Updated view_shared_trip (with driver location) ----
+
+class TestViewSharedTripWithLocation:
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.get_shared_trip_detail", new_callable=AsyncMock)
+    async def test_view_includes_driver_location(self, mock_detail):
+        from app.api.v1.safety import view_shared_trip
+
+        ride = MagicMock(spec=Ride)
+        ride.id = 1
+        ride.status = RideStatus.IN_PROGRESS
+        ride.pickup_address = "123 Main St"
+        ride.dropoff_address = "456 Oak Ave"
+        ride.started_at = datetime.now(timezone.utc)
+        ride.driver = None
+
+        mock_detail.return_value = {
+            "ride": ride,
+            "driver_lat": 40.7128,
+            "driver_lng": -74.0060,
+            "driver_location_updated_at": datetime.now(timezone.utc),
+        }
+
+        db = _mock_db()
+        result = await view_shared_trip(token="valid-token", db=db)
+
+        assert result.driver_lat == 40.7128
+        assert result.driver_lng == -74.0060
+        assert result.driver_location_updated_at is not None
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.get_shared_trip_detail", new_callable=AsyncMock)
+    async def test_view_no_driver_location(self, mock_detail):
+        from app.api.v1.safety import view_shared_trip
+
+        ride = MagicMock(spec=Ride)
+        ride.id = 2
+        ride.status = RideStatus.MATCHED
+        ride.pickup_address = "1 Start St"
+        ride.dropoff_address = "2 End Ave"
+        ride.started_at = None
+        ride.driver = None
+
+        mock_detail.return_value = {
+            "ride": ride,
+            "driver_lat": None,
+            "driver_lng": None,
+            "driver_location_updated_at": None,
+        }
+
+        db = _mock_db()
+        result = await view_shared_trip(token="valid-token", db=db)
+
+        assert result.driver_lat is None
+        assert result.driver_lng is None
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.get_shared_trip_detail", new_callable=AsyncMock)
+    async def test_view_invalid_token_404(self, mock_detail):
+        from app.api.v1.safety import view_shared_trip
+
+        mock_detail.return_value = None
+
+        db = _mock_db()
+
+        with pytest.raises(HTTPException) as exc:
+            await view_shared_trip(token="invalid", db=db)
+        assert exc.value.status_code == 404
+
+
+# ---- List my share tokens ----
+
+class TestListMyShareTokensEndpoint:
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.list_trip_share_tokens", new_callable=AsyncMock)
+    async def test_list_returns_tokens(self, mock_list):
+        from app.api.v1.safety import list_my_share_tokens
+
+        t1 = MagicMock(spec=TripShareToken)
+        t1.token = "token-abc"
+        t1.expires_at = datetime.now(timezone.utc) + timedelta(hours=12)
+        t1.ride_id = 5
+        t1.created_at = datetime.now(timezone.utc)
+
+        t2 = MagicMock(spec=TripShareToken)
+        t2.token = "token-xyz"
+        t2.expires_at = datetime.now(timezone.utc) + timedelta(hours=6)
+        t2.ride_id = 6
+        t2.created_at = datetime.now(timezone.utc)
+
+        mock_list.return_value = [t1, t2]
+
+        db = _mock_db()
+        user = _make_user()
+
+        result = await list_my_share_tokens(user=user, db=db)
+        assert len(result) == 2
+        assert result[0].token == "token-abc"
+        assert "/safety/share/token-abc" in result[0].share_url
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.list_trip_share_tokens", new_callable=AsyncMock)
+    async def test_list_empty(self, mock_list):
+        from app.api.v1.safety import list_my_share_tokens
+
+        mock_list.return_value = []
+
+        db = _mock_db()
+        user = _make_user()
+
+        result = await list_my_share_tokens(user=user, db=db)
+        assert result == []
+
+
+# ---- Revoke share token ----
+
+class TestRevokeShareTokenEndpoint:
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.revoke_trip_share_token", new_callable=AsyncMock)
+    async def test_revoke_success(self, mock_revoke):
+        from app.api.v1.safety import revoke_share_token
+
+        mock_revoke.return_value = True
+
+        db = _mock_db()
+        user = _make_user()
+
+        # Should not raise
+        await revoke_share_token(token="valid-token", user=user, db=db)
+        db.commit.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.revoke_trip_share_token", new_callable=AsyncMock)
+    async def test_revoke_not_found(self, mock_revoke):
+        from app.api.v1.safety import revoke_share_token
+
+        mock_revoke.return_value = False
+
+        db = _mock_db()
+        user = _make_user()
+
+        with pytest.raises(HTTPException) as exc:
+            await revoke_share_token(token="missing-token", user=user, db=db)
+        assert exc.value.status_code == 404
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.revoke_trip_share_token", new_callable=AsyncMock)
+    async def test_revoke_wrong_user(self, mock_revoke):
+        from app.api.v1.safety import revoke_share_token
+
+        mock_revoke.side_effect = PermissionError("Not authorized to revoke this token")
+
+        db = _mock_db()
+        user = _make_user()
+
+        with pytest.raises(HTTPException) as exc:
+            await revoke_share_token(token="other-token", user=user, db=db)
+        assert exc.value.status_code == 403

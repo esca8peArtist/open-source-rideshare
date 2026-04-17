@@ -124,6 +124,103 @@ async def get_shared_trip(token: str, db: AsyncSession) -> Ride | None:
     return result.scalar_one_or_none()
 
 
+async def get_shared_trip_detail(
+    token: str,
+    db: AsyncSession,
+) -> dict | None:
+    """Return ride + live driver location for a share token.
+
+    Returns None if the token is invalid or expired.  Driver lat/lng are None
+    when the driver hasn't submitted a location yet.
+
+    Keys returned:
+        ride                       — Ride ORM object
+        driver_lat                 — float | None
+        driver_lng                 — float | None
+        driver_location_updated_at — datetime | None
+    """
+    result = await db.execute(
+        select(TripShareToken).where(TripShareToken.token == token)
+    )
+    share = result.scalar_one_or_none()
+    if not share:
+        return None
+    if share.expires_at < datetime.now(timezone.utc):
+        return None
+
+    result = await db.execute(select(Ride).where(Ride.id == share.ride_id))
+    ride = result.scalar_one_or_none()
+    if not ride:
+        return None
+
+    driver_lat: float | None = None
+    driver_lng: float | None = None
+    driver_location_updated_at = None
+
+    if ride.driver_id is not None:
+        from geoalchemy2.functions import ST_X, ST_Y
+
+        from app.models.driver import DriverProfile
+
+        loc_result = await db.execute(
+            select(
+                ST_Y(DriverProfile.current_location).label("lat"),
+                ST_X(DriverProfile.current_location).label("lng"),
+                DriverProfile.updated_at,
+            ).where(DriverProfile.user_id == ride.driver_id)
+        )
+        row = loc_result.one_or_none()
+        if row is not None and row.lat is not None:
+            driver_lat = float(row.lat)
+            driver_lng = float(row.lng)
+            driver_location_updated_at = row.updated_at
+
+    return {
+        "ride": ride,
+        "driver_lat": driver_lat,
+        "driver_lng": driver_lng,
+        "driver_location_updated_at": driver_location_updated_at,
+    }
+
+
+async def revoke_trip_share_token(
+    token: str,
+    user_id: int,
+    db: AsyncSession,
+) -> bool:
+    """Delete a trip share token.  Only the creator may revoke.
+
+    Returns True if deleted, False if the token was not found.
+    Raises PermissionError if the token exists but belongs to a different user.
+    """
+    result = await db.execute(
+        select(TripShareToken).where(TripShareToken.token == token)
+    )
+    share = result.scalar_one_or_none()
+    if not share:
+        return False
+    if share.created_by != user_id:
+        raise PermissionError("Not authorized to revoke this token")
+    await db.delete(share)
+    await db.flush()
+    return True
+
+
+async def list_trip_share_tokens(
+    user_id: int,
+    db: AsyncSession,
+) -> list[TripShareToken]:
+    """Return all non-expired share tokens created by *user_id*."""
+    now = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(TripShareToken).where(
+            TripShareToken.created_by == user_id,
+            TripShareToken.expires_at > now,
+        )
+    )
+    return list(result.scalars().all())
+
+
 async def add_emergency_contact(
     user_id: int,
     name: str,

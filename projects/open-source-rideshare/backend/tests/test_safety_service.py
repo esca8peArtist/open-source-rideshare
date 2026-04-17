@@ -12,8 +12,11 @@ from app.services.safety import (
     delete_emergency_contact,
     get_active_alerts,
     get_shared_trip,
+    get_shared_trip_detail,
     list_emergency_contacts,
+    list_trip_share_tokens,
     resolve_sos,
+    revoke_trip_share_token,
     trigger_sos,
 )
 
@@ -365,3 +368,158 @@ class TestEmergencyContacts:
 
         result = await delete_emergency_contact(contact_id=1, user_id=99, db=db)
         assert result is False
+
+
+# ---- get_shared_trip_detail ----
+
+class TestGetSharedTripDetail:
+    def _make_share(self, ride_id=1, hours_until_expiry=12):
+        share = MagicMock(spec=TripShareToken)
+        share.ride_id = ride_id
+        share.expires_at = datetime.now(timezone.utc) + timedelta(hours=hours_until_expiry)
+        return share
+
+    @pytest.mark.asyncio
+    async def test_returns_detail_without_driver_location(self):
+        db = _mock_db()
+        share = self._make_share()
+        ride = _mock_ride(ride_id=1, driver_id=None)
+
+        # Make ride.driver_id return None so no location query is made
+        ride.driver_id = None
+
+        # First execute: token lookup; second: ride lookup
+        db.execute = AsyncMock(side_effect=[
+            _scalar_result(share),
+            _scalar_result(ride),
+        ])
+
+        detail = await get_shared_trip_detail("valid-token", db)
+        assert detail is not None
+        assert detail["ride"] is ride
+        assert detail["driver_lat"] is None
+        assert detail["driver_lng"] is None
+        assert detail["driver_location_updated_at"] is None
+
+    @pytest.mark.asyncio
+    async def test_returns_driver_location_when_available(self):
+        db = _mock_db()
+        share = self._make_share()
+        ride = _mock_ride(ride_id=1, driver_id=20)
+
+        loc_row = MagicMock()
+        loc_row.lat = 40.7128
+        loc_row.lng = -74.0060
+        loc_row.updated_at = datetime.now(timezone.utc)
+
+        loc_result = MagicMock()
+        loc_result.one_or_none.return_value = loc_row
+
+        db.execute = AsyncMock(side_effect=[
+            _scalar_result(share),
+            _scalar_result(ride),
+            loc_result,
+        ])
+
+        detail = await get_shared_trip_detail("valid-token", db)
+        assert detail is not None
+        assert detail["driver_lat"] == 40.7128
+        assert detail["driver_lng"] == -74.0060
+        assert detail["driver_location_updated_at"] is not None
+
+    @pytest.mark.asyncio
+    async def test_driver_location_none_when_not_submitted(self):
+        db = _mock_db()
+        share = self._make_share()
+        ride = _mock_ride(ride_id=1, driver_id=20)
+
+        loc_row = MagicMock()
+        loc_row.lat = None  # driver exists but never submitted location
+        loc_row.lng = None
+
+        loc_result = MagicMock()
+        loc_result.one_or_none.return_value = loc_row
+
+        db.execute = AsyncMock(side_effect=[
+            _scalar_result(share),
+            _scalar_result(ride),
+            loc_result,
+        ])
+
+        detail = await get_shared_trip_detail("valid-token", db)
+        assert detail["driver_lat"] is None
+        assert detail["driver_lng"] is None
+
+    @pytest.mark.asyncio
+    async def test_invalid_token_returns_none(self):
+        db = _mock_db()
+        db.execute = AsyncMock(return_value=_scalar_result(None))
+
+        detail = await get_shared_trip_detail("bad-token", db)
+        assert detail is None
+
+    @pytest.mark.asyncio
+    async def test_expired_token_returns_none(self):
+        db = _mock_db()
+        share = self._make_share(hours_until_expiry=-1)  # already expired
+        db.execute = AsyncMock(return_value=_scalar_result(share))
+
+        detail = await get_shared_trip_detail("expired-token", db)
+        assert detail is None
+
+
+# ---- revoke_trip_share_token ----
+
+class TestRevokeTripShareToken:
+    @pytest.mark.asyncio
+    async def test_revoke_own_token(self):
+        db = _mock_db()
+        share = MagicMock(spec=TripShareToken)
+        share.created_by = 10
+        db.execute = AsyncMock(return_value=_scalar_result(share))
+
+        result = await revoke_trip_share_token("some-token", user_id=10, db=db)
+        assert result is True
+        db.delete.assert_awaited_once_with(share)
+        db.flush.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_revoke_not_found(self):
+        db = _mock_db()
+        db.execute = AsyncMock(return_value=_scalar_result(None))
+
+        result = await revoke_trip_share_token("missing-token", user_id=10, db=db)
+        assert result is False
+        db.delete.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_revoke_wrong_user(self):
+        db = _mock_db()
+        share = MagicMock(spec=TripShareToken)
+        share.created_by = 10  # belongs to user 10
+        db.execute = AsyncMock(return_value=_scalar_result(share))
+
+        with pytest.raises(PermissionError, match="Not authorized"):
+            await revoke_trip_share_token("some-token", user_id=99, db=db)
+        db.delete.assert_not_awaited()
+
+
+# ---- list_trip_share_tokens ----
+
+class TestListTripShareTokens:
+    @pytest.mark.asyncio
+    async def test_returns_active_tokens(self):
+        db = _mock_db()
+        tokens = [MagicMock(spec=TripShareToken), MagicMock(spec=TripShareToken)]
+        db.execute = AsyncMock(return_value=_scalars_result(tokens))
+
+        result = await list_trip_share_tokens(user_id=10, db=db)
+        assert len(result) == 2
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_when_none(self):
+        db = _mock_db()
+        db.execute = AsyncMock(return_value=_scalars_result([]))
+
+        result = await list_trip_share_tokens(user_id=10, db=db)
+        assert result == []

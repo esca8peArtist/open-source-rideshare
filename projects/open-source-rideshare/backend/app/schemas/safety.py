@@ -45,6 +45,22 @@ class SharedTripView(BaseModel):
     driver_name: str | None = None
     vehicle_info: str | None = None
     started_at: datetime | None = None
+    # Live driver location — None when driver hasn't submitted a location yet
+    driver_lat: float | None = None
+    driver_lng: float | None = None
+    driver_location_updated_at: datetime | None = None
+
+
+class TripShareSummary(BaseModel):
+    """Summary of an active share token — returned when listing the caller's tokens."""
+
+    token: str
+    share_url: str
+    expires_at: datetime
+    ride_id: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 class EmergencyContactCreate(BaseModel):
