@@ -4,6 +4,106 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 309 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: GitHub push still unresolved; no other active blocks
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 is in 2 days — results framework ready, nothing to fill yet
+- Selected: open-source-rideshare — driver accountability escalation (natural follow-on to no-show rate tracking)
+
+### open-source-rideshare — Driver accountability escalation COMPLETE
+
+**Commit**: `175ac1a`
+
+**Feature**: Progressive 3-strike warning/suspension system for drivers who trigger performance alerts.
+
+**Escalation pipeline**:
+- Fires when `check_and_create_alerts()` creates a `high_no_show`, `low_score`, or `high_cancellation` alert
+- 1st offence → DRIVER_PERFORMANCE_WARNING notification, `escalation_level=warning`
+- 2nd offence → DRIVER_PERFORMANCE_FINAL_WARNING notification, `escalation_level=final_warning`
+- 3rd+ offence → driver auto-suspended via `suspend_driver()` + DRIVER_AUTO_SUSPENDED notification, `escalation_level=suspended`
+- Warning streak resets to 1 (not 0) after 28 clean days — fresh start but new offence still counts
+
+**New components**:
+- `DriverEscalation` model — one row per driver tracking warning count, level, last trigger, auto-suspend timestamp, admin reset metadata
+- `driver_escalation.py` service — `check_and_escalate()`, `get_escalation_status()`, `reset_escalation()`
+- 3 new NotificationType values: `DRIVER_PERFORMANCE_WARNING`, `DRIVER_PERFORMANCE_FINAL_WARNING`, `DRIVER_AUTO_SUSPENDED`
+- Templates + notification event dispatchers for all 3 (fire-and-forget, swallow exceptions)
+- Migration `n8o9p0q1r2s3` — `driver_escalations` table
+- 3 new API endpoints: `GET /drivers/me/escalation-status`, `GET /admin/drivers/{id}/escalation-status`, `POST /admin/drivers/{id}/reset-escalation`
+
+**New tests**: 44 → **3,631 total unit-passing**
+
+---
+
+## Session 308 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- stockbot: paper trading live, no API key — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 framework ready; nothing actionable until April 20
+- Selected: open-source-rideshare — driver no-show rate tracking + rider auto-rebooking
+
+### open-source-rideshare — No-show rate tracking + auto-rebooking COMPLETE
+
+**Commit**: `f83fa00`
+
+**Feature 1: Driver no-show rate tracking**
+
+Added `total_no_shows` and `no_show_rate` to `DriverPerformanceSnapshot`. `calculate_period_metrics` now counts rides with `CancellationCategory.DRIVER_NO_SHOW`. A new `high_no_show` alert fires when `no_show_rate > 0.10` (distinct from the general high_cancellation alert). `no_show_rate` MetricTrend is included in the full trend analysis. All three schemas (`DriverPerformanceSnapshotResponse`, `DriverScorecardResponse`, `PerformanceTrendResponse`) expose the new fields. Migration `m7n8o9p0q1r2` adds the two DB columns.
+
+**Feature 2: Rider auto-rebooking after no-show**
+
+`_process_no_show` now creates a replacement ride (same pickup/dropoff/fare/rider, status=REQUESTED) immediately after cancelling the original. Dispatch is triggered fire-and-forget. Rebook failures are isolated — the no-show cancellation always succeeds. `report_driver_no_show` returns `new_ride_id` in its response. The rider notification mentions the new ride number when rebooking succeeded ("We've requested a new driver for you (ride #999)").
+
+**New tests**: 16 → **3,587 total unit-passing**
+
+---
+
+## Session 307 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: GitHub push still blocked; no new blocks resolved
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 event in 3 days — no action yet
+- Selected: open-source-rideshare — driver no-show protection
+
+### open-source-rideshare — Driver no-show protection COMPLETE
+
+**Commit**: `d16907a`
+
+**Features**:
+
+1. **Manual report** — `POST /rides/{ride_id}/report-driver-no-show` (rider). Available when ride is in MATCHED, DRIVER_EN_ROUTE, or ARRIVED status. Idempotent — 409 if already reported. Immediately cancels ride with `CancellationCategory.DRIVER_NO_SHOW`, triggers refund on any completed fare payment, sends push + SMS to rider.
+
+2. **Automated detection** — scheduler (30s interval) checks ARRIVED rides where `arrived_at` exceeds `driver_no_show_threshold_minutes` (default 15, env-overridable via `OPENRIDE_DRIVER_NO_SHOW_THRESHOLD_MINUTES`). Same cancel + refund + notify path as manual. Never double-processes (idempotent via `driver_no_show_reported_at IS NULL` filter).
+
+3. **`arrived_at` timestamp** — previously untracked. Now set when driver marks ride as ARRIVED. Required for automated detection and useful for ops analytics.
+
+**New files**:
+- `app/services/driver_no_show.py` — `report_driver_no_show()`, `detect_driver_no_shows()`, `_process_no_show()`
+- `app/db/migrations/versions/l6m7n8o9p0q1_add_driver_no_show.py` — migration
+- `tests/test_driver_no_show.py` — 43 tests
+
+**Modified files**:
+- `app/models/ride.py` — `CancellationCategory.DRIVER_NO_SHOW`, `arrived_at`, `driver_no_show_reported_at`
+- `app/config.py` — `driver_no_show_threshold_minutes = 15`
+- `app/services/notifications.py` — `NotificationType.DRIVER_NO_SHOW`
+- `app/services/notification_templates.py` — `driver_no_show()` template + registry entry
+- `app/services/notification_events.py` — `notify_driver_no_show()` dispatcher
+- `app/api/v1/rides.py` — `arrived_at` set in `driver_arrived`, new endpoint
+- `app/services/dispatch_scheduler.py` — `detect_driver_no_shows()` in loop
+
+**Test count**: 43 new → **3,571 total passing**
+
+---
+
 ## Session 306 — 2026-04-17
 
 ### Orient
@@ -5240,3 +5340,34 @@ open-source-rideshare: Trip demand heatmap (driver positioning + admin analytics
 ### Session end
 - Next for open-source-rideshare: driver live location updates OR surge analytics
 - CHECKIN.md updated
+
+## Session 310 — 2026-04-18
+
+### Orient
+- INBOX: Empty — nothing to process.
+- BLOCKED: No active blocks.
+- stockbot (#1): No dev work available (waiting on user cycle logs).
+- mfg-farm (#2): Blocked on user test print.
+- resistance-research (#3): April 20 results framework fills April 20 evening.
+- open-source-rideshare (#4): Next feature = surge pricing transparency (rider sees full breakdown before accepting).
+
+### Task selected
+open-source-rideshare: Fare preview / surge pricing transparency
+- New public endpoint: GET /pricing/fare-preview
+- Combines surge zone (admin-defined) + demand pricing (real-time supply/demand)
+- Rider sees exact breakdown before confirming ride — core cooperative differentiator vs Uber/Lyft
+- Existing /rides/estimate requires auth and misses surge zone lookup
+
+### open-source-rideshare: Fare preview / surge pricing transparency COMPLETE
+- New endpoint: GET /pricing/fare-preview (public, no auth)
+- Service: app/services/fare_preview.py — dual surge signals, OSRM with Haversine fallback
+- Schema: app/schemas/fare_preview.py — SurgeZoneInfo, DemandPricingInfo, FarePreviewResponse
+- API: app/api/v1/fare_preview.py — registered in main.py
+- Pure helpers: _haversine_km, _estimate_duration_min, build_pricing_summary — all independently testable
+- 38 new tests, 3,669 total passing, zero failures
+- Commit: c1ca027, branch: feature/rider-emergency-safety
+- Push blocked (SSH credentials don't have org push access — established pattern)
+
+### Session end
+- Next for open-source-rideshare: driver live location updates OR surge analytics admin endpoint
+- Updating CHECKIN.md and PROJECTS.md

@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 306)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 310)
 
 ---
 
@@ -54,7 +54,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/stockbot/`
-**Current focus**: Paper trading LIVE. 3 sessions running: momentum (SPY/QQQ/MSFT), rsi_mean_reversion (AAPL/NVDA), sma_crossover (AMZN/SPY). First market open was April 14. Monitor via `http://127.0.0.1:8000` Trading page or `curl -H "Authorization: Bearer $STOCKBOT_API_KEY" http://127.0.0.1:8000/api/paper-trading/cycle-log?limit=20`. Orchestrator cannot pull cycle logs without API key in env. iOS app deferred until paper trading stable. **Next**: User needs to share cycle logs or Trading page screenshot — then orchestrator can assess model performance and suggest improvements.
+**Current focus**: Paper trading LIVE since April 14. 4 sessions: momentum (SPY/QQQ/MSFT), rsi_mean_reversion (AAPL/NVDA), sma_crossover (AMZN/SPY), MTF Options_AAPL_LogRet_FLGBM (AAPL). Portfolio +$855 as of Apr 17. **Architecture fix deployed Apr 17**: position sizing now uses `account.cash` (no margin), portfolio deployment capped at 90% of equity, circuit breaker halts session if equity < 50% of starting capital. **API access**: STOCKBOT_API_KEY is in ~/.claude_env. Jetson API is at 100.120.18.84:8000 — unreachable from Pi directly (Jetson firewall). Use SSH tunnel: `ssh -f -N -L 18000:localhost:8000 xxsb-01` then hit `http://localhost:18000` with the key. **Next**: Monitor first full market week under new position sizing; assess whether strategies are generating alpha or just tracking beta.
 **Blocked on**: —
 **Notes**: Web app is in good shape. Model creation and most optimisation is operational. Paper trading has just started but has had issues — this is the current priority. iOS app is out of scope until paper trading is solid. All features must work across ALL model types (stock, options, rule-based, ensemble, MTF) — do not implement something for one type only.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 306: **Structured cancellation categories + rider cancel rate tracking COMPLETE** (commit `5830c3b`). CancellationCategory enum (13 values), cancelled_by column on rides, RiderCancellationStats table (fire-and-forget updates on rider cancel), GET /riders/me/cancel-stats, GET /admin/riders/{rider_id}/cancel-stats. **37 new tests. Total: 3,528 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety. **Next**: Driver no-show protection — rider reports driver no-show after X min at pickup, triggers automated refund/rebook.
+**Current focus**: Session 310: **Fare preview / surge pricing transparency COMPLETE** (commit `c1ca027`). `GET /pricing/fare-preview` — public, no auth. Shows riders full pricing breakdown before confirming: admin surge zones (geographic, time-of-day) and real-time demand pricing (supply/demand ratio) disclosed separately with counts and percentages. OSRM with Haversine fallback; graceful Redis/DB degradation. `FarePreviewService`, `FarePreviewResponse` schema, 38 new tests. Total: **3,669 unit-passing tests**. Push blocked — SSH key lacks org push access. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety. **Next**: Driver live location updates (real-time tracking) OR admin surge analytics endpoint.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

@@ -8,8 +8,50 @@
 
 ## Since Last Check-in
 
-**Period**: 2026-04-17
-**Sessions run**: 294–306
+**Period**: 2026-04-18
+**Sessions run**: 310
+
+### Accomplished (Session 310)
+
+#### open-source-rideshare — Fare preview / surge pricing transparency COMPLETE (commit `c1ca027`)
+
+New public endpoint: `GET /pricing/fare-preview` — no authentication required. Riders see the full pricing breakdown before confirming a trip, with both surge signals disclosed separately.
+
+**What's shown**:
+- `surge_zone`: Admin-defined geographic zones (airports, stadiums) — zone name + percentage
+- `demand_pricing`: Real-time supply/demand ratio — demand count, driver count, percentage, cap
+- `time_of_day_multiplier`: Operator-scheduled adjustments (if any)
+- `combined_multiplier`: Product of all signals
+- `pricing_summary`: Plain-English explanation ("Fares are 38% higher. Reasons: Downtown Core zone (+20%); high demand (+15%): 8 requests, 1 available driver.")
+- `is_surge_active`: Boolean flag for quick UI checks
+
+**Architecture**:
+- `fare_preview.py` service: OSRM route lookup with Haversine fallback; graceful Redis/DB degradation (defaults to 1.0× if unavailable)
+- Pure helpers `_haversine_km`, `_estimate_duration_min`, `build_pricing_summary` — independently unit-testable
+- `FarePreviewResponse` schema with nested `SurgeZoneInfo`, `DemandPricingInfo`, `FareComponentsResponse`
+
+**Why this matters**: Existing `/rides/estimate` requires auth and doesn't check admin surge zones. This is the rider-facing version that works pre-login and shows both surge types — the core cooperative transparency promise.
+
+- 38 new tests — **3,669 total unit-passing**
+
+---
+
+### Accomplished (Sessions 306–309, archived)
+
+#### open-source-rideshare — No-show rate tracking + rider auto-rebooking COMPLETE (commit `f83fa00`)
+
+Two paths for handling driver no-shows:
+
+**Manual report** — `POST /rides/{ride_id}/report-driver-no-show`. Available when ride is in MATCHED, DRIVER_EN_ROUTE, or ARRIVED. One report per ride (409 if already done). Result: cancelled with `DRIVER_NO_SHOW` category, Stripe refund issued on any completed payment, push + SMS to rider, driver returned to available pool.
+
+**Automated detection** — new `detect_driver_no_shows()` in scheduler loop (every 30s). Finds ARRIVED rides where `arrived_at` is older than `driver_no_show_threshold_minutes` (default 15). Same cancel + refund + notify path.
+
+**Bonus**: `arrived_at` timestamp is now set every time a driver marks ARRIVED — was previously untracked. Useful for analytics and required for the automated detector.
+
+- 43 new tests — **3,571 total passing**
+- Config: `OPENRIDE_DRIVER_NO_SHOW_THRESHOLD_MINUTES` (default 15)
+
+---
 
 ### Accomplished (Session 306)
 
@@ -119,8 +161,8 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
-2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — driver no-show protection (rider can report driver no-show after X minutes at pickup, triggers automated refund/rebook flow).
+2. **resistance-research**: Fill April 20 results framework (Apr 20 evening — CAPE Phase 1 + Abrego Garcia DOJ brief results).
+3. **open-source-rideshare**: Next feature — driver live location polling (rider sees driver moving on map pre-pickup) OR admin surge analytics (when/where surge fired, correlation with ride volume).
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
