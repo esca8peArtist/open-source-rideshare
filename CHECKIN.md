@@ -9,7 +9,19 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 294, 295
+**Sessions run**: 294, 295, 296
+
+### Accomplished (Session 296)
+
+#### open-source-rideshare — Driver earnings history COMPLETE (commit `f460c77`)
+Week-by-week time-series earnings breakdown for drivers.
+- **`GET /driver/me/earnings-history?weeks=N`** (1–52, default 12)
+- Returns N buckets (oldest-first); every week in the window present — zero-filled if no rides
+- Per-bucket: `earnings_usd`, `ride_count`, `avg_fare_usd` (None if 0 rides), `tip_total_usd`
+- Totals: `total_earnings_usd`, `total_rides`, `avg_weekly_earnings_usd` (divisor = weeks_requested, not active weeks)
+- `best_week`: highest-earnings bucket; None if all zero
+- `trend`: improving / declining / stable / insufficient_data (±10% first-half vs second-half; needs ≥4 weeks)
+- **66 tests** — **3,199 total unit-passing**
 
 ### Accomplished (Session 295)
 
@@ -48,7 +60,7 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` branch has 6 sessions of work local on the Pi (3,133 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` branch has 7 sessions of work local on the Pi (3,199 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -61,7 +73,7 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — trip demand heatmap or driver earnings time-series (weekly breakdown history).
+3. **open-source-rideshare**: Next feature — trip demand heatmap or rider safety incident history.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---

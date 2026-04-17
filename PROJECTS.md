@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 295)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 296)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 295: **Rider trip history COMPLETE** (commit `9e634b5`). `GET /riders/me/trip-history` — paginated, filtered list of past trips. Filters: status (all/completed/cancelled), from_date, to_date, limit (1–100), offset. Returns total_count, trips[], filters_applied. fare_usd=actual_fare or estimated_fare; driver_rating=rider's rating of driver; newest-first order; 422 guard on date inversion. 57 tests. **Total: 3,133 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap OR driver earnings history (time-series weekly breakdown).
+**Current focus**: Session 296: **Driver earnings history COMPLETE** (commit `f460c77`). `GET /driver/me/earnings-history?weeks=N` — time-series weekly breakdown. N buckets (oldest-first, default 12, max 52). Per-bucket: earnings_usd, ride_count, avg_fare_usd, tip_total_usd. Totals: total_earnings_usd, total_rides, avg_weekly_earnings_usd. best_week (None if all zero). trend: improving/declining/stable/insufficient_data (±10% first-half vs second-half; needs ≥4 weeks). 66 tests. **Total: 3,199 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap OR rider safety incident history.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

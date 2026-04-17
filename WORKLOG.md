@@ -4,6 +4,41 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 296 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no API key to pull cycle logs — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: April 20 framework waiting (3 days out)
+- Selected: open-source-rideshare — driver earnings history time-series
+
+### open-source-rideshare — Driver earnings history API COMPLETE
+
+**Commit**: `f460c77`
+
+**Files created**:
+- `app/schemas/driver_earnings_history.py` — `WeeklyEarningsBucket`, `DriverEarningsHistory`
+- `app/services/driver_earnings_history.py` — `_week_start_for`, `_build_empty_buckets`, `_compute_trend`, `_finalise_bucket`, `get_driver_earnings_history`
+- `app/api/v1/driver_earnings_history.py` — `GET /driver/me/earnings-history`
+- `tests/test_driver_earnings_history.py` — **66 tests** across 8 classes
+
+**Key design**:
+- Query param: `weeks` (1–52, default 12) — trailing window
+- Always returns exactly N week buckets (oldest-first); weeks with no rides are zero-filled
+- Per-bucket: `earnings_usd`, `ride_count`, `avg_fare_usd` (None if 0 rides), `tip_total_usd`
+- Response totals: `total_earnings_usd`, `total_rides`, `avg_weekly_earnings_usd` (divides by weeks_requested, not active weeks)
+- `best_week`: highest-earnings bucket; None if all zero
+- `trend`: "improving" / "declining" / "stable" / "insufficient_data" (±10% first-half vs second-half; needs ≥4 weeks)
+- Timezone-naive `requested_at` treated as UTC for DB compatibility
+
+**Test count**: 66 new → **3,199 unit-passing** (66/66 new, all existing passing)
+
+### PROJECTS.md + CHECKIN.md update
+
+---
+
 ## Session 295 — 2026-04-17
 
 ### Orient
