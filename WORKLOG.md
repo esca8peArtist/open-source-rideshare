@@ -4,6 +4,71 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 301 — 2026-04-17
+
+### open-source-rideshare — Ride status push notifications COMPLETE
+
+**Commit**: `df7a4f3`
+
+**Gap identified**: The notification infrastructure existed but only notified the rider for key status transitions. Driver-side push notifications were missing entirely, and the rider wasn't notified when the ride started (IN_PROGRESS).
+
+**Changes**:
+- `app/services/notifications.py` — Added 3 new `NotificationType` values: `RIDE_IN_PROGRESS`, `RIDE_ASSIGNED`, `RIDE_COMPLETED_DRIVER`. Added all 3 to the `ride_types` set in `filter_channels_by_preferences` so user ride-update prefs apply.
+- `app/services/notification_templates.py` — Added 3 new templates: `ride_in_progress` (push only; includes dropoff address), `ride_assigned` (push+SMS; includes rider name + pickup address), `ride_completed_driver` (push only; includes fare). Registered in TEMPLATES dict.
+- `app/services/notification_events.py` — Added 3 new dispatchers: `notify_ride_started` (rider), `notify_driver_assigned` (driver), `notify_ride_completed_driver` (driver). All fire-and-forget with exception handling.
+- `app/api/v1/rides.py` — Hooked into 3 transitions:
+  - `start_ride` → `notify_ride_started` for rider (ride started with dropoff address)
+  - `accept_ride` + `_match_ride_background` → `notify_driver_assigned` for driver (new ride, pickup address)
+  - `complete_ride` → `notify_ride_completed_driver` for driver (fare amount)
+- `tests/test_ride_status_notifications.py` — 45 new tests across 7 test classes
+
+**Test count**: 45 new → **3,419 unit-passing** (all existing passing)
+
+---
+
+## Session 300 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no API key to pull cycle logs — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: April 20 framework pending (Apr 20 evening)
+- Selected: open-source-rideshare — driver live location updates
+
+### open-source-rideshare — Driver live location updates COMPLETE
+
+**Commit**: `c1772d5`
+
+**Files created**:
+- `app/schemas/driver_location.py` — `LocationUpdateRequest`, `DriverLocationResponse`, `NearbyDriverItem`, `NearbyDriversResponse`, `AdminDriverLocationItem`, `AdminDriverLocationsResponse`
+- `app/services/driver_location.py` — `fuzz_coordinate`, `haversine_m`, `update_driver_location_db`, `get_driver_location_db`, `get_nearby_available_drivers`, `get_all_online_driver_locations`, `get_single_driver_location_admin`
+- `app/api/v1/driver_location.py` — 5 endpoints (see below)
+- `tests/test_driver_location.py` — 42 tests across 9 classes
+
+**Also**:
+- `app/main.py` — registered `driver_location.router`
+
+**Endpoints**:
+- `PUT /drivers/me/location` — driver submits GPS position; persists to DB + best-effort Redis push
+- `GET /drivers/me/location` — driver retrieves their own stored position
+- `GET /riders/nearby-drivers` — rider sees available drivers (fuzzy coords ≈110m, no driver IDs or PII; filters: online + not-on-break + heartbeat fresh)
+- `GET /admin/drivers/locations` — admin sees all online drivers with exact positions + break status
+- `GET /admin/drivers/{driver_id}/location` — admin single driver
+
+**Key design**:
+- Privacy: rider view fuzzes coordinates to 3 dp (~110 m precision); no driver IDs exposed
+- Redis update is best-effort — DB commit succeeds even if Redis is down
+- Nearby filter uses PostGIS ST_DWithin approximation (metre→degree conversion)
+- `haversine_m` pure helper used for accurate distance annotation in rider response
+- query params: `lat`, `lng`, `radius_m` (100–10000, default 3000), `limit` (1–50)
+
+**Test count**: 42 new → **3,374 unit-passing** (42/42 new, all existing passing)
+
+### PROJECTS.md + CHECKIN.md update
+
+---
+
 ## Session 297 — 2026-04-17
 
 ### Orient

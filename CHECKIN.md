@@ -9,31 +9,34 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 294, 295, 296, 297, 298, 299
+**Sessions run**: 294–301
 
-### Accomplished (Session 299)
+### Accomplished (Session 301)
 
-#### open-source-rideshare — Trip demand heatmap COMPLETE (commit `537a3c5`)
-Two new endpoints for geographic demand analysis:
-- **`GET /drivers/demand-heatmap`** — driver view: pickup hotspot grid, 1–30 day lookback
-  - Cells sorted by request_count descending (highest demand first)
-  - No fare data exposed to drivers
-  - Query params: `days`, `resolution`, `limit`
-- **`GET /admin/analytics/demand-heatmap`** — admin view: same grid + fare aggregates
-  - Per-cell: `avg_fare`, `total_fare` for completed rides
-  - Filters: `start_date`/`end_date`, `hour_start`/`hour_end` (UTC), `day_of_week` (0=Mon…6=Sun)
-  - `filters_applied` object echoed in every response for auditability
-- Grid bucketing: PostgreSQL `round(cast(ST_Y/ST_X, numeric), N)` — no new dependencies
-- Resolutions: `low`≈11km (0.1°), `medium`≈1.1km (0.01°, default), `high`≈110m (0.001°)
-- Pure service helpers independently testable: `resolution_degrees`, `resolution_decimal_places`, `build_cell`
-- **24 new tests** — **3,332 total unit-passing**
+#### open-source-rideshare — Ride status push notifications COMPLETE (commit `df7a4f3`)
+Closed the driver-side notification gap — all key status transitions now notify both rider and driver:
 
-### Accomplished (Session 298)
+**New notification types** (3): `RIDE_IN_PROGRESS`, `RIDE_ASSIGNED`, `RIDE_COMPLETED_DRIVER`
 
-#### open-source-rideshare — Driver performance trend analysis COMPLETE (commit `2f12453`)
-- `GET /drivers/me/performance/trend` + `GET /admin/drivers/{driver_id}/performance/trend`
-- Per-metric trend direction/velocity, fleet percentile, strengths/improvement_areas
-- **48 new tests** — **3,308 total unit-passing**
+**New templates**:
+- `ride_in_progress` — push only; includes dropoff address; sent to rider when ride starts
+- `ride_assigned` — push+SMS; includes rider name + pickup address; sent to driver on new ride assignment
+- `ride_completed_driver` — push only; includes fare; sent to driver on completion
+
+**New dispatchers** (notification_events.py): `notify_ride_started`, `notify_driver_assigned`, `notify_ride_completed_driver` — all fire-and-forget, exception-safe
+
+**Hooks in rides.py**:
+- `start_ride()` → rider gets "Your ride has started" (was missing entirely)
+- `accept_ride()` + `_match_ride_background()` → driver gets "New ride assigned" with pickup address
+- `complete_ride()` → driver gets "Ride complete" with fare (rider already got this; driver was missing)
+
+**45 new tests** — **3,419 total unit-passing**
+
+### Accomplished (Session 300)
+
+#### open-source-rideshare — Driver live location updates COMPLETE (commit `c1772d5`)
+- `PUT /drivers/me/location`, `GET /drivers/me/location`, `GET /riders/nearby-drivers`, `GET /admin/drivers/locations`, `GET /admin/drivers/{driver_id}/location`
+- **42 new tests** — **3,374 total unit-passing**
 
 ---
 
@@ -53,7 +56,7 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` now has 10 sessions of work locally (3,332 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` now has 11 sessions of work locally (3,419 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -66,15 +69,15 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — driver live location updates.
+3. **open-source-rideshare**: Next feature — scheduled ride reminders (1-hour + 15-minute push reminders before pickup).
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
 
 ### History
 
-#### Accomplished (Sessions 294–299)
-- **open-source-rideshare**: Rider trip history (57 tests, 3,133), driver earnings comparison (52 tests, 3,076), driver earnings history (66 tests, 3,199), rider safety incident history (61 tests, 3,260), driver performance trend analysis (48 tests, 3,308), trip demand heatmap (24 tests, 3,332).
+#### Accomplished (Sessions 294–300)
+- **open-source-rideshare**: Rider trip history (57 tests, 3,133), driver earnings comparison (52 tests, 3,076), driver earnings history (66 tests, 3,199), rider safety incident history (61 tests, 3,260), driver performance trend analysis (48 tests, 3,308), trip demand heatmap (24 tests, 3,332), driver live location updates (42 tests, 3,374).
 
 #### Accomplished (Session 291)
 - **mfg-farm**: Business plan COMPLETE (`business-plan.md`, ~650 lines) — 7 Phase-1 SKUs, financial projections ($9,619–$17,125 net 6-month), machine investment timeline. CadQuery parametric designs COMPLETE (`modrun_clip.py`, `modrun_rail.py`, `README.md`).
