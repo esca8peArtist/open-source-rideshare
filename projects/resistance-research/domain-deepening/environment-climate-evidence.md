@@ -440,7 +440,123 @@ Sources: [Appalachian Regional Commission: Coal Production and Employment in the
 
 ---
 
-## Section 10: Fiscal Summary — Reform Costs vs. Cost of Inaction
+## Section 10: Strongest Counterarguments — Engaged
+
+### 10.1 "Carbon Pricing Harms Economic Competitiveness — Carbon Leakage"
+
+The core objection: if the US prices carbon but major competitors (China, India) do not, US manufacturers will relocate production offshore, shifting emissions rather than reducing them ("carbon leakage") while destroying American jobs.
+
+**The evidence does not support the catastrophist version of this claim:**
+
+- **BC evidence**: British Columbia's carbon tax — the most studied North American example — produced no detectable carbon leakage in the manufacturing sector. The province's trade-exposed industries did not relocate. GDP growth matched the Canadian average. The key reason: the carbon price was accompanied by business tax cuts that offset the cost for compliant firms.
+- **EU ETS evidence**: A 2021 meta-analysis of EU ETS studies (Naegele and Zaklan, Journal of Environmental Economics and Management) found that while carbon leakage concerns are theoretically valid, empirical measurement of actual leakage in the EU ETS is small — in the range of 5–20% for most sectors, meaning the net emissions reduction is still substantial. The EU responded with Carbon Border Adjustment Mechanism (CBAM), phased in from 2023–2026, which imposes a carbon price equivalent on imports of steel, aluminum, cement, electricity, fertilizers, and hydrogen. The CBAM effectively neutralizes the competitiveness objection by ensuring imports pay the same carbon price as domestically produced goods.
+- **The asymmetry**: Fossil fuel companies who raise the leakage objection do not disclose that the US currently subsidizes fossil fuel production by approximately $950 billion/year in unpriced pollution costs (at the $190/ton SCC). The current system is not "neutral" — it is a subsidy to fossil fuels. Carbon pricing reduces that subsidy; the competitiveness objection is in part an argument to preserve a fossil fuel subsidy.
+- **Concession**: The leakage concern is real and must be managed. The correct response is not abandoning carbon pricing — it is border adjustment mechanisms, targeted exemptions or rebates for trade-exposed sectors, and international coordination. The leakage concern is a design problem for carbon pricing architecture, not a refutation of carbon pricing.
+
+---
+
+### 10.2 "Renewables Can't Provide Grid Reliability — Baseload Problem"
+
+The objection: solar and wind are intermittent, and grids require reliable baseload power. High renewable penetration creates instability, requiring expensive backup and storage that makes the system more fragile and expensive overall.
+
+**The evidence in 2026:**
+
+- **Denmark**: At 59.3% wind penetration for total electricity generation in 2024 — the world's highest — Denmark's grid is stable. It achieves this through three mechanisms: interconnection with Norway (which can quickly dispatch hydropower to balance wind drops), demand response contracts with large industrial consumers, and export/import balancing across the European grid. This is not a theoretical model — it is an operating system at high scale.
+- **Germany**: At 62.7% renewables in 2024 (wind + solar + biomass + hydro), Germany's grid reliability metrics — measured in SAIDI (average minutes of outage per customer per year) — are among the best in Europe: approximately 15 minutes per customer per year in recent years, compared to a US average of 4–8 hours. Germany achieves this with far higher renewable penetration than the US has.
+- **Texas (ERCOT)**: The 2021 Texas grid failure is the most cited US example of grid instability. The ERCOT crisis was caused by unweatherized natural gas infrastructure and coal plants failing in cold conditions — not by renewable intermittency. In fact, wind farms with cold-weather upgrades outperformed gas plants during the storm. The specific lesson is cold-weather hardening for all generation types, not a limitation of renewables.
+- **The storage trajectory**: Battery storage costs have fallen 90% over the past decade (analogous to the solar cost trajectory). Grid-scale storage deployments have grown from 5 GW globally in 2020 to an estimated 150+ GW by 2024. The economic case for storage is following the same cost curve as solar and wind — a problem that was unsolvable at 2010 economics is increasingly solvable at 2024 economics.
+- **Concession**: High renewable penetration does require investment in grid interconnection, storage, and demand flexibility. These are real costs — not arguments against renewables, but part of honest accounting. The IRA included $15 billion in grid infrastructure investment; the proposed Domain 15 reforms correctly identify transmission modernization as a prerequisite.
+
+---
+
+### 10.3 "Regulation Destroys Jobs — Green Energy Jobs Don't Replace Fossil Fuel Jobs"
+
+The objection: EPA and climate regulations destroy well-paying jobs in fossil fuel industries, especially in communities where those jobs are the backbone of the local economy. Clean energy jobs don't go to the same workers or communities — they're in different places, require different skills, and often pay less.
+
+**The honest assessment requires acknowledging both sides:**
+
+- **The accurate part**: The geographic mismatch is real. Coal jobs in Appalachia are not replaced by solar installation jobs in the same communities. The ARC POWER data shows $420 million invested over nine years for 365 coal-impacted counties — approximately $1.15 million per county — producing meaningful but insufficient results. Coal mining jobs pay $80,000–$90,000/year on average, and coal communities have high rates of employer-provided health insurance through union contracts. Solar installation median wages are approximately $47,000/year nationally. The skills and economics are different.
+- **The counterfactual**: Appalachian coal employment fell **more than 50% between 2011 and 2016** — during which the EPA's climate regulations were largely not yet implemented. The primary driver was natural gas competition from shale, not regulation. The jobs were leaving regardless of climate policy. Communities that spent the 2010s waiting for coal to come back lost a decade of transition preparation time.
+- **The IRA data**: 334,565 clean energy jobs announced in the IRA's first two years, concentrated in manufacturing (EVs, batteries, solar panels) — not just installation. Manufacturing jobs in these categories pay $25–$45/hour. The largest new clean energy plants are being announced in states with existing manufacturing workforces: Georgia, Michigan, South Carolina, Indiana. The geographic concentration is not yet in Appalachian coal communities, but the job quality is comparable to fossil fuel manufacturing.
+- **The German model**: Germany's €40 billion structural adjustment fund for its coal transition — including guaranteed wage continuation at 100% for eligible workers through age 58, early retirement options, and community reinvestment — is the standard against which US policy should be measured. At a similar per-worker and per-community investment level, the US transition is doable. At current ARC POWER funding levels (~1,000:1 gap), it is not.
+- **Bottom line**: The objection is valid as a critique of underfunded transition policy, not as a critique of clean energy itself. The fix is adequate transition investment — which the proposal addresses.
+
+---
+
+### 10.4 "The Science Is Uncertain / Climate Models Have Been Wrong Before"
+
+The objection: climate projections are inherently uncertain; models predicted worse outcomes than have materialized; uncertainty about sensitivity ranges justifies delay.
+
+**The state of the evidence:**
+
+- **The models were, if anything, too conservative**: Observed global temperature rise has tracked the middle to upper range of IPCC projections. Arctic sea ice loss has exceeded the worst-case scenarios from 2007 IPCC models. Wildfire activity, coral bleaching, and sea level rise are all tracking at or above projected rates. The direction of model error is consistently toward underestimating impacts, not overestimating them.
+- **1.5°C was crossed in 2024**: The Munich Re data cited in Section 6.2 notes that global average temperatures reached approximately 1.5°C above pre-industrial levels in 2024 — the Paris Agreement's aspirational limit. This is not a projection; it is a measurement.
+- **Scientific consensus depth**: The consensus on anthropogenic climate change is not a thin majority of experts — it is 97%+ agreement across every major scientific institution globally, peer-reviewed across more than 50 years. The "uncertainty" argument in policy debates typically involves cherry-picking minority scientific views or misrepresenting the nature of uncertainty (which is mostly about the pace and distribution of impacts, not the basic physics).
+- **The policy-relevant point**: Even at the lower end of climate sensitivity estimates, the projected damages justify immediate action under standard cost-benefit analysis. The $190/ton social cost of carbon used by the Biden EPA is based on the lower-to-middle range of climate sensitivity — not the catastrophic tail risk scenarios. An argument from uncertainty is actually an argument for faster action, not slower, since higher-sensitivity outcomes are plausible and irreversible.
+
+---
+
+## Section 11: Actionable Intelligence
+
+### 11.1 Current Litigation — Where the Legal Challenges Stand
+
+The EPA enforcement collapse and regulatory rollbacks described in Sections 1–3 are being contested in federal courts. The active litigation vectors:
+
+**Endangerment Finding**:
+- Earthjustice, NRDC, Environmental Defense Fund, and state attorneys general (led by California) are positioned to challenge any final rule repealing the 2009 Endangerment Finding under the Clean Air Act. The legal pathway is clear: the Supreme Court's Chevron-era precedents are gone, but Massachusetts v. EPA (2007) — which held that EPA *must* regulate greenhouse gases if they endanger public health — is still binding Supreme Court precedent. An EPA repeal of the Endangerment Finding requires the agency to argue that its own 2009 scientific determination was wrong, a high administrative law bar.
+- **Status (April 2026)**: Proposed repeal published in the Federal Register; comment period ongoing. Litigation will follow final rule.
+
+**Methane Rule**:
+- EDF and state AGs have challenged the delay of the Biden-era methane rule. The question is whether EPA followed proper notice-and-comment procedures in granting the delay.
+
+**Power Plant Standards**:
+- Multiple environmental organizations have pre-positioned legal challenges. The primary vehicle is the "major questions doctrine" established in West Virginia v. EPA (2022): the court must determine whether Congress clearly authorized EPA to regulate power plant emissions using the specific mechanism proposed.
+
+**NOAA/NWS Staffing**:
+- AFGE (federal employee union) and state emergency management agencies have filed challenges to the NWS reductions under federal civil service laws. A federal district court issued a temporary restraining order on some NOAA firings in March 2025.
+
+**Organizations to Support**: [Earthjustice](https://earthjustice.org/), [Natural Resources Defense Council](https://www.nrdc.org/), [Environmental Defense Fund](https://www.edf.org/), [Center for Biological Diversity](https://www.biologicaldiversity.org/), [state AG coalitions filing amicus briefs].
+
+---
+
+### 11.2 Legislative Vehicles (Federal)
+
+**IRA Defense**:
+The most time-sensitive legislative battlefield is the 2025 budget reconciliation bill, which contains provisions clawing back IRA clean energy tax credits. The organized defense includes:
+
+- **Clean Energy for America Coalition**: Business and manufacturing groups — including auto manufacturers, solar installers, battery manufacturers, and construction unions — representing the $372B in IRA investment and 334,565 jobs created. These are the swing-vote constituencies for Republican members in states with major clean energy projects.
+- **Bipartisan Infrastructure Law (BIL) grid provisions**: $15 billion in transmission infrastructure funding. Both parties have constituents who benefit from transmission modernization.
+- **Pressure target**: Republican members from IRA-beneficiary districts. Clean Energy for America has mapped all 435 congressional districts by IRA investment and job announcements. Districts with announced investments exceeding $500M include Georgia, South Carolina, Michigan, Indiana, Ohio, Texas, and Arizona — all with Republican representatives or Senators who face constituent pressure.
+
+**FEMA Reform**:
+- Pre-disaster mitigation appropriations (the $6:1 cost-benefit programs) can be advanced in any spending bill. BRIC (Building Resilient Infrastructure and Communities) was cut to zero in FY2025; restoration is a bipartisan priority for members from disaster-prone states.
+
+---
+
+### 11.3 State-Level Carbon Pricing and Energy Policy
+
+**RGGI (Regional Greenhouse Gas Initiative)**: Connecticut, Delaware, Maine, Maryland, Massachusetts, New Hampshire, New Jersey, New York, Rhode Island, Vermont, Virginia. Covers power sector emissions. RGGI states have reduced power-sector emissions by 50%+ since 2008 while GDP grew. Virginia joined in 2021; Pennsylvania is in active litigation over whether to participate.
+
+**California Cap-and-Trade**: The largest carbon market in North America. Linked with Quebec (Canada). California's 2024 data shows cap-and-trade plus companion policies have reduced statewide GHG emissions to 36.5% below 1990 levels — California has already hit its 2030 target, set in 2006, six years early.
+
+**Washington Climate Commitment Act**: Implemented a cap-and-invest program in 2023. The initiative to repeal it was defeated by voters in November 2024 — direct evidence that when climate revenue is visibly returned to communities (ferries, transit, forests), voters maintain carbon pricing even through ballot measure attacks.
+
+**Organizing targets**: Thirteen states have enacted 100% clean electricity standards. Six states have active litigation blocking federal rollbacks. The most actionable state-level pressure points for expanding carbon pricing: Pennsylvania, Illinois, Minnesota (where state-level caps would cover a significant industrial base).
+
+---
+
+### 11.4 Community-Level Enforcement Watchdogs
+
+With EPA federal enforcement at a 40-year low, community-level monitoring and enforcement actions depend on these organizations:
+
+- **Environmental Integrity Project** ([environmentalintegrity.org](https://environmentalintegrity.org/)): Tracks enforcement data and publishes the monitoring reports cited in Section 1. Accepts specific facility tip submissions.
+- **Earthjustice State Courts Initiative**: Files citizen-suit enforcement actions under Clean Air Act and Clean Water Act provisions that allow non-governmental parties to sue violators directly — bypassing EPA inaction.
+- **State AG Coalitions**: The 21-state coalition challenging multiple Trump EPA actions in federal court is the primary legal backstop for federal enforcement collapse.
+- **EJScreen Community Monitoring**: EPA's EJScreen tool (Section 7.1) remains publicly accessible and allows community organizations to document disproportionate pollution burdens — the evidentiary foundation for state-level enforcement claims when federal enforcement is absent.
+
+---
+
+## Section 12: Fiscal Summary — Reform Costs vs. Cost of Inaction
 
 ### The Central Fiscal Argument
 
@@ -466,4 +582,4 @@ The specific reform failure being documented in 2025–2026 — EPA enforcement 
 
 ---
 
-*Sources consolidated above. Key primary sources: Environmental Integrity Project (Feb. 2026 enforcement report); NOAA NCEI billion-dollar disaster database; Munich Re 2024 natural disaster statistics; IRENA Renewable Power Generation Costs 2024; Lazard LCOE+ v17; EU Climate Action Progress Report 2025; Rhodium Group Taking Stock 2025; ARC Coal Production and Employment 2024; Census Bureau CES-WP-24-53 (2024); EPA Social Cost of Greenhouse Gases Final Report (Dec. 2023); Murray and Rivers (2015) British Columbia carbon tax review; Tax Foundation Sweden carbon tax 30-year retrospective; Fraunhofer ISE Germany electricity generation 2024; Invest in Denmark renewable generation statistics 2024; UK Climate Change Committee 2024 Progress Report; EU Taxonomy Uptake Report (Nov. 2025).*
+*Sources consolidated above and in counterargument/actionable sections above. Key primary sources: Environmental Integrity Project (Feb. 2026 enforcement report); NOAA NCEI billion-dollar disaster database; Munich Re 2024 natural disaster statistics; IRENA Renewable Power Generation Costs 2024; Lazard LCOE+ v17; EU Climate Action Progress Report 2025; Rhodium Group Taking Stock 2025; ARC Coal Production and Employment 2024; Census Bureau CES-WP-24-53 (2024); EPA Social Cost of Greenhouse Gases Final Report (Dec. 2023); Murray and Rivers (2015) British Columbia carbon tax review; Tax Foundation Sweden carbon tax 30-year retrospective; Fraunhofer ISE Germany electricity generation 2024; Invest in Denmark renewable generation statistics 2024; UK Climate Change Committee 2024 Progress Report; EU Taxonomy Uptake Report (Nov. 2025).*
