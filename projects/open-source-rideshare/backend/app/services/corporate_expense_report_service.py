@@ -35,6 +35,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.corporate import BusinessAccountMember, MemberRole
+from app.models.corporate_generated_expense_report import CorporateGeneratedExpenseReport
 from app.models.ride import Ride
 from app.models.user import User
 from app.schemas.corporate_expense_report_aggregate import (
@@ -45,34 +46,6 @@ from app.schemas.corporate_expense_report_aggregate import (
     GeneratedExpenseReportResponse,
     MemberExpenseSummary,
 )
-
-
-# ---------------------------------------------------------------------------
-# In-memory store for generated reports
-#
-# In a production system these would be persisted to a database table.  For
-# this implementation we use a module-level dict keyed by (corp_id, report_id)
-# so tests can create and retrieve reports within a single process.  The
-# store is intentionally simple and not thread-safe; a real deployment would
-# replace it with an ORM model and migration.
-# ---------------------------------------------------------------------------
-
-_REPORT_STORE: dict[int, dict] = {}
-_NEXT_ID = 1
-
-
-def _next_report_id() -> int:
-    global _NEXT_ID
-    rid = _NEXT_ID
-    _NEXT_ID += 1
-    return rid
-
-
-def _reset_store() -> None:
-    """Clear the in-memory store; intended for use in tests only."""
-    global _NEXT_ID
-    _REPORT_STORE.clear()
-    _NEXT_ID = 1
 
 
 # ---------------------------------------------------------------------------
@@ -105,21 +78,35 @@ async def _require_corp_admin(
         )
 
 
-def _build_detail(raw: dict) -> GeneratedExpenseReportDetail:
-    return GeneratedExpenseReportDetail(**raw)
+def _row_to_detail(row: CorporateGeneratedExpenseReport) -> GeneratedExpenseReportDetail:
+    """Build a GeneratedExpenseReportDetail from an ORM row."""
+    return GeneratedExpenseReportDetail(
+        id=row.id,
+        corp_id=row.corp_id,
+        title=row.title,
+        start_date=row.start_date,
+        end_date=row.end_date,
+        total_rides=row.total_rides,
+        total_amount_usd=row.total_amount_usd,
+        generated_at=row.generated_at,
+        generated_by_id=row.generated_by_id,
+        by_member=[MemberExpenseSummary(**m) for m in (row.by_member or [])],
+        by_category=[CategoryExpenseSummary(**c) for c in (row.by_category or [])],
+    )
 
 
-def _build_summary(raw: dict) -> GeneratedExpenseReportResponse:
+def _row_to_summary(row: CorporateGeneratedExpenseReport) -> GeneratedExpenseReportResponse:
+    """Build a GeneratedExpenseReportResponse (no breakdowns) from an ORM row."""
     return GeneratedExpenseReportResponse(
-        id=raw["id"],
-        corp_id=raw["corp_id"],
-        title=raw["title"],
-        start_date=raw["start_date"],
-        end_date=raw["end_date"],
-        total_rides=raw["total_rides"],
-        total_amount_usd=raw["total_amount_usd"],
-        generated_at=raw["generated_at"],
-        generated_by_id=raw["generated_by_id"],
+        id=row.id,
+        corp_id=row.corp_id,
+        title=row.title,
+        start_date=row.start_date,
+        end_date=row.end_date,
+        total_rides=row.total_rides,
+        total_amount_usd=row.total_amount_usd,
+        generated_at=row.generated_at,
+        generated_by_id=row.generated_by_id,
     )
 
 
@@ -138,7 +125,8 @@ async def generate_expense_report(
 
     Queries all rides billed to ``corp_id`` whose completion timestamp falls
     within ``[data.start_date, data.end_date]`` (inclusive).  Aggregates
-    totals by member and by ride vehicle_type category.
+    totals by member and by ride vehicle_type category.  Persists the result
+    as a ``CorporateGeneratedExpenseReport`` row.
 
     Args:
         db: Async database session.
@@ -220,29 +208,12 @@ async def generate_expense_report(
     # Build title
     title = data.title or f"Expense Report {data.start_date} to {data.end_date}"
 
-    report_id = _next_report_id()
-    now = _now_utc()
-
     by_member = [MemberExpenseSummary(**v) for v in member_map.values()]
     by_category = [CategoryExpenseSummary(**v) for v in category_map.values()]
 
-    raw = {
-        "id": report_id,
-        "corp_id": corp_id,
-        "title": title,
-        "start_date": data.start_date,
-        "end_date": data.end_date,
-        "total_rides": total_rides,
-        "total_amount_usd": total_amount,
-        "generated_at": now,
-        "generated_by_id": requester_id,
-        "by_member": [m.model_dump() for m in by_member],
-        "by_category": [c.model_dump() for c in by_category],
-    }
-    _REPORT_STORE[report_id] = raw
-
-    return GeneratedExpenseReportDetail(
-        id=report_id,
+    # Persist the report
+    now = _now_utc()
+    report_row = CorporateGeneratedExpenseReport(
         corp_id=corp_id,
         title=title,
         start_date=data.start_date,
@@ -250,6 +221,23 @@ async def generate_expense_report(
         total_rides=total_rides,
         total_amount_usd=total_amount,
         generated_at=now,
+        generated_by_id=requester_id,
+        by_member=[m.model_dump() for m in by_member],
+        by_category=[c.model_dump() for c in by_category],
+    )
+    db.add(report_row)
+    await db.flush()
+    await db.refresh(report_row)
+
+    return GeneratedExpenseReportDetail(
+        id=report_row.id,
+        corp_id=corp_id,
+        title=title,
+        start_date=data.start_date,
+        end_date=data.end_date,
+        total_rides=total_rides,
+        total_amount_usd=total_amount,
+        generated_at=report_row.generated_at if report_row.generated_at is not None else now,
         generated_by_id=requester_id,
         by_member=by_member,
         by_category=by_category,
@@ -284,26 +272,38 @@ async def list_generated_reports(
     """
     await _require_corp_admin(db, corp_id, requester_id)
 
-    all_for_corp = [
-        r for r in _REPORT_STORE.values()
-        if r["corp_id"] == corp_id
-    ]
+    base_query = select(CorporateGeneratedExpenseReport).where(
+        CorporateGeneratedExpenseReport.corp_id == corp_id
+    )
 
     if start_date is not None:
-        all_for_corp = [r for r in all_for_corp if r["start_date"] >= start_date]
+        base_query = base_query.where(
+            CorporateGeneratedExpenseReport.start_date >= start_date
+        )
     if end_date is not None:
-        all_for_corp = [r for r in all_for_corp if r["end_date"] <= end_date]
+        base_query = base_query.where(
+            CorporateGeneratedExpenseReport.end_date <= end_date
+        )
 
-    # Sort newest first
-    all_for_corp.sort(key=lambda r: r["generated_at"], reverse=True)
+    # Count total matching records
+    count_query = select(func.count()).select_from(base_query.subquery())
+    count_result = await db.execute(count_query)
+    total = count_result.scalar_one()
 
-    total = len(all_for_corp)
-    page = all_for_corp[skip: skip + limit]
+    # Fetch page, sorted newest first
+    page_query = (
+        base_query
+        .order_by(CorporateGeneratedExpenseReport.generated_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    page_result = await db.execute(page_query)
+    report_rows = page_result.scalars().all()
 
     return GeneratedExpenseReportListResponse(
         corp_id=corp_id,
         total=total,
-        reports=[_build_summary(r) for r in page],
+        reports=[_row_to_summary(r) for r in report_rows],
     )
 
 
@@ -330,26 +330,21 @@ async def get_generated_report(
     """
     await _require_corp_admin(db, corp_id, requester_id)
 
-    raw = _REPORT_STORE.get(report_id)
-    if raw is None or raw["corp_id"] != corp_id:
+    result = await db.execute(
+        select(CorporateGeneratedExpenseReport).where(
+            CorporateGeneratedExpenseReport.id == report_id,
+            CorporateGeneratedExpenseReport.corp_id == corp_id,
+        )
+    )
+    row = result.scalar_one_or_none()
+
+    if row is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Expense report not found for this corporate account.",
         )
 
-    return GeneratedExpenseReportDetail(
-        id=raw["id"],
-        corp_id=raw["corp_id"],
-        title=raw["title"],
-        start_date=raw["start_date"],
-        end_date=raw["end_date"],
-        total_rides=raw["total_rides"],
-        total_amount_usd=raw["total_amount_usd"],
-        generated_at=raw["generated_at"],
-        generated_by_id=raw["generated_by_id"],
-        by_member=[MemberExpenseSummary(**m) for m in raw["by_member"]],
-        by_category=[CategoryExpenseSummary(**c) for c in raw["by_category"]],
-    )
+    return _row_to_detail(row)
 
 
 async def export_report_csv(
