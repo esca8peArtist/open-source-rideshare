@@ -4,6 +4,8 @@
 
 *Index updated April 2026, Session 265: five Tier 3 files elevated following targeted deepening in Sessions 263–265. Priority 1 items in the Deepening Queue are complete. See tier notes below.*
 
+*Index updated April 2026, Session 267: judicial-independence-evidence.md elevated from Tier 2 to Tier 1. Three gaps filled: fiscal estimates for SCOTUS expansion, term limits, and independent ethics IG (Section 12); full development of Canada JAC/JAAC model and South Africa JSC (Section 13); counterargument on court reform as politicization with counter-counter and policy sequencing resolution (Section 14).*
+
 ---
 
 ## Summary Assessment
@@ -18,7 +20,7 @@ The domain-deepening corpus is substantially stronger than a typical policy rese
 
 ## Publication-Readiness Tiers
 
-### Tier 1 — Publish As-Is (12 files)
+### Tier 1 — Publish As-Is (13 files)
 
 These files are ready for public release, citation in advocacy materials, and use as evidence foundations for the proposal. Minor additions would improve them but are not required.
 
@@ -34,13 +36,13 @@ These files are ready for public release, citation in advocacy materials, and us
 10. environment-climate-evidence.md *(elevated Session 264: full file read confirmed Tier 2+ quality; EU Green Deal vs. US rollback comparative trajectory added, IRA rollback fiscal cost estimates added, actionable intelligence section added)*
 11. healthcare-education-evidence.md *(elevated Session 264: counterarguments section added, fiscal estimates completed with Stanford/UCSF BIR savings quantified, actionable intelligence section added)*
 12. tax-policy-evidence.md *(elevated Session 265: duplication with fiscal-reform resolved through explicit scope differentiation, ETI literature added, "starve the beast" empirical record added, actionable intelligence section added)*
+13. judicial-independence-evidence.md *(elevated Session 267: fiscal estimates for SCOTUS expansion/term limits/ethics IG added as Section 12; Canada JAC/JAAC and South Africa JSC fully developed as Section 13; counterargument on court reform as politicization — norm erosion objection, FDR miscalculation, arms race problem — with counter-counter and policy sequencing resolution added as Section 14)*
 
-### Tier 2 — Adequate, Minor Gaps (11 files)
+### Tier 2 — Adequate, Minor Gaps (10 files)
 
 Solid evidentiary foundations. Missing one or two dimensions that would make them Tier 1, but usable as-is for most purposes. Deepening one weak dimension would elevate each.
 
 9. immigration-evidence.md
-10. judicial-independence-evidence.md
 11. labor-evidence.md
 12. reparations-evidence.md
 13. social-safety-net-evidence.md
@@ -167,11 +169,11 @@ Rubric dimensions: **Updated data** (current through 2024–2025) | **Int'l benc
 | Updated data | Strong | 564 threats FY2025; 131 additional FY2026; specific incident documentation (McConnell 400 voicemails, 6 credible death threats); V-Dem 0.75→0.57 decline; WJP 112th on civil justice access |
 | Int'l benchmarks | Adequate | UK NAO / Germany Bundesrechnungshof comparison for audit; Germany 2024 constitutional entrenchment referenced. Needs: Canada's advisory board model, South Africa JSC — both in gaps list but not fully developed |
 | Counterarguments | Adequate | Consent decree defiance documented thoroughly; institutional attack vectors identified. Missing: the strongest argument that court reform proposals are themselves politicization |
-| Fiscal estimates | Needs Work | File references judicial costs in passing but provides no estimates for reform options (SCOTUS expansion, term limits implementation, ethics enforcement agency) |
+| Fiscal estimates | Strong | Section 12 (added Session 267): per-seat SCOTUS expansion costs ($1-1.2M annual recurring + $2-4M one-time); term limits CRS "modest" characterization with actuarial framing; ethics IG $15-50M range with DOJ OIG comparator; full summary table |
 | Sourcing | Strong | USMS threat data, V-Dem 2025 report, WJP 2024-2025, NYT judge survey — all primary sources with dates |
 | Actionable intelligence | Adequate | Cross-reference to litigation tracker; consent decree defiance synthesis is operationally useful. Doesn't identify which jurisdictions have leverage points for state-level judicial reform |
 
-**Verdict**: Tier 2. The threat quantification and V-Dem score data are among the most powerful facts in the entire corpus — the 24% democracy score decline in a single term is a headline number. Fiscal estimates gap and incomplete international benchmarks prevent Tier 1.
+**Verdict**: ~~Tier 2~~ **Tier 1** *(elevated Session 267)*. Section 12 fills fiscal estimates gap with per-option cost analysis and summary table. Section 13 fully develops Canada JAC/JAAC (35-year Ontario track record, 2016 Trudeau reforms, lay membership design rationale) and South Africa JSC (constitutional basis, 23-member composition, public hearings model, ANC bloc-voting critique). Section 14 develops the norm erosion objection in full (McConnell/Calabresi framing, no-limiting-principle problem), counter-counter (Garland blockade, ACB self-contradiction, Dobbs/Bruen empirical record, V-Dem quantification), and policy resolution (sequenced procedural-before-structural approach with 72% ethics support as entry point).
 
 ---
 
@@ -433,7 +435,7 @@ All four Priority 1 items are done. Brief record:
 
 **Priority 2 — Would elevate the overall corpus:**
 
-5. **judicial-independence-evidence.md**: Add fiscal estimates for reform options (SCOTUS expansion cost, term limits implementation, independent ethics enforcement agency). Develop Canada advisory board and South Africa JSC as international benchmarks. Add the strongest counterargument: that court reform proposals are themselves a form of politicization.
+5. **judicial-independence-evidence.md**: COMPLETE (Session 267). Fiscal estimates added as Section 12 (SCOTUS expansion, term limits, ethics IG, lower court expansion — with summary table). Canada JAC/JAAC and South Africa JSC fully developed as Section 13. Counterargument on court reform as politicization — norm erosion objection, FDR miscalculation, arms race problem, counter-counter, and sequenced policy resolution — added as Section 14. File elevated to Tier 1.
 
 6. **labor-evidence.md**: Add fiscal cost estimates for minimum wage increases, sectoral bargaining pilots, and portable benefits schemes. Add actionable intelligence section naming current organizing campaigns (Amazon Labor Union, Starbucks Workers United, state minimum wage ballot initiative calendar).
 
