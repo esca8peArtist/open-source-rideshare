@@ -11934,3 +11934,57 @@ Endpoint: `GET /platform/transparency-report?period=last_7_days|last_30_days|all
 - Rate constants imported from rider_fare_transparency.py (no duplication)
 
 Session 285 complete.
+
+---
+
+## Session 287 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- stockbot: Monitoring phase — no code work.
+- mfg-farm: Blocked on physical mockups — no code work.
+- resistance-research: April 20 events haven't landed yet. Writing a pre-landing monitoring note.
+- open-source-rideshare: Fresh feature — Driver Income Stability Report.
+
+### Task selection
+(1) open-source-rideshare: `GET /drivers/me/income-stability-report` — 12-week earnings variance, volatility score, trend, and guarantee activations. Cooperative differentiator: income predictability matters for driver-owners, not just ride-by-ride earnings.
+(2) resistance-research: Pre-April-20 monitoring note — Crenshaw Nashville ruling, CIT Section 122 panel, any new CAPE/Abrego Garcia developments.
+
+Both tasks delegated to specialized agents...
+
+### open-source-rideshare: Driver income stability report
+Branch: feature/platform-transparency
+Commits: ee4bb5f — pushed to rideshare remote (0244b27)
+
+New files:
+- `schemas/driver_income_stability.py` — WeeklyEarningsEntry + DriverIncomeStabilityReport
+- `services/driver_income_stability.py` — 12-week earnings bucketing by ISO week; CV, trend, tier, guarantee detection; degrades gracefully if guarantee table absent
+- `api/v1/driver_income_stability.py` — GET /drivers/me/income-stability-report (require_driver auth)
+- `tests/test_driver_income_stability.py` — 71 tests passing
+
+Endpoint: `GET /drivers/me/income-stability-report`
+- 12-week rolling window, ISO week bucketing
+- Earnings = actual_fare + tip_amount per ride
+- Stability tiers: high (CV < 0.2), moderate (0.2–0.4), low (> 0.4), insufficient_data
+- Trend: improving / declining / stable / insufficient_data based on first-4 vs last-4 week comparison
+- Guarantee activations counted from WeeklyGuaranteeRecord (graceful degradation if absent)
+- weekly_breakdown: 12 entries newest-first
+- stability_note: human-readable sentence combining tier + trend
+
+### resistance-research: April 17-19 final countdown brief
+File: `monitoring/2026-04-17-19-final-watch.md` (323 lines)
+Commit: 0244b27 (local only — private project)
+
+Key intelligence:
+- Leon clarified April 16: above-ground halt stands, self-stay ~April 23
+- FISA/702: 10-day extension through ~April 30 (reform bloc math intact — 20 Republicans held)
+- CAPE launch confirmed 8:00 AM April 20
+- Op-ed timing: recommend 48-hr delay (submit April 22) to absorb DOJ brief
+
+April 20 monitoring checklist top items:
+1. PACER D. Maryland 8:30 AM — DOJ Abrego Garcia brief
+2. CBP ACE Portal 8:00 AM — CAPE Phase 1 go-live
+3. SCOTUS docket 9 AM / noon — emergency applications
+
+Session 287 complete.

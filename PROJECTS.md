@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 285)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 287)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 286: **Electoral op-ed submission package COMPLETE** (`published/electoral-op-ed-submission-package.md`). 5 outlets assessed: Vox (highest fit, 20–28%), Guardian US (18–25%), Atlantic (12–18%), Democracy Journal (15–22%), NYT (4–8%). Washington Post excluded (incompatible editorial direction). Strategy: simultaneous Round 1 to Vox + Atlantic. Timeliness window through mid-June 2026. Pitch letter draft ready to adapt per outlet. **Next**: April 20 results brief after CAPE launch + Abrego Garcia DOJ brief land. Monitor: CAPE Phase 1 ACE portal launch, DOJ brief in Maryland (Xinis), Crenshaw Nashville ruling, CIT Section 122 panel.
+**Current focus**: Session 287: **April 17-19 final countdown brief COMPLETE** (`monitoring/2026-04-17-19-final-watch.md`, 323 lines). Leon clarified April 16 (above-ground halt, self-stay ~April 23). FISA 10-day extension through ~April 30 (20 Republicans held). CAPE confirmed 8 AM April 20. Op-ed: recommend 48-hr delay (submit April 22) to absorb DOJ Abrego Garcia brief. **Next**: April 20 results brief after CAPE launch + DOJ brief land. Op-ed submission to Vox + Atlantic by April 22.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 286: **Driver welfare summary COMPLETE** (commit `3396d88`, pushed, branch `feature/platform-transparency`). `GET /drivers/me/welfare-summary` — authenticated driver endpoint; shift hours vs. safety limits, weekly earnings + hourly rate, insurance status, cooperative standing, contextual welfare note, support resources; 56 tests passing. **Waiting user review**: feature/rider-fare-transparency (4 features) + feature/platform-transparency (3 features: platform transparency report, rider savings summary from branch aa8efc0, driver welfare summary). **Next**: April 20 results brief, then fresh rideshare feature.
-**Last updated by**: orchestrator on 2026-04-17 (Session 286)
+**Current focus**: Session 287: **Driver income stability report COMPLETE** (commit `ee4bb5f`, pushed, branch `feature/platform-transparency`). `GET /drivers/me/income-stability-report` — 12-week rolling earnings history; CV stability tiers (high/moderate/low/insufficient_data); trend direction (improving/stable/declining); guarantee activation count; 71 tests passing. **Waiting user review**: feature/rider-fare-transparency (4 features) + feature/platform-transparency (4 features: platform transparency report, rider savings summary, driver welfare summary, driver income stability report). **Next**: Fresh feature after user reviews pending branches.
+**Last updated by**: orchestrator on 2026-04-17 (Session 287)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

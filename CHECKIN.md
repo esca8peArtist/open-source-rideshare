@@ -1,7 +1,7 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–286
+**Sessions**: 257–287
 
 ---
 
@@ -15,11 +15,49 @@
 - `GET /pricing/surge-check` — rider surge zone check (public)
 - `GET /riders/me/savings-summary` — authenticated rider cumulative savings vs. Uber/Lyft
 
-**Branch 2**: `feature/platform-transparency` (3 features added since last check-in, all pushed)
+**Branch 2**: `feature/platform-transparency` (4 features added since last check-in, all pushed)
 - `GET /platform/transparency-report` — public aggregate cooperative metrics (61 tests)
 - `GET /riders/me/savings-summary` — also on this branch (31 tests)
-- `GET /drivers/me/welfare-summary` — driver welfare dashboard (56 tests) ← NEW this session
-- 11,227 total tests passing across suite
+- `GET /drivers/me/welfare-summary` — driver welfare dashboard (56 tests)
+- `GET /drivers/me/income-stability-report` — 12-week earnings stability analysis (71 tests) ← NEW this session
+
+---
+
+### Accomplished (Session 287)
+
+#### open-source-rideshare — Driver income stability report (commit `ee4bb5f`, pushed)
+
+New endpoint: `GET /drivers/me/income-stability-report`
+
+**Why this exists**: Gig platforms are structurally indifferent to income instability — they benefit from drivers accepting any ride at any time regardless of financial outcome. A cooperative platform should quantify and address earnings volatility for its member-owners.
+
+**What it returns**:
+- `stability_tier`: high (CV < 0.2), moderate (0.2–0.4), low (> 0.4), insufficient_data
+- `trend_direction`: improving / declining / stable / insufficient_data (first-4 vs last-4 weeks)
+- `coefficient_of_variation`: objective volatility metric; None if < 2 active weeks
+- `guarantee_activations`: how many weeks the earnings guarantee softened a drop
+- `weekly_breakdown`: 12 entries newest-first with per-week earnings + ride count + guarantee flag
+- `stability_note`: plain-language sentence ("Your income is highly stable with an upward trend over the past 12 weeks.")
+
+**Key design**: zero-earning weeks excluded from CV calculation (inactive ≠ volatile); guarantee detection degrades gracefully if table absent.
+
+71 tests passing.
+
+#### resistance-research — April 17-19 final countdown brief (commit `0244b27`, local only)
+
+New file: `monitoring/2026-04-17-19-final-watch.md` (323 lines)
+
+**Key updates absorbed from live intelligence**:
+- Leon clarified April 16: above-ground halt confirmed, self-stay through ~April 23, admin filed appeal
+- FISA/702: 10-day extension through ~April 30 (20 Republicans held — reform bloc math intact)
+- CAPE Phase 1 launch confirmed 8:00 AM April 20, no pre-launch issues
+
+**April 20 monitoring checklist top 3**:
+1. PACER D. Maryland 8:30 AM — DOJ Abrego Garcia brief (contempt timeline turns on this)
+2. CBP ACE Portal 8:00 AM — CAPE Phase 1 go-live (anchors selective-compliance argument)
+3. SCOTUS docket 9 AM / noon — any emergency applications
+
+**Op-ed timing recommendation**: Delay submission 48 hours (submit April 22) to absorb DOJ brief. April 20 strengthens the argument in either compliance or defiance scenario.
 
 ---
 
