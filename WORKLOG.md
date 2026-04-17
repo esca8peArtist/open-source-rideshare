@@ -11056,3 +11056,53 @@ All 5 Tier 3 files now at Tier 1 or Tier 2+:
 
 Session 265 complete.
 
+
+---
+
+## Session 266 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None active.
+- rideshare S265 commit `ea7b1c0` not yet pushed to rideshare remote — pushed now via subtree split `591ecad`.
+- resistance-research: All Tier 3 → Tier 1 complete. Next: update quality-review-index.md to reflect elevations + pull V-Dem figure into proposal Part I.
+- open-source-rideshare: Next feature — driver background check expiration tracking.
+
+### Task selection
+1. resistance-research: Update quality-review-index.md + V-Dem into proposal Part I + deepen 1-2 Tier 2 files (delegated to resistance-research agent).
+2. open-source-rideshare: Background check expiration tracking — model field + alert model + admin endpoint + tests (delegated to open-source-rideshare agent).
+
+### open-source-rideshare: Background check expiration tracking COMPLETE
+Commit: 3646ec7
+
+New files:
+- `backend/app/models/background_check.py` — added `expires_at` field to BackgroundCheck + `BackgroundCheckAlertType` enum + `BackgroundCheckAlert` model with alerts relationship
+- `backend/app/schemas/background_check_expiry.py` — ExpiringBackgroundCheckRow, ExpiringBackgroundChecksResponse, BackgroundCheckExpiryScanResponse
+- `backend/app/services/background_check_expiry.py` — get_expiring_background_checks (window query) + run_expiry_scan (threshold-based dedup, thresholds: 7/30/60 days)
+- `backend/app/api/v1/background_check_expiry.py` — GET /admin/background-checks/expiring + POST /admin/background-checks/expiry-scan (admin-only)
+- `backend/tests/test_background_check_expiry.py` — 43 tests
+
+Modified: `backend/app/main.py` — router registered.
+
+Test result: 43/43 passing.
+
+### resistance-research: Quality review update + V-Dem insertion + labor-evidence deepened COMPLETE
+Commits: b8d0118, 5138de2, 5d539b4
+
+Task 1 — quality-review-index.md updated (b8d0118):
+- 5 Tier 3 files moved to correct tiers: electoral-reform (Tier 1, S263), national-security (Tier 2+, S263), environment-climate (Tier 1, S264), healthcare-education (Tier 1, S264), tax-policy (Tier 1, S265)
+- Tier count now: 12 Tier 1, 11 Tier 2, 0 Tier 3
+- Priority 1 deepening queue marked COMPLETE with per-session notes
+
+Task 2 — V-Dem figure inserted into democratic-renewal-proposal.md Part I, Section 1.1 (5138de2):
+- Full paragraph: 0.75→0.57 score, 24% decline, largest single-term drop V-Dem has recorded for a consolidated democracy, US among 6 autocratizing countries globally, cross-ref to judicial-independence-evidence.md
+
+Task 3 — labor-evidence.md deepened (5d539b4):
+- Added Section 9 (Actionable Intelligence) ~1,400 words:
+  - NLRB crisis: Wilcox/Abruzzo firings, 345-day quorum paralysis, 30% drop in union elections
+  - Live campaigns: Starbucks Workers United (535 locations, no contract 4 yrs), Amazon Labor Union (JFK8/RDU1), CIW Fair Food Program
+  - Minimum wage targets: Oklahoma SQ832 (June 16 2026), 2026 scheduled increases, One Fair Wage tipped campaign
+  - Legislative vehicles: PRO Act (119th Congress), state analogs (IL, MN, WA)
+  - Organization landscape: EPI, NELP, AFL-CIO, Clean Slate + organizing orgs + state pressure map
+
+Session 266 complete.

@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 265: **ALL TIER 3 FILES COMPLETE.** All 5 Tier 3 files now at Tier 1/Tier 2+: electoral-reform (Tier 1, S263), national-security (Tier 2+, S263), environment-climate (Tier 1, S264), healthcare-education (Tier 1, S264), tax-policy (Tier 1, S265 — duplication resolved + counterarguments expanded + actionable intel added). **Next**: Quality review pass across all files (verify Tier 1 consistency), then publication-readiness formatting pass. Candidate: pull V-Dem 0.75→0.57 decline figure into proposal Part I as recommended in quality-review-index.md.
+**Current focus**: Session 266: **Quality review pass + V-Dem insertion + labor deepening complete.** quality-review-index.md updated (12 Tier 1, 11 Tier 2, 0 Tier 3). V-Dem 0.75→0.57 figure inserted into democratic-renewal-proposal.md Section 1.1. labor-evidence.md deepened to Tier 1 — Section 9 (Actionable Intelligence, ~1,400 words) added: NLRB crisis, live campaigns (Starbucks/Amazon/CIW), wage targets, PRO Act vehicles, org landscape. **Next**: Publication-readiness formatting pass across the proposal OR deepen one more Tier 2 file (judicial-independence fiscal estimates, or housing international benchmarks).
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 265: **Corporate expense reporting feature complete** (commit `ea7b1c0`, 65 tests passing). 4 endpoints: list/generate/detail/CSV export. Note: in-memory store — follow-up ORM model + migration needed before main merge. **Next**: Push to rideshare remote; then driver background check expiration tracking feature OR beckn-protocol integration research.
-**Last updated by**: orchestrator on 2026-04-17 (Session 265)
+**Current focus**: Session 266: **Background check expiration tracking complete** (commit `3646ec7`, 43 tests passing). `BackgroundCheck` model gains `expires_at` field + `BackgroundCheckAlert` model + `background_check_expiry.py` service + 2 admin endpoints (GET expiring list, POST expiry-scan). Both S265+S266 commits pushed to rideshare remote. **Next**: ORM model + migration for `CorporateGeneratedExpenseReport` (in-memory store follow-up) OR beckn-protocol integration research.
+**Last updated by**: orchestrator on 2026-04-17 (Session 266)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

@@ -1,13 +1,40 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–265
+**Sessions**: 257–266
 
 ---
 
 ### Needs Your Input
 
 *(None — no items awaiting user decision.)*
+
+---
+
+### Accomplished (Session 266)
+
+#### resistance-research — Quality review pass complete + V-Dem insertion + labor deepened
+
+**quality-review-index.md updated** (commit `b8d0118`): All 5 Tier 3 files moved to correct tiers in the index. Tier count now 12 Tier 1 / 11 Tier 2 / 0 Tier 3. Priority 1 deepening queue marked complete with session notes.
+
+**V-Dem figure inserted into proposal Part I** (commit `5138de2`): Section 1.1 (The Current Crisis) now includes a full paragraph on the 0.75→0.57 score decline — 24% drop in a single term, largest single-term decline V-Dem has recorded for a consolidated democracy, US among 6 globally autocratizing countries, "diminished to levels similar to 1965." Cross-referenced to `judicial-independence-evidence.md`.
+
+**labor-evidence.md deepened to Tier 1** (commit `5d539b4`): Added Section 9 (Actionable Intelligence, ~1,400 words):
+- NLRB crisis: Wilcox/Abruzzo firings, 345-day quorum paralysis, 30% drop in union elections (1,498 in 2025)
+- Live campaigns: Starbucks Workers United (535 locations, 4 years without contract, Nov 2025 strike); Amazon Labor Union (JFK8/RDU1); CIW Fair Food Program (non-NLRA model)
+- Minimum wage targets: Oklahoma SQ832 June 16 2026 ($7.25→$15), 2026 scheduled increases, One Fair Wage targets
+- Legislative vehicles: PRO Act (119th Congress bipartisan House co-sponsors, Senate filibuster barrier), state analogs (IL, MN, WA)
+- Org landscape: EPI/NELP/AFL-CIO/Clean Slate + organizing orgs + state pressure point map for 2026
+
+#### open-source-rideshare — Background check expiration tracking (commit `3646ec7`)
+
+New feature on `feature/corporate-business-accounts`. 43 tests written, 43 passing. Pushed to rideshare remote.
+
+**New files:**
+- `BackgroundCheckAlertType` enum + `BackgroundCheckAlert` model added to `background_check.py`; `expires_at: date | None` field on `BackgroundCheck`
+- `schemas/background_check_expiry.py` — ExpiringBackgroundCheckRow, ExpiringBackgroundChecksResponse, BackgroundCheckExpiryScanResponse
+- `services/background_check_expiry.py` — `get_expiring_background_checks` (window query, excludes non-clear checks), `run_expiry_scan` (threshold-based dedup at 7/30/60 days)
+- `api/v1/background_check_expiry.py` — `GET /admin/background-checks/expiring` + `POST /admin/background-checks/expiry-scan` (admin-only)
 
 ---
 
