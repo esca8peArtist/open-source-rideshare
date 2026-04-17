@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import admin, admin_financials, analytics, audit, auth, background_checks, chat, complaints, demand_heatmap, device_tokens, driver_availability, driver_destination, driver_documents, driver_earnings_comparison, driver_earnings_history, driver_insurance, driver_location, driver_onboarding, driver_performance, driver_revenue_projection, drivers, driver_welfare_summary, fare_splits, incentives, lost_found, notification_preferences, notifications, payments, payouts, platform_config, pools, promos, recurring_rides, ride_preferences, rider_cancellation_stats, rider_ratings, rider_safety, rider_safety_history, rider_trip_history, rides, safety, saved_locations, tips, vehicle_inspection, vehicles, waypoints
-from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, public_router as surge_zones_public_router
+from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, admin_analytics_router as surge_analytics_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api.v1.fare_preview import router as fare_preview_router
 from app.api import websocket
@@ -74,6 +74,7 @@ app.include_router(admin_financials.router, prefix="/api/v1")
 app.include_router(ride_preferences.router, prefix="/api/v1")
 app.include_router(complaints.router, prefix="/api/v1")
 app.include_router(surge_zones_admin_router, prefix="/api/v1")
+app.include_router(surge_analytics_router, prefix="/api/v1")
 app.include_router(surge_zones_public_router, prefix="/api/v1")
 app.include_router(surge_waitlist_rider_router, prefix="/api/v1")
 app.include_router(surge_waitlist_public_router, prefix="/api/v1")

@@ -123,3 +123,47 @@ class SurgeZonePublicListResponse(BaseModel):
 
 class ToggleActiveRequest(BaseModel):
     is_active: bool
+
+
+# ---------------------------------------------------------------------------
+# Surge analytics schemas
+# ---------------------------------------------------------------------------
+
+
+class SurgeSummaryResponse(BaseModel):
+    period_days: int
+    total_surge_events: int
+    zone_surge_events: int
+    demand_surge_events: int
+    combined_surge_events: int
+    avg_combined_multiplier: float
+    peak_hour: int | None
+    top_zone_name: str | None
+    top_zone_event_count: int
+
+
+class ZoneAnalyticsResponse(BaseModel):
+    zone_id: str | None
+    zone_name: str
+    event_count: int
+    avg_multiplier: float
+    avg_demand_count: float
+    avg_supply_count: float
+
+
+class ZoneBreakdownResponse(BaseModel):
+    period_days: int
+    zones: list[ZoneAnalyticsResponse]
+    total_zones: int
+
+
+class DemandHeatmapCellResponse(BaseModel):
+    geohash: str
+    event_count: int
+    avg_combined_multiplier: float
+
+
+class DemandHeatmapResponse(BaseModel):
+    period_days: int
+    cells: list[DemandHeatmapCellResponse]
+    total_cells: int

@@ -265,6 +265,29 @@ async def get_fare_preview(
 
     is_surge_active = surge_zone_multiplier > 1.0 or is_demand_elevated
 
+    # Emit a surge event for admin analytics — fire-and-forget, never blocks the rider
+    if is_surge_active:
+        try:
+            from app.services.demand_pricing import encode_geohash
+            from app.services.surge_analytics import record_surge_event
+
+            gh = encode_geohash(origin_lat, origin_lon)
+            await record_surge_event(
+                db,
+                lat=origin_lat,
+                lon=origin_lon,
+                geohash=gh,
+                surge_zone_id=None,  # zone id not surfaced through current lookup path
+                surge_zone_name=surge_zone_name,
+                zone_multiplier=surge_zone_multiplier,
+                demand_multiplier=demand_multiplier,
+                demand_count=demand_count,
+                supply_count=supply_count,
+                combined_multiplier=combined_multiplier,
+            )
+        except Exception:
+            pass
+
     return FarePreviewResult(
         origin_lat=origin_lat,
         origin_lon=origin_lon,

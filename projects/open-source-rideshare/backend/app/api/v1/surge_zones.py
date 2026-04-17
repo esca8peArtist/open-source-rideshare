@@ -8,6 +8,11 @@ Admin endpoints (require admin auth):
   DELETE /admin/surge-zones/{id}     — hard-delete zone
   POST   /admin/surge-zones/{id}/activate  — toggle active state
 
+Admin analytics endpoints (require admin auth):
+  GET /admin/surge-analytics/summary        — platform-level surge stats
+  GET /admin/surge-analytics/zones          — per-zone breakdown
+  GET /admin/surge-analytics/demand-heatmap — geohash surge frequency heatmap
+
 Public endpoint (no auth required):
   GET /pricing/surge-zones/active    — currently active zones for map display
 """
@@ -22,6 +27,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import require_admin
 from app.db.database import get_db
 from app.schemas.surge_zone import (
+    DemandHeatmapCellResponse,
+    DemandHeatmapResponse,
+    SurgeSummaryResponse,
     SurgeZoneCreate,
     SurgeZoneListResponse,
     SurgeZonePublicListResponse,
@@ -29,6 +37,13 @@ from app.schemas.surge_zone import (
     SurgeZoneResponse,
     SurgeZoneUpdate,
     ToggleActiveRequest,
+    ZoneAnalyticsResponse,
+    ZoneBreakdownResponse,
+)
+from app.services.surge_analytics import (
+    get_demand_heatmap,
+    get_surge_summary,
+    get_zone_breakdown,
 )
 from app.services.surge_zones import (
     create_zone,
@@ -47,6 +62,12 @@ from app.services.surge_zones import (
 admin_router = APIRouter(
     prefix="/admin/surge-zones",
     tags=["admin", "surge-zones"],
+    dependencies=[Depends(require_admin)],
+)
+
+admin_analytics_router = APIRouter(
+    prefix="/admin/surge-analytics",
+    tags=["admin", "surge-analytics"],
     dependencies=[Depends(require_admin)],
 )
 
@@ -180,6 +201,111 @@ async def activate_surge_zone(
     if zone is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Surge zone not found")
     return _zone_to_response(zone)
+
+
+# ---------------------------------------------------------------------------
+# Admin analytics endpoints
+# ---------------------------------------------------------------------------
+
+
+@admin_analytics_router.get("/summary", response_model=SurgeSummaryResponse)
+async def surge_analytics_summary(
+    days: int = 7,
+    db: AsyncSession = Depends(get_db),
+):
+    """Platform-level surge pricing statistics for the last N days.
+
+    Returns total event counts by type (zone-only, demand-only, combined),
+    average combined multiplier, peak surge hour (UTC), and top zone by volume.
+    """
+    if days < 1 or days > 365:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="days must be between 1 and 365",
+        )
+    summary = await get_surge_summary(db, days=days)
+    return SurgeSummaryResponse(
+        period_days=summary.period_days,
+        total_surge_events=summary.total_surge_events,
+        zone_surge_events=summary.zone_surge_events,
+        demand_surge_events=summary.demand_surge_events,
+        combined_surge_events=summary.combined_surge_events,
+        avg_combined_multiplier=summary.avg_combined_multiplier,
+        peak_hour=summary.peak_hour,
+        top_zone_name=summary.top_zone_name,
+        top_zone_event_count=summary.top_zone_event_count,
+    )
+
+
+@admin_analytics_router.get("/zones", response_model=ZoneBreakdownResponse)
+async def surge_analytics_zones(
+    days: int = 30,
+    db: AsyncSession = Depends(get_db),
+):
+    """Per-zone surge analytics for the last N days.
+
+    Shows event count, average zone multiplier, and average supply/demand
+    per zone — ordered by event count descending. Useful for identifying
+    which zones generate the most surge activity.
+    """
+    if days < 1 or days > 365:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="days must be between 1 and 365",
+        )
+    zones = await get_zone_breakdown(db, days=days)
+    return ZoneBreakdownResponse(
+        period_days=days,
+        zones=[
+            ZoneAnalyticsResponse(
+                zone_id=z.zone_id,
+                zone_name=z.zone_name,
+                event_count=z.event_count,
+                avg_multiplier=z.avg_multiplier,
+                avg_demand_count=z.avg_demand_count,
+                avg_supply_count=z.avg_supply_count,
+            )
+            for z in zones
+        ],
+        total_zones=len(zones),
+    )
+
+
+@admin_analytics_router.get("/demand-heatmap", response_model=DemandHeatmapResponse)
+async def surge_analytics_demand_heatmap(
+    days: int = 7,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
+):
+    """Geohash cells ranked by surge event frequency for the last N days.
+
+    Each cell is a ~4.9km × 4.9km area. High-event cells are the geographic
+    hotspots where demand pricing most often fires. Useful for deciding where
+    to create or expand admin surge zones.
+    """
+    if days < 1 or days > 365:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="days must be between 1 and 365",
+        )
+    if limit < 1 or limit > 200:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="limit must be between 1 and 200",
+        )
+    cells = await get_demand_heatmap(db, days=days, limit=limit)
+    return DemandHeatmapResponse(
+        period_days=days,
+        cells=[
+            DemandHeatmapCellResponse(
+                geohash=c.geohash,
+                event_count=c.event_count,
+                avg_combined_multiplier=c.avg_combined_multiplier,
+            )
+            for c in cells
+        ],
+        total_cells=len(cells),
+    )
 
 
 # ---------------------------------------------------------------------------
