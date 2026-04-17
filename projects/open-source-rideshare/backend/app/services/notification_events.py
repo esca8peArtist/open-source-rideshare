@@ -244,3 +244,71 @@ async def notify_payout_completed(
         )
     except Exception:
         logger.exception("Failed to send payout_completed notification for driver %d", driver_id)
+
+
+async def notify_ride_started(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+    dropoff_address: str = "",
+) -> None:
+    """Notify rider that their ride has started (IN_PROGRESS)."""
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.RIDE_IN_PROGRESS,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            dropoff_address=dropoff_address,
+        )
+    except Exception:
+        logger.exception("Failed to send ride_in_progress notification for ride %d", ride_id)
+
+
+async def notify_driver_assigned(
+    db: AsyncSession,
+    driver_id: int,
+    ride_id: int,
+    rider_name: str = "",
+    pickup_address: str = "",
+) -> None:
+    """Notify driver that they have been assigned a new ride."""
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        await send_ride_notification(
+            user_id=driver_id,
+            type=NotificationType.RIDE_ASSIGNED,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            rider_name=rider_name,
+            pickup_address=pickup_address,
+        )
+    except Exception:
+        logger.exception("Failed to send ride_assigned notification for ride %d", ride_id)
+
+
+async def notify_ride_completed_driver(
+    db: AsyncSession,
+    driver_id: int,
+    ride_id: int,
+    fare: float | str = "",
+) -> None:
+    """Notify driver that a ride they completed has been processed."""
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        await send_ride_notification(
+            user_id=driver_id,
+            type=NotificationType.RIDE_COMPLETED_DRIVER,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            fare=fare,
+        )
+    except Exception:
+        logger.exception("Failed to send ride_completed_driver notification for ride %d", ride_id)

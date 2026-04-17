@@ -147,6 +147,33 @@ def promo_applied(code: str = "", discount: str = "", **kw) -> TemplateResult:
     )
 
 
+def ride_in_progress(dropoff_address: str = "", **kw) -> TemplateResult:
+    dest_part = f" Destination: {dropoff_address}" if dropoff_address else ""
+    return (
+        "Your ride has started",
+        f"You're on your way!{dest_part} Sit back and relax.",
+        _PUSH,
+    )
+
+
+def ride_assigned(rider_name: str = "A rider", pickup_address: str = "", **kw) -> TemplateResult:
+    pickup_part = f" Pickup: {pickup_address}" if pickup_address else ""
+    return (
+        "New ride assigned",
+        f"{rider_name} is waiting for you.{pickup_part} Head to the pickup location.",
+        _PUSH_SMS,
+    )
+
+
+def ride_completed_driver(fare: float | str = "", **kw) -> TemplateResult:
+    fare_part = f" Earnings: ${fare}" if fare else ""
+    return (
+        "Ride complete",
+        f"You've completed a ride.{fare_part} Great work!",
+        _PUSH,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -162,6 +189,9 @@ TEMPLATES: dict[str, callable] = {
     "ride_reminder": ride_reminder,
     "fare_split_request": fare_split_request,
     "promo_applied": promo_applied,
+    NotificationType.RIDE_IN_PROGRESS: ride_in_progress,
+    NotificationType.RIDE_ASSIGNED: ride_assigned,
+    NotificationType.RIDE_COMPLETED_DRIVER: ride_completed_driver,
 }
 
 

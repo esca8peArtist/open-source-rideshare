@@ -45,6 +45,9 @@ class NotificationType(str, enum.Enum):
     PROMO_APPLIED = "promo_applied"
     BACKGROUND_CHECK_APPROVED = "background_check_approved"
     BACKGROUND_CHECK_ACTION_REQUIRED = "background_check_action_required"
+    RIDE_IN_PROGRESS = "ride_in_progress"
+    RIDE_ASSIGNED = "ride_assigned"
+    RIDE_COMPLETED_DRIVER = "ride_completed_driver"
 
 
 @dataclass
@@ -235,6 +238,8 @@ async def filter_channels_by_preferences(
         NotificationType.RIDE_MATCHED, NotificationType.RIDE_CANCELLED,
         NotificationType.RIDE_COMPLETED, NotificationType.DRIVER_EN_ROUTE,
         NotificationType.DRIVER_ARRIVED, NotificationType.RIDE_REMINDER,
+        NotificationType.RIDE_IN_PROGRESS, NotificationType.RIDE_ASSIGNED,
+        NotificationType.RIDE_COMPLETED_DRIVER,
     }
     payment_types = {
         NotificationType.PAYMENT_RECEIVED, NotificationType.PAYOUT_COMPLETED,

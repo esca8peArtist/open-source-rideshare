@@ -373,10 +373,14 @@ async def _match_ride_background(
         await notify_ride_status(rider_user_id, ride_id, "matched", **eta_data)
 
         # Send SMS/email notification
-        from app.services.notification_events import notify_ride_matched
+        from app.services.notification_events import notify_ride_matched, notify_driver_assigned
         await notify_ride_matched(
             db, rider_id=rider_user_id, ride_id=ride_id,
             eta_minutes=eta_data.get("eta_minutes"),
+        )
+        await notify_driver_assigned(
+            db, driver_id=matched.user_id, ride_id=ride_id,
+            pickup_address=pickup_address,
         )
 
         from app.services.audit_events import audit_ride_matched
@@ -744,8 +748,12 @@ async def accept_ride(
     from app.api.websocket import notify_ride_status
     await notify_ride_status(ride.rider_id, ride.id, "matched")
 
-    from app.services.notification_events import notify_ride_matched
+    from app.services.notification_events import notify_ride_matched, notify_driver_assigned
     await notify_ride_matched(db, rider_id=ride.rider_id, ride_id=ride.id)
+    await notify_driver_assigned(
+        db, driver_id=driver.id, ride_id=ride.id,
+        pickup_address=ride.pickup_address,
+    )
 
     return RideResponse(
         id=ride.id,
@@ -857,6 +865,12 @@ async def start_ride(
     from app.api.websocket import notify_ride_status
     await notify_ride_status(ride.rider_id, ride.id, "in_progress")
 
+    from app.services.notification_events import notify_ride_started
+    await notify_ride_started(
+        db, rider_id=ride.rider_id, ride_id=ride.id,
+        dropoff_address=ride.dropoff_address,
+    )
+
     return {"status": "in_progress"}
 
 
@@ -893,8 +907,9 @@ async def complete_ride(
     from app.api.websocket import notify_ride_status
     await notify_ride_status(ride.rider_id, ride.id, "completed", fare=ride.actual_fare)
 
-    from app.services.notification_events import notify_ride_completed
+    from app.services.notification_events import notify_ride_completed, notify_ride_completed_driver
     await notify_ride_completed(db, rider_id=ride.rider_id, ride_id=ride.id, fare=ride.actual_fare)
+    await notify_ride_completed_driver(db, driver_id=driver.id, ride_id=ride.id, fare=ride.actual_fare)
 
     from app.services.audit_events import audit_ride_completed
     await audit_ride_completed(
