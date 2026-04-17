@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
@@ -51,6 +52,8 @@ from app.services.promos import redeem_promo, validate_promo
 from app.services.routing import RoutingError, get_multi_stop_route, get_route
 from app.services.saved_locations import get_saved_location
 from app.services.scheduling import check_overlap, validate_schedule_time
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/rides", tags=["rides"])
 
@@ -202,6 +205,23 @@ async def request_ride(
     if not geo_check["valid"]:
         raise HTTPException(status_code=422, detail=geo_check["message"])
 
+    # Auto-promote accessibility_required from rider's saved profile.
+    # If the rider has needs_wav=True in their RiderAccessibilityProfile, treat
+    # this ride as requiring a WAV vehicle regardless of the request flag — so
+    # riders with permanent accessibility needs don't have to remember to tick
+    # the box on every single booking.
+    accessibility_required = req.accessibility_required
+    if not accessibility_required:
+        from app.services.accessibility import get_or_create_rider_profile
+        rider_profile = await get_or_create_rider_profile(user.id, db)
+        if rider_profile.needs_wav:
+            accessibility_required = True
+            logger.info(
+                "accessibility_required promoted to True for rider user_id=%d "
+                "based on saved accessibility profile (needs_wav=True)",
+                user.id,
+            )
+
     # Validate waypoint count
     waypoint_inputs = req.waypoints or []
     if len(waypoint_inputs) > 3:
@@ -315,7 +335,7 @@ async def request_ride(
         duration_min=round(route["duration_min"], 1),
         promo_code_id=promo_code_id,
         promo_discount=promo_discount,
-        accessibility_required=req.accessibility_required,
+        accessibility_required=accessibility_required,
         vehicle_type_preference=req.vehicle_type_preference,
         corporate_account_id=corporate_account_id,
     )
@@ -358,7 +378,7 @@ async def request_ride(
         ride.pickup_address,
         ride.dropoff_address,
         ride.estimated_fare,
-        req.accessibility_required,
+        accessibility_required,
         req.vehicle_type_preference,
     )
 

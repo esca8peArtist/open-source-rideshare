@@ -9,6 +9,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.models.accessibility import DriverWAVCertification, WAVCertificationStatus
 from app.models.driver import DriverProfile
 from app.models.driver_availability import DriverOnlineStatus, DriverSchedule
 from app.models.ride import Ride, RideStatus
@@ -181,6 +182,26 @@ class MatchingEngine:
 
         return eligible
 
+    async def _get_verified_wav_driver_ids(
+        self,
+        db: AsyncSession,
+        driver_ids: list[int],
+    ) -> set[int]:
+        """Return the subset of driver profile IDs with a verified WAV certification.
+
+        A driver is WAV-dispatch-eligible only when their cert exists AND is in
+        `verified` status.  Pending, rejected, or expired certs do not qualify.
+        """
+        if not driver_ids:
+            return set()
+        result = await db.execute(
+            select(DriverWAVCertification.driver_id).where(
+                DriverWAVCertification.driver_id.in_(driver_ids),
+                DriverWAVCertification.status == WAVCertificationStatus.verified,
+            )
+        )
+        return {row for row in result.scalars().all()}
+
     async def find_candidates(
         self,
         pickup_lat: float,
@@ -202,7 +223,11 @@ class MatchingEngine:
         db:
             Async database session.
         accessibility_required:
-            When True, only wheelchair-accessible vehicles are returned.
+            When True, only drivers with a WAV-capable vehicle AND a verified
+            DriverWAVCertification are returned.  The search also starts at the
+            full max radius (rather than the normal smaller initial radius) because
+            WAV-certified drivers are sparser and a narrow initial radius would
+            frequently return zero results.
         availability_filter:
             When True (default), restrict results to drivers that are currently
             available according to the DriverOnlineStatus table and any
@@ -219,7 +244,12 @@ class MatchingEngine:
             When provided, applies blocklist filtering: excludes drivers that
             the rider has blocked, and drivers that have blocked the rider.
         """
-        initial_radius = settings.driver_search_initial_radius_km
+        # WAV requests start at the max radius — certified WAV drivers are sparser
+        # so a narrow initial radius would produce frequent empty results.
+        if accessibility_required:
+            initial_radius = settings.driver_search_radius_km
+        else:
+            initial_radius = settings.driver_search_initial_radius_km
         max_radius = settings.driver_search_radius_km
         radius = initial_radius
 
@@ -306,6 +336,19 @@ class MatchingEngine:
             elif p.id in vehicle_map:
                 active_vehicles[p.id] = vehicle_map[p.id]
 
+        # --- WAV certification check: for accessibility requests, fetch the set
+        #     of driver profile IDs with admin-verified WAV certifications.
+        #     A WAV-capable vehicle alone is insufficient — the driver must also
+        #     have passed the platform's WAV certification review. ---
+        verified_wav_driver_ids: set[int] = set()
+        if accessibility_required and profile_ids:
+            verified_wav_driver_ids = await self._get_verified_wav_driver_ids(db, profile_ids)
+            logger.debug(
+                "WAV cert check: %d/%d driver profiles have verified WAV certification",
+                len(verified_wav_driver_ids),
+                len(profile_ids),
+            )
+
         candidates = []
         for p in profiles:
             vehicle = active_vehicles.get(p.id)
@@ -317,8 +360,9 @@ class MatchingEngine:
                 else VehicleServiceCategory.STANDARD
             )
 
-            # Filter: if accessibility required, skip non-WAV drivers
-            if accessibility_required and not is_wav:
+            # Filter: if accessibility required, driver must have a WAV vehicle
+            # AND a verified WAV certification from admin review.
+            if accessibility_required and (not is_wav or p.id not in verified_wav_driver_ids):
                 continue
 
             # Filter: if a vehicle type preference is set, skip non-matching drivers
