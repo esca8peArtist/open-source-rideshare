@@ -623,6 +623,88 @@ Sources: [DOJ: United States v. Google LLC (Search) Memorandum Opinion (August 2
 
 ---
 
+## Section 10: Actionable Intelligence
+
+The evidence in Sections 1-9 documents a structural crisis in market competition that is decades in the making. This section identifies the specific enforcement proceedings, legislative vehicles, institutional actors, and near-term pressure points where intervention is possible now — in 2026 — while major cases are at decision points and appropriations battles are active.
+
+### 10.1 Live Enforcement Opportunities (2026)
+
+**US v. Google LLC (Search and Android) — remedy phase.** This is the most consequential live antitrust proceeding in a generation. Judge Mehta's August 2024 liability finding is settled; the remedy phase running through 2025-2026 will determine whether structural relief — forced divestiture of Chrome, Android, or both — is imposed. DOJ has requested structural remedies. If granted, this becomes the first major structural divestiture since AT&T 1984 and sets binding precedent for the Amazon and Apple cases. If the remedy is limited to behavioral conditions (contracts-only restrictions), it sets the precedent that structural relief is unavailable for digital monopolies regardless of how severe the anticompetitive conduct. The Texas, New York, Colorado, Iowa, and 35 other state AGs are co-plaintiffs with independent standing and cannot be sidelined by federal agency changes in posture. Public and congressional commentary on the adequacy of any proposed remedy is actionable now. Organizations producing public comment and economic analysis during the remedy proceeding directly shape the record before the judge.
+
+**FTC v. Amazon.com, Inc. (W.D. Wash.) — early litigation.** Filed September 2023, in pre-trial proceedings as of 2026. The FTC maintains a public complaint portal where consumers and third-party merchants can submit evidence of harm — declarations submitted there can become part of the public record and support the FTC's litigation position. State AGs in Washington, California, and New York have concurrent investigative jurisdiction. The case tests whether platform fees of approximately 50% of third-party seller revenue constitute anticompetitive conduct under the consumer welfare standard; the litigation record is being built now.
+
+**US v. Apple Inc. (D.N.J.) — discovery phase.** The DOJ's March 2024 complaint is in active discovery as of 2026. The tech press, congressional oversight hearings, and independent research organizations amplify the public record. Senate Judiciary Subcommittee on Competition Policy has jurisdiction and has held hearings on Apple's App Store restrictions; any member of the public can submit testimony for the record.
+
+**DOJ v. Google LLC (Ad Tech, E.D. Va.) — remedy phase.** Judge Brinkema's November 2024 liability finding (Google monopolized the publisher ad server and ad exchange markets) triggers a remedy proceeding that runs into 2026. This case directly implicates the economics of journalism: Google's integrated control of the advertising stack is the structural cause of the 70% decline in US newspaper advertising revenue documented in Section 3.3. Publisher and journalism organizations have standing to submit amicus briefs and technical evidence on remedy design. The Reporters Committee for Freedom of the Press, the News/Media Alliance, and the Local Media Association are natural organizational vehicles for this participation.
+
+**FTC pharmaceutical PBM investigation.** The FTC's 2022-2024 investigation into Express Scripts (Cigna), CVS Caremark, and OptumRx resulted in a July 2024 interim staff report finding that PBM vertical integration harms independent pharmacies and drives up net drug prices paid by patients. A final report with enforcement recommendations is expected. Congress has concurrent jurisdiction: Senate Finance and House Energy and Commerce both have active PBM reform legislation; hearings are a mechanism for amplifying the FTC's findings into legislative record.
+
+Sources: [DOJ Google Search Remedy Overview (2025)](https://www.justice.gov/atr/case/us-v-google-llc); [FTC Amazon Complaint (September 2023)](https://www.ftc.gov/news-events/news/press-releases/2023/09/ftc-sues-amazon-illegally-maintaining-monopoly-power); [DOJ Apple Complaint (March 2024)](https://www.justice.gov/opa/pr/justice-department-sues-apple-monopolizing-smartphone-markets); [FTC Interim Staff Report on PBMs (July 2024)](https://www.ftc.gov/reports/pharmacy-benefit-managers-report)
+
+### 10.2 Legislative Vehicles
+
+Congress has considered multiple antitrust reform bills since 2021. None passed, but the bills remain live in the 119th Congress and define what reform advocates are pushing toward. Each names specific structural changes with identifiable champions.
+
+**Competition and Antitrust Law Enforcement Reform Act (CALERA)** — introduced by Sen. Amy Klobuchar. Would shift the burden of proof in merger challenges from government to merging parties in highly concentrated markets; expand per se prohibition rules; create a new civil penalty regime; and increase appropriations authorization for the DOJ Antitrust Division and FTC. This is the most comprehensive reform bill on the table and directly addresses the enforcement resource constraint identified in Section 9's cross-cutting observation. Senate Judiciary introduced the bill in the 117th and 118th Congresses; reintroduction in the 119th is expected.
+
+**American Innovation and Choice Online Act (AICOA)** — passed Senate Judiciary Committee 16-6 in January 2022 but failed to reach a floor vote. Would prohibit "covered platforms" (defined by user count and market cap thresholds) from self-preferencing their own products in search results and app stores — the core conduct at issue in the Google Search and Apple cases. A revised version introduced in the 119th Congress targets the conduct rather than named companies, which may reduce First Amendment objections.
+
+**Open App Markets Act** — Senate Judiciary Committee, 2022. Would require app store operators to permit side-loading (installing apps outside the official store) and prohibit tying of in-app payment systems. Directly addresses Apple and Google Play Store market power. Apple's lobbying against this bill was documented at $9.4 million in 2022 according to OpenSecrets.
+
+**Farm System Reform Act** — sponsored by Sen. Cory Booker and Rep. Ro Khanna. Would impose a moratorium on large-scale meatpacker facility expansion; strengthen the Packers and Stockyards Act; and cap the market share of the top four processors in each livestock sector. Directly addresses the beef and pork processing concentration documented in Section 1.1.
+
+**State-level vehicles**: Illinois modernized its Antitrust Act in 2023 to permit state AG challenges under a broader competitive harm standard. California AB 2788 (2024) targeted self-preferencing conduct by digital platforms in the California market. Minnesota considered a common ownership study bill following the Azar-Schmalz-Tecu findings. State-level action is particularly relevant because state courts can apply state antitrust law without preemption concerns.
+
+**FY2027 appropriations**: The DOJ Antitrust Division requested approximately $340 million for FY2026; the FTC requested approximately $430 million. The Antitrust Division budget has not kept pace with the scale of digital markets litigation: each of the four major platform cases (Google Search, Google Ad Tech, Amazon, Apple) requires hundreds of attorney-hours per year for years. Defending and expanding these budget lines in appropriations is higher-leverage than lobbying for new legislation, because it directly determines how many simultaneous complex cases can be pursued.
+
+Sources: [CALERA Text (S.225, 117th Congress)](https://www.congress.gov/bill/117th-congress/senate-bill/225); [AICOA (S.2992, 117th Congress)](https://www.congress.gov/bill/117th-congress/senate-bill/2992); [Open App Markets Act (S.2710)](https://www.congress.gov/bill/117th-congress/senate-bill/2710); [Farm System Reform Act (S.4228)](https://www.congress.gov/bill/118th-congress/senate-bill/4228); [OpenSecrets: Apple Lobbying 2022](https://www.opensecrets.org/orgs/apple-inc/lobbying)
+
+### 10.3 State AG Enforcement as Structural Resilience
+
+State attorneys general are the most durable enforcement actors in the antitrust landscape because their authority derives from state law and cannot be eliminated by federal budget cuts or changes in DOJ leadership. The pattern from the Google Search case is the template: a 38-state AG coalition filed alongside DOJ in 2020, giving the case independent momentum that survived two changes in federal administration.
+
+**Texas AG Ken Paxton**: Co-plaintiff and lead state AG in *United States v. Google LLC* (Search); filed the initial Google advertising tech suit in December 2020 that preceded the DOJ's own case. Also filed against Meta regarding Facebook data-sharing practices; has a separate investigation into Google Maps' conduct with local businesses.
+
+**New York AG Letitia James**: Active on Meta/Instagram (acquired 2012; James filed a federal suit in 2020 arguing the acquisition was anticompetitive and seeking structural separation); Amazon labor practices in New York facilities; healthcare consolidation investigations involving Northwell Health and major insurer mergers.
+
+**California AG Rob Bonta**: Tech consolidation across digital platform sectors; healthcare merger challenges under California's unique hospital merger review statute (AB 1132); lead state in privacy enforcement actions that intersect with market power issues.
+
+**Illinois AG Kwame Raoul**: Hospital merger challenges using Illinois' Certificate of Need law and state antitrust authority; grocery concentration analysis following Kroger-Albertsons challenge (state filed separately from FTC).
+
+**Multi-state coalition pattern**: The 38-state Google Search coalition, the 48-state coalition that investigated Facebook in 2019-2020, and the multi-state Purdue Pharma litigation all demonstrate that state AG coalitions can pursue cases at the scale of federal enforcement — and in some cases have been more aggressive than their federal counterparts. State AG action is the structurally resilient fallback when federal agencies are under-resourced or politically constrained.
+
+Sources: [Texas AG Google Ad Tech Complaint (2020)](https://www.texasattorneygeneral.gov/sites/default/files/images/executive-management/20201216%20COMPLAINT_REDACTED.pdf); [NY AG v. Facebook (2020)](https://ag.ny.gov/press-release/2020/attorney-general-james-leads-multistate-lawsuit-against-facebook); [State AG Google Search Coalition (38 states)](https://www.justice.gov/opa/press-release/file/1328941/download)
+
+### 10.4 Organizations and Pressure Points
+
+**Open Markets Institute** (openmarketsinstitute.org): The leading policy research and advocacy organization focused on economic concentration. Publishes sector-specific concentration reports used in congressional testimony; maintains Hill liaisons; runs the Stigler Center alumni network. Barry Lynn's team was responsible for the 2020 reclassification of antitrust as a mainstream policy concern after decades at the margins. Their weekly newsletter is the best single source for tracking active enforcement developments.
+
+**American Economic Liberties Project** (economicliberties.us): Combines grassroots organizing with original research, with particular focus on meatpacking and Big Tech. Runs the "Stop Merger Mania" campaign tracking proposed acquisitions. Works with state-level organizers in agricultural communities on livestock market consolidation. Publishes accessible versions of academic findings aimed at organizers, not economists.
+
+**Accountable.US**: Runs public accountability campaigns targeting specific corporate executives by name. Documents instances where the revolving door between regulators and industry enables capture. Produces rapid-response research for media use when enforcement decisions are announced. Useful for amplifying critique of weak remedies or regulatory inaction through earned media.
+
+**Electronic Frontier Foundation** (eff.org): Approaches digital market concentration from a civil liberties angle — emphasizing that platform market power enables censorship, surveillance, and content moderation harms that are not captured by conventional antitrust analysis. Their policy work on interoperability mandates and data portability requirements complements structural antitrust remedies.
+
+**Demand Progress**: Runs digital rights action campaigns including antitrust-related petitions and constituent contact operations. Has successfully mobilized grassroots pressure on specific House and Senate votes related to tech regulation. Primarily a mobilization organization rather than a research one.
+
+**State PIRGs** (Public Interest Research Groups): Active on healthcare and utility concentration at the state level; fund local research on hospital merger impacts on prices and access. Coordinate consumer complaints during state PUC proceedings on telecom and utility rate cases.
+
+**Congressional committees with jurisdiction**: Senate Judiciary Subcommittee on Competition Policy, Antitrust, and Consumer Rights (contact via Senate Judiciary Committee clerk); House Judiciary Subcommittee on Courts, Intellectual Property, and the Internet. Both subcommittees have held hearings on platform concentration and accept written testimony from organizations and individuals during any open hearing record period.
+
+### 10.5 Near-Term Windows (2026)
+
+Three pressure points are specifically time-bounded in 2026 and warrant prioritization over longer-horizon advocacy.
+
+**Google Search remedy — the pivotal moment.** If DOJ secures a structural remedy — divestiture of Chrome, Android, or compelled licensing of search index data to rivals — it becomes the binding precedent for the Amazon and Apple cases and demonstrates that the US legal framework can reach platform monopolies structurally. If the remedy is limited to behavioral conditions (prohibiting exclusive default agreements while leaving Google's structural position intact), it becomes the precedent that structural relief is unavailable regardless of the severity of monopolization. The judicial record is still being built. Economic analysis submitted by third parties, amicus briefs from affected industries (journalism, digital advertising, app development), and congressional letters expressing remedy preferences all enter the record. This window closes when the remedy opinion is issued, likely in late 2026.
+
+**FTC and DOJ Antitrust Division appropriations (FY2027 cycle).** Any cuts to FTC or DOJ Antitrust Division budgets reduce the number of active cases that can be simultaneously pursued — not as a future risk but as a direct, immediate consequence, since each of the four major platform cases already exceeds the capacity of existing staff at current funding levels. Defending the FY2027 appropriations request — and opposing cuts to the FY2026 enacted level — is higher-leverage than supporting new antitrust legislation, because the resource constraint is more binding than the legal authority constraint. The House and Senate Appropriations subcommittees with jurisdiction are Commerce, Justice, Science (CJS). Public comment periods for CJS markups are the mechanism for constituent engagement.
+
+**State AG coalition expansion.** The 38-state Google Search coalition demonstrated that states can prosecute cases at federal scale. Comparable coalitions are possible for hospital system concentration (where state insurance commissioners have independent jurisdiction), pharmaceutical PBM conduct (where state pharmacy boards and AGs have overlapping authority), and grocery consolidation (where state consumer protection laws provide alternative theories of liability). Organizations working on any of these sectors should be in active contact with their state AG's consumer protection division — not to lobby on pending cases, but to ensure that complaints from affected constituencies are in the formal record when coalitions are being assembled.
+
+Sources: [Open Markets Institute](https://openmarketsinstitute.org); [American Economic Liberties Project](https://www.economicliberties.us); [EFF Antitrust](https://www.eff.org/issues/antitrust); [Senate Judiciary Subcommittee on Competition Policy](https://www.judiciary.senate.gov/about/subcommittees/competition-policy-antitrust-and-consumer-rights); [House Judiciary Subcommittee on Courts, Intellectual Property, and the Internet](https://judiciary.house.gov/subcommittees)
+
+---
+
 ### A Note on Methodological Caution
 
 Several of the empirical findings summarized in this document are more contested in the academic literature than the summary sections may suggest. Specific caveats for use in adversarial policy settings:
@@ -641,4 +723,4 @@ These caveats do not undermine the overall case for reform. The weight of eviden
 
 ---
 
-*This document should be read alongside the litigation-tracker-2026.md for active cases that provide the enforcement vehicle for these reforms, and the labor-evidence.md for the monopsony wage suppression literature that overlaps between Domain 17 and Domain 20. The common ownership evidence (Section 9) and the litigation landscape (Section 10) are areas where new developments are expected through 2026-2027 and should be updated as cases proceed to remedy phases and as the academic literature on common ownership matures.*
+*This document should be read alongside the litigation-tracker-2026.md for active cases that provide the enforcement vehicle for these reforms, and the labor-evidence.md for the monopsony wage suppression literature that overlaps between Domain 17 and Domain 20. The common ownership evidence (Section 8) and the active litigation landscape (Section 9) are areas where new developments are expected through 2026-2027 and should be updated as cases proceed to remedy phases and as the academic literature on common ownership matures. The actionable intelligence in Section 10 should be reviewed quarterly; the Google Search remedy window and the FY2027 appropriations cycle are time-bounded.*

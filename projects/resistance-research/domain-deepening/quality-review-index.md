@@ -6,6 +6,8 @@
 
 *Index updated April 2026, Session 267: judicial-independence-evidence.md elevated from Tier 2 to Tier 1. Three gaps filled: fiscal estimates for SCOTUS expansion, term limits, and independent ethics IG (Section 12); full development of Canada JAC/JAAC model and South Africa JSC (Section 13); counterargument on court reform as politicization with counter-counter and policy sequencing resolution (Section 14).*
 
+*Index updated April 2026, Session 269: economic-concentration-evidence.md elevated from Tier 2 to Tier 1. Actionable intelligence gap filled: Section 10 added covering live enforcement proceedings (Google Search remedy phase, FTC v. Amazon, DOJ v. Apple, DOJ v. Google Ad Tech, FTC PBM investigation), named legislative vehicles (CALERA, AICOA, Open App Markets Act, Farm System Reform Act, state-level modernization), state AG enforcement actions and coalition patterns, organizations with pressure-point specificity (Open Markets Institute, American Economic Liberties Project, EFF, Demand Progress, state PIRGs), and three time-bounded 2026 windows (Google remedy record, FY2027 appropriations, state AG coalition expansion).*
+
 *Index updated April 2026, Session 268: housing-evidence.md elevated from Tier 2 to Tier 1. Four gaps filled: Vienna Gemeindebau section expanded with construction cost comparisons (€150-200k/unit vs. US LIHTC $400-600k), rent levels (€7-8/sqm vs. €15-20/sqm market), waitlist data (26,000 households, ~1-2 year wait), income ceiling (€53,340/year net), Klimabonus passive-house mandate, and Gemeinschaftliche Wohnprojekte co-housing model; Singapore HDB section added as Section 9.1b with coverage (79% of residents), homeownership rate (88.9%), resale prices (SGD 500-600k vs. SGD 1.2M+ private), construction cost (SGD 200-350k/unit), BTO scheme, income ceiling (SGD 14,000/month), and Land Acquisition Act as irreplaceable enabling condition; fiscal estimates added for zoning reform (YIMBY Act near-zero cost, transportation conditioning $5-15B leverage, Hsieh-Moretti $1.7T GDP gain, Minneapolis 6-10% rent reduction), LIHTC alternatives (all-in $400-600k/unit current vs. $280-420k direct grant alternative, Vienna non-profit analog at $180-280k/unit), and CLT scaling ($2.5-4B over 10 years vs. $31-37.5B voucher equivalent); Actionable Intelligence section added as Section 13 (federal legislation vehicles, state pressure points through 2026, organizations to support, specific appropriations and rulemaking pressure points); 2025-2026 rollback documentation added as Section 14 (AFFH suspension affecting $7B in annual grants, HUD discretionary budget cut ~20%, 400 FTE reduction, Section 8 under-funded by 100,000 vouchers, manufactured housing code update as surviving regulatory gain, record 770,000 PIT count backdrop).*
 
 ---
@@ -22,7 +24,7 @@ The domain-deepening corpus is substantially stronger than a typical policy rese
 
 ## Publication-Readiness Tiers
 
-### Tier 1 — Publish As-Is (14 files)
+### Tier 1 — Publish As-Is (15 files)
 
 These files are ready for public release, citation in advocacy materials, and use as evidence foundations for the proposal. Minor additions would improve them but are not required.
 
@@ -40,8 +42,9 @@ These files are ready for public release, citation in advocacy materials, and us
 12. tax-policy-evidence.md *(elevated Session 265: duplication with fiscal-reform resolved through explicit scope differentiation, ETI literature added, "starve the beast" empirical record added, actionable intelligence section added)*
 13. judicial-independence-evidence.md *(elevated Session 267: fiscal estimates for SCOTUS expansion/term limits/ethics IG added as Section 12; Canada JAC/JAAC and South Africa JSC fully developed as Section 13; counterargument on court reform as politicization — norm erosion objection, FDR miscalculation, arms race problem — with counter-counter and policy sequencing resolution added as Section 14)*
 14. housing-evidence.md *(elevated Session 268: Vienna/Singapore expanded with specific outcome numbers, fiscal estimates for zoning reform/LIHTC/CLT, actionable intelligence section, 2025-2026 rollback documentation)*
+15. economic-concentration-evidence.md *(elevated Session 269: Section 10 added — live enforcement proceedings with remedy-phase specificity, named legislative vehicles, state AG coalition pattern, organizations with pressure-point specificity, three time-bounded 2026 windows)*
 
-### Tier 2 — Adequate, Minor Gaps (9 files)
+### Tier 2 — Adequate, Minor Gaps (8 files)
 
 Solid evidentiary foundations. Missing one or two dimensions that would make them Tier 1, but usable as-is for most purposes. Deepening one weak dimension would elevate each.
 
@@ -51,9 +54,8 @@ Solid evidentiary foundations. Missing one or two dimensions that would make the
 13. social-safety-net-evidence.md
 14. rights-protection-evidence.md
 15. data-privacy-evidence.md
-16. economic-concentration-evidence.md
-17. domain-03-democratic-participation.md
-18. national-security-evidence.md *(elevated Session 263: counterargument section developed, deterrence theory vs. accidental war risk treated, "hollowing out" objection to audit requirements added; classified Tier 2+ rather than Tier 1 pending full actionable intelligence development)*
+16. domain-03-democratic-participation.md
+17. national-security-evidence.md *(elevated Session 263: counterargument section developed, deterrence theory vs. accidental war risk treated, "hollowing out" objection to audit requirements added; classified Tier 2+ rather than Tier 1 pending full actionable intelligence development)*
 
 ### Tier 3 — Needs Targeted Deepening (0 files)
 
@@ -365,9 +367,9 @@ Rubric dimensions: **Updated data** (current through 2024–2025) | **Int'l benc
 | Counterarguments | Strong | Cepr VoxEU killer acquisitions digital-market critique; Cunningham-Ederer-Ma pharmaceutical evidence distinguished from digital; consumer welfare standard origin and critique |
 | Fiscal estimates | Strong | $700-800B excess financial services fees/year; $30-50B excess broadband costs/year; $1.3-1.5T/year labor share transfer |
 | Sourcing | Strong | De Loecker et al. 2020 QJE; Bork 1978 "The Antitrust Paradox"; Manning 2003 Princeton; Azar, Marinescu, Steinbaum 2022 RES — foundational academic sourcing |
-| Actionable intelligence | Adequate | DOJ criminal no-poach prosecutions as near-term model; legislative vehicles noted. Could more specifically name which FTC/DOJ cases are live |
+| Actionable intelligence | Strong | Section 10 added: live enforcement proceedings with remedy-phase specificity; CALERA/AICOA/Open App Markets Act/Farm System Reform Act named; state AG coalitions (TX, NY, CA, IL) documented; Open Markets Institute, American Economic Liberties Project, EFF, Demand Progress, state PIRGs identified; three time-bounded 2026 windows (Google remedy record, FY2027 appropriations, state AG coalition expansion) |
 
-**Verdict**: Tier 2. The labor market concentration section — showing labor markets are more concentrated than product markets by HHI, with 36% of US workers in highly concentrated local labor markets — is the most important institutional finding because it provides the theoretical bridge between antitrust and labor policy.
+**Verdict**: ~~Tier 2~~ **Tier 1** *(elevated Session 269)*. Section 10 fills the actionable intelligence gap: live FTC/DOJ cases named with their specific procedural posture and the public participation mechanisms available in each; legislative vehicles identified by bill name with committee history; state AG enforcement documented as the structurally resilient enforcement alternative when federal agencies are under-resourced; organizations listed with specific roles and URLs; three near-term 2026 windows identified with action mechanisms for each. The labor market concentration section — showing labor markets are more concentrated than product markets by HHI, with 36% of US workers in highly concentrated local labor markets — remains the most important institutional finding because it provides the theoretical bridge between antitrust and labor policy.
 
 ---
 
@@ -449,7 +451,7 @@ All four Priority 1 items are done. Brief record:
 
 9. **housing-evidence.md**: COMPLETE (Session 268). Vienna Gemeindebau expanded with construction cost comparisons, rent levels, waitlist data, income ceiling, Klimabonus, and co-housing model. Singapore HDB added as Section 9.1b. Fiscal estimates added for zoning reform, LIHTC alternatives, and CLT scaling. Actionable intelligence added as Section 13. 2025-2026 rollback documentation added as Section 14. File elevated to Tier 1.
 
-10. **economic-concentration-evidence.md**: Add actionable intelligence naming live FTC/DOJ cases, specific legislative vehicles (Competition and Antitrust Law Enforcement Reform Act), and state AG enforcement actions as near-term leverage points.
+10. **economic-concentration-evidence.md**: COMPLETE (Session 269). Section 10 added: live enforcement proceedings with remedy-phase specificity (Google Search remedy, FTC v. Amazon, DOJ v. Apple, DOJ v. Google Ad Tech, FTC PBM investigation); legislative vehicles (CALERA, AICOA, Open App Markets Act, Farm System Reform Act, state modernization); state AG coalition pattern (TX, NY, CA, IL as named actors); organizations (Open Markets Institute, American Economic Liberties Project, EFF, Demand Progress, state PIRGs); three time-bounded 2026 windows. File elevated to Tier 1.
 
 ---
 
