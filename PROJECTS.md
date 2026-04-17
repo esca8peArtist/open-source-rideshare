@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 264)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 265)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 264: **Tier 3 deepening continues.** All 5 Tier 3 files now addressed: electoral-reform (Tier 1, Session 263), national-security (Tier 2+, Session 263), environment-climate (Tier 1, Session 264 — counterarguments + actionable intel added; 469→585 lines), healthcare-education (Tier 1, Session 264 — actionable intel added; 599→664 lines). **Remaining Tier 3**: tax-policy-evidence.md — needs differentiation from fiscal-reform-evidence.md + actionable intelligence section. **Next**: Read tax-policy-evidence.md fully and differentiate from domain-05-fiscal-reform.md; add actionable section.
+**Current focus**: Session 265: **ALL TIER 3 FILES COMPLETE.** All 5 Tier 3 files now at Tier 1/Tier 2+: electoral-reform (Tier 1, S263), national-security (Tier 2+, S263), environment-climate (Tier 1, S264), healthcare-education (Tier 1, S264), tax-policy (Tier 1, S265 — duplication resolved + counterarguments expanded + actionable intel added). **Next**: Quality review pass across all files (verify Tier 1 consistency), then publication-readiness formatting pass. Candidate: pull V-Dem 0.75→0.57 decline figure into proposal Part I as recommended in quality-review-index.md.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 264: **All test suite commits pushed to rideshare remote** (force-push via `git subtree split` — clean history, private files excluded). Rideshare remote `feature/corporate-business-accounts` now at `267bf81` (test(corp-member-permission,device-tokens)). All endpoint coverage gaps complete. **Next**: New feature work — candidates: corporate expense reporting, driver background check expiration tracking, or beckn-protocol integration research.
-**Last updated by**: orchestrator on 2026-04-17 (Session 264)
+**Current focus**: Session 265: **Corporate expense reporting feature complete** (commit `ea7b1c0`, 65 tests passing). 4 endpoints: list/generate/detail/CSV export. Note: in-memory store — follow-up ORM model + migration needed before main merge. **Next**: Push to rideshare remote; then driver background check expiration tracking feature OR beckn-protocol integration research.
+**Last updated by**: orchestrator on 2026-04-17 (Session 265)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

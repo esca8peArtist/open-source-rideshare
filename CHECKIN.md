@@ -1,7 +1,47 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–264
+**Sessions**: 257–265
+
+---
+
+### Needs Your Input
+
+*(None — no items awaiting user decision.)*
+
+---
+
+### Accomplished (Session 265)
+
+#### resistance-research — tax-policy-evidence.md elevated Tier 3 → Tier 1 (commit `a704f78`)
+
+All 5 Tier 3 files from the quality review are now done. This was the last one.
+
+**Duplication resolved**: The file was overlapping heavily with `domain-05-fiscal-reform.md`. Scope is now explicit — tax-policy owns the tax code structure (progressivity, loopholes, IRS enforcement framing, international profit shifting); fiscal-reform owns budget process, deficit/debt, entitlement sustainability.
+
+**New content added**:
+- **Carried interest loophole** (new §6): $63.1B/10yr JCT figure, 3 active 119th Congress bills including Wyden/Whitehouse/King bill filed April 16 2026 — a live Gilens/Page illustration
+- **IRS enforcement: DOGE crisis** (expanded §13): 31% of revenue agents gone by mid-2025; Yale Budget Lab projects $861B deficit increase from payroll savings of $45.5B
+- **Counterarguments** (8 full subsections replacing 8 bullet points): Supply-side/Laffer (ETI formula, t* = 73%), double taxation, IRS targeting history, capital flight with US structural differences, unrealized gains workability, corporate taxes/jobs, code complexity, entrepreneurship objection — all taken seriously and rebutted with named studies and data
+- **Fiscal policy and democratic legitimacy** (new §16): Gilens/Page applied directly to tax outcomes; 5000:1 lobbying ROI on Direct File; 1986 reform coalition conditions
+- **Actionable intelligence** (new §18): OBBBA signed July 4 2025 ($5.2T revenue reduction, 60% top-quintile benefits), active bills table, IRS pressure points, org profiles (Tax Policy Center, ITEP, Yale Budget Lab, ATF, FACT Coalition, CBPP, EPI, Patriotic Millionaires), near-term calendar through 2027
+
+**Tier 3 → Tier 1 complete for all files**: electoral-reform (S263), national-security (S263→Tier 2+), environment-climate (S264), healthcare-education (S264), tax-policy (S265).
+
+#### open-source-rideshare — Corporate expense reporting feature (commit `ea7b1c0`)
+
+New feature on `feature/corporate-business-accounts`. 65 tests written, 65 passing.
+
+**Endpoints** (`GET/POST /corporate/{corp_id}/expense-reports`, `GET /{report_id}`, `GET /{report_id}/export`):
+- List reports with date range + pagination filters
+- Generate aggregated report for a date range (per-member and per-category breakdowns)
+- CSV export with `Content-Disposition: attachment` header
+
+**Note for review**: Service uses an in-memory store (`_REPORT_STORE`) — reports don't persist across restarts. A natural follow-up is a `CorporateGeneratedExpenseReport` ORM model + migration. Not a blocker for the current feature branch, but worth doing before merge to main.
+
+---
+
+### Accomplished (Session 264)
 
 ---
 
