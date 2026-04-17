@@ -505,6 +505,26 @@ async def get_notification_log(
     return [dict(n) for n in notifications[:limit]]
 
 
+async def list_rider_panic_alerts(
+    db: AsyncSession,
+    rider_id: int,
+) -> list[dict]:
+    """Return all panic alerts for a rider across all statuses, newest-first.
+
+    Used by the safety incident history endpoint.
+
+    Args:
+        db:       Async database session (unused in this implementation).
+        rider_id: ID of the authenticated rider.
+
+    Returns:
+        List of all panic alert dicts for the rider, ordered newest-first.
+    """
+    alerts = [a for a in _panic_alerts.values() if a["rider_id"] == rider_id]
+    alerts.sort(key=lambda a: a["triggered_at"], reverse=True)
+    return [dict(a) for a in alerts]
+
+
 async def send_trusted_contact_notifications(
     db: AsyncSession,
     ride_id: int,
