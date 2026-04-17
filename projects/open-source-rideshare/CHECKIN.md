@@ -6,6 +6,128 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/rider-fare-transparency — Rider cumulative savings summary (latest)
+
+**Branch:** `feature/rider-fare-transparency`
+**Commit:** `aa8efc0`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+`GET /riders/me/savings-summary` — shows riders exactly how much they've saved vs. Uber and Lyft across their completed ride history. Directly reinforces the cooperative value proposition: every time a rider checks this endpoint, they see a concrete dollar figure for what staying with OpenRide has meant for their wallet and their driver's.
+
+**Files created:**
+- `backend/app/schemas/rider_savings_summary.py` — `RiderSavingsSummary` schema
+- `backend/app/services/rider_savings_summary.py` — aggregation service with 2025 Uber/Lyft rate cards
+- `backend/app/api/v1/rider_savings_summary.py` — FastAPI router
+- `backend/tests/test_rider_savings_summary.py` — 31 tests, all passing
+
+**Files modified:**
+- `backend/app/main.py` — registers `rider_savings_summary_router`
+
+**Response fields:**
+- `total_completed_rides` — all completed rides in period
+- `rides_included_in_comparison` — rides with distance+duration data (used for savings calc)
+- `total_openride_spend_usd` — actual fares paid (excl. tips)
+- `total_tips_usd` — tips paid (100% to driver on all platforms, reported separately)
+- `total_estimated_uber_spend_usd` / `total_estimated_lyft_spend_usd` — competitor estimates
+- `total_saved_vs_uber_usd` / `total_saved_vs_lyft_usd` — savings (positive = cheaper on OpenRide)
+- `avg_saved_per_ride_vs_uber_usd` / `avg_saved_per_ride_vs_lyft_usd` — per-ride average
+- Optional `period_start` / `period_end` query params (no default → full history)
+- `transparency_note` — human-readable summary for the rider app UI
+- `methodology_note` — full disclosure of estimation method
+
+**Key design decisions:**
+- Apples-to-apples: savings comparison uses only OpenRide fares for rides *with* distance/duration data; `rides_included_in_comparison` tells caller how many rides contributed
+- Same rate cards as `GET /pricing/fare-preview` for consistency across endpoints
+- $3.00 minimum fare floor on competitor estimates (standard US market floor 2025)
+- Transparency-first: methodology disclosed in response; surface in UI
+
+**Authorization:** any authenticated user (riders access their own history)
+
+---
+
+### feature/rider-fare-transparency — Driver rating read-side endpoints
+
+**Branch:** `feature/rider-fare-transparency`
+**Commit:** `7e26faa`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Surfaces the read-side of rider-to-driver ratings. The `ratings.py` service had `get_driver_ratings()` fully built but no API ever exposed it. This adds the symmetric counterpart to the existing `rider_ratings.py` (driver rates rider).
+
+**Files created:**
+- `backend/app/schemas/driver_ratings.py` — `DriverRatingSummary` + `RideDriverRatingResponse` schemas
+- `backend/app/api/v1/driver_ratings.py` — 3 endpoints (see below)
+- `backend/tests/test_driver_ratings.py` — 22 unit tests, all passing
+
+**Files modified:**
+- `backend/app/services/ratings.py` — adds `list_low_rated_drivers()` (30-day avg <3.0, >5 ratings)
+- `backend/app/main.py` — registers `driver_ratings` router
+
+**Endpoints:**
+- `GET /drivers/{driver_id}/rating` — aggregate summary (avg, distribution, recent_avg); any authenticated user; admin also gets `low_rated` flag
+- `GET /rides/{ride_id}/driver-rating` — the specific star value a rider left for a ride; accessible by the rider, the driver on the ride, or admin; 404 if no rating yet
+- `GET /admin/driver-ratings/low-rated` — admin-only list of drivers flagged below threshold (paginated)
+
+**Auth:**
+- `/drivers/{id}/rating`: any authenticated user (riders need driver rating info before/during matching)
+- `/rides/{id}/driver-rating`: ride participant or admin; 403 for strangers
+- Admin endpoints: require admin role
+
+---
+
+### feature/rider-fare-transparency — GET /rides/{id}/fare-breakdown
+
+**Branch:** `feature/rider-fare-transparency`
+**Commit:** `a975ce0`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+**Remote PR URL:** https://github.com/esca8peArtist/open-source-rideshare/pull/new/feature/rider-fare-transparency
+
+**Summary:**
+Adds `GET /rides/{ride_id}/fare-breakdown` — a rider-facing fare transparency endpoint
+that shows exactly where every dollar of a completed ride fare went. Directly supports
+OpenRide's price-transparency mission by surfacing the driver's cut, the platform fee,
+and a side-by-side comparison to what Uber/Lyft would have charged.
+
+**Files created:**
+- `backend/app/schemas/rider_fare_transparency.py` — `FareBreakdownResponse` + `CompetitorFeeComparison` Pydantic schemas
+- `backend/app/services/rider_fare_transparency.py` — service logic; reads actual `platform_fee` from Payment record, falls back to documented 10% constant
+- `backend/app/api/v1/rider_fare_transparency.py` — FastAPI router; registered in `main.py`
+- `backend/tests/test_rider_fare_transparency.py` — 50 tests (42 pass, 8 skip pending live PG)
+
+**Response fields:**
+- `total_fare_usd`, `driver_payout_usd`, `driver_payout_pct`
+- `platform_fee_usd`, `platform_fee_pct`
+- `tip_usd` (always 100% to driver, excluded from fee base)
+- `taxes_usd` / `taxes_pct` (0.00 today; field reserved for future tracking)
+- `platform_fee_is_estimated` flag — `True` when no completed Payment record found
+- `uber_comparison` / `lyft_comparison` — estimated fees for same fare on competitor
+- `driver_received_more_than_uber_usd` / `driver_received_more_than_lyft_usd`
+- `transparency_note` — human-readable sentence for the rider app UI
+- `methodology_note` — disclosure of data sources and limitations
+
+**Authorization:**
+- Riders: own rides only (403 for other riders' rides)
+- Admins: any ride
+- 404 for non-existent or non-completed rides (no information leakage)
+
+**Platform fee decisions:**
+- Actual `platform_fee` from `Payment` record used when available (preferred path)
+- Fallback constant `OPENRIDE_PLATFORM_FEE_RATE = 0.10` (10%) for cash rides / legacy records
+- Current `payments.py` service writes `platform_fee = 0.0` (zero-commission model); this means live rides will show `platform_fee_is_estimated=False` with `platform_fee_usd=0.0` — which is honest and correct. The constant fallback exists for forward-compatibility if the cooperative votes to set a non-zero rate.
+- Competitor rates: Uber midpoint 26.5% (25–28%), Lyft midpoint 22.5% (20–25%), per 2025 US national average surveys (RideGuru, driver community aggregates)
+
+**Tests:**
+- 10 pure-function tests (`_safe_pct`, `_build_competitor_comparison`, `_build_transparency_note`)
+- 32 service unit tests with AsyncMock DB (no live DB needed)
+- 8 API integration tests (skip without live PostgreSQL — same pattern as existing suite)
+- All 42 non-DB tests pass: `42 passed, 8 skipped`
+
+---
+
 ### feature/corporate-business-accounts — add member ride quota management (latest)
 
 **Branch:** `feature/corporate-business-accounts`

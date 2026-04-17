@@ -4,6 +4,44 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 284 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- stockbot (#1): monitoring-only, no code work without Jetson.
+- mfg-farm (#2): blocked on physical test prints — not actionable.
+- resistance-research (#3): all 23 domain files Tier 1, op-ed complete. No queued task.
+- open-source-rideshare (#4): selected — add rider savings summary feature.
+
+### Task selected: open-source-rideshare — rider savings summary
+
+`GET /riders/me/savings-summary` — shows authenticated riders their cumulative fare savings vs. Uber and Lyft across their completed ride history.
+
+### open-source-rideshare: rider cumulative savings summary (commit aa8efc0, pushed)
+
+New files:
+- `backend/app/schemas/rider_savings_summary.py` — RiderSavingsSummary schema
+- `backend/app/services/rider_savings_summary.py` — service with 2025 rate cards, per-ride competitor estimation, aggregation
+- `backend/app/api/v1/rider_savings_summary.py` — GET /riders/me/savings-summary router
+- `backend/tests/test_rider_savings_summary.py` — 31 tests, all passing
+
+Modified: `backend/app/main.py` — registers rider_savings_summary_router
+
+Key decisions:
+- Apples-to-apples: savings comparison uses only the OpenRide fare for rides where distance/duration is available (not rides without that data); rides_included_in_comparison field tells caller how many contributed
+- Tips tracked separately in total_tips_usd; go 100% to driver on all platforms, excluded from savings calc
+- Optional date range (start_date/end_date) — defaults to all history when omitted
+- $3.00 minimum fare floor on competitor estimates (standard US market floor in 2025)
+- Same rate cards as GET /pricing/fare-preview for consistency
+- transparency_note: human-readable summary for rider app ("you saved $X vs. Uber...")
+- methodology_note: full disclosure of estimation method and limitations
+- 11,110 tests passing; 2 pre-existing unrelated failures unchanged
+
+Session 284 complete.
+
+---
+
 ## Session 283 — 2026-04-17
 
 ### Orient

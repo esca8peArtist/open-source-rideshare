@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 283: **Pre-booking fare transparency COMPLETE** (commit `ed939e0`, pushed, branch `feature/rider-fare-transparency`). GET /pricing/fare-preview?distance_km=&duration_min=&surge_multiplier= — public endpoint; returns OpenRide fare + 100% driver payout, Uber/Lyft competitor estimates, driver_earns_more_than_uber/lyft fields, human-readable transparency note; 67 tests passing. Composes naturally with GET /pricing/surge-check (pass surge_multiplier through). **Waiting user review**: feature/corporate-business-accounts AND feature/rider-fare-transparency (both ready to merge — multiple features on fare-transparency branch). **Next**: Fresh feature — pooled rides improvements, driver availability scheduling, or other rider/driver-facing feature.
-**Last updated by**: orchestrator on 2026-04-17 (Session 283)
+**Current focus**: Session 284: **Rider savings summary COMPLETE** (commit `aa8efc0`, pushed, branch `feature/rider-fare-transparency`). GET /riders/me/savings-summary — authenticated rider endpoint; shows cumulative savings vs. Uber and Lyft across completed ride history using 2025 rate cards; total/avg savings, tips tracked separately, optional date range, methodology_note + transparency_note; 31 tests passing. Branch now has: driver ratings, fare-breakdown, pre-booking fare-preview, and rider savings summary. **Waiting user review**: feature/rider-fare-transparency (4 features, all ready to merge). **Next**: Fresh feature or resistance-research domain deepening.
+**Last updated by**: orchestrator on 2026-04-17 (Session 284)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
