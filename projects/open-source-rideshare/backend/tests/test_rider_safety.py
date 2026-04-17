@@ -1334,3 +1334,116 @@ class TestTrustedContactLimitEndToEnd:
             mock_db, rider_id=1, name="New Contact", phone="+15550000099"
         )
         assert new_c["is_active"] is True
+
+
+# ---------------------------------------------------------------------------
+# Trusted contact notification wiring — endpoint integration
+# ---------------------------------------------------------------------------
+
+
+class TestTrustedContactNotificationWiring:
+    """Verify that send_trusted_contact_notifications is called from endpoints."""
+
+    def _make_ride(self, ride_id=100, rider_id=1, driver_id=2):
+        from unittest.mock import MagicMock as MM
+        from app.models.ride import RideStatus
+
+        ride = MM()
+        ride.id = ride_id
+        ride.rider_id = rider_id
+        ride.driver_id = driver_id
+        ride.status = RideStatus.IN_PROGRESS
+        return ride
+
+    def _make_db(self, ride):
+        from unittest.mock import AsyncMock as AM, MagicMock as MM
+
+        result = MM()
+        result.scalar_one_or_none = MM(return_value=ride)
+        db = AM()
+        db.execute = AM(return_value=result)
+        return db
+
+    @pytest.mark.asyncio
+    async def test_panic_endpoint_calls_trusted_contact_notifications(self):
+        """POST /riders/me/panic notifies trusted contacts with PANIC_ALERT."""
+        from unittest.mock import AsyncMock as AM, MagicMock as MM, patch
+
+        from app.schemas.rider_safety import (
+            PanicAlertStatus,
+            TriggerPanicRequest,
+            TrustedContactNotificationType,
+        )
+        from app.api.v1.rider_safety import post_trigger_panic
+
+        mock_rider = MM()
+        mock_rider.id = 1
+        ride = self._make_ride()
+        db = self._make_db(ride)
+
+        expected_alert = {
+            "id": "abc-123",
+            "ride_id": 100,
+            "rider_id": 1,
+            "driver_id": 2,
+            "triggered_at": "2026-04-17T00:00:00+00:00",
+            "location_lat": None,
+            "location_lng": None,
+            "status": PanicAlertStatus.ACTIVE,
+            "resolved_at": None,
+            "resolved_by": None,
+            "resolution_notes": None,
+        }
+
+        with (
+            patch("app.api.v1.rider_safety.trigger_panic", new_callable=AM, return_value=expected_alert),
+            patch("app.api.v1.rider_safety.send_trusted_contact_notifications", new_callable=AM, return_value=[]) as mock_notify,
+        ):
+            await post_trigger_panic(body=TriggerPanicRequest(), rider=mock_rider, db=db)
+
+        mock_notify.assert_awaited_once()
+        call_kwargs = mock_notify.call_args
+        assert call_kwargs.args[0] is db
+        assert call_kwargs.kwargs["ride_id"] == 100
+        assert call_kwargs.kwargs["rider_id"] == 1
+        assert call_kwargs.kwargs["notification_type"] == TrustedContactNotificationType.PANIC_ALERT
+
+    @pytest.mark.asyncio
+    async def test_panic_endpoint_proceeds_when_contact_notification_fails(self):
+        """Trusted contact notification failure must not affect the panic alert response."""
+        from unittest.mock import AsyncMock as AM, MagicMock as MM, patch
+
+        from app.schemas.rider_safety import PanicAlertStatus, TriggerPanicRequest
+        from app.api.v1.rider_safety import post_trigger_panic
+
+        mock_rider = MM()
+        mock_rider.id = 1
+        ride = self._make_ride()
+        db = self._make_db(ride)
+
+        expected_alert = {
+            "id": "abc-456",
+            "ride_id": 100,
+            "rider_id": 1,
+            "driver_id": 2,
+            "triggered_at": "2026-04-17T00:00:00+00:00",
+            "location_lat": None,
+            "location_lng": None,
+            "status": PanicAlertStatus.ACTIVE,
+            "resolved_at": None,
+            "resolved_by": None,
+            "resolution_notes": None,
+        }
+
+        with (
+            patch("app.api.v1.rider_safety.trigger_panic", new_callable=AM, return_value=expected_alert),
+            patch(
+                "app.api.v1.rider_safety.send_trusted_contact_notifications",
+                new_callable=AM,
+                side_effect=Exception("SMS gateway down"),
+            ),
+        ):
+            # Should not raise
+            result = await post_trigger_panic(body=TriggerPanicRequest(), rider=mock_rider, db=db)
+
+        assert result.status == PanicAlertStatus.ACTIVE

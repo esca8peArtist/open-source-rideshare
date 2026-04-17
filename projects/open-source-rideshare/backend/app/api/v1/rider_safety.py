@@ -34,6 +34,7 @@ from app.schemas.rider_safety import (
     TriggerPanicRequest,
     TrustedContactCreate,
     TrustedContactNotificationLogResponse,
+    TrustedContactNotificationType,
     TrustedContactResponse,
     TrustedContactUpdate,
 )
@@ -109,6 +110,15 @@ async def post_trigger_panic(
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    # Notify trusted contacts with notify_on_panic=True — fire-and-forget.
+    try:
+        await send_trusted_contact_notifications(
+            db, ride_id=ride.id, rider_id=rider.id,
+            notification_type=TrustedContactNotificationType.PANIC_ALERT,
+        )
+    except Exception:
+        logger.exception("Failed to notify trusted contacts for panic alert on ride %d", ride.id)
 
     return PanicAlertResponse(**alert)
 

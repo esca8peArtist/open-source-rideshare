@@ -448,6 +448,48 @@ class TestStartRide:
             await start_ride(ride_id=1, driver=driver, db=db)
         assert exc_info.value.status_code == 409
 
+    @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    async def test_trip_start_notifies_trusted_contacts(self, mock_ws):
+        """start_ride calls send_trusted_contact_notifications with TRIP_START."""
+        from app.api.v1.rides import start_ride
+
+        driver = _make_user(user_id=20, role=UserRole.DRIVER)
+        ride = _make_ride(driver_id=20, status=RideStatus.MATCHED)
+        db = _mock_db(scalar_return=ride)
+
+        with patch(
+            "app.services.rider_safety.send_trusted_contact_notifications",
+            new_callable=AsyncMock,
+            return_value=[],
+        ) as mock_notify:
+            await start_ride(ride_id=1, driver=driver, db=db)
+
+        mock_notify.assert_awaited_once()
+        kwargs = mock_notify.call_args.kwargs
+        from app.schemas.rider_safety import TrustedContactNotificationType
+        assert kwargs["notification_type"] == TrustedContactNotificationType.TRIP_START
+        assert kwargs["rider_id"] == ride.rider_id
+
+    @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    async def test_trip_start_proceeds_when_contact_notification_fails(self, mock_ws):
+        """start_ride succeeds even if trusted contact notification raises."""
+        from app.api.v1.rides import start_ride
+
+        driver = _make_user(user_id=20, role=UserRole.DRIVER)
+        ride = _make_ride(driver_id=20, status=RideStatus.MATCHED)
+        db = _mock_db(scalar_return=ride)
+
+        with patch(
+            "app.services.rider_safety.send_trusted_contact_notifications",
+            new_callable=AsyncMock,
+            side_effect=Exception("Service unavailable"),
+        ):
+            result = await start_ride(ride_id=1, driver=driver, db=db)
+
+        assert result == {"status": "in_progress"}
+
 
 class TestCompleteRide:
     @pytest.mark.asyncio

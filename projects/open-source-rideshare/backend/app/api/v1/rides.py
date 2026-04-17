@@ -872,6 +872,17 @@ async def start_ride(
         dropoff_address=ride.dropoff_address,
     )
 
+    # Notify trusted contacts with notify_on_trip_start=True — fire-and-forget.
+    try:
+        from app.services.rider_safety import send_trusted_contact_notifications
+        from app.schemas.rider_safety import TrustedContactNotificationType
+        await send_trusted_contact_notifications(
+            db, ride_id=ride.id, rider_id=ride.rider_id,
+            notification_type=TrustedContactNotificationType.TRIP_START,
+        )
+    except Exception:
+        pass  # never block ride operations on contact notification failure
+
     return {"status": "in_progress"}
 
 
