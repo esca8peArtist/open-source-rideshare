@@ -9,36 +9,29 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 294, 295, 296, 297
+**Sessions run**: 294, 295, 296, 297, 298
+
+### Accomplished (Session 298)
+
+#### open-source-rideshare — Driver performance trend analysis COMPLETE (commit `2f12453`)
+Two new endpoints: driver self-view and admin view.
+- **`GET /drivers/me/performance/trend?weeks=N`** (1–52, default 8)
+- **`GET /admin/drivers/{driver_id}/performance/trend?weeks=N`**
+- Per-metric trend direction (`improving`/`declining`/`stable`/`unknown`) for 6 KPIs: performance_score, acceptance_rate, completion_rate, cancellation_rate, on_time_rate, average_rider_rating
+- Each metric shows: current, previous, 4-week rolling average, direction, change_from_previous
+- Score velocity (points/week via least-squares regression): positive = improving
+- Fleet comparison: this driver's percentile rank + fleet average score (across all drivers' latest snapshots)
+- Qualitative `strengths` and `improvement_areas` lists vs. platform target thresholds
+- `weekly_scores` chart series (oldest→newest) with period_start, score, tier, rides
+- Returns `snapshots_analyzed: 0` when no history exists (no 404)
+- **48 new tests** (pure unit + service + endpoint) — **3,308 total unit-passing**
+- Pure helpers independently tested: `_metric_direction`, `_compute_trend`, `_score_velocity`
 
 ### Accomplished (Session 297)
 
 #### open-source-rideshare — Rider safety incident history COMPLETE (commit `02701bc`)
-Paginated, filterable panic alert history for riders.
-- **`GET /riders/me/safety-incidents`**
-- **Filters**: `incident_type` (all/PANIC_ALERT), `status` (all/active/resolved/false_alarm), `from_date`/`to_date` (YYYY-MM-DD, UTC, inclusive), `limit` (1–100, default 20), `offset` (≥0)
-- `summary` (all-time counts: total/active/resolved/false_alarm) — unaffected by filters
-- `total_count` reflects filtered count before pagination; incidents ordered newest-first
-- 422 when `from_date > to_date` or invalid enum values
-- Extensible: `incident_type` enum allows future SOS/other types without breaking schema
+- **`GET /riders/me/safety-incidents`** — paginated, filterable panic alert history
 - **61 tests** — **3,260 total unit-passing**
-- Bug fixed in `_apply_filters`: unknown `incident_type` strings now return `[]` instead of raising `ValueError`
-- Router registered in `main.py`
-
-### Accomplished (Session 296)
-
-#### open-source-rideshare — Driver earnings history COMPLETE (commit `f460c77`)
-Week-by-week time-series earnings breakdown for drivers.
-- **`GET /driver/me/earnings-history?weeks=N`** (1–52, default 12)
-- N buckets oldest-first; zero-filled for weeks with no rides
-- Per-bucket: `earnings_usd`, `ride_count`, `avg_fare_usd`, `tip_total_usd`; `best_week`, `trend`
-- **66 tests** — **3,199 total unit-passing**
-
-### Accomplished (Sessions 294–295)
-
-#### open-source-rideshare — Rider trip history + Driver earnings comparison
-- Rider trip history `GET /riders/me/trip-history` — 57 tests (3,133 passing)
-- Driver earnings comparison `GET /driver/me/earnings-comparison` — 52 tests (3,076 passing)
 
 ---
 
@@ -54,11 +47,11 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 6. Take 5 photos (brief in `etsy-listing-modrun.md`)
 7. Go live on Etsy — copy is already done in `etsy-listing-modrun.md`
 
-**op-ed submission — action needed by April 22 (5 days away)**
+**op-ed submission — action needed by April 22 (4 days away)**
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` now has 8 sessions of work local (3,260 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` now has 9 sessions of work locally (3,308 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -70,13 +63,16 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
-2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available. Or deepening pass on remaining domains.
-3. **open-source-rideshare**: Next feature — trip demand heatmap or driver performance trend analysis.
+2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
+3. **open-source-rideshare**: Next feature — trip demand heatmap or driver live location updates.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
 
 ### History
+
+#### Accomplished (Sessions 294–297)
+- **open-source-rideshare**: Rider trip history (57 tests, 3,133), driver earnings comparison (52 tests, 3,076), driver earnings history (66 tests, 3,199), rider safety incident history (61 tests, 3,260).
 
 #### Accomplished (Session 291)
 - **mfg-farm**: Business plan COMPLETE (`business-plan.md`, ~650 lines) — 7 Phase-1 SKUs, financial projections ($9,619–$17,125 net 6-month), machine investment timeline. CadQuery parametric designs COMPLETE (`modrun_clip.py`, `modrun_rail.py`, `README.md`).

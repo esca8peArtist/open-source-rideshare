@@ -4956,3 +4956,33 @@ Root cause: `!checkin` reads `## Since Last Check-in` from CHECKIN.md. Orchestra
 - Thesis: CMS Medicaid work-requirements implementation guidance (due June 1, 2026) is the highest-leverage intervention available without new legislation — broad exemption definitions can meaningfully reduce projected 5M coverage losses from OBBBA
 - Key ask: CMS issue broad exemption guidance by June 1; parallel pressure on Senate Finance Committee for Prior Authorization Reform Act floor vote (H.R. 3514 / S. 1816, 248 House + 64 Senate co-sponsors)
 - Commit: 45fd8ba
+
+## Session 298 — 2026-04-17
+
+### Orient
+- INBOX: Empty — nothing to process.
+- BLOCKED: GitHub push blocked (no resolution); other blocks resolved.
+- stockbot (#1): No dev work available — waiting on user cycle logs.
+- mfg-farm (#2): Blocked on user test print.
+- resistance-research (#3): Op-ed complete, April 20 framework fills April 20 evening.
+- open-source-rideshare (#4): Next feature = driver performance trend analysis.
+
+### Task selected
+open-source-rideshare: Driver performance trend analysis
+- New endpoints: GET /drivers/me/performance/trend + GET /admin/drivers/{driver_id}/performance/trend
+- Per-metric trend direction/velocity, fleet percentile comparison, strengths/improvement areas
+
+### open-source-rideshare: Driver performance trend analysis COMPLETE
+- New endpoints: GET /drivers/me/performance/trend + GET /admin/drivers/{driver_id}/performance/trend
+- Per-metric trend direction/velocity for 6 KPIs (acceptance, completion, cancellation, on_time, rating, score)
+- Linear regression score velocity (points/week): positive = improving
+- Fleet comparison: driver percentile rank + fleet average score
+- Qualitative strengths/improvement_areas vs. platform targets
+- weekly_scores list for charting (oldest→newest)
+- Pure helpers: _metric_direction, _compute_trend, _score_velocity
+- 48 new tests (pure + service), 3,308 total passing, zero failures
+- Commit: 2f12453, branch: feature/rider-emergency-safety
+
+### Session end
+- Next for open-source-rideshare: trip demand heatmap OR rider app feature
+- CHECKIN.md updated
