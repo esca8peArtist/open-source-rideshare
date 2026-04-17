@@ -838,6 +838,7 @@ async def driver_arrived(
         raise HTTPException(status_code=409, detail="Must be en-route before arriving")
 
     ride.status = RideStatus.ARRIVED
+    ride.arrived_at = datetime.now(timezone.utc)
     await db.commit()
 
     from app.api.websocket import notify_ride_status
@@ -1374,3 +1375,39 @@ async def post_verify_pickup(
     await db.commit()
 
     return PickupVerificationResponse(**result)
+
+
+@router.post(
+    "/{ride_id}/report-driver-no-show",
+    status_code=status.HTTP_200_OK,
+    summary="Report that the driver did not arrive",
+    description=(
+        "Rider reports that the driver never showed up at the pickup location. "
+        "Available when the ride is in MATCHED, DRIVER_EN_ROUTE, or ARRIVED status. "
+        "The ride is immediately cancelled, any completed fare payment is refunded, "
+        "and the rider receives a push + SMS notification. "
+        "Can only be reported once per ride."
+    ),
+)
+async def post_report_driver_no_show(
+    ride_id: int,
+    rider: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Rider-initiated driver no-show report."""
+    from app.services.driver_no_show import report_driver_no_show
+
+    try:
+        result = await report_driver_no_show(
+            ride_id=ride_id,
+            rider_id=rider.id,
+            db=db,
+        )
+    except LookupError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
+    except PermissionError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorised for this ride")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+    return result

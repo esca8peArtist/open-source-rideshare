@@ -49,6 +49,7 @@ class NotificationType(str, enum.Enum):
     RIDE_ASSIGNED = "ride_assigned"
     RIDE_COMPLETED_DRIVER = "ride_completed_driver"
     ROUTE_DEVIATION = "route_deviation"
+    DRIVER_NO_SHOW = "driver_no_show"
 
 
 @dataclass

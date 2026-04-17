@@ -407,6 +407,14 @@ async def _scheduler_loop() -> None:
         except Exception:
             logger.exception("Retry cycle failed")
 
+        try:
+            from app.services.driver_no_show import detect_driver_no_shows
+            no_shows = await detect_driver_no_shows()
+            if no_shows:
+                logger.info("No-show cycle complete: %d ride(s) auto-cancelled", no_shows)
+        except Exception:
+            logger.exception("Driver no-show detection cycle failed")
+
         await asyncio.sleep(interval)
 
 

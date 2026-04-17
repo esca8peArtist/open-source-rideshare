@@ -183,6 +183,15 @@ def route_deviation(dropoff_address: str = "", **kw) -> TemplateResult:
     )
 
 
+def driver_no_show(wait_minutes: int | str = "", **kw) -> TemplateResult:
+    wait_part = f" after {wait_minutes} minutes" if wait_minutes else ""
+    return (
+        "Driver no-show — ride cancelled",
+        f"Your driver did not arrive{wait_part}. Your ride has been cancelled and any payment will be refunded. Please request a new ride.",
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -202,6 +211,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_ASSIGNED: ride_assigned,
     NotificationType.RIDE_COMPLETED_DRIVER: ride_completed_driver,
     NotificationType.ROUTE_DEVIATION: route_deviation,
+    NotificationType.DRIVER_NO_SHOW: driver_no_show,
 }
 
 

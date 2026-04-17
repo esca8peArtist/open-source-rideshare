@@ -45,6 +45,9 @@ class CancellationCategory(str, enum.Enum):
     EMERGENCY = "emergency"
     DRIVER_OTHER = "driver_other"
 
+    # System-initiated (automated or rider-reported driver no-show)
+    DRIVER_NO_SHOW = "driver_no_show"
+
 
 class Ride(Base):
     __tablename__ = "rides"
@@ -71,9 +74,12 @@ class Ride(Base):
 
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     matched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    arrived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Set when rider reports driver no-show (manual) or scheduler detects it (automated)
+    driver_no_show_reported_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     is_pool: Mapped[bool] = mapped_column(default=False)
     pool_id: Mapped[int | None] = mapped_column(ForeignKey("ride_pools.id"), nullable=True, index=True)

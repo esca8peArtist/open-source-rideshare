@@ -80,6 +80,9 @@ class Settings(BaseSettings):
     demand_pricing_threshold: float = 2.0        # demand/supply ratio below which no adjustment applies
     demand_pricing_scale_factor: float = 0.25    # multiplier increase per unit of ratio above threshold
 
+    # Driver no-show detection
+    driver_no_show_threshold_minutes: int = 15  # minutes after ARRIVED before auto-cancel
+
     # WebSocket heartbeat
     ws_heartbeat_interval_seconds: int = 30  # server pings every N seconds
     ws_heartbeat_timeout_seconds: int = 10   # client must pong within N seconds
