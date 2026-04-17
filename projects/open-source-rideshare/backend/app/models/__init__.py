@@ -26,3 +26,5 @@ from app.models.vehicle_inspection import VehicleInspection, VehicleInspectionAl
 from app.models.driver_performance import DriverPerformanceSnapshot, DriverPerformanceAlert  # noqa: F401
 from app.models.complaint import Complaint  # noqa: F401
 from app.models.platform_config import PlatformConfig, PlatformConfigHistory  # noqa: F401
+from app.models.driver_shift import DriverShift  # noqa: F401
+from app.models.driver_earnings_goal import DriverEarningsGoal  # noqa: F401
