@@ -370,6 +370,19 @@ async def check_and_create_alerts(
     if created:
         await db.flush()
 
+    # Fire escalation pipeline for any new triggers — fire-and-forget per alert
+    for alert in created:
+        if alert.alert_type in ("high_no_show", "low_score", "high_cancellation"):
+            try:
+                from app.services.driver_escalation import check_and_escalate
+                await check_and_escalate(snapshot.driver_id, alert.alert_type, db)
+            except Exception:
+                logger.exception(
+                    "Escalation pipeline failed for driver %d alert_type=%s",
+                    snapshot.driver_id,
+                    alert.alert_type,
+                )
+
     return created
 
 

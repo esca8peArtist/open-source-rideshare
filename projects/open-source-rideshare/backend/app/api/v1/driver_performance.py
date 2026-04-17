@@ -1,15 +1,18 @@
 """Driver Performance Scoring API.
 
 Driver endpoints (authenticated driver):
-  GET /drivers/me/performance           — current scorecard
-  GET /drivers/me/performance/history   — last 12 weekly snapshots
+  GET /drivers/me/performance              — current scorecard
+  GET /drivers/me/performance/history      — last 12 weekly snapshots
+  GET /drivers/me/escalation-status        — own accountability escalation state
 
 Admin endpoints:
-  GET  /admin/drivers/performance                        — paginated list with filters
-  GET  /admin/drivers/{driver_id}/performance            — full snapshot for one driver
-  GET  /admin/drivers/{driver_id}/performance/history    — snapshot history
-  GET  /admin/drivers/{driver_id}/performance/alerts     — active alerts
-  POST /admin/performance/recalculate                    — bulk recalculate all drivers
+  GET  /admin/drivers/performance                         — paginated list with filters
+  GET  /admin/drivers/{driver_id}/performance             — full snapshot for one driver
+  GET  /admin/drivers/{driver_id}/performance/history     — snapshot history
+  GET  /admin/drivers/{driver_id}/performance/alerts      — active alerts
+  GET  /admin/drivers/{driver_id}/escalation-status       — driver escalation state
+  POST /admin/drivers/{driver_id}/reset-escalation        — reset warnings after coaching
+  POST /admin/performance/recalculate                     — bulk recalculate all drivers
 """
 
 from __future__ import annotations
@@ -25,6 +28,11 @@ from app.api.deps import get_current_user, require_admin, require_driver
 from app.db.database import get_db
 from app.models.driver_performance import DriverPerformanceAlert, DriverPerformanceSnapshot
 from app.models.user import User
+from app.schemas.driver_escalation import (
+    AdminResetEscalationRequest,
+    AdminResetEscalationResponse,
+    DriverEscalationStatusResponse,
+)
 from app.schemas.driver_performance import (
     AdminPerformanceListItem,
     AdminPerformanceListResponse,
@@ -33,6 +41,10 @@ from app.schemas.driver_performance import (
     DriverPerformanceSnapshotResponse,
     DriverScorecardResponse,
     PerformanceTrendResponse,
+)
+from app.services.driver_escalation import (
+    get_escalation_status,
+    reset_escalation,
 )
 from app.services.driver_performance import (
     bulk_recalculate_all_drivers,
@@ -311,3 +323,101 @@ async def admin_recalculate_all(
     result = await bulk_recalculate_all_drivers(db)
     await db.commit()
     return AdminRecalculateResponse(**result)
+
+
+# ---------------------------------------------------------------------------
+# Escalation endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/drivers/me/escalation-status",
+    response_model=DriverEscalationStatusResponse,
+    summary="Get own accountability escalation status",
+)
+async def get_my_escalation_status(
+    user: User = Depends(require_driver),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the authenticated driver's current escalation state.
+
+    ``escalation_level`` is one of: ``none``, ``warning``, ``final_warning``, ``suspended``.
+    ``warning_count`` shows how many escalation-triggering alerts have fired in the
+    current streak. The counter resets after 28 days without a new trigger.
+    """
+    record = await get_escalation_status(db, driver_id=user.id)
+    if record is None:
+        # No escalation record — driver has a clean history
+        return DriverEscalationStatusResponse(
+            driver_id=user.id,
+            escalation_level="none",
+            warning_count=0,
+            last_trigger_type=None,
+            last_warning_at=None,
+            auto_suspended_at=None,
+            last_reset_at=None,
+        )
+    return DriverEscalationStatusResponse.model_validate(record)
+
+
+@router.get(
+    "/admin/drivers/{driver_id}/escalation-status",
+    response_model=DriverEscalationStatusResponse,
+    summary="Get escalation status for a specific driver (admin)",
+)
+async def admin_get_driver_escalation_status(
+    driver_id: int,
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the escalation state for the specified driver.
+
+    Returns level=none and warning_count=0 for drivers with no escalation history.
+    """
+    record = await get_escalation_status(db, driver_id=driver_id)
+    if record is None:
+        return DriverEscalationStatusResponse(
+            driver_id=driver_id,
+            escalation_level="none",
+            warning_count=0,
+            last_trigger_type=None,
+            last_warning_at=None,
+            auto_suspended_at=None,
+            last_reset_at=None,
+        )
+    return DriverEscalationStatusResponse.model_validate(record)
+
+
+@router.post(
+    "/admin/drivers/{driver_id}/reset-escalation",
+    response_model=AdminResetEscalationResponse,
+    summary="Reset a driver's escalation warnings (admin)",
+)
+async def admin_reset_driver_escalation(
+    driver_id: int,
+    body: AdminResetEscalationRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Reset a driver's escalation warning count and level to zero/none.
+
+    Use this after a coaching session, dispute resolution, or admin review
+    that clears the driver to continue driving.
+
+    This does NOT automatically reinstate a suspended driver — use the
+    driver onboarding activate endpoint for that.
+    """
+    record = await reset_escalation(
+        db,
+        driver_id=driver_id,
+        admin_id=admin.id,
+        note=body.note,
+    )
+    return AdminResetEscalationResponse(
+        driver_id=record.driver_id,
+        escalation_level=record.escalation_level,
+        warning_count=record.warning_count,
+        last_reset_at=record.last_reset_at,
+        admin_reset_note=record.admin_reset_note,
+        message="Escalation reset successfully. Driver warnings cleared.",
+    )

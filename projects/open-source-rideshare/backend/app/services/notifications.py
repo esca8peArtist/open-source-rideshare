@@ -50,6 +50,9 @@ class NotificationType(str, enum.Enum):
     RIDE_COMPLETED_DRIVER = "ride_completed_driver"
     ROUTE_DEVIATION = "route_deviation"
     DRIVER_NO_SHOW = "driver_no_show"
+    DRIVER_PERFORMANCE_WARNING = "driver_performance_warning"
+    DRIVER_PERFORMANCE_FINAL_WARNING = "driver_performance_final_warning"
+    DRIVER_AUTO_SUSPENDED = "driver_auto_suspended"
 
 
 @dataclass

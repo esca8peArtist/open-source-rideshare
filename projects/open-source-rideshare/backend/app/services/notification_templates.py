@@ -200,6 +200,58 @@ def driver_no_show(
     return ("Driver no-show — ride cancelled", body, _PUSH_SMS)
 
 
+_ALERT_LABELS: dict[str, str] = {
+    "high_no_show": "high no-show rate",
+    "low_score": "low performance score",
+    "high_cancellation": "high cancellation rate",
+}
+
+
+def driver_performance_warning(
+    alert_type: str = "", warning_count: int = 1, **kw
+) -> TemplateResult:
+    label = _ALERT_LABELS.get(alert_type, "performance issue")
+    return (
+        "Performance warning",
+        (
+            f"Your account has been flagged for {label}. "
+            "This is your first warning. Continued issues may result in account suspension. "
+            "Open the app to view your performance dashboard."
+        ),
+        _PUSH_SMS,
+    )
+
+
+def driver_performance_final_warning(
+    alert_type: str = "", warning_count: int = 2, **kw
+) -> TemplateResult:
+    label = _ALERT_LABELS.get(alert_type, "performance issue")
+    return (
+        "Final performance warning",
+        (
+            f"Your account has received a second flag for {label}. "
+            "This is your final warning — one more escalation will result in automatic suspension. "
+            "Please review your performance dashboard and contact support if you need help."
+        ),
+        _PUSH_SMS,
+    )
+
+
+def driver_auto_suspended(
+    alert_type: str = "", warning_count: int = 3, **kw
+) -> TemplateResult:
+    label = _ALERT_LABELS.get(alert_type, "performance issue")
+    return (
+        "Account suspended",
+        (
+            f"Your driver account has been automatically suspended due to repeated {label}. "
+            "You will not be able to accept new rides until this is resolved. "
+            "Please contact support to appeal or request a review."
+        ),
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -220,6 +272,9 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_COMPLETED_DRIVER: ride_completed_driver,
     NotificationType.ROUTE_DEVIATION: route_deviation,
     NotificationType.DRIVER_NO_SHOW: driver_no_show,
+    NotificationType.DRIVER_PERFORMANCE_WARNING: driver_performance_warning,
+    NotificationType.DRIVER_PERFORMANCE_FINAL_WARNING: driver_performance_final_warning,
+    NotificationType.DRIVER_AUTO_SUSPENDED: driver_auto_suspended,
 }
 
 

@@ -361,3 +361,92 @@ async def notify_driver_no_show(
         )
     except Exception:
         logger.exception("Failed to send driver_no_show notification for ride %d", ride_id)
+
+
+async def _send_driver_escalation_notification(
+    db: AsyncSession,
+    driver_id: int,
+    notification_type: NotificationType,
+    alert_type: str,
+    warning_count: int,
+) -> None:
+    """Internal helper: sends an escalation notification to a driver (no ride_id)."""
+    from app.services.notifications import Notification, send_notification
+    from app.services.notification_templates import render
+
+    phone, email = await _get_user_contact(db, driver_id)
+    title, body, channels = render(
+        notification_type, alert_type=alert_type, warning_count=warning_count
+    )
+    notification = Notification(
+        user_id=driver_id,
+        type=notification_type,
+        title=title,
+        body=body,
+        channels=channels,
+        data={"alert_type": alert_type, "warning_count": warning_count},
+    )
+    await send_notification(notification, db=db, phone=phone, email=email)
+
+
+async def notify_driver_performance_warning(
+    db: AsyncSession,
+    driver_id: int,
+    alert_type: str,
+    warning_count: int,
+) -> None:
+    """Notify a driver of their first escalation warning."""
+    try:
+        await _send_driver_escalation_notification(
+            db,
+            driver_id,
+            NotificationType.DRIVER_PERFORMANCE_WARNING,
+            alert_type,
+            warning_count,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send performance_warning notification to driver %d", driver_id
+        )
+
+
+async def notify_driver_performance_final_warning(
+    db: AsyncSession,
+    driver_id: int,
+    alert_type: str,
+    warning_count: int,
+) -> None:
+    """Notify a driver of their final warning before auto-suspension."""
+    try:
+        await _send_driver_escalation_notification(
+            db,
+            driver_id,
+            NotificationType.DRIVER_PERFORMANCE_FINAL_WARNING,
+            alert_type,
+            warning_count,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send performance_final_warning notification to driver %d", driver_id
+        )
+
+
+async def notify_driver_auto_suspended(
+    db: AsyncSession,
+    driver_id: int,
+    alert_type: str,
+    warning_count: int,
+) -> None:
+    """Notify a driver that their account has been automatically suspended."""
+    try:
+        await _send_driver_escalation_notification(
+            db,
+            driver_id,
+            NotificationType.DRIVER_AUTO_SUSPENDED,
+            alert_type,
+            warning_count,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send auto_suspended notification to driver %d", driver_id
+        )
