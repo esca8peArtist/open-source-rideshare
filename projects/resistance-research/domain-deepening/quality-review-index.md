@@ -34,7 +34,7 @@
 
 The domain-deepening corpus is substantially stronger than a typical policy research collection. The majority of files are publication-ready with minor additions. The files built on prior research threads (criminal justice, anti-corruption, digital government) are exceptional. The weakest files are not bad — they are merely adequate where others are excellent. There are three clear tiers.
 
-**Current tier counts: 23 Tier 1, 1 Tier 2, 0 Tier 3.**
+**Current tier counts: 23 Tier 1, 0 Tier 2, 0 Tier 3.**
 
 **Broad pattern across the corpus**: Updated data is consistently the strongest dimension. International benchmarks and fiscal estimates are the most variable. Counterargument engagement is strong in about half the files and perfunctory in the other half. Actionable intelligence is strong where the domain has identifiable pressure points; thin where reform requires constitutional or legislative change with long time horizons.
 
