@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 275–276: **ALL 23 DOMAIN FILES NOW TIER 1** — data-privacy-evidence (Session 275), social-safety-net-evidence + reparations-evidence (Session 276) all elevated. quality-review-index.md: **23 Tier 1, 0 Tier 2, 0 Tier 3**. Domain deepening queue 100% complete. **Next**: Publication-readiness formatting pass on the democratic renewal proposal — unified narrative, consistent heading structure, cross-domain citations, executive summary.
+**Current focus**: Session 277: **Publication-readiness formatting pass COMPLETE** (commit `413a917`). 3 formatting defects fixed in democratic-renewal-proposal.md: numbered list collision in Section 3.2, missing separators before Domains 10 and 16. All 22 domains verified present and in order. executive-summary.md already publication-ready. **Next**: Monitoring pass — check 2026 actionable intelligence windows across domain files for time-sensitive developments (Section 702 expiration, SNAP/Farm Bill deadlines, state legislative sessions). OR begin synthesis of cross-domain connections for op-ed/policy brief version.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 275–276: **Invitation → onboarding auto-trigger COMPLETE** (commit `9cfacf2`, pushed). Accept invitation now calls `create_onboarding`; 409 (duplicate) absorbed silently; 3 new tests, 48 total passing. **Expense report generation COMPLETE** (commit `0b07eab`, pushed): member self-report, admin account report, CSV export; 60 tests. **Next**: Corporate trip purpose codes — member assigns a trip purpose code at booking, admins can filter/report by purpose; useful for corporate policy enforcement and expense accounting.
-**Last updated by**: orchestrator on 2026-04-17 (Session 275–276)
+**Current focus**: Session 277: **Driver earnings comparison COMPLETE** (commit `aed89c6`, pushed). GET /drivers/me/earnings-comparison — actual OpenRide payouts vs. estimated Uber/Lyft for same trips using 2025 rate cards; 29 tests passing. Trip purpose codes were already complete (commit `564a580`). **Next**: Rider fare transparency endpoint — show riders the exact fare breakdown (driver payout %, platform fee %, taxes) so they understand where their money goes vs. Uber/Lyft. Directly addresses the platform's price-transparency mission.
+**Last updated by**: orchestrator on 2026-04-17 (Session 277)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

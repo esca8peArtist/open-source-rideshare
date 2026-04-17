@@ -11521,3 +11521,39 @@ Commit: 0b07eab — pushed to rideshare remote
 New files: `schemas/corporate_expense_report_gen.py` (5 schemas), `services/corporate_expense_report_gen.py` (member report, account report, CSV export), `api/v1/corporate_expense_report_gen.py` (3 routes), `tests/test_corporate_expense_report_gen.py` (60 tests, all passing). Router registered in main.py.
 
 Session 275–276 complete.
+
+---
+
+## Session 277 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- resistance-research: All 23 domain files Tier 1. Next: publication-readiness formatting pass on democratic-renewal-proposal.md.
+- open-source-rideshare: Trip purpose codes already complete (commit 564a580, found on orient). Next: driver earnings comparison — referenced as a distinct endpoint in driver_earnings_summary.py but not yet implemented.
+
+### Task selection
+(1) resistance-research: publication-readiness formatting pass — delegated to resistance-research subagent (background).
+(2) open-source-rideshare: driver earnings comparison endpoint — implemented directly.
+
+### resistance-research: publication-readiness formatting pass
+Commit: 413a917 (committed by subagent)
+
+Subagent read the full 2,581-line democratic-renewal-proposal.md and found/fixed 3 issues:
+1. Numbered list collision in Section 3.2 "What Requires Federal Statute" — items 20a/20b/20 competing for same position. Renumbered cleanly 1–93 (was 1–91 with collision).
+2. Missing `---` separator before Domain 10: Education.
+3. Missing `---` separator before Domain 16: Immigration and Citizenship.
+All 22 domains verified present and in order. All 5 Part headings consistent. All cross-references verified against actual files.
+
+### open-source-rideshare: driver earnings comparison
+Commit: aed89c6 — pushed to rideshare remote
+
+New files:
+- `schemas/driver_earnings_comparison.py` — PlatformRateCard + EarningsComparisonResponse
+- `services/driver_earnings_comparison.py` — rate card constants (Uber/Lyft 2025 national avg), _estimate_driver_payout, _pct_delta, get_earnings_comparison
+- `api/v1/driver_earnings_comparison.py` — GET /drivers/me/earnings-comparison
+- `tests/test_driver_earnings_comparison.py` — 29 service tests passing, 11 API tests (skip: no test DB on Pi)
+
+Feature: compares actual OpenRide driver payouts (from Payment records + tips) to estimated Uber UberX + Lyft Standard payouts for the same trips using 2025 published rate cards. Rides without distance/duration excluded and counted. Per-ride, per-mile, per-hour averages. Absolute + percentage advantage. Rate cards + methodology note included in response for transparency. Router registered in main.py.
+
+Session 277 complete.

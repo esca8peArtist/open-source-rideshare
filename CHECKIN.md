@@ -1,7 +1,47 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–276
+**Sessions**: 257–277
+
+---
+
+### Accomplished (Session 277)
+
+#### resistance-research — Publication-readiness formatting pass on democratic-renewal-proposal.md (commit `413a917`)
+
+3 fixes applied to the 2,581-line proposal:
+1. Numbered list collision in Section 3.2 "What Requires Federal Statute" — 20a/20b/20 collision resolved, list now runs cleanly 1–93.
+2. Missing `---` separator added before Domain 10: Education.
+3. Missing `---` separator added before Domain 16: Immigration and Citizenship.
+All 22 domains verified present and in order. All 5 Part headings confirmed consistent. All `domain-deepening/` cross-references verified against actual files. `executive-summary.md` was already publication-ready — not modified.
+
+#### open-source-rideshare — Driver earnings comparison vs Uber/Lyft rate cards (29 tests, pushed, commit `aed89c6`)
+
+New endpoint: `GET /drivers/me/earnings-comparison`
+
+Compares actual OpenRide driver payouts to estimated Uber (UberX) and Lyft (Standard) payouts for the same trips, using 2025 published national average rate cards. New files: schema, service, API, tests. Feature: Payment records + tips as actuals; base + per-min + per-mile × driver take-rate for estimates. Rides without distance/duration excluded and counted separately. Per-ride, per-mile, per-hour averages. Absolute and percentage advantage vs. each platform. Rate cards and methodology note included in every response for transparency. Router registered in main.py.
+
+---
+
+### Needs Your Input
+
+#### open-source-rideshare — Feature branch ready for review
+
+Feature branch: `feature/corporate-business-accounts`
+Pushed to: `rideshare` remote (esca8peArtist/open-source-rideshare)
+
+**Full feature set** (all committed, all tests passing):
+- Three-tier corporate policy hierarchy (account → department → member override)
+- Booking eligibility enforcement (policy, blackout, quotas, spend limit, dept budget, onboarding)
+- Invoice due dates + overdue tracking
+- Spending alerts (75%/90%/100% thresholds)
+- Member onboarding with checklist enforcement
+- Invitation → onboarding auto-trigger
+- Expense report generation (member + admin + CSV)
+- Trip purpose codes (admin CRUD, rider tag, analytics)
+- Driver earnings comparison (Uber/Lyft rate card comparison)
+
+Ready to merge to master when you approve.
 
 ---
 
