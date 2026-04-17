@@ -9,23 +9,22 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 291
+**Sessions run**: 292
 
-### Accomplished (Session 291)
+### Accomplished (Session 292)
 
-#### mfg-farm — Business plan COMPLETE (`projects/mfg-farm/business-plan.md`)
-- ~650 lines synthesizing market research into an operational plan
-- **Product catalog**: 7 Phase-1 SKUs (ModRun clips, rails, sets at $8.99–$49.99; 65–72% net margins); Phase-2 flexi animal line + planter line (Month 3–4); Phase-3 triggered by $2K+/month
-- **Fulfillment workflow**: order → print queue → overnight run → morning QC → pack → Pirateship → ship → Day 3–4 review request
-- **Financial projections**: conservative 6-month cumulative **$9,619 net**; optimistic **$17,125 net**; break-even at Month 3–4 (~$240 launch cost)
-- **Machine investment timeline**: second P1S printer triggered at $2K+/month × 2 months + 80% utilization; resin Month 6–9; laser Month 9–12
-- **Risk register**: 8 risks with mitigations (IP, deplatforming, QC, shipping, filament, saturation, etc.)
+#### open-source-rideshare — Platform admin config API COMPLETE (commit `b65bdb9`)
+Persistent DB-backed configuration store replacing the in-memory settings dict.
+- **7 endpoints**: `GET/PUT /admin/config/{key}`, `GET /admin/config` (with category filter), `GET /admin/config/categories`, `POST /admin/config/seed`, `POST /admin/config/bulk-update`, `GET /admin/config/{key}/history`
+- **17 default config entries** across: pricing (base_fare, per_km_rate, per_min_rate, platform_fee_pct), surge (max_multiplier, min_demand_ratio), matching (max_search_radius_km, driver_timeout_sec), safety (panic_cancel_window_sec, max_trusted_contacts), features (pooling, fare_splitting, chat), notifications (notify_contacts_trip_start, panic_sms), compliance (max_daily/weekly_driver_hours)
+- **Full change audit trail**: every update writes a history entry (old value, new value, changed_by, reason)
+- **46 tests** — 2,910 total passing
 
-#### mfg-farm — CadQuery parametric designs COMPLETE
-- **`cadquery/modrun_clip.py`**: parametric press-fit cable clip — bore_diameter parameter (3mm/6mm/12mm), U-channel body, cantilever snap arm with NUB geometry, location tabs, all tolerances exposed as module constants
-- **`cadquery/modrun_rail.py`**: parametric mounting rail — 200mm × 6 slots at 30mm pitch; nub recess in each slot; two mounting variants: `desk_clamp` (C-clamp, 15–30mm range, rubber pad recess) and `adhesive` (4 × Command-pad pockets)
-- **`cadquery/README.md`**: print settings, tuning guide, interface spec, first-print test checklist
-- **Interface contract**: SLOT_WIDTH=8mm / SLOT_DEPTH=6mm defined identically in both scripts — consistent press-fit geometry
+#### open-source-rideshare — Driver welfare summary COMPLETE (commit `ab50bb2`)
+Implemented an orphaned test file that existed without any backing code.
+- **`GET /driver/me/welfare-summary`**: shift hours this week/today, fatigue risk (low/moderate/high at 40h/50h thresholds), weekly earnings, tips, estimated hourly rate, earnings goal with progress %, insurance status (active/expiring_soon/expired/pending/not_on_file with 30-day warning), cooperative standing (approval, trips, rating, BGC), personalised welfare note
+- **New models**: `DriverShift` (shift tracking, ShiftStatus enum), `DriverEarningsGoal` (weekly/daily earnings targets)
+- **56 tests** — **2,966 total passing**
 
 ---
 
@@ -39,13 +38,13 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 4. Check: clips snap into rail with moderate force; cable presses into bore; clamp grips a ~18mm test surface
 5. Tune parameters per `cadquery/README.md` if needed and reprint
 6. Take 5 photos (brief in `etsy-listing-modrun.md`)
-7. Go live on Etsy with the 4-piece set listing — copy is already done in `etsy-listing-modrun.md`
+7. Go live on Etsy — copy is already done in `etsy-listing-modrun.md`
 
 **op-ed submission — action needed by April 22 (5 days away)**
-"Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. You need to: (1) review the draft, (2) submit to Vox and/or The Atlantic. June 1 CMS deadline makes the timing real.
+"Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` (95 tests) is local on the Pi. Push via: (a) grant Pi's GitHub account write access to the repo, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` branch has 4 sessions of work local on the Pi (2,966 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -56,14 +55,17 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live. Orchestrator can help with print parameter tuning if you drop feedback in INBOX.md.
+1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — trip demand heatmap, driver revenue projections, or admin platform config API.
+3. **open-source-rideshare**: Next feature — trip demand heatmap or driver revenue projections.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
 
 ### History
+
+#### Accomplished (Session 291)
+- **mfg-farm**: Business plan COMPLETE (`business-plan.md`, ~650 lines) — 7 Phase-1 SKUs, financial projections ($9,619–$17,125 net 6-month), machine investment timeline. CadQuery parametric designs COMPLETE (`modrun_clip.py`, `modrun_rail.py`, `README.md`).
 
 #### Accomplished (Sessions 289–290)
 - **resistance-research**: Healthcare op-ed COMPLETE (`publications/op-ed-healthcare-june2026-deadline.md`, ~918 words, commits `45fd8ba`/`56eea69`). "Six Weeks to Save Five Million People's Health Insurance" — Vox/Atlantic target, April 22 submission, CMS June 1 deadline.

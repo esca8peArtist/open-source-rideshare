@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 291)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 292)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 290: **Rider emergency safety COMPLETE** (commit `b2086d9`, branch `feature/rider-emergency-safety`). PanicAlert (5 endpoints: trigger/get/cancel/admin-list/admin-resolve; 30s window for FALSE_ALARM vs RESOLVED cancel; one ACTIVE per ride; admin sorted oldest-first). TrustedContacts (5 endpoints: add/list/update/deactivate/notification-log; max 3 active; soft-delete; send_trusted_contact_notifications stub for TRIP_START/TRIP_END/PANIC_ALERT). 95 tests passing. **Driver dispute resolution** also complete (commit `ae8d7c5`, branch `feature/driver-dispute-resolution`, 89 tests). Push blocked — esca8peArtist lacks org write access. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Total: ~2,855 tests passing** (2,769 + 89 dispute + 95 safety - possible overlap estimate). **Next**: Trip demand heatmap, driver revenue projections, or platform admin config API.
+**Current focus**: Session 292: **Platform admin config API COMPLETE** (commit `b65bdb9`). 7 endpoints: GET/PUT config by key, list all/by category, bulk-update, seed defaults (17 entries across pricing/surge/safety/matching/features/notifications/compliance), change history per key. Persistent DB-backed (replaces in-memory dict). 46 tests. **Driver welfare summary COMPLETE** (commit `ab50bb2`). `GET /driver/me/welfare-summary` — shift hours, fatigue risk (low/moderate/high), weekly earnings, earnings goal progress %, insurance status (expiry warning at 30 days), cooperative standing, personalised welfare note. DriverShift + DriverEarningsGoal models. 56 tests. **Total: 2,966 tests passing.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap or driver revenue projections.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

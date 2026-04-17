@@ -4,6 +4,52 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 292 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no cycle logs available — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: all 22 domains deepened; April 20 framework waiting
+- open-source-rideshare: active with next features available
+- Selected: open-source-rideshare — platform admin config API + driver welfare summary
+
+### open-source-rideshare — Platform admin config API COMPLETE
+
+**Commit**: `b65bdb9`
+
+**Files created**:
+- `app/models/platform_config.py` — `PlatformConfig` + `PlatformConfigHistory` SQLAlchemy models; `ConfigValueType` (string/integer/float/boolean/json) and `ConfigCategory` (pricing/surge/safety/matching/features/notifications/compliance) enums
+- `app/schemas/platform_config.py` — `ConfigEntryResponse` (with `typed_value` computed field), `ConfigEntryUpdate`, `ConfigBulkUpdateRequest/Response`, `ConfigHistoryEntry/Response`, `ConfigSeedResponse`
+- `app/services/platform_config.py` — `get_all_configs`, `get_config_by_key`, `update_config` (with history write), `bulk_update_configs`, `get_config_history`, `seed_defaults` (17 default entries), `parse_typed_value`
+- `app/api/v1/platform_config.py` — 7 endpoints: `GET/PUT /admin/config/{key}`, `GET /admin/config`, `GET /admin/config/categories`, `POST /admin/config/seed`, `POST /admin/config/bulk-update`, `GET /admin/config/{key}/history`
+- `tests/test_platform_config.py` — **46 tests** across 9 classes
+
+**Key design**: Fixed-path routes (`/categories`, `/seed`, `/bulk-update`) registered before `/{key}` to prevent conflicts. Keeps existing in-memory `GET/PUT /admin/settings` for backward compat.
+
+**Test count**: 46 new → 2,910 total passing
+
+### open-source-rideshare — Driver welfare summary API COMPLETE
+
+**Commit**: `ab50bb2`
+
+**Implemented orphaned test file** `tests/test_driver_welfare_summary.py` that existed without implementation.
+
+**Files created**:
+- `app/models/driver_shift.py` — `DriverShift` model; `ShiftStatus` enum (active/completed/auto_ended)
+- `app/models/driver_earnings_goal.py` — `DriverEarningsGoal` model; `GoalPeriodType` enum (DAILY/WEEKLY)
+- `app/schemas/driver_welfare_summary.py` — `ShiftMetrics`, `EarningsMetrics`, `InsuranceStatus`, `CooperativeStatus`, `SupportResource`, `DriverWelfareSummary`
+- `app/services/driver_welfare_summary.py` — `get_driver_welfare_summary` (5 DB queries: shifts, rides, goal, insurance, profile); `_fatigue_risk` (low/moderate/high); `_build_insurance_status` (not_on_file/active/expiring_soon/expired/pending); `_build_welfare_note` (priority: insurance > fatigue > goal > normal); `_compute_shift_hours`
+- `app/api/v1/driver_welfare_summary.py` — `GET /driver/me/welfare-summary`
+
+**Key feature**: fatigue tracking (40h+ = moderate, 50h+ = high), weekly earnings goal with progress %, insurance status with 30-day expiry warning, cooperative standing.
+
+**Test count**: 56 new → **2,966 total passing**
+
+### PROJECTS.md update
+- open-source-rideshare updated with new features and test count
+
 ## Session 291 — 2026-04-17
 
 ### Orient
