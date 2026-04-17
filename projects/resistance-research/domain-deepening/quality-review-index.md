@@ -10,6 +10,8 @@
 
 *Index updated April 2026, Session 268: housing-evidence.md elevated from Tier 2 to Tier 1. Four gaps filled: Vienna Gemeindebau section expanded with construction cost comparisons (€150-200k/unit vs. US LIHTC $400-600k), rent levels (€7-8/sqm vs. €15-20/sqm market), waitlist data (26,000 households, ~1-2 year wait), income ceiling (€53,340/year net), Klimabonus passive-house mandate, and Gemeinschaftliche Wohnprojekte co-housing model; Singapore HDB section added as Section 9.1b with coverage (79% of residents), homeownership rate (88.9%), resale prices (SGD 500-600k vs. SGD 1.2M+ private), construction cost (SGD 200-350k/unit), BTO scheme, income ceiling (SGD 14,000/month), and Land Acquisition Act as irreplaceable enabling condition; fiscal estimates added for zoning reform (YIMBY Act near-zero cost, transportation conditioning $5-15B leverage, Hsieh-Moretti $1.7T GDP gain, Minneapolis 6-10% rent reduction), LIHTC alternatives (all-in $400-600k/unit current vs. $280-420k direct grant alternative, Vienna non-profit analog at $180-280k/unit), and CLT scaling ($2.5-4B over 10 years vs. $31-37.5B voucher equivalent); Actionable Intelligence section added as Section 13 (federal legislation vehicles, state pressure points through 2026, organizations to support, specific appropriations and rulemaking pressure points); 2025-2026 rollback documentation added as Section 14 (AFFH suspension affecting $7B in annual grants, HUD discretionary budget cut ~20%, 400 FTE reduction, Section 8 under-funded by 100,000 vouchers, manufactured housing code update as surviving regulatory gain, record 770,000 PIT count backdrop).*
 
+*Index updated April 2026, Session 270: national-security-evidence.md elevated from Tier 2+ to Tier 1. Actionable intelligence gap filled: existing placeholder AI section replaced with comprehensive Sections AI-1 through AI-6 covering: (1) most immediately actionable items keyed to FY2027 NDAA markup window (May-August 2026); (2) legislative vehicles with bill numbers and procedural posture — H.R. 6751 (Jayapal-Massie 2001 AUMF sunset, 240-day repeal), H.R. 7555 (Audit the Pentagon Act, Pocan-Biggs, 0.5%/1% penalty structure), enacted 2002/1991 AUMF repeal via FY2026 NDAA as established precedent, RECEIPTS Act (Ernst, $300M AI audit + legacy system replacement), FY2024 NDAA 1.5% cancellation trigger, five specific FY2027 NDAA provisions to push (Nunn-McCurdy second-breach reauthorization, right to repair expansion, SGE database, AUMF sunset amendment, USAID reconstitution); (3) federal agency pressure points including GAO investigation request mechanism (any member, email to CongRel@gao.gov, 6-18 month timeline), DoD IG Hotline process ((800) 424-9098, anonymous available), and FOIA pathways for DFAS, DCMA, and SAM.gov contract research; (4) ten organizations with specific roles and engagement mechanisms (POGO, National Priorities Project, Taxpayers for Common Sense, Stimson, Quincy, Center for International Policy, Win Without War, FCNL, AFSC, Council for a Livable World, Brennan Center, IAVA); (5) state-level leverage: state legislative AUMF resolutions (FCNL/Win Without War coordination networks), state pension fund shareholder engagement on contractor accountability (CalSTRS holdings in top contractors), National Guard deployment resistance grounded in December 2025 SCOTUS ruling blocking federalization of IL/TX Guard; (6) five time-bounded 2026 windows with specific named action mechanisms.*
+
 ---
 
 ## Summary Assessment
@@ -24,7 +26,7 @@ The domain-deepening corpus is substantially stronger than a typical policy rese
 
 ## Publication-Readiness Tiers
 
-### Tier 1 — Publish As-Is (15 files)
+### Tier 1 — Publish As-Is (16 files)
 
 These files are ready for public release, citation in advocacy materials, and use as evidence foundations for the proposal. Minor additions would improve them but are not required.
 
@@ -43,8 +45,9 @@ These files are ready for public release, citation in advocacy materials, and us
 13. judicial-independence-evidence.md *(elevated Session 267: fiscal estimates for SCOTUS expansion/term limits/ethics IG added as Section 12; Canada JAC/JAAC and South Africa JSC fully developed as Section 13; counterargument on court reform as politicization — norm erosion objection, FDR miscalculation, arms race problem — with counter-counter and policy sequencing resolution added as Section 14)*
 14. housing-evidence.md *(elevated Session 268: Vienna/Singapore expanded with specific outcome numbers, fiscal estimates for zoning reform/LIHTC/CLT, actionable intelligence section, 2025-2026 rollback documentation)*
 15. economic-concentration-evidence.md *(elevated Session 269: Section 10 added — live enforcement proceedings with remedy-phase specificity, named legislative vehicles, state AG coalition pattern, organizations with pressure-point specificity, three time-bounded 2026 windows)*
+16. national-security-evidence.md *(elevated Session 270: actionable intelligence gap filled — Sections AI-1 through AI-6 added: FY2027 NDAA markup window as primary vehicle, H.R. 6751 2001 AUMF sunset with procedural posture, H.R. 7555 Audit the Pentagon Act with penalty structure, enacted 2002 AUMF repeal as precedent, RECEIPTS Act, GAO request mechanism, DoD IG Hotline process, FOIA pathways for DFAS/DCMA/SAM.gov, ten organizations with specific engagement mechanisms, state-level leverage including SCOTUS-grounded National Guard sovereignty argument, five time-bounded 2026 windows)*
 
-### Tier 2 — Adequate, Minor Gaps (8 files)
+### Tier 2 — Adequate, Minor Gaps (7 files)
 
 Solid evidentiary foundations. Missing one or two dimensions that would make them Tier 1, but usable as-is for most purposes. Deepening one weak dimension would elevate each.
 
@@ -55,7 +58,6 @@ Solid evidentiary foundations. Missing one or two dimensions that would make the
 14. rights-protection-evidence.md
 15. data-privacy-evidence.md
 16. domain-03-democratic-participation.md
-17. national-security-evidence.md *(elevated Session 263: counterargument section developed, deterrence theory vs. accidental war risk treated, "hollowing out" objection to audit requirements added; classified Tier 2+ rather than Tier 1 pending full actionable intelligence development)*
 
 ### Tier 3 — Needs Targeted Deepening (0 files)
 
@@ -314,14 +316,14 @@ Rubric dimensions: **Updated data** (current through 2024–2025) | **Int'l benc
 
 | Dimension | Score | Notes |
 |---|---|---|
-| Updated data | Strong | Pentagon 7th consecutive audit failure 2024; GAO projects failures through 2028; F-35 $2T lifetime cost (2024 GAO); AUMF 22-country expansion documented |
-| Int'l benchmarks | Strong | G7 comparison table (UK NAO, Germany Bundesrechnungshof, France Cour des Comptes, Australia ANAO, Canada OAG) with structural differences |
-| Counterarguments | Needs Work | "Job creation" claim mentioned in gaps but not engaged. Deterrence theory versus accidental war risk not treated in sections read. No treatment of "hollowing out" risk if oversight reduces procurement |
-| Fiscal estimates | Adequate | F-35 $2T with trajectory; 7 consecutive audit failures cost (fraud exposure cited but no estimate); $60-70M contractor lobbying annual figure |
-| Sourcing | Strong | GAO reports specific (GAO-25-108191, GAO-24-106703); POGO Fact Sheet; SIPRI 2024 — all primary |
-| Actionable intelligence | Needs Work | POGO named as specific organization; AUMF reform legislative vehicles mentioned in gaps but not detailed in sections read. No state-level leverage points |
+| Updated data | Strong | Pentagon 8th consecutive audit failure December 2025 (26 material weaknesses, $4.65T assets/$4.7T liabilities); GAO projects failures through 2028; F-35 $2T lifetime cost (2024 GAO); AUMF 22-country expansion documented; 2002/1991 AUMFs repealed via FY2026 NDAA |
+| Int'l benchmarks | Strong | G7 comparison table (UK NAO, Germany Bundesrechnungshof, France Cour des Comptes, Australia ANAO, Canada OAG) with structural differences and enforcement mechanisms |
+| Counterarguments | Strong | Deterrence theory vs. accidental war risk treated; legitimate security argument for procurement continuity addressed; hollowing-out objection to audit requirements — classified program constraint vs. bookkeeping failure distinction — precisely engaged |
+| Fiscal estimates | Adequate | F-35 $2T with trajectory; $4.25B equivalent of 0.5% Audit the Pentagon Act penalty; $60-70M contractor lobbying annual figure; fraud exposure gap acknowledged |
+| Sourcing | Strong | GAO reports specific (GAO-25-108191, GAO-24-106703, GAO-25-107558, GAO-25-108500); POGO Fact Sheet; SIPRI 2024; bill numbers for all named legislation — all primary |
+| Actionable intelligence | Strong | Sections AI-1 through AI-6: FY2027 NDAA as primary vehicle with specific provisions; H.R. 6751 (Jayapal-Massie 2001 AUMF sunset) and H.R. 7555 (Audit the Pentagon Act) with procedural posture; GAO request mechanism named; DoD IG Hotline ((800) 424-9098); FOIA pathways (DFAS, DCMA, SAM.gov); ten organizations with specific URLs and engagement mechanisms; state legislative resolutions, pension fund shareholder engagement, and National Guard sovereignty (December 2025 SCOTUS ruling) as state-level levers; five time-bounded 2026 windows |
 
-**Verdict**: ~~Tier 3~~ **Tier 2+** *(elevated Session 263)*. Counterargument section developed: deterrence theory vs. accidental war risk, legitimate security argument for procurement continuity, and hollowing-out objection to audit requirements. Actionable intelligence remains the weak dimension; further work would reach Tier 1.
+**Verdict**: ~~Tier 3~~ ~~Tier 2+~~ **Tier 1** *(elevated Session 270)*. Counterargument section developed in Session 263. Actionable intelligence gap filled in Session 270: six subsections covering the FY2027 NDAA markup window (highest priority), specific named legislation with bill numbers and procedural posture, federal agency pressure points including the GAO investigation request mechanism (any member can request via email) and DoD IG Hotline, FOIA pathways for contracting records, ten organizations with specific engagement mechanisms beyond URLs, state-level leverage through AUMF resolutions / pension fund shareholder engagement / National Guard sovereignty argument, and five named 2026 windows with specific action mechanisms for each.
 
 ---
 
@@ -433,7 +435,7 @@ All four Priority 1 items are done. Brief record:
 
 2. **electoral-reform-evidence.md** — elevated to Tier 1, Session 263. Added: counterargument section addressing voter confusion, strategic voting elimination, and incumbency protection objections to PR. Added: actionable intelligence section with Maine/Alaska RCV defense campaigns, Fair Representation Act as legislative vehicle, and AVR state-level organizing targets.
 
-3. **national-security-evidence.md** — elevated to Tier 2+, Session 263. Added: counterargument section on deterrence theory vs. accidental war risk, legitimate security argument for procurement continuity, and hollowing-out objection to audit requirements. Actionable intelligence section remains thin; Priority 2 item for further development.
+3. **national-security-evidence.md** — elevated to Tier 2+, Session 263; elevated to Tier 1, Session 270. Session 263 added counterargument section. Session 270 filled actionable intelligence gap: Sections AI-1 through AI-6 added (FY2027 NDAA as primary vehicle, H.R. 6751 AUMF sunset, H.R. 7555 Audit the Pentagon Act, enacted 2002 AUMF repeal precedent, RECEIPTS Act, GAO request mechanism, DoD IG Hotline, FOIA pathways, ten organizations, state leverage, five 2026 windows).
 
 4. **tax-policy-evidence.md** — elevated to Tier 1, Session 265. Scope differentiated explicitly from domain-05-fiscal-reform.md (tax-policy handles income tax structure, compliance, and incidence; fiscal-reform handles wealth tax, corporate reform, and revenue portfolio). Added: ETI literature, "starve the beast" empirical record, counterarguments, and actionable intelligence section.
 

@@ -739,69 +739,232 @@ Sources: [VA Budget Tops $400 Billion for 2025 (American Legion)](https://www.le
 
 ## Actionable Intelligence
 
-*This section documents organizations, legislative vehicles, and pressure points for advancing Domain 19 reforms. Updated April 2026.*
+*This section documents organizations, legislative vehicles, federal agency pressure points, state-level leverage, and near-term windows for advancing Domain 19 reforms. Substantially expanded April 2026. Lead items are the most immediately actionable.*
 
 ---
 
-### AI-1: Core Organizations
+### AI-1: Most Immediately Actionable — April through August 2026
 
-**Project On Government Oversight (POGO)**
-The primary nonpartisan watchdog on Pentagon accountability. POGO runs the Center for Defense Information (integrated 2012), conducts investigations into weapons program failures, audits the revolving door, and publishes the annual "Wastebook" equivalent for defense. POGO's Congressional Training Program trains House and Senate staff on oversight methodology — a direct pipeline for building audit reform capacity on both sides of the aisle. POGO has testified before Congress on DoD audit failures, contractor accountability, and the F-35 program. Their factsheet on DoD auditing is the most frequently cited non-governmental source in congressional testimony on the topic.
-URL: [pogo.org](https://www.pogo.org/) | Investigations portal: [pogo.org/investigates](https://www.pogo.org/investigates)
+The single highest-leverage window open right now is the FY2027 NDAA markup cycle. The House Armed Services Committee (HASC) and Senate Armed Services Committee (SASC) will begin subcommittee markups in May-June 2026, with full committee action typically in July. This is where audit enforcement penalties, AUMF sunset provisions, Nunn-McCurdy reform, and contractor accountability language can be attached as amendments. The bill must pass annually — it is the only defense legislation with a guaranteed floor vote. Everything below in this section exists to support intervention at that window.
 
-**Stimson Center — National Security Reform Program**
-Stimson's national security reform work focuses on acquisition reform, Pentagon budget efficiency, and oversight infrastructure. The Stimson/Quincy/Taxpayers for Common Sense joint report (2025) identified $60+ billion in DoD savings achievable without reducing capability — providing the cost-benefit framework that defense-skeptical Republicans and progressive Democrats can share. Stimson published analysis of the 2025 reconciliation bill's defense slush fund provisions and has been active in acquisition reform advocacy in the 119th Congress.
-URL: [stimson.org/program/national-security-reform](https://www.stimson.org/program/national-security-reform/)
-
-**Quincy Institute for Responsible Statecraft**
-A transpartisan foreign policy think tank focused on restraint, diplomacy-first approaches, and war powers reform. Quincy's "Democratizing Foreign Policy" program directly targets the AUMF architecture, war powers restoration, and congressional reclamation of foreign policy authority. Quincy publishes Responsible Statecraft, which covers Pentagon budget issues and has developed the "alternative security budget" analytical framework showing reallocation from legacy procurement to cyber/climate/diplomacy.
-URL: [quincyinst.org](https://quincyinst.org/) | War powers program: [quincyinst.org/program-areas/democratizing-foreign-policy](https://quincyinst.org/program-areas/democratizing-foreign-policy/)
-
-**Brennan Center for Justice — National Security Program**
-The primary civil liberties research and litigation organization on Section 702, EO 12333, PCLOB, and surveillance reform. Brennan Center produces the authoritative resource pages on each FISA reauthorization cycle (their 2026 resource page on Section 702 renewal is the best single reference for the current legislative fight). They litigate civil liberties cases in parallel with policy advocacy.
-URL: [brennancenter.org](https://www.brennancenter.org/issues/protect-our-democracy/national-security) | 702 resource page: [brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page)
-
-**Friends Committee on National Legislation (FCNL)**
-The Quaker lobby; the oldest registered peace lobby in Washington. FCNL runs the War Powers campaign, the most organized constituent-pressure operation for AUMF repeal and War Powers Resolution reform. They maintain district-by-district contact infrastructure and have secured co-sponsors for war powers legislation across multiple Congresses through constituent pressure on individual members.
-URL: [fcnl.org/warpowers](https://www.fcnl.org/warpowers)
-
-**Veterans Service Organizations (VSOs) for Reform**
-Veterans for Common Sense, Iraq and Afghanistan Veterans of America (IAVA), and Vietnam Veterans of America have all taken positions supporting expanded presumptive conditions, VA staffing, and opposing privatization. IAVA in particular runs an active legislative scorecard and constituent engagement program. The VSO community is the most effective political counterweight to the "veterans benefits are too expensive" argument because it reframes fiscal constraints as a breach of the military compact.
-URL: [iava.org](https://iava.org/)
+Parallel to NDAA: the 2001 AUMF repeal/sunset legislation (H.R. 6751) is in the House with a bipartisan cross-partisan coalition (Jayapal, Massie, McGovern, Griffith, Casar, Crane) and needs House floor pressure to force consideration. The Senate vehicle is a Kaine-led amendment to the FY2027 NDAA. These two tracks converge in the conference process expected November-December 2026.
 
 ---
 
 ### AI-2: Legislative Vehicles (119th Congress, 2025-2026)
 
-**Section 702 Reauthorization (Active — expires April 2026)**
-The most immediate pressure point in Domain 19. Section 702 is currently up for renewal, and as of April 2026 the House is again positioning a clean extension without a warrant requirement. The 212-212 tie vote from 2024 established that the warrant amendment has a viable coalition; the task is converting two votes in the current Congress. The cross-partisan Biggs-led coalition (conservative Republicans + progressive Democrats) is the vehicle. Brennan Center and CDT are running the civil liberties side; POGO has published on the FBI querying abuse. Constituent pressure on Intelligence Committee members who voted against the warrant amendment is the highest-leverage action.
-Key vote to watch: House floor vote on clean extension vs. amendment-attached version.
-Reference: [CRS: FISA Section 702 and RISAA (R48592)](https://www.congress.gov/crs-product/R48592)
+**2001 AUMF: H.R. 6751 — "Sunset for the 2001 Authorization for Use of Military Force Act"**
+Introduced December 2025 by Reps. Jayapal (WA-07), Massie (KY-04), McGovern (MA-02), Griffith (VA-09), Casar (TX-35), and Crane (AZ-02). The bill would repeal the 2001 AUMF (P.L. 107-40) effective 240 days after enactment. The 2001 AUMF has been used to justify military operations in at least 22 countries across three administrations — far beyond any conceivable connection to the September 11 attacks. The bill does not create a replacement authorization; the 240-day window is intended to force Congress to pass a new, narrowly scoped authorization for specific ongoing operations, or allow them to expire.
 
-**AUMF Repeal Legislation**
-The 2002 Iraq AUMF repeal passed the Senate in 2023 (S.316, Kaine-Young) and again in 2025. The 2001 AUMF has not been the subject of active repeal legislation with viable floor prospects, but Sen. Tim Kaine (D-VA) and others have introduced sunset legislation repeatedly. The legislative vehicle for 2001 AUMF reform would most likely be an amendment to the NDAA — the one defense bill that must pass annually and provides a vehicle for attaching war powers provisions.
+Procedural posture: Referred to House Foreign Affairs Committee and House Armed Services Committee. Floor prospects in current form are low given Republican leadership control of both chambers. The viable vehicle is an NDAA amendment attaching a sunset period (as distinct from outright repeal). Sen. Kaine (D-VA) has pursued this NDAA-amendment strategy repeatedly; he and Sen. Young (R-IN) are the Senate sponsors most likely to move a compromise provision. Watch for: any HASC or SFRC markup that opens amendment opportunities.
 
-**NDAA Annual Authorization**
-The National Defense Authorization Act (NDAA) must pass every year and is the primary vehicle for defense accountability provisions. GAO-required reporting amendments, financial management improvement mandates, and BRAC-like commission language have all been advanced through NDAA amendment processes. The window for 2026 NDAA mark-up in the Armed Services Committees (typically spring-summer) is the annual opportunity to advance audit enforcement, Nunn-McCurdy reform, and acquisition oversight provisions.
+Coalition: The cross-partisan nature of the coalition is essential to the political argument. Conservative-libertarian Republicans (Massie, Griffith) joining progressive Democrats (Jayapal, McGovern) is the same coalition that forced the 2024 FISA warrant amendment to a 212-212 tie. Win Without War, FCNL, and Quincy Institute are the primary advocacy organizations running constituent pressure for floor votes.
+
+Reference: [H.R. 6751 text — Congress.gov](https://www.congress.gov/bill/119th-congress/house-bill/6751/text); [Jayapal press release December 2025](https://jayapal.house.gov/2025/12/16/jayapal-massie-lead-bipartisan-effort-to-repeal-2001-aumf-end-forever-wars/)
+
+**The 2002 and 1991 AUMF Repeals — Enacted, December 2025**
+The FY2026 NDAA (signed December 18, 2025) repealed both the 2002 Iraq AUMF (P.L. 107-243) and the 1991 Gulf War AUMF. This is the first congressional AUMF repeal since the 1971 Gulf of Tonkin resolution repeal — a genuine precedent. The legislative record now shows that AUMF repeal via NDAA is procedurally achievable even under a Republican-controlled Congress. The 2001 AUMF repeal advocates can cite this enacted precedent directly. Win Without War's statement on enactment is the definitive reference for advocates using this precedent.
+
+Reference: [Win Without War on 2002 AUMF repeal enactment](https://winwithoutwar.org/win-without-war-celebrates-repeal-of-iraq-war-aumfs-urges-congress-to-press-on-and-reclaim-its-war-powers/); [Roll Call: Congress inches toward reclaiming war powers](https://rollcall.com/2025/12/24/congress-inches-toward-reclaiming-war-powers-with-aumf-repeals/)
+
+**Audit the Pentagon Act of 2026 — H.R. 7555**
+Introduced February 12, 2026, by Reps. Mark Pocan (D-WI) and Andy Biggs (R-AZ). The bill would require the DoD to return 0.5% of its budget to the Treasury after its first failed audit and 1% in each subsequent year of failure, with personnel and healthcare funding explicitly exempted. At the DoD's current budget scale (~$850 billion), 0.5% is approximately $4.25 billion — small enough to be politically survivable, large enough to create a genuine institutional incentive. Current status: referred to House Armed Services Committee; no markup scheduled. Primary value: creates a vehicle for floor amendment and forces members to take a recorded vote on audit accountability.
+
+A parallel mechanism already in statute: the FY2024 NDAA required DoD to achieve a clean audit opinion by December 31, 2028, or face automatic 1.5% cancellation of unobligated funds in affected components. This provision is enforceable without additional legislation — it needs GAO and DoD OIG to document the failure and Congress not to waive the consequence. Advocates should track whether the FY2028 enforcement trigger is preserved or quietly waived in subsequent NDAAs.
+
+Reference: [H.R. 7555 — Congress.gov](https://www.congress.gov/bill/119th-congress/house-bill/7555); [Pocan press release](https://pocan.house.gov/media-center/press-releases/pocan-biggs-introduce-audit-pentagon-act); [GovTrack status](https://www.govtrack.us/congress/bills/119/hr7555)
+
+**RECEIPTS Act — Sen. Joni Ernst (R-IA)**
+Authorizes $150 million for AI-assisted audit automation and $150 million to replace legacy financial management systems. The notable feature: Ernst is the chair of the Senate DOGE Caucus and has framed Pentagon audit accountability as a fiscal conservative priority, not a progressive one. This creates a vehicle for bipartisan action on audit reform that does not require progressive framing. The RECEIPTS Act is the Republican companion vehicle to the Pocan-Biggs approach. Advocates should push for both in FY2027 NDAA.
+
+**FY2027 NDAA — The Primary Vehicle**
+The NDAA process is the highest-leverage annual opportunity for all five reform strands in Domain 19. Key provisions to push in the FY2027 cycle:
+- **Nunn-McCurdy reform**: Current law requires reporting when a weapon program's cost exceeds baseline by 25% (significant breach) or 50% (critical breach). POGO's FY2027 recommendations include requiring programs with a second critical breach to be reauthorized by Congress — removing the current automatic continuation that rewards cost growth with more funding.
+- **Audit penalty enforcement**: Language ensuring the FY2024 NDAA 1.5% cancellation trigger is not waived if DoD fails its 2027 audit.
+- **Right to repair**: Both HASC and SASC 2026 versions included provisions expanding military right to repair equipment, reducing sole-source contractor dependency. FY2027 should extend and strengthen this.
+- **Special Government Employee (SGE) limits**: POGO recommendation to limit revolving-door SGE tenure and create a public tracking database — directly addresses the conflict of interest pipeline from DoD to contractors.
+- **AUMF sunset amendment**: Either standalone or attached to the NDAA.
+- **USAID reconstitution funding**: FY2027 State/USAID appropriations line is the vehicle for restoring diplomatic capacity cut since January 2025.
+
+Reference: [POGO's Initial Recommendations for the FY2027 NDAA](https://www.pogo.org/policy-letters/pogos-initial-recommendations-for-the-fy2027-ndaa); [POGO NDAA Recommendations archive](https://www.pogo.org/fact-sheets/pogo-recommendations-for-the-national-defense-authorization-act-ndaa)
+
+**Section 702 Reauthorization (Active — 2026)**
+Section 702 of FISA is up for renewal in 2026. The 2024 212-212 tie vote on the warrant amendment established that a viable cross-partisan coalition exists — conservative Republicans who want FBI querying limits plus progressive Democrats who want civil liberties protections. The task is converting two votes. Brennan Center and CDT are the civil liberties advocacy leads; POGO has published on FBI querying abuse. The highest-leverage action is constituent pressure on Intelligence Committee members from competitive districts who voted against the warrant amendment in 2024.
+
+Reference: [CRS: FISA Section 702 (R48592)](https://www.congress.gov/crs-product/R48592); [Brennan Center 2026 702 resource page](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page)
 
 **PCLOB Reauthorization and Independence**
-The Privacy and Civil Liberties Oversight Board has been effectively defunded by the Trump administration's firing of Democratic members and is operating without quorum. Legislation to provide PCLOB with independent budget authority (removing it from executive branch control), fixed terms, and removal-for-cause protections is the structural fix. This has been introduced in multiple Congresses without floor votes; the 2026 FISA reauthorization debate is the best near-term vehicle for attaching PCLOB independence provisions.
+The Privacy and Civil Liberties Oversight Board is non-operational following the Trump administration's removal of Democratic members. Legislation to provide PCLOB independent budget authority (removing executive branch budget control), fixed terms, and removal-only-for-cause protections would restore it as a functioning oversight mechanism. The 2026 FISA reauthorization debate is the best near-term vehicle for attaching PCLOB independence provisions.
 
-**VA MISSION Act Reform and Privatization Limits**
-Legislation to cap the percentage of VA care that can be delivered through community providers, require quality comparisons before community referrals, and mandate VA staffing targets (to address the 43,000-position vacancy) has been introduced by VSO-aligned members. The VA appropriations process is the annual vehicle; the FY2027 military construction and VA appropriations bill will be the next opportunity.
+**VA MISSION Act Reform — FY2027 Military Construction/VA Appropriations**
+Legislation to cap the percentage of VA care deliverable through community providers, require quality-of-care comparisons before community referrals, and mandate VA staffing targets has been introduced by VSO-aligned members each Congress. The FY2027 military construction and VA appropriations bill is the annual vehicle. Specific staffing target: eliminating the current ~43,000 VA position vacancy that drives wait times and community-care referrals.
 
 ---
 
-### AI-3: Near-Term Pressure Points (April-December 2026)
+### AI-3: Federal Agency Pressure Points and Oversight Mechanisms
 
-1. **Section 702 floor vote**: The warrant requirement amendment needs two votes to change from the 2024 212-212 tie. The specific members who voted against the warrant amendment in 2024 while representing competitive districts are the highest-leverage targets for constituent pressure. The Brennan Center's district-by-district analysis and FCNL's contact infrastructure are the organizing tools for this campaign.
+**GAO Investigation Request Process**
+Any member of Congress — including ranking minority members — can request a GAO investigation, audit, or performance review. The process: the requesting member writes a letter addressed to the Comptroller General, addressed to the Office of Congressional Relations at CongRel@gao.gov, identifying the subject of the investigation, the specific questions to be answered, and a staff point of contact. Requests from committee chairs and ranking members have priority; requests from non-leadership members are accepted but may be deprioritized. GAO's National Security and International Affairs division has the relevant clearances for classified defense reviews. Timeline: GAO acknowledges receipt promptly; studies typically take 6-18 months depending on complexity. Key use: any member can force a GAO examination of a specific weapons program, audit finding, or DoD financial practice — even without committee authority to hold hearings.
 
-2. **FY2027 NDAA mark-up**: The House and Senate Armed Services Committee mark-ups (typically May-June) are where audit enforcement provisions, Sentinel ICBM cost-growth oversight, and BRAC-model commission language can be advanced. POGO and Stimson are the organizations with staff relationships on these committees and the capacity to draft technical amendment language.
+Advocates seeking a specific GAO study should contact the member's office and ask them to submit a GAO request letter; they can provide draft language. POGO's engagement with congressional offices on GAO requests is a documented part of their oversight methodology.
 
-3. **Pentagon 8th audit cycle (results expected late 2026)**: The Pentagon failed its 8th consecutive audit in December 2025. The pattern — seven then eight consecutive failures, GAO projection of failures through 2028 — creates an annual media and congressional hearing opportunity. The hook for 2026: the Pentagon has now been failing audits for as long as the War on Terror has been running. The gap between the defense budget's size and the accountability infrastructure's adequacy is the organizing frame.
+Reference: [GAO Congressional Request process (PDF)](https://www.gao.gov/assets/REQUESTS_TO_GAO__PROCESS_AT_A_GLANCE.pdf); [GAO for Congress](https://www.gao.gov/about/what-gao-does/for-congress)
 
-4. **USAID dissolution litigation and reconstitution**: Multiple lawsuits challenging the Trump administration's USAID dissolution are proceeding. Court decisions in 2026 may create reinstatement obligations; whether and how those obligations are enforced will depend on congressional pressure. The State/USAID funding level in FY2027 appropriations (or a continuing resolution) will determine whether the diplomatic capacity argument remains hypothetical or becomes urgent.
+**DoD Inspector General — Hotline and Referral Process**
+The DoD OIG hotline accepts complaints from DoD employees, military members, contractor employees, and members of the public. Complainants may remain anonymous, though anonymous complaints may limit the investigative action available. The hotline covers fraud, waste, abuse, mismanagement, and violations of law or regulation — including contracting fraud, acquisition irregularities, and financial management failures.
 
-5. **New START successor negotiations (long-shot)**: With New START suspended and Russia maintaining its suspension, the window for new bilateral arms control is closed in the near term. The near-term actionable: Build support for resuming nuclear risk reduction dialogue through track 1.5 and track 2 channels. The Arms Control Association and Carnegie Endowment for International Peace run these processes; Stimson's nuclear program is the think tank entry point.
+Hotline: (800) 424-9098 (toll-free) | Online: dodig.mil/Components/Administrative-Investigations/DoD-Hotline/ | Fax: (703) 604-8567
 
-Sources: [Brennan Center: Section 702 2026 Resource Page](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page); [POGO Congressional Oversight of Defense Spending](https://www.pogo.org/analyses/congressional-oversight-of-defense-spending); [Stimson: What You Need to Know About Pentagon Spending in H.R. 1 (2025)](https://www.stimson.org/2025/what-you-need-to-know-about-pentagon-and-military-related-spending-in-h-r-1/); [Quincy Institute: Democratizing Foreign Policy](https://quincyinst.org/program-areas/democratizing-foreign-policy/); [FCNL War Powers Campaign](https://www.fcnl.org/warpowers); [VHA 2024 National Veteran Suicide Prevention Annual Report](https://news.va.gov/137221/va-2024-suicide-prevention-annual-report/); [Ohio Star: Section 702 Warrant Amendment 212-212 Tie Vote](https://theohiostar.com/news/amendment-in-gop-houses-fisa-renewal-bill-for-warrant-requirement-fails-in-tie-vote-212-212/jtnews/2024/04/12/)
+The DoD OIG also conducts systemic audits and inspections separate from hotline complaints. The OIG's financial management audit reports are the primary public documentation of the specific deficiencies behind the annual audit failure; these are published on the OIG website and are the most detailed available public record of what the DoD cannot account for. Advocates should track OIG annual financial management reports as the primary accountability document.
+
+Reference: [DoD Hotline](https://www.dodig.mil/Components/Administrative-Investigations/DoD-Hotline/); [What to report to the DoD Hotline](https://www.dodig.mil/Components/Administrative-Investigations/DoD-Hotline/Read-Before-Filing/)
+
+**FOIA Mechanisms for Military Contracting**
+DoD has multiple component FOIA portals relevant to contracting accountability:
+- **Defense Finance and Accounting Service (DFAS)**: DFAS processes payments for all DoD components and maintains financial transaction records. FOIA requests to DFAS can seek payment records, contract disbursement data, and accounting entries — the records underlying the audit failures. Submit at: dfas.mil/foia/submitfoiarequest/
+- **Defense Contract Management Agency (DCMA)**: DCMA oversees contractor compliance and maintains contract quality assurance records. FOIA to DCMA can surface contractor performance deficiencies that are not publicly reported. Submit at: dcma.mil/HQ/FOIA1/
+- **DoD FOIA portal (foia.gov)**: The consolidated federal FOIA portal allows requests routed to DoD components.
+- **System for Award Management (SAM.gov)**: All federal contracts over $10,000 are publicly disclosed through SAM.gov; this is the starting point for contract research before filing FOIA requests for underlying documents.
+
+Note on classified programs: FOIA cannot compel disclosure of properly classified information. However, (a) much of the information behind the audit failures is not classified — it is simply missing from or inconsistent across legacy accounting systems; and (b) FOIA requests that are fully or partly denied generate denial letters that themselves document the government's classification claims, which can be challenged through administrative appeal or litigation. MuckRock's DoD FOIA guide is the practitioner resource.
+
+Reference: [DFAS FOIA](https://www.dfas.mil/foia/); [DCMA FOIA](https://www.dcma.mil/HQ/FOIA1/); [MuckRock DoD FOIA guide](https://www.muckrock.com/news/archives/2018/aug/24/how-use-foia-find-department-defense-contracts/)
+
+**SASC and HASC as Pressure Points**
+The Senate Armed Services Committee (SASC) and House Armed Services Committee (HASC) are the primary authorization vehicles for all DoD accountability provisions. Every member of these committees represents a constituency reachable by organized advocates. The committees' majority staff control which amendment proposals receive a hearing in markup; minority staff can offer amendments that force recorded votes even when the majority blocks them from passing. Key contact point: the committees' oversight subcommittees — Subcommittee on Readiness (sustainment, spare parts, right to repair) and Subcommittee on Personnel (VA, military benefits, end strength) are the primary vehicles for reform provisions outside major weapons programs. Majority contacts: SASC Chair Roger Wicker (R-MS); HASC Chair Mike Rogers (R-AL). Ranking Members (minority party) are the more accessible pressure points for reform advocacy.
+
+---
+
+### AI-4: Organizations — Specific Roles and Engagement Mechanisms
+
+**Project On Government Oversight (POGO)**
+The primary nonpartisan watchdog on Pentagon accountability. POGO runs the Center for Defense Information (integrated 2012), conducts original investigations into weapons program failures, audits the revolving door, files FOIA requests on contractor performance, and provides technical briefings to congressional staff. POGO's Congressional Training Program trains House and Senate oversight staff on audit methodology — a direct pipeline for building accountability capacity on both sides of the aisle. POGO testified before HASC on DoD audit failures in 2025 and their DoD audit factsheet is the most frequently cited non-governmental source in congressional testimony on the subject. POGO publishes initial FY2027 NDAA recommendations each spring, which serve as an advocacy menu for allied offices.
+
+How to engage: Subscribe to POGO's newsletter for investigation alerts; contact their congressional affairs team to coordinate on NDAA amendment language; their investigations portal surfaces new findings that can anchor constituent outreach campaigns.
+
+URL: [pogo.org](https://www.pogo.org/) | Investigations: [pogo.org/investigates](https://www.pogo.org/investigates) | FY2027 NDAA recommendations: [pogo.org/policy-letters/pogos-initial-recommendations-for-the-fy2027-ndaa](https://www.pogo.org/policy-letters/pogos-initial-recommendations-for-the-fy2027-ndaa)
+
+**National Priorities Project (NPP)**
+NPP translates the federal budget — especially military spending — into accessible analysis for public audiences. Their flagship product is the annual "Cost of War" counter that disaggregates total war spending by state, congressional district, and local community, making the opportunity cost of military spending concrete and local. NPP has published the definitive breakdown of how the Pentagon's budget distributes across domestic priorities. Their data is a primary organizing tool for constituent conversations about defense spending tradeoffs: "your congressional district has paid $X billion for the war on terror; here is what that equals in teachers/school lunches/infrastructure."
+
+How to engage: Use NPP's interactive budget tools at nationalpriorities.org for constituent outreach materials; subscribe to their budget alerts for real-time analysis when DoD budget requests are released.
+
+URL: [nationalpriorities.org](https://www.nationalpriorities.org/)
+
+**Taxpayers for Common Sense (TCS)**
+TCS is a nonpartisan budget watchdog with a strong track record on Pentagon waste. Their "Budget Watchdog AF" podcast covers defense contracting and NDAA provisions in accessible depth. TCS has published analyses of the F-35 cost trajectory, Pentagon wishlist items ("unfunded priorities lists" submitted by the services to Congress outside the official budget request), and the reconciliation bill's defense provisions. They have credibility with fiscal-conservative Republicans — TCS is a legitimate coalition partner for deficit-hawk members who would not engage with progressive defense critics.
+
+How to engage: Subscribe to the BWAF podcast for NDAA tracking; use TCS analysis in constituent outreach to Republican members framing audit reform as fiscal responsibility, not anti-military advocacy.
+
+URL: [taxpayer.net](https://www.taxpayer.net/) | BWAF Podcast: [taxpayer.net/national-security/bwaf-podcast](https://www.taxpayer.net/national-security/)
+
+**Stimson Center — National Security Reform Program**
+The Stimson/Quincy/Taxpayers for Common Sense joint analysis (2025) identified $60+ billion in DoD savings achievable without reducing capability. Stimson publishes the "Alternative Defense Budget" that provides a concrete reform blueprint — not a cut-the-military argument, but a reallocate-from-waste-to-capability argument that reaches defense-minded moderates. Stimson's nuclear program is the primary think tank resource for new arms control frameworks.
+
+URL: [stimson.org/program/national-security-reform](https://www.stimson.org/program/national-security-reform/)
+
+**Quincy Institute for Responsible Statecraft**
+Transpartisan foreign policy think tank (funded by both Charles Koch and George Soros — the only jointly funded foreign policy institution of significance) focused on restraint, diplomacy-first approaches, and war powers reform. Quincy's "Democratizing Foreign Policy" program directly targets the AUMF architecture and congressional reclamation of war powers authority. Their publication Responsible Statecraft provides daily coverage of Pentagon spending, arms sales, and war powers issues. Quincy has worked with FCNL and Win Without War on joint advocacy letters for AUMF reform with coalitions of 50-75+ national organizations.
+
+How to engage: Subscribe to Responsible Statecraft (responsiblestatecraft.org) for daily intelligence on war powers and Pentagon spending; contact Quincy's policy team for expert backup on congressional outreach.
+
+URL: [quincyinst.org](https://quincyinst.org/) | War powers program: [quincyinst.org/program-areas/democratizing-foreign-policy](https://quincyinst.org/program-areas/democratizing-foreign-policy/)
+
+**Center for International Policy (CIP)**
+CIP runs the Security Assistance Monitor (tracking US arms sales and security assistance), the Sustainable Defense Task Force (which has produced the most detailed reform-without-weakness Pentagon budget analyses), and founded Win Without War. CIP's arms sales database is the primary public resource for tracking Leahy Law compliance failures and end-use monitoring gaps. Their congressional engagement focuses on arms export oversight — the legislative vehicle is the Foreign Military Sales notification process, which allows any member of Congress to object to a proposed sale.
+
+URL: [internationalpolicy.org](https://internationalpolicy.org/) | Security Assistance Monitor: [securityassistance.org](https://www.securityassistance.org/)
+
+**Win Without War**
+Legislative advocacy coalition (a CIP project) founded 2002, active on AUMF repeal, war powers, and military spending. Win Without War coordinated the coalition letter that accompanied the 2001 AUMF repeal push in December 2025, and published the definitive advocacy statement on the enacted 2002 AUMF repeal. They maintain an action alert infrastructure — their email list is the primary mechanism for coordinated constituent contact campaigns on war powers votes. When a House floor vote on AUMF repeal or a Section 702 warrant amendment is scheduled, Win Without War's action alerts are how constituent contacts are coordinated nationally.
+
+How to engage: Sign up for action alerts at winwithoutwar.org; contact their congressional affairs team to identify priority members for constituent pressure.
+
+URL: [winwithoutwar.org](https://winwithoutwar.org/)
+
+**Friends Committee on National Legislation (FCNL)**
+The Quaker lobby; the oldest registered peace lobby in Washington, DC, founded 1943. FCNL runs the War Powers campaign — the most organizationally sophisticated constituent-pressure operation for AUMF repeal and War Powers Resolution reform. FCNL maintains district-by-district contact infrastructure that can mobilize in-district constituent visits, phone campaigns, and letters. They have secured co-sponsors for war powers legislation across multiple Congresses through constituent pressure on individual members. Their "Lobby Days" events bring constituents to Washington for direct member meetings.
+
+How to engage: The most effective FCNL engagement is through their constituent lobby day events, which allow direct member office visits with FCNL training and logistics support. Their War Powers campaign page provides action alerts and tracking.
+
+URL: [fcnl.org/warpowers](https://www.fcnl.org/warpowers)
+
+**American Friends Service Committee (AFSC)**
+AFSC does community organizing and public education on militarism, war, and military spending — the ground-level complement to FCNL's congressional work. AFSC's "True Security" program documents the domestic opportunity cost of military spending and builds coalitions between peace advocates and domestic-needs advocates (connecting military spending critique to healthcare, housing, and education funding). AFSC has historical depth on war tax resistance, conscientious objection, and the structural critique of militarism that FCNL does not engage.
+
+URL: [afsc.org](https://www.afsc.org/)
+
+**Council for a Livable World (CLW) and Center for Arms Control and Non-Proliferation**
+CLW is the primary electoral and legislative advocacy organization on nuclear weapons policy. Founded in 1962 by Leo Szilard, CLW endorses and fundraises for congressional candidates who support arms control and nuclear risk reduction — making them one of the few organizations that shapes the congressional composition on nuclear issues, not just lobbies an existing Congress. Their research arm, the Center for Arms Control and Non-Proliferation, produces technical briefings for congressional staff on nuclear weapons programs, new START successors, and nuclear modernization cost analysis. The Center's annual "Trillion Dollar Nuclear Triad" analysis is the primary public resource on nuclear modernization costs.
+
+How to engage: The Center publishes staff-level briefings that congressional offices can request directly; CLW endorsements signal to members that nuclear accountability positions are electorally viable.
+
+URL: [livableworld.org](https://livableworld.org/) | Center for Arms Control: [armscontrolcenter.org](https://www.armscontrolcenter.org/)
+
+**Brennan Center for Justice — National Security Program**
+The primary civil liberties research and litigation organization on Section 702, Executive Order 12333, PCLOB, and surveillance reform. Brennan Center produces the authoritative legislative resource pages on each FISA reauthorization cycle; their 2026 resource page on Section 702 is the best single reference for the current legislative fight. They litigate civil liberties cases in parallel with policy advocacy, creating a "pressure from above and below" dynamic — legislative reform advocacy paired with litigation that imposes costs on surveillance overreach.
+
+URL: [brennancenter.org/issues/protect-our-democracy/national-security](https://www.brennancenter.org/issues/protect-our-democracy/national-security) | 702 resource page: [brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page)
+
+**Iraq and Afghanistan Veterans of America (IAVA)**
+IAVA runs an active legislative scorecard and constituent engagement program for post-9/11 veterans' issues — VA staffing, PACT Act implementation, mental health access, and opposing VA privatization. IAVA's political credibility is that its members are the veterans the post-9/11 wars produced; their testimony on VA failures carries weight that civilian advocates cannot replicate. IAVA tracks the VA staffing vacancy in real time and has engaged on the PACT Act claims backlog.
+
+URL: [iava.org](https://iava.org/)
+
+---
+
+### AI-5: State-Level Leverage Points
+
+State-level action on national security issues is constrained but not absent. Three mechanisms are viable.
+
+**State Legislative Resolutions on AUMF and War Powers**
+State legislatures can pass resolutions calling on Congress to repeal the 2001 AUMF, restore War Powers Resolution enforcement, or limit deployments without congressional authorization. These resolutions have no direct legal force but serve two political functions: they demonstrate constituency-level support for reform in districts whose members have not co-sponsored federal legislation, and they create local media opportunities that are harder for congressional offices to ignore than Washington-based advocacy. The enacted repeal of the 2002 AUMF via the FY2026 NDAA was preceded by years of state-level resolutions calling for Iraq war authorization repeal — these built the political record that made NDAA inclusion viable.
+
+States with active peace caucuses or progressive legislative majorities where such resolutions are achievable: California, Colorado, Illinois, Maine, Massachusetts, Minnesota, New Mexico, Oregon, Vermont, Washington. FCNL and Win Without War have the state legislative contact networks to coordinate these campaigns.
+
+**State Pension Fund Engagement on Contractor Accountability**
+State pension funds hold significant equity positions in major defense contractors. CalPERS holds substantial positions in Lockheed Martin, Raytheon/RTX, General Dynamics, and Northrop Grumman; CalSTRS holds approximately $189 million in Raytheon, $176 million in Lockheed Martin, and $123 million in Northrop Grumman as of 2026 reporting. State pension fund boards have fiduciary obligations but also respond to beneficiary pressure and legislative oversight. The viable approach is not divestment (pension boards have resisted divestment mandates as fiduciary conflicts) but shareholder engagement: pension fund board members can be encouraged to use shareholder proxy votes to push for audit transparency requirements, contractor cost overrun disclosure, and revolving door policies as governance reforms. CalPERS and CalSTRS have both engaged on ESG governance issues; military contractor accountability has not yet been a significant focus, which means the space is open.
+
+The legislative vehicle: state legislation requiring pension funds to disclose contractor holdings and report on engagement activities for contractors with documented audit or cost-overrun failures. This creates accountability without mandating divestment.
+
+**National Guard Deployment and State Sovereignty**
+The Supreme Court's December 2025 ruling blocking Trump's deployment of Illinois and Texas National Guard units to protect ICE operations — denying the federal government's request under 10 U.S.C. § 12406 — established an important limit on presidential authority to federalize state Guard units absent demonstrated inability of regular forces and clear statutory authority. Governors and state attorneys general can use this precedent to resist National Guard federalization for deployments they regard as unauthorized or outside the AUMF's scope.
+
+The practical advocacy application: state attorneys general and governors' offices should monitor federal Guard federalization orders and consult with constitutional lawyers about whether specific deployments fall within or outside the statutory authority clarified by the December 2025 decision. States United Democracy Center has published analysis of public opposition to Guard deployment without governors' consent and is the primary resource organization on this issue.
+
+Reference: [States United: National Guard Deployment analysis](https://statesunited.org/resources/national-guard-deployment/); [Brennan Center: Posse Comitatus Act explained](https://www.brennancenter.org/our-work/research-reports/posse-comitatus-act-explained)
+
+---
+
+### AI-6: Near-Term Windows (April-December 2026)
+
+**Window 1 — FY2027 NDAA Markup (May-August 2026) [HIGHEST PRIORITY]**
+Based on the FY2026 NDAA timeline (subcommittee markups July 8-9, 2025; HASC full markup July 15, 2025; SASC full markup July), the FY2027 markup cycle will follow a similar schedule: subcommittee markups beginning in May or June 2026, full committee markups in July, House and Senate floor action in fall, conference in November-December. This is the annual window where all the provisions listed in AI-2 can be advanced.
+
+Specific provisions with realistic amendment prospects in the current Congress:
+- Nunn-McCurdy reform (second critical breach requires congressional reauthorization) — bipartisan support from defense-skeptical fiscal conservatives
+- Right to repair expansion — already in both chambers' 2026 versions; building on established momentum
+- SGE revolving door database — low-cost transparency measure with reform credibility
+- AUMF sunset amendment — lower probability but worth forcing a vote
+
+Organizations with staff relationships on HASC and SASC who can develop amendment language: POGO (primary resource), Stimson Center, Taxpayers for Common Sense. Contact these organizations in April-May to coordinate amendment text before markup begins.
+
+Reference: [POGO FY2027 NDAA recommendations](https://www.pogo.org/policy-letters/pogos-initial-recommendations-for-the-fy2027-ndaa); [CRS: NDAA Process (IF10515)](https://www.congress.gov/crs-product/IF10515)
+
+**Window 2 — 2001 AUMF Floor Pressure (Ongoing)**
+H.R. 6751 is in committee. The path to a floor vote is either: (a) a discharge petition (218 signatures required — very high bar requiring bipartisan crossover), or (b) attachment to the FY2027 NDAA as an amendment during markup or floor consideration. The bipartisan coalition (Jayapal, Massie, plus McGovern, Griffith, Casar, Crane) needs to expand; key targets are Republican members in safe seats with libertarian-leaning electorates who have previously co-sponsored war powers legislation. Win Without War and FCNL maintain the co-sponsor lists. Constituent pressure through FCNL's district contact infrastructure is the organizing mechanism.
+
+**Window 3 — Pentagon 9th Audit Cycle (December 2026)**
+The Pentagon will announce its FY2026 audit results in December 2026. This will be the 9th consecutive failure. The organizing frame for 2026: the Pentagon has now failed eight consecutive audits, covering every year of the mandatory audit program since 2018. The 2028 clean-opinion target that DoD CFO Jules Hurst restated after the December 2025 failure has now been the promised target for two consecutive years. The GAO's February 2026 High Risk list update and the December 2026 audit announcement are the two annual media hooks for Pentagon accountability advocacy.
+
+Specific numbers to embed in constituent outreach ahead of the December announcement: 8 consecutive audit failures; $4.65 trillion in assets and $4.7 trillion in liabilities reported in the FY2025 audit; 26 material weaknesses identified in the FY2025 audit; $2 trillion F-35 lifetime cost (GAO 2024); 35 years on GAO's High Risk list for DoD financial management (continuously since 1991). The auditing record is now long enough to be politically embarrassing independent of partisan framing — it predates the Biden and Trump administrations alike.
+
+Reference: [Pentagon fails 8th audit — Military Times, December 2025](https://www.militarytimes.com/news/pentagon-congress/2025/12/19/pentagon-fails-financial-audit-for-8th-year-in-a-row/); [Pentagon: $4.7T in liabilities, 26 material weaknesses](https://yournews.com/2025/12/22/5502298/pentagon-fails-8th-straight-audit-4-7t-in-liabilities-26-material/)
+
+**Window 4 — Section 702 Vote (2026)**
+Section 702 reauthorization is live. The Biggs-Jayapal coalition that tied 212-212 in 2024 needs two additional votes. Targeted constituent pressure on the specific members who represent competitive districts and voted against the warrant amendment is the action. The Brennan Center's 2026 resource page identifies the legislative status in real time.
+
+**Window 5 — FY2027 State/USAID Appropriations (September-December 2026)**
+USAID has been effectively dissolved by the Trump administration; multiple legal challenges are in progress. The FY2027 State Department and Foreign Operations appropriations bill is the vehicle for restoring funding and mandating reconstitution of dissolved diplomatic and development capacity. The bill will be part of the fall 2026 appropriations fight — or more likely, a continuing resolution that may fund USAID at current reduced levels. Advocates should push for State/USAID appropriations above FY2025 baseline and inclusion of explicit reconstitution mandates.
+
+Sources: [H.R. 6751 — Jayapal.house.gov](https://jayapal.house.gov/2025/12/16/jayapal-massie-lead-bipartisan-effort-to-repeal-2001-aumf-end-forever-wars/); [Roll Call: Congress inches toward reclaiming war powers](https://rollcall.com/2025/12/24/congress-inches-toward-reclaiming-war-powers-with-aumf-repeals/); [Win Without War on enacted 2002 AUMF repeal](https://winwithoutwar.org/win-without-war-celebrates-repeal-of-iraq-war-aumfs-urges-congress-to-press-on-and-reclaim-its-war-powers/); [H.R. 7555 — Audit the Pentagon Act of 2026](https://www.congress.gov/bill/119th-congress/house-bill/7555); [POGO FY2027 NDAA recommendations](https://www.pogo.org/policy-letters/pogos-initial-recommendations-for-the-fy2027-ndaa); [GAO request process](https://www.gao.gov/assets/REQUESTS_TO_GAO__PROCESS_AT_A_GLANCE.pdf); [DoD IG Hotline](https://www.dodig.mil/Components/Administrative-Investigations/DoD-Hotline/); [DFAS FOIA](https://www.dfas.mil/foia/); [Pentagon fails 8th audit — Military Times](https://www.militarytimes.com/news/pentagon-congress/2025/12/19/pentagon-fails-financial-audit-for-8th-year-in-a-row/); [Brennan Center: Section 702 2026](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page); [FCNL War Powers Campaign](https://www.fcnl.org/warpowers); [States United: National Guard Deployment](https://statesunited.org/resources/national-guard-deployment/); [National Priorities Project](https://www.nationalpriorities.org/); [Council for a Livable World](https://livableworld.org/); [Taxpayers for Common Sense](https://www.taxpayer.net/); [CIP Security Assistance Monitor](https://www.securityassistance.org/)
