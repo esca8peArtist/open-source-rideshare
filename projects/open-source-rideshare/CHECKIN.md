@@ -6,7 +6,311 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
-### feature/corporate-business-accounts — corporate shuttle pass management (latest)
+### feature/corporate-business-accounts — corporate fleet cost analytics (latest)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `9558413`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Fleet admins can now view aggregated cost analytics across all three fleet
+cost sources — fuel fill-ups, maintenance service records, and toll charges.
+
+**New endpoints:**
+- `GET /corporate/{account_id}/fleet/analytics/fleet-costs` — fleet-wide summary (total fuel + maintenance + toll costs, vehicle count)
+- `GET /corporate/{account_id}/fleet/analytics/fleet-costs/monthly` — monthly cost trend (last N months, default 12)
+- `GET /corporate/{account_id}/fleet/analytics/fleet-costs/vehicles` — per-vehicle cost breakdown
+- `GET /admin/fleet-cost-analytics/{account_id}` — platform-admin view
+
+**Architecture decisions:**
+- Read-only analytics layer — no new tables, queries aggregate from existing `corporate_fleet_fuel_logs`, `corporate_fleet_maintenance_records`, and `corporate_fleet_toll_charges`
+- Admin-only (requires `MemberRole.ADMIN`); platform admin bypasses member check via `require_admin` dep
+- Maintenance costs restricted to `status=completed` records to exclude scheduled/cancelled work
+- `func.coalesce(func.sum(...), 0)` throughout to prevent NULL aggregates on sparse data
+- Monthly trend uses PostgreSQL `extract(year/month, ...)` GROUP BY — zero-padded as `YYYY-MM` strings in Python
+
+**Files added/modified:**
+- `backend/app/schemas/corporate_fleet_cost_analytics.py` — 5 Pydantic v2 schemas
+- `backend/app/services/corporate_fleet_cost_analytics_service.py` — 3 service functions + admin guard
+- `backend/app/api/v1/corporate_fleet_cost_analytics.py` — 4 GET endpoints
+- `backend/app/main.py` — router registered
+- `backend/tests/test_corporate_fleet_cost_analytics.py` — 40 tests
+
+**Test result:** 9,543 passing (40 new). The 2 pre-existing failures (`test_corporate_guest_pass`, `test_corporate_shuttle`) are unrelated.
+
+---
+
+### feature/corporate-business-accounts — corporate fleet driver assignments
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `095b3d8`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Fleet admins can now assign corporate account members to fleet vehicles, tracking who
+is the primary, secondary, pool, or temporary driver of each vehicle along with the
+full assignment history.
+
+**Architecture decisions:**
+- Single table `corporate_fleet_driver_assignments` with two PG enums:
+  `fleetdriverassignmenttype` (primary, secondary, pool, temporary) and
+  `fleetdriverassignmentstatus` (active, inactive, pending, suspended).
+- Primary uniqueness enforced in the service layer: creating a new primary assignment
+  automatically ends (status→inactive, end_date=today) any existing active primary for
+  the same vehicle — no extra endpoint needed.
+- Secondary driver cap enforced at 2 active secondaries per vehicle; pool and temporary
+  assignments have no per-vehicle uniqueness constraint.
+- Pending status is auto-set when `start_date` is in the future; explicit
+  `activate_assignment` action promotes pending→active.
+- Status lifecycle: pending→active (activate), active→suspended (suspend),
+  active/suspended→inactive (end). Only inactive records may be deleted.
+- Member-visible routes use the vehicle-scoped path
+  `/corporate/{account_id}/fleet-vehicles/{vehicle_id}/driver-assignments`.
+  Static segments (`/primary`) are declared before `/{assignment_id}` to prevent
+  FastAPI routing conflicts.
+- Admin account-wide routes use `/corporate/{account_id}/fleet-driver-assignments/`
+  (trailing slash) with `/active` declared before `/{assignment_id}`.
+- Platform admin: `GET /admin/fleet-driver-assignments` with optional `account_id` filter.
+
+**Files added/modified:**
+- `backend/app/models/corporate_fleet_driver_assignment.py` — ORM model
+- `backend/app/schemas/corporate_fleet_driver_assignment.py` — Pydantic v2 schemas
+- `backend/app/services/corporate_fleet_driver_assignment_service.py` — 12 service functions
+- `backend/app/api/v1/corporate_fleet_driver_assignment.py` — 13 endpoints
+- `backend/app/db/migrations/versions/v1w2x3y4z5a6_corporate_fleet_driver_assignment.py` — Alembic migration
+- `backend/app/main.py` — router registered
+- `backend/tests/test_corporate_fleet_driver_assignment.py` — 58 tests
+
+**Test result:** 9,503 passing (58 new). The 2 pre-existing failures
+(`test_corporate_guest_pass`, `test_corporate_shuttle`) are unrelated to this change.
+
+---
+
+### feature/corporate-business-accounts — corporate fleet maintenance scheduling
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `f0fe19c`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Fleet managers schedule preventive maintenance and log completed service records for
+company vehicles. Records track maintenance type, lifecycle status, scheduled and
+completed dates, vendor/technician details, costs, odometer readings, and
+next-service thresholds. Overdue detection automatically promotes stale scheduled
+records to status=overdue.
+
+**Architecture decisions:**
+- Single-table design: `corporate_fleet_maintenance_records` — one row per scheduled
+  or completed event per vehicle.
+- Two PG enums: `fleetmaintenancetype` (12 values: oil_change, tire_rotation,
+  brake_inspection, air_filter, transmission_service, battery_replacement,
+  coolant_flush, spark_plugs, wheel_alignment, state_inspection, recall_repair, other)
+  and `fleetmaintenancestatus` (5 values: scheduled, in_progress, completed,
+  cancelled, overdue).
+- `get_overdue_maintenance` marks records as overdue in the same DB commit before
+  returning them — callers always get up-to-date status without a separate call.
+- Vehicle-scoped list and GET endpoints use `/scheduled-maintenance` rather than
+  `/maintenance` to avoid a routing conflict with the existing
+  `corporate_vehicle_maintenance_log` router which owns
+  `/fleet-vehicles/{vehicle_id}/maintenance`.
+- Static routes (`/`, `/overdue`) are declared before `/{record_id}` to prevent
+  FastAPI path-matching conflicts.
+- `complete_maintenance` accepts optional `completed_date`, `cost_usd`, and
+  `odometer` query params to allow recording service details at completion time
+  without needing a separate update call.
+- `cancel_maintenance` raises 409 for both completed and cancelled records (terminal
+  states cannot be cancelled).
+
+**Files created:**
+- `backend/app/models/corporate_fleet_maintenance.py`
+- `backend/app/schemas/corporate_fleet_maintenance.py`
+- `backend/app/services/corporate_fleet_maintenance_service.py`
+- `backend/app/api/v1/corporate_fleet_maintenance.py`
+- `backend/app/db/migrations/versions/u0v1w2x3y4z5_corporate_fleet_maintenance.py`
+- `backend/tests/test_corporate_fleet_maintenance.py`
+
+**Files modified:**
+- `backend/app/main.py` — added `corporate_fleet_maintenance` to import line and
+  registered `corporate_fleet_maintenance.router`
+
+**Endpoints added (13 total):**
+- `GET  /api/v1/corporate/{account_id}/fleet-vehicles/{vehicle_id}/scheduled-maintenance` — member: list vehicle records (status, maintenance_type filters)
+- `GET  /api/v1/corporate/{account_id}/fleet-vehicles/{vehicle_id}/maintenance-summary` — member: vehicle aggregate summary
+- `GET  /api/v1/corporate/{account_id}/fleet-vehicles/{vehicle_id}/scheduled-maintenance/{record_id}` — member: get one record
+- `POST /api/v1/corporate/{account_id}/fleet-vehicles/{vehicle_id}/scheduled-maintenance` — admin: schedule → 201
+- `GET  /api/v1/corporate/{account_id}/fleet-maintenance/` — admin: list all for account (vehicle_id, status, maintenance_type filters)
+- `GET  /api/v1/corporate/{account_id}/fleet-maintenance/overdue` — admin: detect + return overdue records
+- `PUT  /api/v1/corporate/{account_id}/fleet-maintenance/{record_id}` — admin: update
+- `POST /api/v1/corporate/{account_id}/fleet-maintenance/{record_id}/complete` — admin: mark completed
+- `POST /api/v1/corporate/{account_id}/fleet-maintenance/{record_id}/cancel` — admin: cancel (409 if completed/cancelled)
+- `DELETE /api/v1/corporate/{account_id}/fleet-maintenance/{record_id}` — admin: delete → 204
+- `GET  /api/v1/corporate/{account_id}/fleet-maintenance-summary` — admin: account-level summary
+- `GET  /api/v1/platform/corporate/fleet-maintenance/` — platform-admin: all records
+- `GET  /api/v1/platform/corporate/fleet-maintenance/{account_id}` — platform-admin: records for one account
+
+**Test results:** 50/50 new tests passing. Full suite: 9,445 passing, 2 pre-existing failures
+(`test_corporate_guest_pass::test_validate_token_not_yet_valid` and
+`test_corporate_shuttle::test_get_route_summary_returns_correct_counts` — both pre-date
+this session), 1082 skipped.
+
+**Push status:** Commit f0fe19c is on local branch feature/corporate-business-accounts.
+Remote push was blocked by permission error on SuperClaude-Org remote — push to
+rideshare origin when ready.
+
+---
+
+### feature/corporate-business-accounts — corporate fleet vehicle registration tracking
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `334c869`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Fleet managers track state/jurisdiction vehicle registration records per company
+vehicle. Records carry registration number (unique per account), state/jurisdiction,
+registration date, expiration date, optional annual fee, and optional registered
+owner name. The `/expiring` endpoint returns active registrations expiring within
+N days with `days_until_expiry` computed in Python. The account summary aggregates
+active/inactive counts, expiring-within-30-days count, total annual fee across
+active records, and a per-state breakdown dict.
+
+**Architecture decisions:**
+- Single-table design: `corporate_fleet_vehicle_registrations` — one row per
+  registration, unique on (account_id, registration_number).
+- No enum needed — registration is simpler than insurance; state is a free-text
+  String(100) to support all jurisdictions.
+- `get_expiring_registrations` computes `days_until_expiry` in Python from
+  `date.today()` delta — consistent with the insurance implementation.
+- Static routes (`/expiring`, `/summary`, `/`) placed before `/{registration_id}`
+  to prevent FastAPI path-matching conflicts.
+
+**Files created:**
+- `backend/app/models/corporate_fleet_registration.py`
+- `backend/app/schemas/corporate_fleet_registration.py`
+- `backend/app/services/corporate_fleet_registration_service.py`
+- `backend/app/api/v1/corporate_fleet_registration.py`
+- `backend/app/db/migrations/versions/s8t9u0v1w2x3_corporate_fleet_registration.py`
+- `backend/tests/test_corporate_fleet_registration.py`
+
+**Files modified:**
+- `backend/app/models/__init__.py` — added `CorporateFleetVehicleRegistration` import
+- `backend/app/main.py` — registered `corporate_fleet_registration.router`
+
+**Test results:** 43/43 passed (full suite: 9337 passed, 2 pre-existing failures unrelated)
+
+**Pushed:** `rideshare/feature/corporate-business-accounts` (esca8peArtist fork)
+
+---
+
+### feature/corporate-business-accounts — corporate fleet insurance tracking
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `94174d3`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Fleet managers track insurance policies per company vehicle. Policies carry type
+(liability/collision/comprehensive/commercial_auto/uninsured_motorist/other),
+provider name, coverage/deductible/premium amounts, and start/end dates. The
+`/expiring` endpoint returns active policies expiring within N days with
+`days_until_expiry` computed. The account summary aggregates active/inactive
+counts, expiring-within-30-days count, total annual premium, and per-type breakdown.
+
+**Architecture decisions:**
+- Single-table design: `corporate_fleet_insurance_policies` — one row per policy,
+  unique on (account_id, policy_number) to prevent duplicate registrations.
+- `policy_start_date` and `policy_end_date` use SQLAlchemy `Date` (not `DateTime`)
+  since insurance policies are date-scoped, not time-scoped.
+- `get_expiring_policies` computes `days_until_expiry` in Python from `date.today()`
+  delta — no DB-side computed column needed.
+- Static routes (`/expiring`, `/summary`, `/`) are placed before `/{policy_id}` to
+  prevent FastAPI path conflicts.
+- `deactivate_policy` / `reactivate_policy` follow existing soft-delete pattern with
+  409 guards to prevent double-deactivation or redundant reactivation.
+- InsuranceType enum: `liability` / `collision` / `comprehensive` / `commercial_auto` /
+  `uninsured_motorist` / `other`
+
+**Files created:**
+- `backend/app/models/corporate_fleet_insurance.py`
+- `backend/app/schemas/corporate_fleet_insurance.py`
+- `backend/app/services/corporate_fleet_insurance_service.py`
+- `backend/app/api/v1/corporate_fleet_insurance.py`
+- `backend/app/db/migrations/versions/o4p5q6r7s8t9_corporate_fleet_insurance.py`
+- `backend/tests/test_corporate_fleet_insurance.py` (39 tests)
+
+**Files modified:**
+- `backend/app/models/__init__.py` — registered CorporateFleetInsurancePolicy, InsuranceType
+- `backend/app/main.py` — imported + registered corporate_fleet_insurance.router
+
+---
+
+### feature/corporate-business-accounts — corporate vehicle inspection checklists
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `ad5292d`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-16
+
+**Summary:**
+Fleet managers define reusable inspection templates with named checklist items
+(lights, brakes, tires, fuel level, etc.). Drivers or fleet managers create
+pending inspections before/after vehicle use and submit completed checklists.
+The system evaluates pass/fail/requires_attention based on whether required items
+pass, and populates defects_noted for maintenance tracking. Ties into the existing
+CorporateFleetVehicle, CorporateVehicleReservation, and CorporateVehicleMaintenanceLog models.
+
+**Architecture decisions:**
+- Two-table design: `corporate_vehicle_inspection_templates` (reusable templates per
+  account) and `corporate_vehicle_inspections` (pending/submitted inspection records).
+- JSONB used for `inspection_items` and `items_checked` to allow flexible checklist
+  schemas without requiring schema migrations as item types evolve.
+- Template items use `is_required` flag; submit logic distinguishes required failures
+  (→ `failed`) from optional failures (→ `requires_attention`).
+- `items_checked` is pre-populated with `passed=None` at create time when a template
+  is provided, giving inspectors a structured form to fill in.
+- Route ordering: `/summary` and `/templates` GET routes are declared before
+  `/{inspection_id}` and `/{template_id}` to prevent FastAPI path collisions.
+- `template_id` on `CorporateVehicleInspection` is SET NULL (not CASCADE) so historical
+  inspections survive template deactivation.
+- InspectionType enum: `pre_trip` / `post_trip` / `scheduled` / `incident`
+- InspectionStatus enum: `pending` / `passed` / `failed` / `requires_attention`
+
+**Files created:**
+- `backend/app/models/corporate_vehicle_inspection.py`
+- `backend/app/schemas/corporate_vehicle_inspection.py`
+- `backend/app/services/corporate_vehicle_inspection_service.py`
+- `backend/app/api/v1/corporate_vehicle_inspection.py`
+- `backend/app/db/migrations/versions/n3o4p5q6r7s8_corporate_vehicle_inspection.py`
+- `backend/tests/test_corporate_vehicle_inspection.py` (48 tests)
+
+**Files modified:**
+- `backend/app/models/__init__.py` — registered CorporateVehicleInspectionTemplate, CorporateVehicleInspection
+- `backend/app/main.py` — imported + registered corporate_vehicle_inspection.router
+
+**Endpoints added (13 total):**
+- `GET  /api/v1/corporate/vehicle-inspections/summary` — member: account summary
+- `GET  /api/v1/corporate/vehicle-inspections/templates` — member: list templates
+- `GET  /api/v1/corporate/vehicle-inspections/templates/{template_id}` — member: get template
+- `POST /api/v1/corporate/vehicle-inspections/templates` — admin: create template (201)
+- `PUT  /api/v1/corporate/vehicle-inspections/templates/{template_id}` — admin: update template
+- `POST /api/v1/corporate/vehicle-inspections/templates/{template_id}/deactivate` — admin: deactivate template
+- `GET  /api/v1/corporate/vehicle-inspections` — member: list inspections (multi-filter)
+- `POST /api/v1/corporate/vehicle-inspections` — member: create inspection (201)
+- `GET  /api/v1/corporate/vehicle-inspections/{inspection_id}` — member: get inspection
+- `POST /api/v1/corporate/vehicle-inspections/{inspection_id}/submit` — member: submit inspection
+- `GET  /api/v1/platform/corporate/vehicle-inspections` — platform admin: all inspections
+- `GET  /api/v1/platform/corporate/vehicle-inspections/templates` — platform admin: all templates
+
+**Test count:** 9,075 passing (was 9,070; +48 new, -1 pre-existing unrelated failure in test_corporate_guest_pass.py excluded)
+
+---
+
+### feature/corporate-business-accounts — corporate shuttle pass management
 
 **Branch:** `feature/corporate-business-accounts`
 **Commit:** `36d2a02`

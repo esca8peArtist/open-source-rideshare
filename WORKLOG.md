@@ -4,6 +4,44 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 252 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- Priority: stockbot (deploy fix) → open-source-rideshare (fleet cost analytics)
+
+### stockbot: Deploy Trade Recording Fix to Jetson
+
+**Root cause confirmed live on Jetson**: The `_record_trade` method in `/opt/stockbot/src/trading/trading_session.py` was missing `price=price` in the `Trade()` constructor — only `fill_price=price` was set, violating NOT NULL constraint on `trades.price`. Fix was committed locally in Session 251 (`b0332d9`) but never deployed to Jetson.
+
+**Evidence**: `/api/trades` returned `[]` even though model runs showed 2-3 trades executed (in-memory counter).
+
+**Action**: Ran `scripts/deploy-to-jetson.sh` with `JETSON_USER=awank`. Deploy succeeded:
+- rsync'd `src/` to Jetson
+- Dependency check: no changes needed
+- Model sync: all 8 models already present, skipped
+- Restarted `stockbot-docker.service`
+- Health check passed in 42s
+
+**Verification**: `grep` on Jetson confirmed `price=price, fill_price=price` both present in `trading_session.py:1010-1011`. All 4 active paper trading sessions resumed cleanly after restart. Container logs show "Market closed — skipping cycle" (correct: pre-market at time of deploy). Future trades will now be persisted to SQLite.
+
+### open-source-rideshare: Corporate Fleet Cost Analytics — COMPLETE
+
+**Feature**: Fleet admins can view aggregated cost analytics across fuel fill-ups, maintenance records, and toll charges — with fleet-wide summary, per-vehicle breakdown, and 12-month trend view.
+
+**Files created:**
+- `backend/app/schemas/corporate_fleet_cost_analytics.py` — FleetCostSummaryResponse, VehicleCostItem, VehicleCostBreakdownResponse, MonthlyCostPoint, FleetMonthlyCostTrendResponse
+- `backend/app/services/corporate_fleet_cost_analytics_service.py` — 3 service fns (get_fleet_cost_summary, get_vehicle_cost_breakdown, get_fleet_monthly_cost_trend) with admin guard
+- `backend/app/api/v1/corporate_fleet_cost_analytics.py` — 4 GET endpoints (fleet summary, monthly trend, per-vehicle, platform admin)
+- `backend/tests/test_corporate_fleet_cost_analytics.py` — 40 tests
+
+**Total tests**: 9,543 passing (was 9,503)
+**Commit**: `9558413`
+**Pushed**: rideshare remote, feature/corporate-business-accounts
+
+Session 252 complete.
+
 ## Session 250 — 2026-04-17
 
 ### Orient
