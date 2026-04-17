@@ -1,7 +1,29 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–282
+**Sessions**: 257–283
+
+---
+
+### Accomplished (Session 283)
+
+#### open-source-rideshare — Pre-booking fare transparency endpoint (commit `ed939e0`, pushed)
+
+New endpoint: `GET /pricing/fare-preview?distance_km=&duration_min=&surge_multiplier=`
+
+Public (no auth required). Shows riders and drivers the full fare split **before** booking — the symmetric counterpart to the post-ride `GET /rides/{id}/fare-breakdown`. Closes the loop on OpenRide's transparency story: riders can now see the cooperative advantage at every stage (booking → ride → completion).
+
+**Response:**
+- `estimated_fare_usd`, `driver_payout_usd` (= fare, since 0% commission), `platform_fee_usd` (0.00)
+- `driver_payout_pct` (100%), `platform_fee_pct` (0.0%)
+- `uber_estimate` / `lyft_estimate` — same trip estimated on competitor platforms (fare + driver payout + platform fee)
+- `driver_earns_more_than_uber_usd` / `driver_earns_more_than_lyft_usd` — concrete dollar advantage for drivers
+- `transparency_note` — human-readable sentence: "On OpenRide, your driver keeps 100% of the fare ($12.50) — compared to ~75% on Uber and ~75% on Lyft. OpenRide charges no platform commission."
+- `methodology_note` — rate card disclosure
+
+**Composability:** `surge_multiplier` param accepts the value from `GET /pricing/surge-check`, so the booking flow can chain: check surge → get fare preview with accurate multiplier → confirm booking.
+
+67 tests passing. No new DB dependencies.
 
 ---
 
@@ -120,11 +142,12 @@ New file: `monitoring/2026-04-17-actionable-windows.md` (316 lines, 12 sources).
 - Trip purpose codes (admin CRUD, rider tag, analytics)
 - Driver earnings comparison (Uber/Lyft rate card comparison)
 
-**2. `feature/rider-fare-transparency`** — Fare transparency + surge visibility (Sessions 278–281):
+**2. `feature/rider-fare-transparency`** — Fare transparency + surge visibility (Sessions 278–283):
 - GET /rides/{ride_id}/fare-breakdown with competitor fee comparison and transparency note
 - GET /drivers/me/earnings-comparison vs Uber/Lyft rate cards
 - GET /drivers/{id}/rating (driver rating read-side endpoints)
 - GET /pricing/surge-check?lat=&lon= (rider-facing surge zone point lookup)
+- GET /pricing/fare-preview?distance_km=&duration_min=&surge_multiplier= (pre-booking fare transparency, 100% driver share shown upfront)
 
 Both pushed to `rideshare` remote. Ready to merge to master when you approve.
 

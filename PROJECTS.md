@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 282)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 283)
 
 ---
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 281: **Rider-facing surge check endpoint COMPLETE** (commit `d6a81b7`, pushed, branch `feature/rider-fare-transparency`). GET /pricing/surge-check?lat=&lon= — public endpoint; returns in_surge_zone, multiplier, zone_name, human-readable explanation (with zone name + multiplier + % increase), and actionable tip; 28 tests passing. **Driver quest system**: already fully implemented (70 tests pass) — model, service, schemas, API, all registered. **Waiting user review**: feature/corporate-business-accounts AND feature/rider-fare-transparency (both ready to merge). **Next**: Fresh feature — driver earnings guarantee, pooled rides improvements, or other driver-facing feature.
-**Last updated by**: orchestrator on 2026-04-17 (Session 282)
+**Current focus**: Session 283: **Pre-booking fare transparency COMPLETE** (commit `ed939e0`, pushed, branch `feature/rider-fare-transparency`). GET /pricing/fare-preview?distance_km=&duration_min=&surge_multiplier= — public endpoint; returns OpenRide fare + 100% driver payout, Uber/Lyft competitor estimates, driver_earns_more_than_uber/lyft fields, human-readable transparency note; 67 tests passing. Composes naturally with GET /pricing/surge-check (pass surge_multiplier through). **Waiting user review**: feature/corporate-business-accounts AND feature/rider-fare-transparency (both ready to merge — multiple features on fare-transparency branch). **Next**: Fresh feature — pooled rides improvements, driver availability scheduling, or other rider/driver-facing feature.
+**Last updated by**: orchestrator on 2026-04-17 (Session 283)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

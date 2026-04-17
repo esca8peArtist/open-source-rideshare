@@ -4,6 +4,43 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 283 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- stockbot (#1): Monitoring mode — waiting on market signals, no code work available without Jetson.
+- mfg-farm (#2): Blocked on physical test print + mockup photos.
+- resistance-research (#3): Op-ed complete. Publication-readiness pass done last session.
+- open-source-rideshare (#4): All previously noted features (earnings guarantee, driver ratings, surge check, fare transparency) already implemented. Selected next feature.
+
+### Task selected: open-source-rideshare — pre-booking fare transparency
+
+All previously mentioned "next" features turned out to be already built (driver earnings guarantee: 67 tests passing; driver ratings: fully wired; surge check: Session 280). Selected a genuine gap: no pre-booking fare transparency existed.
+
+The post-ride `GET /rides/{id}/fare-breakdown` shows fare split after a ride. Nothing showed this *before* booking. Built `GET /pricing/fare-preview` — a public, no-auth endpoint that shows riders and drivers the full fare split before committing to a ride.
+
+### open-source-rideshare: pre-booking fare preview endpoint
+Commit: ed939e0 — pushed to rideshare remote (branch: feature/rider-fare-transparency)
+
+New files:
+- `backend/app/schemas/fare_preview.py` — FarePreviewResponse + FarePreviewCompetitor schemas
+- `backend/app/services/fare_preview.py` — pure computation service; no DB; uses calculate_fare_breakdown() + 2025 Uber/Lyft rate cards
+- `backend/app/api/v1/fare_preview.py` — public GET /pricing/fare-preview router
+- `backend/tests/test_fare_preview.py` — 67 tests, all passing
+
+Key decisions:
+- Public endpoint (no auth): intended for booking flow and onboarding screens
+- Rate cards: same 2025 US national averages as driver_earnings_comparison (Uber 75% driver take, Lyft 75%)
+- driver_earns_more_than_uber_usd / lyft_usd: surface the cooperative advantage numerically
+- transparency_note: human-readable sentence ("On OpenRide, your driver keeps 100% of the fare...")
+- is_surge flag + surge_multiplier: accepts the value from GET /pricing/surge-check, so the two endpoints compose naturally in the booking flow
+- 11,079 tests passing across full suite; 2 pre-existing failures (corporate_guest_pass timing, corporate_shuttle count) unrelated to this work
+
+Session 283 complete.
+
+---
+
 ## Session 282 — 2026-04-17
 
 ### Orient
