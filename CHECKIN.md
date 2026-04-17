@@ -1,7 +1,7 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–285
+**Sessions**: 257–286
 
 ---
 
@@ -15,10 +15,56 @@
 - `GET /pricing/surge-check` — rider surge zone check (public)
 - `GET /riders/me/savings-summary` — authenticated rider cumulative savings vs. Uber/Lyft
 
-**Branch 2**: `feature/platform-transparency` (commit `427dcfa`, pushed to rideshare remote)
-- `GET /platform/transparency-report` — public, no auth; aggregate cooperative economics (rides, driver earnings vs. Uber/Lyft equivalents, rider savings, 0% commission disclosure)
-- 61 tests passing
-- Query param: `?period=last_7_days|last_30_days|all_time`
+**Branch 2**: `feature/platform-transparency` (3 features added since last check-in, all pushed)
+- `GET /platform/transparency-report` — public aggregate cooperative metrics (61 tests)
+- `GET /riders/me/savings-summary` — also on this branch (31 tests)
+- `GET /drivers/me/welfare-summary` — driver welfare dashboard (56 tests) ← NEW this session
+- 11,227 total tests passing across suite
+
+---
+
+### Accomplished (Session 286)
+
+#### resistance-research — Electoral op-ed submission package (commit `566f960`)
+
+New file: `projects/resistance-research/published/electoral-op-ed-submission-package.md` (26KB)
+
+Five outlets researched with confirmed current submission guidelines:
+
+| Outlet | Est. Probability | Contact | Word Count | Notes |
+|---|---|---|---|---|
+| **Vox Big Idea** | 20–28% (highest) | christopher.shea@vox.com | 1,000–2,500 | Best fit — format, style, audience match |
+| **Guardian US Opinion** | 18–25% | us.opinion@theguardian.com | 800–1,200 | Pitch first, don't send manuscript |
+| **The Atlantic Ideas** | 12–18% | ideas@theatlantic.com | ≤4,000 | Lead with structural/international angle |
+| **Democracy: A Journal of Ideas** | 15–22% | dajoi@democracyjournal.org | 4,000–6,000 | Needs expansion; best intellectual home |
+| **NYT Opinion** | 4–8% | opinion@nytimes.com | 400–1,200 | Needs separate condensed draft |
+
+**Washington Post excluded**: Adam O'Neal's "patriotic/free markets" editorial mandate is incompatible with this piece.
+
+**Strategy**: Round 1 simultaneous to Vox + Atlantic (different response windows, low conflict risk). Cascade to Guardian US + NYT in Round 2 if needed. Timeliness window through mid-June — Trump's April 11 Alaska endorsement is the news hook.
+
+**Ready to execute**: pitch letter draft (300 words) in the file, adaptable per outlet. Attribution note included (unattributed pieces harder to place at prestige outlets — institutional affiliation helps).
+
+#### open-source-rideshare — Driver welfare summary endpoint (commit `3396d88`, pushed)
+
+New endpoint: `GET /drivers/me/welfare-summary`
+
+**Why this exists**: Uber and Lyft have no equivalent. They have no structural incentive to surface driver fatigue or burnout — their business model benefits from unlimited driving hours. A cooperative platform is legally and ethically obligated to act in the collective interest of its member-owners. That includes not normalising dangerous working hours.
+
+**What it returns** (single API call, replaces 5 separate fetches):
+- **Shift metrics**: hours this week, hours today, max consecutive, active shift duration, fatigue risk (`low` / `moderate` / `high`)
+- **Earnings metrics**: gross earnings + tips this week, rides completed, estimated hourly rate, goal progress %
+- **Insurance status**: `active` / `expiring_soon` / `expired` / `pending` / `not_on_file`, days until expiry
+- **Cooperative status**: approval, lifetime trips, rating, background check status
+- **Welfare note**: single most important message (insurance issues > fatigue > goal reached > earnings summary)
+- **Support resources**: always includes safety guidelines + hardship fund link
+
+**Design decisions**:
+- Fatigue thresholds: low <40h/week, moderate 40–50h, high >50h (rolling 7-day window)
+- Insurance expiry warning triggers at ≤30 days
+- Hourly rate = earnings ÷ hours (None when zero hours — no division by zero)
+- Weekly goal: compares to 7-day earnings. Daily goal: compares to today's earnings only
+- 56 tests, all passing. 11,227 total tests, 2 pre-existing failures unrelated.
 
 ---
 

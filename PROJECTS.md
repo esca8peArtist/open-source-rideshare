@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 285: **Pre-April-20 action brief** in progress (`monitoring/2026-04-17-pre-april20-brief.md`) — 48-hour action window: CAPE tariff refund system launches April 20, Abrego Garcia DOJ brief due April 20, FISA/702 expired April 20, Farm Bill floor vote imminent, Nebraska Medicaid work requirements begin May 1, May Day organizing April 29. All 23 domains Tier 1. Op-ed synthesis complete (commit `b1dec21`). Publication-readiness formatting pass complete (commit `413a917`). **Next**: April 20 results brief after events land.
+**Current focus**: Session 286: **Electoral op-ed submission package COMPLETE** (`published/electoral-op-ed-submission-package.md`). 5 outlets assessed: Vox (highest fit, 20–28%), Guardian US (18–25%), Atlantic (12–18%), Democracy Journal (15–22%), NYT (4–8%). Washington Post excluded (incompatible editorial direction). Strategy: simultaneous Round 1 to Vox + Atlantic. Timeliness window through mid-June 2026. Pitch letter draft ready to adapt per outlet. **Next**: April 20 results brief after CAPE launch + Abrego Garcia DOJ brief land. Monitor: CAPE Phase 1 ACE portal launch, DOJ brief in Maryland (Xinis), Crenshaw Nashville ruling, CIT Section 122 panel.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 285: **Platform transparency report COMPLETE** (commit `427dcfa`, pushed, branch `feature/platform-transparency`). `GET /platform/transparency-report` — public, unauthenticated; aggregate cooperative metrics: rides, driver earnings vs. Uber/Lyft equivalents, rider savings, service quality, 0% commission; 61 tests passing. **Waiting user review**: feature/rider-fare-transparency (4 features) + feature/platform-transparency (1 feature). **Next**: Fresh feature or resistance-research work after April 20 events land.
-**Last updated by**: orchestrator on 2026-04-17 (Session 284)
+**Current focus**: Session 286: **Driver welfare summary COMPLETE** (commit `3396d88`, pushed, branch `feature/platform-transparency`). `GET /drivers/me/welfare-summary` — authenticated driver endpoint; shift hours vs. safety limits, weekly earnings + hourly rate, insurance status, cooperative standing, contextual welfare note, support resources; 56 tests passing. **Waiting user review**: feature/rider-fare-transparency (4 features) + feature/platform-transparency (3 features: platform transparency report, rider savings summary from branch aa8efc0, driver welfare summary). **Next**: April 20 results brief, then fresh rideshare feature.
+**Last updated by**: orchestrator on 2026-04-17 (Session 286)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

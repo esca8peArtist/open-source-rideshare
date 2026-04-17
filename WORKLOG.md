@@ -4,6 +4,64 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 286 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- stockbot (#1): Monitoring mode — no code work without Jetson.
+- mfg-farm (#2): Blocked on physical test print + mockup photos.
+- resistance-research (#3): Session 285 spawned agent for op-ed publication prep but no output file produced — completing this session.
+- open-source-rideshare (#4): 2 branches awaiting user review. Continuing with new feature.
+
+### Tasks selected
+1. resistance-research: Complete electoral architecture op-ed publication prep (outlet research + pitch letter). Session 285 left this unfinished.
+2. open-source-rideshare: Build GET /drivers/me/welfare-summary — a holistic driver welfare dashboard signaling the platform cares about worker wellbeing. No corporate rideshare would build this; a cooperative would.
+
+Spawning resistance-research agent for publication prep. Building rideshare welfare endpoint in parallel.
+
+### resistance-research: Electoral op-ed submission package (commit 566f960)
+
+New file: `projects/resistance-research/published/electoral-op-ed-submission-package.md` (26KB, 240 lines)
+
+5 outlets researched with confirmed current guidelines:
+- **Vox Big Idea** — highest fit, 20–28% est. probability, Christopher Shea contact, 1,000–2,500 words
+- **The Guardian US Opinion** — 18–25%, pitch-first (not finished piece), us.opinion@theguardian.com, 800–1,200 words target
+- **The Atlantic Ideas** — 12–18%, ideas@theatlantic.com, 4,000 word cap, best for structural/international angle
+- **Democracy: A Journal of Ideas** — 15–22%, best intellectual home, needs expansion to 4,000–6,000 words
+- **New York Times Opinion** — 4–8%, requires separately prepared ~1,000-word condensed draft, opinion@nytimes.com
+
+**Washington Post excluded**: editorial direction under new editor Adam O'Neal (appointed June 2025) incompatible with the piece's argument ("patriotic/free markets" mandate).
+
+Submission strategy: Round 1 simultaneous to Vox + Atlantic (different response timelines, low conflict risk). If no response after 3 weeks, cascade to Guardian US + NYT. Timeliness window through mid-June 2026 — Trump Alaska endorsement April 11 is the news hook.
+
+Pitch letter draft: 300 words in the file, ready to adapt per outlet. Note on handling attribution gap included.
+
+### open-source-rideshare: Driver welfare summary endpoint (commit 3396d88, pushed to rideshare remote)
+
+New endpoint: `GET /drivers/me/welfare-summary` — authenticated driver endpoint.
+
+Files:
+- `backend/app/schemas/driver_welfare_summary.py` — ShiftMetrics, EarningsMetrics, InsuranceStatus, CooperativeStatus, SupportResource, DriverWelfareSummary
+- `backend/app/services/driver_welfare_summary.py` — 5-query aggregation (DriverShift, Ride, DriverEarningsGoal, DriverInsuranceDocument, DriverProfile)
+- `backend/app/api/v1/driver_welfare_summary.py` — router
+- `backend/tests/test_driver_welfare_summary.py` — 56 tests, all passing
+
+Key design:
+- Fatigue risk: low (<40h/week), moderate (40–50h), high (>50h) — rolling 7-day window
+- Insurance: active / expiring_soon (≤30 days) / expired / pending / not_on_file
+- Welfare note priority: no insurance > expiring insurance > high fatigue > long active shift > goal reached > earnings summary
+- Goal progress: weekly = 7-day earnings / target; daily = today's earnings / target
+- Support resources always include safety guidelines + hardship fund link
+
+11,227 tests passing; 2 pre-existing unrelated failures unchanged.
+
+Rationale: Uber/Lyft have no welfare visibility feature. A cooperative is legally and ethically obligated to act in member-owners' collective interest — surfacing fatigue risk and insurance gaps is part of that.
+
+Session 286 complete.
+
+---
+
 ## Session 285 — 2026-04-17
 
 ### Orient
