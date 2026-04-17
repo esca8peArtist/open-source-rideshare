@@ -1,7 +1,30 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–280
+**Sessions**: 257–281
+
+---
+
+### Accomplished (Session 281)
+
+#### open-source-rideshare — Rider-facing surge check endpoint (commit `d6a81b7`, pushed)
+
+New endpoint: `GET /pricing/surge-check?lat={lat}&lon={lon}`
+
+Public (no auth required). A rider submits their pickup coordinates and gets back whether they're in an active surge zone, the multiplier, and a human-readable explanation. Fits the fare-transparency theme of this branch.
+
+**Response:**
+- `in_surge_zone`: true/false
+- `multiplier`: e.g. `1.8`
+- `zone_name`: e.g. `"Downtown Core"` (null if no surge)
+- `explanation`: e.g. `"Demand is high near your pickup location (Downtown Core). Fares are currently 1.8× the base rate (80% higher than normal). Surge pricing helps attract more drivers to your area."`
+- `tip`: actionable suggestion (null if no surge): `"Consider waiting a few minutes or moving your pickup point slightly outside this area to avoid surge pricing."`
+
+**Implementation:**
+- `get_rider_surge_info()` added to `surge_zones` service — returns the zone with highest multiplier containing the point (carries full zone object vs. existing `get_active_surge_multiplier()` which returns just the float)
+- `RiderSurgeCheckResponse` Pydantic schema added
+- Public router now has both `/pricing/surge-zones/active` (map display, all zones) and `/pricing/surge-check` (point lookup, single response)
+- 28 tests: service (circle/polygon geo, time window, multi-zone, geo-less zone, 1.0× threshold), schema, endpoint (explanation text accuracy including zone name, formatted multiplier, and % increase)
 
 ---
 
@@ -62,8 +85,11 @@ New file: `monitoring/2026-04-17-actionable-windows.md` (316 lines, 12 sources).
 - Trip purpose codes (admin CRUD, rider tag, analytics)
 - Driver earnings comparison (Uber/Lyft rate card comparison)
 
-**2. `feature/rider-fare-transparency`** — Rider fare breakdown endpoint (this session)
+**2. `feature/rider-fare-transparency`** — Fare transparency + surge visibility (Sessions 278–281):
 - GET /rides/{ride_id}/fare-breakdown with competitor fee comparison and transparency note
+- GET /drivers/me/earnings-comparison vs Uber/Lyft rate cards
+- GET /drivers/{id}/rating (driver rating read-side endpoints)
+- GET /pricing/surge-check?lat=&lon= (rider-facing surge zone point lookup)
 
 Both pushed to `rideshare` remote. Ready to merge to master when you approve.
 

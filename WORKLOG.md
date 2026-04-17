@@ -4,6 +4,44 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 281 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- stockbot (#1): monitoring-only, no code work.
+- mfg-farm (#2): blocked on physical test prints — not actionable.
+- resistance-research (#3): synthesis task available; lower urgency vs. clear code task.
+- open-source-rideshare (#4): previous task (driver rating endpoints) complete; next task identified — surge zone rider-facing visibility.
+
+### Task selected
+open-source-rideshare: rider-facing surge check endpoint.
+
+The existing `GET /pricing/surge-zones/active` returns all zone boundaries for map display.
+Missing: a point-in-zone lookup for riders — "am I in a surge zone right now?"
+
+### open-source-rideshare: GET /pricing/surge-check (commit d6a81b7, pushed)
+
+New files / changes:
+- `services/surge_zones.py`: added `get_rider_surge_info(db, lat, lon, now)` — returns
+  the zone with the highest multiplier containing the point, or None (mirrors
+  `get_active_surge_multiplier()` but carries full zone object for display metadata)
+- `schemas/surge_zone.py`: added `RiderSurgeCheckResponse` — `in_surge_zone`, `multiplier`,
+  `zone_name`, `explanation`, `tip`
+- `api/v1/surge_zones.py`: added `GET /pricing/surge-check` to `public_router`; no auth;
+  lat/lon query params with FastAPI range validation (-90–90, -180–180);
+  explanation includes zone name, formatted multiplier (1.8×), and % increase (80%)
+- `tests/test_rider_surge_check.py`: 28 tests — all passing
+
+Test coverage:
+- Service: circle zone in/out, polygon zone in/out, time window active/inactive,
+  multi-zone highest-multiplier wins, geo-less zone ignored, 1.0× zone below threshold
+- Schema: required fields, optional field defaults, serialization
+- Endpoint: no-surge response, in-surge response, explanation text accuracy
+  (zone name present, multiplier accurate, percentage accurate), response type
+
+Session 281 complete.
+
 ## Session 280 — 2026-04-17
 
 ### Orient

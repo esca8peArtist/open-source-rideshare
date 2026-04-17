@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 279: **Driver rating read-side endpoints COMPLETE** (commit `7e26faa`, pushed, branch `feature/rider-fare-transparency`). GET /drivers/{id}/rating (any auth user; admin gets low_rated flag), GET /rides/{id}/driver-rating (rider/driver/admin), GET /admin/driver-ratings/low-rated; added list_low_rated_drivers() to ratings service; 22 tests passing. **Waiting user review**: feature/corporate-business-accounts (full corporate accounts feature set, 9 components). **Next**: Driver incentives/quest progress endpoint, OR surge zone rider-facing visibility, OR start fresh feature branch.
-**Last updated by**: orchestrator on 2026-04-17 (Session 279)
+**Current focus**: Session 281: **Rider-facing surge check endpoint COMPLETE** (commit `d6a81b7`, pushed, branch `feature/rider-fare-transparency`). GET /pricing/surge-check?lat=&lon= — public endpoint; returns in_surge_zone, multiplier, zone_name, human-readable explanation (with zone name + multiplier + % increase), and actionable tip; 28 tests passing. **Waiting user review**: feature/corporate-business-accounts AND feature/rider-fare-transparency (both ready to merge). **Next**: Start fresh feature on driver incentives/quest progress, OR resistance-research synthesis op-ed.
+**Last updated by**: orchestrator on 2026-04-17 (Session 281)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
