@@ -1,11 +1,28 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–278
+**Sessions**: 257–280
 
 ---
 
-### Accomplished (Session 278)
+### Accomplished (Session 280)
+
+#### resistance-research — Alaska RCV repeal 2026 field ops brief (commit `72005ca`)
+
+New file: `monitoring/alaska-rcv-repeal-2026.md` (412 lines, 35+ sources). The November 3, 2026 Alaska RCV repeal fight — currently the only remaining statewide RCV system in the US after seven states repealed in 2024.
+
+**Key findings:**
+- 2024 anatomy: Repeal led on election night for 2+ weeks; defense won only on late-counted absentee/mail ballots, 743 votes (0.23%). The win was entirely from absentee ballot differential.
+- 2026 is structurally harder: Trump explicit endorsement (April 11), Sullivan + Begich on same ballot running their own GOTV operations, repeal campaign spent 65% of signature effort via volunteers (more legit than 2024's entirely-paid effort).
+- Absentee ballot chase program = highest-ROI tactical investment. Given the defense won on absentee ballots in 2024, a systematic request+return+cure program targeting HD37-40 and Anchorage undervoted precincts could bank 3,000–8,000 additional "no" votes above organic rate — the 743-vote margin could be erased by this alone.
+- Rural Alaska Native GOTV gap: HD37-40 (Y-K Delta, North Slope) had 36–44% turnout vs 72% in South Anchorage. These are near-100% "no" communities. A 5-point uplift produces 3,000–5,000 votes. Bottleneck: Alaska Native language community liaisons.
+- Anchorage marginal precincts: HD18, HD19, HD22 (North/East Anchorage, high immigrant population) had below-45% turnout in 2024. These are undervoted "no" precincts in a city that already went blue.
+- Anti-dark-money angle underused: The 2026 repeal also eliminates the campaign finance disclosure requirements from 2020 Ballot Measure 2. "Repeal RCV and kill transparency" is a broader coalition message.
+- Murkowski variable: Her political survival depends on the open primary; a Mat-Su-targeted statement from her could move 1–3% of soft repeal voters in the repeal's own base borough.
+
+---
+
+### Accomplished (Session 279 + 278)
 
 #### open-source-rideshare — Rider fare transparency endpoint (50 tests, pushed, commit `a975ce0`, branch `feature/rider-fare-transparency`)
 

@@ -4,6 +4,69 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 280 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- stockbot (#1): monitoring-only, no code work.
+- mfg-farm (#2): blocked on physical test prints — not actionable.
+- resistance-research (#3): Alaska RCV repeal field ops brief available — highest-stakes electoral reform action for 2026.
+- Selected: resistance-research.
+
+### resistance-research: Alaska RCV repeal 2026 field ops brief
+Commit: 72005ca
+
+New file:
+- `projects/resistance-research/monitoring/alaska-rcv-repeal-2026.md` (412 lines)
+
+Key findings:
+- 2024 near-miss anatomy: repeal led on election night for 2+ weeks; defense won on late-counted absentee/mail ballots (743 vote margin)
+- 2026 structural challenges: Trump explicit endorsement (April 11), Sullivan+Begich on same ballot with mobilization machines, more organized repeal volunteer infrastructure
+- 3 structural defense advantages: Anchorage blue-shift (undervoted HD18/19/22 precincts, <45% turnout), rural Alaska Native GOTV gap (HD37-40, 36-44% turnout vs 72% in South Anchorage), absentee ballot chase program
+- Absentee program is the single most underleveraged tactical tool — margin of victory in 2024 came from late-counted mail/absentee ballots
+- "Anti-dark-money" angle: 2026 repeal also eliminates original 2020 campaign finance disclosure requirements; underused defense argument that broadens coalition
+- Murkowski variable: political survival depends on open primary; a Mat-Su-targeted message could move 1–3% of soft repeal voters
+- Field ops targeting: Priority 1 (Anchorage HD18/19/22), Priority 2 (Rural Native HD37-40 GOTV), Priority 3 (Southeast Alaska labor base)
+- Comprehensive source list with 35+ URLs; includes 2026 peer-reviewed Election Law Journal study
+
+Session 280 complete.
+
+## Session 279 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- stockbot (#1): monitoring-only, no code work to queue.
+- mfg-farm (#2): blocked on physical test prints/mockup photos — nothing actionable.
+- resistance-research (#3): synthesis task available but lower urgency.
+- open-source-rideshare (#4): rider_ratings and driver_location already fully implemented; identified gap — no driver_ratings.py API (read-side of rider→driver ratings).
+
+### Task selected
+open-source-rideshare: driver rating read-side API.
+
+The `ratings.py` service had `get_driver_ratings()` fully implemented but no API endpoint exposing it. `rider_ratings.py` (driver rates rider) had full CRUD; the symmetric `driver_ratings.py` (rider rates driver, read side) was missing.
+
+### open-source-rideshare: driver rating endpoints
+Commit: 7e26faa — pushed to rideshare remote (branch: feature/rider-fare-transparency)
+
+New files:
+- `backend/app/schemas/driver_ratings.py` — DriverRatingDistribution + DriverRatingSummary + RideDriverRatingResponse schemas
+- `backend/app/services/ratings.py` — added list_low_rated_drivers() (30-day avg <3.0, >5 ratings; mirrors list_low_rated_riders)
+- `backend/app/api/v1/driver_ratings.py` — 3 endpoints:
+    - GET /drivers/{driver_id}/rating — any authenticated user; admin gets low_rated flag
+    - GET /rides/{ride_id}/driver-rating — rider/driver/admin; 404 if no rating yet
+    - GET /admin/driver-ratings/low-rated — admin only
+- `backend/tests/test_driver_ratings.py` — 22 unit tests, all passing
+
+Key decisions:
+- Auth for /drivers/{id}/rating: any authenticated user (riders need it to evaluate drivers pre-match)
+- low_rated flag: admin-only; computed via list_low_rated_drivers scan
+- Ride.completed_at used as rated_at proxy (no separate timestamp for inline ride ratings)
+- list_low_rated_drivers uses Ride table directly (driver_rating column), not a separate table
+
+Session 279 complete.
+
 ## Session 274 — 2026-04-17
 
 ### Orient
