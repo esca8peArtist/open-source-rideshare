@@ -11,6 +11,7 @@ from app.api.v1.platform_transparency import router as platform_transparency_rou
 from app.api.v1.rider_savings_summary import router as rider_savings_summary_router
 from app.api.v1.driver_welfare_summary import router as driver_welfare_summary_router
 from app.api.v1.driver_income_stability import router as driver_income_stability_router
+from app.api.v1.driver_governance_participation import router as driver_governance_participation_router
 from app.api import websocket
 from app.config import settings
 from app.services.dispatch_scheduler import start_scheduler, stop_scheduler
@@ -95,6 +96,7 @@ app.include_router(platform_transparency_router, prefix="/api/v1")
 app.include_router(rider_savings_summary_router, prefix="/api/v1")
 app.include_router(driver_welfare_summary_router, prefix="/api/v1")
 app.include_router(driver_income_stability_router, prefix="/api/v1")
+app.include_router(driver_governance_participation_router, prefix="/api/v1")
 app.include_router(surge_waitlist_rider_router, prefix="/api/v1")
 app.include_router(surge_waitlist_public_router, prefix="/api/v1")
 app.include_router(surge_waitlist_admin_router, prefix="/api/v1")
