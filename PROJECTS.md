@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 251)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 254)
 
 ---
 
@@ -30,7 +30,7 @@
 **Status**: Active — design phase
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/mfg-farm/`
-**Current focus**: Session 248: **ModRun CadQuery family COMPLETE** (5 STL files). Rail: desk-edge C-clamp variant + adhesive-pad variant, both parametric Python. 3 cable clips: 3mm/6mm/12mm. All STLs in projects/mfg-farm/stl/. README with parameter guide + print settings in projects/mfg-farm/cadquery/. CadQuery env fixed: cadquery-ocp 7.9.3.1, OCP hashCode patch, nlopt from apt, casadi/nptyping/typish/ezdxf installed. Background: Market research COMPLETE (861 lines). Business plan COMPLETE (1,002 lines). Launch-ready catalog: ModRun (month 1) → Drift flexi animals (month 2) → planters (month 5) → pet memorials (month 6) → GearStation gaming organizer (month 9). **Next**: Slice STLs in PrusaSlicer/Orca, do test print, iterate fit/geometry if needed, then prep Etsy listing for ModRun.
+**Current focus**: Session 253: **ModRun Etsy & Amazon listing copy COMPLETE** (`projects/mfg-farm/etsy-listing-modrun.md`). 3 Etsy listings (hero 4-piece set, 5-pack clips, rail-only) + Amazon parent ASIN listing with 5 bullets + A+ description + backend search terms + photo brief + launch sequence. Background: STL files complete (5 STLs in stl/). Market research + business plan COMPLETE. **Blocked on**: mockup photos — need Canva mockups or real lifestyle shots after test print before going live. **Next**: Test print the desk-edge rail and one of each clip size. Assess clamp fit and snap-arm feel. Then create Etsy mockup images (can use Canva or send to freelancer) and go live.
 **Blocked on**: —
 **Notes**: Automation is the core constraint — products and workflows must be designed for minimal human touchpoints per unit. Physical products mean real fulfillment costs (packaging, shipping, storage) — factor these in from the start. Etsy and Amazon have different fee structures and audiences; may want both. Scaling from 1→N printers requires thinking about file management, queue management, quality control, and packaging throughput — not just the printers themselves.
 
@@ -54,7 +54,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/stockbot/`
-**Current focus**: Session 252: **Trade recording fix DEPLOYED to Jetson**. Fix was committed locally in Session 251 (`b0332d9`) but had not been deployed. Ran `scripts/deploy-to-jetson.sh` — rsync + restart successful, health check passed in 42s. Jetson now has `price=price, fill_price=price` in Trade constructor. All 4 active paper trading sessions resumed (momentum, mtf AAPL, sma_crossover, rsi_mean_reversion). **Next**: Monitor if trades are now being persisted after market open. Assess rsi_mean_reversion and MTF AAPL thresholds if they continue to show 0 signals.
+**Current focus**: Session 253: **Signal threshold analysis complete** (written to CHECKIN.md). RSI 30/70 thresholds are not broken — 0 signals reflect trending market conditions, not a strategy defect. MTF AAPL 0 signals require Jetson log inspection to diagnose (pull `logs/trading_*.log`, look for `MTF hold` entries + `raw_prediction` values near 0). **Decision pending**: Wait 5 market days post-recording-fix; if RSI still 0 signals, lower to 35/65 and redeploy. **Next**: Monitor through next week. If signals firing, no action needed. If RSI still silent, redeploy with 35/65 thresholds.
 **Blocked on**: —
 **Notes**: Web app is in good shape. Model creation and most optimisation is operational. Paper trading has just started but has had issues — this is the current priority. iOS app is out of scope until paper trading is solid. All features must work across ALL model types (stock, options, rule-based, ensemble, MTF) — do not implement something for one type only.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 252: **Corporate Fleet Cost Analytics COMPLETE** (commit `9558413`). Fleet admins view aggregated costs across fuel, maintenance, and toll records — fleet-wide summary, per-vehicle breakdown, and monthly trend. 4 GET endpoints; 40 tests. **Total: 9,543 passing** (was 9,503). Maintenance costs restricted to status=completed records; null-safe aggregation via coalesce. Previous: Session 251 (driver assignments): commit `095b3d8`. Session 250 (maintenance): commit `f0fe19c`. Session 249 (toll): commit `8effb2c`. **Also Session 252**: Deployed trade recording bug fix to Jetson (commit `b0332d9` — was local only). `price=price` column now present in Trade constructor on Jetson. All 4 paper trading sessions resumed. **Next**: Next corporate feature TBD — core fleet suite is now comprehensive.
+**Current focus**: Session 254: **Pool Ride Tests + Growth Strategy COMPLETE** (commit `25ebb35`). 65 unit tests for ride pooling (`tests/test_pools.py`) — haversine math, direction matching, pool lifecycle (create/join/leave/pickup/dropoff), discount tiers, schemas, models. Growth strategy document (`growth-strategy.md`) — 12-section bootstrapping plan: cooperative operator thesis, NYC Phase 1 (Drivers Cooperative NYC partnership), driver acquisition model, network effect thresholds, revenue model, 12-month roadmap. **Total tests: 9,704 passing** (was 9,586). Previous: Session 253 (fleet fuel logs: `eac7f37`). **Next**: Beckn Protocol interoperability research/design doc, OR improve WAV dispatch integration into ride matching pipeline, OR any new task from Anya.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

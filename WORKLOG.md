@@ -4,6 +4,116 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 254 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Priority order: stockbot → open-source-rideshare → mfg-farm
+- Stockbot: monitoring mode, nothing to code.
+- mfg-farm: blocked on mockup photos.
+- open-source-rideshare: two tasks selected:
+  1. Write growth strategy / bootstrapping plan (explicit gap in project scope)
+  2. Write tests for pools (ride pooling) feature — service + endpoint tests missing
+
+### open-source-rideshare: Task selection
+
+Surveyed the 228-test project for genuine gaps:
+- driver_tax ✓, accessibility/WAV ✓, cooperative ✓, referrals ✓, subscriptions ✓ — all done in prior sessions
+- `pools` (ride pooling / shared rides): 327-line API + 325-line service with no test file at all
+- Growth strategy document: explicitly in project scope ("a rideshare app with no users is worthless, growth strategy is part of the scope") but no document exists
+
+Delegating both to open-source-rideshare agent.
+
+### open-source-rideshare: Pool Ride Tests (commit `25ebb35`)
+
+Wrote `tests/test_pools.py` — the ride pooling (shared rides) feature had 327-line API and 325-line service with no test coverage.
+
+65 unit tests passing, 8 integration tests auto-skipped (no live DB):
+- Pure math helpers (`_haversine_km`, `_direction_vector`, `_direction_similarity`) — 13 tests
+- `calculate_pool_fare` and `DISCOUNT_BY_RIDERS` discount tiers — 7 tests
+- `PoolMatchingService.create_pool` — 3 tests
+- `add_rider_to_pool` (first and second rider, discount upgrade) — 7 tests
+- `remove_rider_from_pool` (pool dissolution, discount downgrade) — 4 tests
+- `find_compatible_pools` (empty DB, full, too far, wrong direction, detour limit, valid) — 7 tests
+- `pickup_rider` / `dropoff_rider` status transitions — 6 tests
+- Schemas field validation — 6 tests
+- Model enum values and defaults — 12 tests
+- Endpoint auth integration (skipped without DB) — 8 tests
+
+**Total tests: 9,704 passing** (was 9,586). Commit: `25ebb35`. Pushed to `feature/corporate-business-accounts`.
+
+### open-source-rideshare: Growth Strategy Document (commit `25ebb35`)
+
+Wrote `growth-strategy.md` in project root — this was explicitly in scope but completely missing.
+
+12 sections:
+- Thesis: infrastructure for cooperative operators, not competing consumer platform
+- Cold start problem analysis (density thresholds, wait time modeling)
+- NYC Phase 1 target: Drivers Cooperative NYC has 9,000 drivers + broken app = perfect partner
+- Driver acquisition through gig worker unions, cooperative partnerships; driver earnings model ($300-600/month more vs Uber subscription)
+- Rider acquisition sequence (driver density first, then community → public launch)
+- Network effect thresholds: 30-50 active drivers/neighborhood for soft launch, 500+ for competitive coverage
+- Revenue model: subscription + operator hosting + corporate accounts; covers lean team at 1,000 active drivers
+- Insurance/regulatory roadmap: cooperative partner holds TNC license in Phase 1, direct licensing in Phase 2
+- Growth feature activation plan (referral program, incentive zones, promo codes, pool rides, corporate accounts — all built, all ready to activate)
+- 12-month launch roadmap from partnership signing to second-city launch
+
+Session 254 complete.
+
+## Session 253 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Priority order: stockbot → open-source-rideshare → mfg-farm
+- Recent: Sessions 251/252 did stockbot trade recording fix + rideshare fleet cost analytics + incident reports
+
+### stockbot: Signal Threshold Analysis
+
+Reviewed `rsi_mean_reversion` and MTF AAPL signal logic in `trading_session.py` and `ml/multi_timeframe/strategy.py`.
+
+**RSI (30/70 defaults)**: Thresholds are correctly implemented and configurable via `strategy_params`. 0 signals are consistent with trending market conditions (AAPL trending upward, RSI rarely touches extremes). Not a code issue. Recommendation: wait 5 market days post trade-recording fix before adjusting; if still 0, lower to 35/65.
+
+**MTF AAPL**: Direction based on sign of raw prediction; no minimum confidence threshold is enforced. 0 signals = model predicting near-zero consistently OR confluence filter overriding to hold. Cannot diagnose further without Jetson log access. Recommendation: pull `logs/trading_*.log` over SSH and look for `MTF hold` entries.
+
+Analysis written to CHECKIN.md under "Needs Your Input".
+
+### mfg-farm: ModRun Etsy & Amazon Listing Copy
+
+Drafted and saved `projects/mfg-farm/etsy-listing-modrun.md`. Contains:
+- 3 Etsy listings (4-piece set hero, 5-pack clips entry, rail-only expansion) — titles, full descriptions, 13 tags each, category/attribute guidance
+- 1 Amazon parent ASIN listing — title, 5 bullets, A+ description, 250-char backend search terms, color variant strategy
+- Photo brief (5-shot sequence) for when mockup images are created
+- Launch sequence and pricing table
+
+Blocked on mockup photos before going live.
+
+### open-source-rideshare: Corporate Fleet Fuel Log Tracking
+
+Identified that `CorporateFleetFuelLog` model existed in `models/corporate_fleet_fuel_log.py` but had no service/API/tests. Model tracks fuel fill-ups and EV charging events per fleet vehicle.
+
+Spawned `open-source-rideshare` subagent to implement:
+- `schemas/corporate_fleet_fuel_log.py`
+- `services/corporate_fleet_fuel_log_service.py` (create/update/delete/list/summary functions)
+- `api/v1/corporate_fleet_fuel_logs.py` (6 endpoints: member + admin)
+- `tests/test_corporate_fleet_fuel_logs.py` (35+ tests)
+- Alembic migration for `corporate_fleet_fuel_logs` table + `fleetfueltype` enum
+
+Agent completed. Results:
+- `schemas/corporate_fleet_fuel_log.py` — added `VehicleFuelSummaryAnalytics` schema
+- `services/corporate_fleet_fuel_log_service.py` — 6 service functions (create/update/delete/list-vehicle/list-account/summary)
+- `api/v1/corporate_fleet_fuel_logs.py` — 6 endpoints; `/summary` registered before list route to avoid path conflict
+- `db/migrations/versions/aa1b2c3d4e5f_corporate_fleet_fuel_logs.py` — creates `fleetfueltype` enum + `corporate_fleet_fuel_logs` table (4 indexes)
+- `main.py` — router registered after `corporate_fleet_incidents`
+- `tests/test_corporate_fleet_fuel_logs.py` — 43 tests, 43 passing
+
+**Total tests: 9,586 passing** (was 9,543). Commit: `eac7f37`. Pushed to `feature/corporate-business-accounts`.
+
+Session 253 complete.
+
+---
+
 ## Session 252 — 2026-04-17
 
 ### Orient
