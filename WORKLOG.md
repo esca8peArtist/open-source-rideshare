@@ -4,6 +4,42 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 297 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push unresolved; all other blocks resolved
+- Feature branch `feature/rider-emergency-safety` had 4 untracked files + 1 modified — rider safety incident history work partially done
+- Selected: complete and commit rider safety incident history
+
+### open-source-rideshare — Rider safety incident history COMPLETE
+
+**Commit**: `02701bc`
+
+**Files created**:
+- `app/schemas/rider_safety_history.py` — `SafetyIncidentType`, `SafetyIncidentStatusFilter`, `SafetyIncidentRecord`, `SafetyIncidentSummary`, `SafetyIncidentFilters`, `RiderSafetyHistory`
+- `app/services/rider_safety_history.py` — `_to_utc_date`, `_parse_status`, `_apply_filters`, `_build_summary`, `_alert_to_incident`, `get_rider_safety_history`
+- `app/api/v1/rider_safety_history.py` — `GET /riders/me/safety-incidents`
+- `tests/test_rider_safety_history.py` — 61 tests across 8 classes
+
+**Also**:
+- `app/services/rider_safety.py` — added `list_rider_panic_alerts()` helper function
+- `app/main.py` — registered `rider_safety_history.router`
+- Fixed bug: `_apply_filters` with unknown `incident_type` now returns `[]` instead of raising `ValueError`
+
+**Key design**:
+- Filters: `incident_type` (all/PANIC_ALERT), `status` (all/active/resolved/false_alarm), `from_date`/`to_date` (YYYY-MM-DD, UTC, inclusive), `limit` (1–100), `offset` (≥0)
+- `summary` computed from unfiltered all-time alerts — unaffected by any filters
+- `total_count` reflects filtered count before pagination
+- 422 guard when `from_date > to_date` or invalid enum values
+- Extensible: `incident_type` enum allows future SOS/other types without breaking schema
+
+**Test count**: 61 new → **3,260 unit-passing** (61/61 new, all existing passing)
+
+### PROJECTS.md + CHECKIN.md update
+
+---
+
 ## Session 296 — 2026-04-17
 
 ### Orient

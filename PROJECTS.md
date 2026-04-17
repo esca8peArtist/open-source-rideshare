@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 296)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 297)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 296: **Driver earnings history COMPLETE** (commit `f460c77`). `GET /driver/me/earnings-history?weeks=N` — time-series weekly breakdown. N buckets (oldest-first, default 12, max 52). Per-bucket: earnings_usd, ride_count, avg_fare_usd, tip_total_usd. Totals: total_earnings_usd, total_rides, avg_weekly_earnings_usd. best_week (None if all zero). trend: improving/declining/stable/insufficient_data (±10% first-half vs second-half; needs ≥4 weeks). 66 tests. **Total: 3,199 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap OR rider safety incident history.
+**Current focus**: Session 297: **Rider safety incident history COMPLETE** (commit `02701bc`, branch `feature/rider-emergency-safety`). `GET /riders/me/safety-incidents` — paginated, filterable panic alert history. Filters: incident_type (all/PANIC_ALERT), status (all/active/resolved/false_alarm), from_date/to_date, limit/offset. Summary (all-time counts) unaffected by filters. 422 on invalid dates/enums. 61 tests. **Total: 3,260 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety. **Next**: Trip demand heatmap OR driver performance trend analysis.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
