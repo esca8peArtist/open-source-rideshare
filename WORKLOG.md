@@ -10353,3 +10353,55 @@ analytics (charts, session summaries) show no data. Alpaca account is authoritat
 - All major dimensions are variables at the top of each script.
 
 Session 248 complete — stockbot assessed, mfg-farm ModRun design family done.
+
+---
+
+## Session 251 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- Priority: stockbot (fix DB bug) → open-source-rideshare (next fleet feature)
+
+### stockbot: Trade Recording Bug Fix
+
+**Root cause identified and fixed.** The `_record_trade` method in `trading_session.py` was creating a `Trade` object with `fill_price=price` but omitting the required (non-nullable) `price` column. This caused a `sqlite3.IntegrityError: NOT NULL constraint failed: trades.price` exception that was silently swallowed by the broad `except Exception` handler. All Alpaca fills were executing but never persisted to SQLite.
+
+**Evidence**: `logs/trading_20260413.log` contains the exact error: `Session error: (sqlite3.IntegrityError) NOT NULL constraint failed: trades.price`.
+
+**Fix**: Added `price=price` to `Trade(...)` constructor in `trading_session.py:_record_trade`.
+
+Also committed large accumulation of prior-session work:
+- Execution params (bracket orders, stop/TP, position_size_pct cap, max_positions, reentry cooldown)
+- Cycle timeout + exponential backoff
+- get_bars per-attempt timeout
+- Unintentional exit detection
+- submit_bracket_order support in brokers
+- TradingPage and ExecutionOptimizerPage UI improvements
+- Schema: ModelRun session resume columns
+
+**Commit**: `b0332d9`
+
+
+### open-source-rideshare: Corporate Fleet Driver Assignments — COMPLETE
+
+**Feature**: Fleet managers can assign corporate account members as primary, secondary, pool, or temporary drivers for fleet vehicles, with full assignment history and status lifecycle.
+
+**Files created:**
+- `backend/app/models/corporate_fleet_driver_assignment.py` — ORM model, FleetDriverAssignmentType (4 values: primary/secondary/pool/temporary), FleetDriverAssignmentStatus (4 values: active/inactive/pending/suspended)
+- `backend/app/schemas/corporate_fleet_driver_assignment.py` — Pydantic v2 schemas
+- `backend/app/services/corporate_fleet_driver_assignment_service.py` — 12 service fns including primary uniqueness enforcement and secondary cap
+- `backend/app/api/v1/corporate_fleet_driver_assignment.py` — 13 endpoints (member vehicle-list+get-one+primary; admin create+update+activate+suspend+end+delete+account-list+account-active; platform list-all)
+- `backend/app/db/migrations/versions/v1w2x3y4z5a6_corporate_fleet_driver_assignment.py` — migration
+- `tests/test_corporate_fleet_driver_assignment.py` — 58 tests
+
+**Business rules enforced:**
+- Vehicle can have at most 1 active primary driver (creating new primary auto-ends previous)
+- Vehicle can have at most 2 active secondary drivers (3rd raises 409)
+- Pending→active, active→suspended, active/suspended→inactive (status machine)
+- Delete only allowed for inactive assignments
+
+**Total tests**: 9,503 passing (was 9,445)
+**Commit**: `095b3d8`
+
+Session 251 complete.

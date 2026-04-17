@@ -1,9 +1,62 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Session**: 250
+**Session**: 251
 
 ### Accomplished
+
+#### stockbot — Trade Recording Bug FIXED (commit `b0332d9`)
+
+Found and fixed the root cause of the "0 trades in DB" issue reported last session.
+
+**Root cause**: `_record_trade` in `trading_session.py` was constructing `Trade(fill_price=price, ...)` but omitting the required `price` column (non-nullable in schema). SQLite raised `NOT NULL constraint failed: trades.price` which was silently swallowed. Confirmed in `logs/trading_20260413.log`.
+
+**Fix**: Added `price=price` to Trade constructor.
+
+Also committed accumulated work from prior sessions (was unbranched):
+- Execution params: bracket orders, stop/TP, position_size_pct cap, max_positions, reentry cooldown
+- Cycle timeout (120s) + exponential backoff on consecutive failures
+- `get_bars` per-attempt timeout (20s) to prevent hung Alpaca connections stalling cycles
+- Unintentional exit detection (stop-out/TP fired by broker → per-ticker cooldown)
+- `submit_bracket_order` support in brokers (Alpaca + mock)
+- TradingPage UI improvements, ExecutionOptimizerPage configuration
+- Schema: ModelRun session resume columns
+
+**Going forward**: In-app trade analytics should now populate correctly for new fills. Existing fills from Apr 14–16 are only in Alpaca; no backfill was attempted.
+
+#### open-source-rideshare — Corporate Fleet Driver Assignments (commit `095b3d8`)
+
+Fleet admins can assign corporate account members as primary, secondary, pool, or temporary drivers for fleet vehicles.
+
+- **FleetDriverAssignmentType**: primary, secondary, pool, temporary
+- **FleetDriverAssignmentStatus**: active, inactive, pending, suspended
+- **Business rules**: 1 active primary per vehicle max (new primary auto-ends previous); 2 active secondaries max; status lifecycle: pending→active, active→suspended, active/suspended→inactive; delete only inactive
+- **12 service functions**, **13 API endpoints** across member/admin/platform-admin
+- **58 tests** | **Migration**: `v1w2x3y4z5a6` | Total: **9,503 passing**
+
+Pushed to `feature/corporate-business-accounts` on GitHub.
+
+---
+
+### Needs Your Input
+
+1. **mfg-farm: ModRun test print** — STLs are ready. When you print, let me know if geometry fits — I can adjust clearances, clip depth, or channel width. Also: want me to draft the Etsy listing copy in the meantime?
+
+2. **stockbot: rsi_mean_reversion & MTF signals** — These 2 sessions haven't fired a trade in 3+ days (AAPL/NVDA/MTF AAPL). Could be conservative thresholds or just conditions haven't been met. Want me to review the signal thresholds and suggest adjustments?
+
+---
+
+### What's Next (suggested)
+
+1. **open-source-rideshare**: Continue corporate fleet track — natural next features: fleet incident/accident reports, or fleet utilization/driver hours tracking
+2. **stockbot**: Monitor if trade DB recording now works; review rsi_mean_reversion thresholds if still 0 signals
+3. **mfg-farm**: Draft Etsy listing copy for ModRun while waiting on test print
+
+---
+
+## History
+
+### Accomplished (Sessions 250) — archived from previous check-in
 
 #### open-source-rideshare — Corporate Fleet Toll & Transponder Management (commit `8effb2c`)
 
@@ -91,20 +144,6 @@ Built the full ModRun cable management product family in parametric CadQuery:
 **CadQuery env fixed** (was broken — cadquery-ocp 7.9.3.1 installed + OCP hashCode patch applied + nlopt copied from system + casadi/nptyping/typish/ezdxf/multimethod installed).
 
 ---
-
-### Needs Your Input
-
-1. **stockbot in-app trade tracking bug** — Alpaca fills are executing but not being written to the local SQLite DB. API shows 0 trades/PnL for all sessions even though 3 real positions are open. Want me to investigate and fix the trade persistence bug, or just monitor for now?
-
-2. **ModRun slicing and test print** — STLs are ready. Next step is test print to validate fit/geometry. Should I update the designs based on any specific feedback after you print? Also — do you want me to draft the Etsy listing copy?
-
----
-
-### What's Next (suggested)
-
-1. **stockbot**: Try the new Projected Returns page on one of your live positions (e.g. AMZN with sma_crossover model). Also: fix in-app trade recording bug if you want DB analytics to work.
-2. **mfg-farm**: Iterate on ModRun geometry if test print reveals fit issues. Draft Etsy listing.
-3. **open-source-rideshare**: Continue corporate fleet feature track — next feature is Corporate Fleet Toll/Traffic Management (stub already exists).
 
 ---
 

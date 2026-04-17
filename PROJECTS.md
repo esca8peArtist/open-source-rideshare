@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 248)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 251)
 
 ---
 
@@ -54,7 +54,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/stockbot/`
-**Current focus**: Paper trading LIVE since April 14. 4 sessions running: momentum (SPY/QQQ/MSFT), rsi_mean_reversion (AAPL/NVDA), sma_crossover (AMZN/SPY), MTF Options_AAPL_LogRet_FLGBM (AAPL). Portfolio +$301 as of Apr 15. STOCKBOT_API_KEY is in ~/.claude_env but the Jetson API (100.120.18.84:8000) is unreachable from Pi directly — Jetson firewall blocks inbound Tailscale traffic on that port. **Access solution**: Use SSH tunnel — `ssh -N -L 18000:localhost:8000 xxsb-01` opens localhost:18000 → Jetson:8000 securely. STOCKBOT_API_KEY already in env. **Next**: Assess model performance across all 4 sessions and report findings.
+**Current focus**: Session 251: **Trade DB recording bug FIXED** (commit `b0332d9`). Root cause: `_record_trade` omitted required `price` column → NOT NULL constraint violated silently. All paper trading fills since Apr 14 were executing on Alpaca but not persisted to SQLite. Fix: added `price=price` to Trade constructor. Also committed accumulated execution_params work: bracket orders, stop/TP, position_size_pct cap, max_positions, reentry cooldown, cycle timeout with backoff. Portfolio: +$682 unrealized on 4 sessions (AMZN +$398, SPY +$470, QQQ +$366, MSFT +$112). rsi_mean_reversion and MTF AAPL: 0 trades in 3 days — may be conservative thresholds. **Next**: Monitor if trade recording now working; assess rsi_mean_reversion and MTF thresholds if 0 signals persist.
 **Blocked on**: —
 **Notes**: Web app is in good shape. Model creation and most optimisation is operational. Paper trading has just started but has had issues — this is the current priority. iOS app is out of scope until paper trading is solid. All features must work across ALL model types (stock, options, rule-based, ensemble, MTF) — do not implement something for one type only.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 250: **Corporate Fleet Maintenance Scheduling COMPLETE** (commit `f0fe19c`). Fleet managers schedule and track preventive maintenance for fleet vehicles with overdue alerts and cost summaries. CorporateFleetMaintenanceRecord (FleetMaintenanceType 12-value: oil_change/tire_rotation/brake_inspection/air_filter/transmission_service/battery_replacement/coolant_flush/spark_plugs/wheel_alignment/state_inspection/recall_repair/other; FleetMaintenanceStatus 5-value: scheduled/in_progress/completed/cancelled/overdue; vendor_name, technician_name, cost_usd, odometer_at_service, next_service_odometer, next_service_date); 12 service fns; 13 endpoints (member vehicle-list+get-one+summary; admin schedule+update+complete+cancel+delete+list+overdue+account-summary; platform list-all+by-account); migration u0v1w2x3y4z5. 50 tests. **Total: 9,445 passing** (was 9,395). **Next**: Next fleet feature TBD. Previous: Session 249 (toll): commit `8effb2c` (58 tests). Session 247 (registration): commit `334c869`. Session 246 (fuel): commit `45ea4a4`.
+**Current focus**: Session 251: **Corporate Fleet Driver Assignments COMPLETE** (commit `095b3d8`). Fleet managers assign corporate account members as primary/secondary/pool/temporary drivers for fleet vehicles. CorporateFleetDriverAssignment (FleetDriverAssignmentType 4-value: primary/secondary/pool/temporary; FleetDriverAssignmentStatus 4-value: active/inactive/pending/suspended; vehicle_id, account_id, user_id, authorized_by_user_id, start_date, end_date, notes); 12 service fns; 13 endpoints (member vehicle-list+get-one+primary; admin create+update+activate+suspend+end+delete+account-list+account-active; platform list-all); migration v1w2x3y4z5a6. 58 tests. **Total: 9,503 passing** (was 9,445). Business rules: 1 active primary per vehicle max (new primary auto-ends previous); 2 active secondaries max. **Next**: Next fleet feature TBD. Previous: Session 250 (maintenance): commit `f0fe19c`. Session 249 (toll): commit `8effb2c`. Session 247 (registration): commit `334c869`.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
