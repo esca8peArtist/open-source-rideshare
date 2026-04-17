@@ -1,5 +1,5 @@
 # United States Democracy Crisis: Situation Assessment & Action Plan
-## March 2026 (Updated April 12, 2026)
+## March 2026 (Updated April 17, 2026)
 
 *Part of the Resistance Research Archive | Applied analysis drawing on 160+ historical movement case studies*
 
@@ -19,7 +19,7 @@ The United States is in the most serious democratic crisis since the Civil War. 
 
 Approximately **53% of Project 2025's domestic administrative agenda** has been implemented within the first 12 months of the second Trump administration. The structural mechanisms of democratic backsliding — executive aggrandizement, judicial capture, media suppression, civil society harassment, and electoral manipulation — are all simultaneously active.
 
-And yet: the resistance is real, growing, and historically unprecedented in scale. The October 2025 No Kings protests drew an estimated **7 million participants** — the largest single-day protest in American history. 358 lawsuits have challenged administration actions. Courts have blocked key authoritarian moves. Democratic institutions are bending but not yet broken.
+And yet: the resistance is real, growing, and historically unprecedented in scale. The March 28, 2026 No Kings protests drew an estimated **8–9 million participants** — the largest single-day protest in American history, surpassing the October 2025 figure of 7 million. 358 lawsuits have challenged administration actions. Courts have blocked key authoritarian moves. Democratic institutions are bending but not yet broken.
 
 **The window for course correction is open. It will not remain open indefinitely.**
 
@@ -60,6 +60,10 @@ The framing of DOGE as "efficiency" obscures what this actually is: the dismantl
 
 **Analogy from our research:** This mirrors Orbán's Hungary — not dramatic coup, but methodical institutional hollowing. By the time people notice the institutions are gone, rebuilding them is a multi-decade project.
 
+**April 17, 2026 update — OBBBA implementation cresting:** The One Big Beautiful Bill Act (signed July 4, 2025) is producing its most visible harms in 2026. CBO projects a $1.02 trillion Medicaid cut over 10 years; 10.5 million people are projected to lose coverage by 2034. SNAP cuts total at least $120 billion over the same period. Senator Whitehouse's office reports the OBBBA's pay-go provisions trigger $536 billion in Medicare cuts over the next decade and shorten the Hospital Insurance Trust Fund solvency by 12 years — exhaustion now projected 2040, not 2052. A Commonwealth Fund analysis projected 888,000 job losses in 2026 from combined Medicaid and SNAP cuts, including 477,000 healthcare jobs. Work reporting requirements for Medicaid must be implemented by December 31, 2026 for states opting in early, making this the operational pressure point approaching as the midterm season intensifies. Sources: [ABC News](https://abcnews.go.com/Politics/trumps-megabill-programs-medicare-snap/story?id=122460864) | [Senator Whitehouse](https://www.whitehouse.senate.gov/news/release/trumps-big-beautiful-for-billionaires-law-triggers-536-billion-cut-to-medicare-over-next-decade/)
+
+**April 17, 2026 update — Federal Reserve independence under direct threat:** On April 15, 2026, Trump issued an explicit ultimatum to Federal Reserve Chair Jerome Powell: resign by May 15 (when his chairmanship term expires) or be fired. Powell has stated he will remain through his term; his governor term runs two additional years. The Federal Reserve Act permits removal "for cause" only — whether refusing to cut rates constitutes "cause" is untested in federal court. A companion case already before the Supreme Court, *Trump v. Cook*, concerns whether Trump can remove Federal Reserve *Board* member Lisa Cook at will; the ruling will likely determine the legal viability of any Powell firing. Oral arguments occurred January 2026; decision expected by June 2026. Every case study of authoritarian economic capture — Turkey under Erdogan, Argentina, Venezuela — includes executive seizure of monetary policy. Powell has stated the DOJ investigation into Fed headquarters renovation is a "pretext" for undermining monetary independence. Watch May 15 closely. Sources: [CNBC](https://www.cnbc.com/2026/04/15/trump-threatens-to-fire-powell-if-the-fed-chair-doesnt-leave-office-on-his-own.html) | [Al Jazeera](https://www.aljazeera.com/economy/2026/4/15/trump-escalates-threats-to-fire-us-federal-reserve-chair-powell) | [The Conversation](https://theconversation.com/how-trumps-repeated-efforts-to-fire-federal-reserve-chair-powell-harm-the-economy-and-make-battling-inflation-harder-280766)
+
 ---
 
 ### 1.3 Judicial System: Partial Shield, Increasingly Compromised
@@ -84,6 +88,10 @@ As of December 2025, **358 lawsuits** have challenged administration actions, re
 
 **The one-way ratchet problem:** The Fourth Circuit's April 2026 ruling in AFSCME v. SSA exposed a dangerous procedural dynamic. The Supreme Court issued an interim stay of the SSA data injunction. After the stay, the factual record collapsed — DOJ conceded DOGE misconduct, false information provided to the court, data shared with political groups. But the Fourth Circuit held it was bound by the Supreme Court's interim order even though the factual predicate underlying that order had been discredited. If lower courts cannot reassess injunctions after discovering the government lied to obtain them, interim Supreme Court orders become **irreversible even when wrong** — a one-way ratchet that transforms emergency relief into permanent executive advantage.
 
+**April 17, 2026 update — IEEPA tariff authority struck down:** On February 20, 2026, the Supreme Court issued a 6-3 decision in *Learning Resources, Inc. v. Trump* holding that IEEPA does not authorize the president to impose tariffs. Chief Justice Roberts wrote for a cross-ideological majority (joined by Sotomayor, Kagan, Gorsuch, Barrett, and Jackson). This is the most significant judicial check on executive economic emergency powers since the Youngstown steel seizure case. The administration reconstituted tariff authority under Section 232 and Section 301; a 10% baseline tariff remains through July 24, 2026 under a separate legal theory now being challenged at the Court of International Trade. The ruling matters beyond tariffs: it is a direct application of the major questions doctrine limiting presidential use of "emergency" declarations as bypass mechanisms for congressional authority. Source: [Supreme Court opinion](https://www.supremecourt.gov/opinions/25pdf/24-1287_4gcj.pdf)
+
+**April 17, 2026 update — Law firm resistance wins documented:** The four law firms targeted by Trump executive orders — Perkins Coie, WilmerHale, Jenner & Block, and Susman Godfrey — all won federal district court rulings holding the orders violated the First Amendment. All four firms that fought posted increased profits per partner in 2025 vs. 2024. Bloomberg Law reported that firms that capitulated "ended up losing" — they received worse outcomes than those that resisted. This is a generalizable finding: the short-term cost of resistance is demonstrably lower than the long-term cost of accommodation. The D.C. Circuit appeals remain active (DOJ reversed course in March, then re-filed to continue appeals), so the precedent question is unresolved — but the district court record is consistent: resistance succeeded where accommodation failed. Source: [Bloomberg Law](https://news.bloomberglaw.com/legal-exchange-insights-and-commentary/big-law-firms-who-surrendered-to-trumps-demands-ended-up-losing)
+
 **Critical risk:** If the administration establishes the precedent that executive defiance of courts has no consequence, the constitutional order effectively collapses. This is the line that, if crossed, transforms backsliding into something categorically different. The April 2026 developments suggest the mechanism may be subtler than outright defiance: a combination of shadow-docket emergency relief, lower-court deference to interim orders, and factual misrepresentation that is discovered too late to matter procedurally.
 
 ---
@@ -99,6 +107,8 @@ The US press freedom classification shifted from "Low Restrictions" to **"With R
 - Lawsuits filed against NYT and Wall Street Journal
 - 170 assaults on journalists in the U.S. in 2025 — nearly equal to the prior three years combined
 - 160 of those assaults committed by law enforcement during immigration enforcement coverage
+
+**April 17, 2026 update — First federal criminal charges against a prominent journalist for covering ICE protest:** On January 29–30, 2026, former CNN anchor Don Lemon and journalist Georgia Fort were arrested by federal agents and indicted on federal civil rights charges related to their coverage of an anti-ICE protest at Cities Church in St. Paul, Minnesota. Charges include conspiracy against religious freedom and interference with religious exercise. The DOJ had previously failed to obtain arrest warrants twice — the chief district judge found "no evidence" of criminal behavior on both attempts. The eventual indictment was obtained from a different judge. Press freedom groups called it "intimidation and harassment." Lemon stated: "The First Amendment protects that work." This is a qualitative escalation from the documented 2025 pattern of arrests during enforcement actions: this is the first use of federal civil rights statutes as a speech-suppression mechanism against journalists specifically for covering immigration enforcement. The "no evidence" finding followed by a successful indictment through a different judge suggests deliberate forum-shopping by DOJ. Sources: [Poynter](https://www.poynter.org/reporting-editing/2026/federal-agents-arrest-journalists-don-lemon-and-georgia-fort-over-immigration-protest-coverage/) | [Al Jazeera](https://www.aljazeera.com/news/2026/1/30/journalist-don-lemon-arrested-in-connection-to-minnesota-ice-protest) | [MTSU First Amendment Encyclopedia](https://firstamendment.mtsu.edu/post/journalist-don-lemon-charged-with-federal-civil-rights-crimes-after-covering-anti-ice-church-protest/)
 
 **Why this matters beyond journalists:** A free press is the distributed early warning system for democratic societies. When it is suppressed, citizens lose the information needed to make political judgments. Attacking the press is not about controlling journalists — it is about controlling what citizens know.
 
@@ -117,6 +127,8 @@ The 2026 midterms represent the critical near-term checkpoint. The situation:
 
 **April 2026 update — Texas redistricting confirmed:** The three-judge district court panel in LULAC v. Abbott (November 2025) found that Texas's mid-decade congressional map racially gerrymandered Latino voters in violation of the Voting Rights Act and the Constitution. The Supreme Court stayed that ruling in late 2025. As of April 2026, it is confirmed that the contested Texas map — the one a federal court found unlawful — will govern the 2026 midterm elections. Merits litigation continues, but the practical damage is locked in: the 2026 election in the nation's second-largest state will be conducted under maps that a federal court found illegally drawn to dilute minority voting power.
 
+**April 2026 update — Mail ballot executive order escalates federal election control:** On March 31, 2026, the administration signed an executive order directing USPS not to deliver mail ballots to voters not on a DHS/SSA-compiled pre-approved list, and mandating barcoding of all authorized mail ballots. This is the administration's most direct assertion of federal executive authority over the physical mechanics of ballot delivery — a qualitative escalation beyond previous election-related EOs that worked through agency guidance or state-level political channels. Twenty-three states and D.C. filed suit in Massachusetts federal court on April 3. No court has yet ruled on the challenge. The EO's mechanism is significant: by conditioning mail ballot delivery on a DHS/SSA pre-approved list, it connects the elections apparatus to the same federal databases that DOGE has already weaponized (the SSA NUMIDENT controversy), creating a feedback loop between the data-weaponization threat documented in Section 1.2 and the electoral infrastructure threat documented here. Sources: [Votebeat: state lawsuits (April 3, 2026)](https://www.votebeat.org/national/2026/04/03/donald-trump-2026-midterm-election-executive-order-state-lawsuit-mail-ballots-josh-shapiro/) | [Democracy Docket: draft EO text](https://www.democracydocket.com/news-alerts/exclusive-read-the-draft-executive-emergency-order-for-trump-to-take-control-of-elections/)
+
 **The structural concern:** If the House remains under unified control through 2026 and into 2028, the legislative check on executive power remains absent. Combined with a compliant Supreme Court, this creates a period of unconstrained executive power unprecedented in American history.
 
 ---
@@ -127,11 +139,17 @@ As of February 2026, **53% of Project 2025's domestic administrative agenda** (2
 
 - Full dismantling of the Department of Education
 - Federal "Parents' Bill of Rights" (federal control of curriculum)
-- Eliminating reproductive health services from federal insurance programs
+- Eliminating reproductive health services from federal insurance programs (including the "week-after pill" from HRSA women's preventive services; the Office of Refugee Resettlement abortion access policy has already been eliminated)
 - Further consolidation of executive control over independent agencies
+- Creation of a standalone border and immigration Cabinet agency combining CBP and ICE under direct executive control
 - Media regulatory actions
+- Military testing requirements: ASVAB-mandated for all students in federally funded schools
+
+**On the "stalled" narrative:** Newsweek and some conservative analysts have argued that Project 2025 has "stalled" — citing courts, Congress, and public resistance as brakes. This reading is partially correct at the margins but misleading at the center. What has stalled is the most legally aggressive fringe (birthright citizenship, IEEPA tariffs). What has not stalled is the core institutional dismantling: DOGE firings, IG purge, civil service reclassification, USAID destruction, and the OBBBA entitlement cuts. The 53% figure covers actions already completed; the remaining 47% is agenda, not failure. The correct framing is: **the legally contested actions face friction; the administrative and legislative actions are largely proceeding.**
 
 Project 2025 is not a conspiracy theory — it is a publicly available 920-page document. The implementation tracker makes it a checklist. The remaining 47% represents the agenda for Year 2 and beyond.
+
+Sources: [Axios: Trump's remaining Project 2025 goals (Jan 2026)](https://www.axios.com/2026/01/01/trump-project-2025-remaining-goals) | [Newsweek: Project 2025 Has Stalled](https://www.newsweek.com/project-2025-has-stalled-tracker-10932443) | [Reproductive Freedom for All tracker](https://reproductivefreedomforall.org/resources/tracking-project-2025-how-much-has-been-implemented-so-far/)
 
 ---
 
@@ -143,9 +161,9 @@ Project 2025 is not a conspiracy theory — it is a publicly available 920-page 
 |--------|-----------|
 | **Federal courts (so far)** | 358 lawsuits, 700+ rulings, blocked birthright citizenship EO, prevented Alien Enemies Act. Courts remain the most effective institutional brake. |
 | **State attorneys general** | Blue-state AGs have filed and won significant cases. State-level resistance creates legal friction. |
-| **Mass protest** | 7 million on October 18, 2025 — largest single-day US protest ever. The body count exists. |
+| **Mass protest** | 8–9 million on March 28, 2026 (organizer estimate; independent analysis by G. Elliott Morris/Xylom: 5–6.5M) — largest single-day US protest in recorded history. Trajectory: June 2025: 5M → Oct 2025: 7M → Mar 2026: 8–9M. Growing, not fatiguing. This is the opposite of the expected protest-fatigue curve; no major democratic mass movement in the dataset has sustained three successive growth cycles. April 19 ("No Kings Day," 251st anniversary of Lexington/Concord) and May 1 (labor mobilization) are next scheduled national actions. No Kings Coalition Eyes on ICE program first training drew 200,000+ viewers — an unprecedented conversion of mobilization into durable accountability infrastructure. |
 | **Labor organizing** | Amazon LU, Starbucks workers, WGA/SAG-AFTRA wins — demonstrated that ordinary workers can win against massive corporate power. |
-| **Civil society infrastructure** | ACLU, EFF, Protect Democracy, Brennan Center, Indivisible, NAACP Legal Defense — existing organizations with legal expertise, funding, and muscle |
+| **Civil society infrastructure** | ACLU, EFF, Protect Democracy, Brennan Center, Indivisible, NAACP Legal Defense — existing organizations with legal expertise, funding, and muscle. Law firm resistance wins (Perkins Coie, WilmerHale, Jenner & Block, Susman Godfrey) confirm: resistance succeeded where accommodation failed; all four firms increased profits per partner in 2025. |
 | **Information environment (partially)** | Despite attacks, investigative journalism continues. ProPublica, The Intercept, independent outlets maintain documentation. Substack has enabled independent political press. |
 | **International attention** | RSF, Freedom House, V-Dem, Carnegie Endowment all monitoring and publishing — creates accountability record |
 | **Public opinion** | Polls consistently show majorities oppose specific authoritarian actions even among Republican voters (targeting journalists, defying courts) |
@@ -215,15 +233,17 @@ Our research consistently shows that nonviolent resistance succeeds when regime 
 - **Republican elected officials:** The missing variable. Without meaningful Republican defections from authoritarian actions, Congress cannot act as a check. The handful of dissenters (Murkowski, Collins) are insufficient.
 - **Business community:** Corporate America has largely accommodated or enabled the administration. Targeted economic pressure on corporations that provide infrastructure for authoritarian actions (tech companies, financial institutions) could shift calculations.
 
-**The key question:** What would cause a meaningful bloc of Republican legislators, military officers, or senior officials to break publicly? History suggests it requires either personal threat, economic disaster, or clear public moral crisis.
+**April 2026 update — the military loyalty question has sharpened:** Two concrete developments have moved this from theoretical to operational. First, in November 2025, the FBI opened an investigation into five sitting U.S. legislators (Senator Elissa Slotkin and Representatives Jason Crow, Maggie Goodlander, Chrissy Houlahan, and Chris Deluzio, all veterans) after they posted a video stating "no one has to carry out orders that violate the law or Constitution" — and the administration accused them of "seditious behaviour, punishable by death." The DOD also opened a separate investigation into Senator Mark Kelly with warnings about potential court-martial. This is the first time in the modern era that legislators have been investigated for publicly communicating the existing legal framework about unlawful orders. Second, in early 2026, a federal court ruled that Trump's use of National Guard soldiers in Los Angeles violated the Posse Comitatus Act — the foundational statute separating military from domestic law enforcement — and ordered the administration to stop using soldiers for arrests, searches, crowd control, and interrogation. A retired Army lieutenant general stated publicly that many senior military commanders are asking themselves whether they can lawfully comply with Trump orders, and that the duty to refuse unlawful orders is legally binding. These developments suggest: (a) the question of military compliance with unconstitutional orders is now active, not theoretical; (b) the administration is using DOJ/DOD investigations to suppress the legal framework itself; and (c) courts have already found one major military deployment unlawful. The Posse Comitatus ruling is a concrete, documented elite-institutional limit — the first of its kind since January 2025. Sources: [Al Jazeera: five legislators investigated (Jan 2026)](https://www.aljazeera.com/news/2026/1/15/five-us-lawmakers-investigated-over-warning-troops-about-illegal-orders) | [Brennan Center: soldiers in LA ruling](https://www.brennancenter.org/our-work/analysis-opinion/court-finds-trumps-use-soldiers-los-angeles-illegal) | [Washington Post: orders they can and should refuse (Jan 2026)](https://www.washingtonpost.com/ripple/2026/01/13/article/greenland-trump-military-illegal-orders/)
+
+**The key question:** What would cause a meaningful bloc of Republican legislators, military officers, or senior officials to break publicly? History suggests it requires either personal threat, economic disaster, or clear public moral crisis. The investigation of legislators for articulating the legal duty to refuse unlawful orders suggests the administration is aware of this variable and is attempting to pre-empt it.
 
 ---
 
 #### Variable 4: Sustained Organizational Depth (The Tufekci Problem)
 
-The 7 million No Kings protest is a remarkable mobilization signal. It also illustrates Tufekci's core warning: **large digital protests are easy to achieve and easy to ignore.**
+The No Kings protest series — culminating in 8–9 million participants on March 28, 2026 — represents a remarkable mobilization signal. It also illustrates Tufekci's core warning: **large digital protests are easy to achieve and easy to ignore.**
 
-The Hands Off and No Kings protests have not yet been converted into the organizational depth needed to sustain pressure — strikes, boycotts, electoral mobilization, sustained civil disobedience, or negotiated political change.
+The Hands Off and No Kings protests have not yet been fully converted into the organizational depth needed to sustain pressure — strikes, boycotts, electoral mobilization, sustained civil disobedience, or negotiated political change. The infrastructure conversion is beginning (see update below), but mobilization size and organizational depth are different things.
 
 **What "organizational depth" means in practice:**
 - Local chapters that meet, train, and act independently of national coordination
@@ -233,6 +253,8 @@ The Hands Off and No Kings protests have not yet been converted into the organiz
 - Legal infrastructure for civil disobedience participants
 
 **Historical comparison:** The Civil Rights Movement required years of local SCLC/SNCC chapters, jail training, legal defense funds, and boycott infrastructure *before* the Birmingham Campaign was possible. The current resistance movement has the numbers but not yet the infrastructure.
+
+**April 2026 update:** The March 28 No Kings protest (8–9 million participants, 3,300+ events) is now the largest single-day protest in recorded US history. Three successive national days of action show growth: June 2025 (5M) → October 2025 (7M) → March 2026 (8–9M). This is the *opposite* of the expected protest fatigue curve. Upcoming: April 19 ("No Kings Day," timed to the 251st anniversary of Lexington/Concord) and May 1 (May Day labor mobilization) are the next scheduled national actions. The key remaining question from the Tufekci framework: whether this mobilization is converting into organizational infrastructure (local chapters, electoral engagement, boycott capacity). Post-March 28 organizing meetings convened approximately 3,000 hosts on April 3 — the first evidence of infrastructure conversion. The No Kings Coalition's "Eyes on ICE" program (first training drew 200,000+ viewers) is the clearest example of mobilization producing a durable accountability infrastructure rather than dissipating between protest days. The Chenoweth 3.5% threshold requires approximately 11.6 million sustained, active participants — the March 28 figure is 8–9 million, or roughly 2.5–2.7% of the US population. The gap is closing.
 
 ---
 
@@ -401,6 +423,9 @@ The next time the administration defies a court order, the response matters enor
 - **Trump v. Barbara** — the Supreme Court's birthright citizenship ruling (oral arguments held April 1, 2026) will determine whether the Fourteenth Amendment's Citizenship Clause means what it says. A ruling for the government would be the most consequential executive expansion of power over citizenship since Dred Scott.
 - **AFSCME v. SSA remand** — on remand from the Fourth Circuit, the district court will have to decide what to do with the now-public record of government misrepresentations. Whether any court holds the government accountable for providing false information will set a precedent for every subsequent case.
 - **Gibson v. ICE (Minnesota)** — filed April 2, 2026, challenges secret ICE policy of warrantless home entries. If discovery reaches the unpublished Lyons memo, it could expose the full scope of internal agency guidance on constitutional violations.
+- **Trump v. Cook** — SCOTUS decision expected June 2026; will determine whether the president can remove Federal Reserve Board members at will. Powell chairmanship ultimatum expires May 15. Firing Powell before the ruling would create a simultaneous judicial and economic crisis.
+- **Learning Resources v. Trump** — already decided (February 20, 2026, 6-3). Administration reconstituted tariff authority under alternative statutes. Track the Court of International Trade challenge to the reconstituted 10% baseline tariff (argued April 10, ruling pending) — the next test of whether the major questions doctrine limits the replacement authority.
+- **Harvard First Circuit appeal** — Trump administration appealed the September 2025 district court ruling that froze $2B+ in research funding was illegal. Appellate ruling will determine whether the frozen-funds framework continues. Columbia settled for $200M + governance conditions; Harvard remains the only major university still fighting. If the First Circuit reverses, the legal protection for approximately $3B in frozen Harvard funds disappears and sets precedent applicable to other universities.
 
 ### Window 3: Economic Disruptions
 
@@ -461,7 +486,7 @@ The United States is in a democratic emergency. The evidence is not partisan —
 
 The situation is serious. It is not hopeless.
 
-The tools remain: courts still functioning, elections still contested, civil society still organizing, press still publishing, people still marching in the millions. The 3.5% threshold — Chenoweth's finding that no campaign with 3.5%+ active participation has ever failed — suggests the numbers needed for success are achievable. 7 million people in the streets is 2.1% of the US population. Getting to 3.5% means approximately 11.6 million sustained, active participants.
+The tools remain: courts still functioning, elections still contested, civil society still organizing, press still publishing, people still marching in the millions. The 3.5% threshold — Chenoweth's finding that no campaign with 3.5%+ active participation has ever failed — suggests the numbers needed for success are achievable. The March 28, 2026 No Kings protests drew 8–9 million participants — approximately **2.5–2.7% of the US population**, with independent analysis (G. Elliott Morris / Xylom) estimating 5–6.5 million on the conservative side. Getting to Chenoweth's 3.5% means approximately 11.6 million sustained, active participants. The gap between the current peak (8–9M organizer estimate, or ~5–6.5M independent estimate) and the threshold is real but closeable — and critically, the trajectory is growth, not fatigue: June 2025 (5M) → October 2025 (7M) → March 2026 (8–9M).
 
 **The question is whether the resistance movement converts mass sympathy into organized, sustained, strategically coherent action before the structural windows close.**
 
@@ -500,7 +525,7 @@ It can work again.
 
 ---
 
-*Compiled March 2026, updated April 12, 2026 | SuperClaude Research Archive*
+*Compiled March 2026, updated April 17, 2026 | SuperClaude Research Archive*
 *Primary sources: peer-reviewed scholarship, Freedom House, V-Dem, Century Foundation Democracy Meter, Bright Line Watch, Chenoweth NAVCO dataset, ACLU, Brennan Center, Just Security litigation tracker, RSF Press Freedom Index, AllSides/AP DOGE tracker*
 
 ---
@@ -544,6 +569,21 @@ It can work again.
 - [Just Security: DHS Warrantless Home Entry and the Fourth Amendment](https://www.justsecurity.org/130497/dhs-warrantless-home-entry-fourth-amendment/)
 - [MALDEF: Statement on SCOTUS Stay of Texas Redistricting Ruling](https://www.maldef.org/2025/12/maldef-statement-on-supreme-court-order-allowing-new-texas-redistricting-maps-to-be-used-for-2026/)
 - [SCOTUSblog: Trump v. Barbara Case File](https://www.scotusblog.com/cases/case-files/trump-v-barbara/)
+
+### April 17, 2026 Monitoring Pass Sources
+- [CNBC — Trump threatens to fire Powell](https://www.cnbc.com/2026/04/15/trump-threatens-to-fire-powell-if-the-fed-chair-doesnt-leave-office-on-his-own.html)
+- [Al Jazeera — Powell firing threat](https://www.aljazeera.com/economy/2026/4/15/trump-escalates-threats-to-fire-us-federal-reserve-chair-powell)
+- [The Conversation — economic harm of Fed independence threat](https://theconversation.com/how-trumps-repeated-efforts-to-fire-federal-reserve-chair-powell-harm-the-economy-and-make-battling-inflation-harder-280766)
+- [Supreme Court — Learning Resources v. Trump opinion](https://www.supremecourt.gov/opinions/25pdf/24-1287_4gcj.pdf)
+- [WilmerHale — post-SCOTUS IEEPA analysis](https://www.wilmerhale.com/en/insights/client-alerts/20260220-supreme-court-strikes-down-ieepa-tariffs-what-now)
+- [Poynter — Don Lemon and Georgia Fort arrests](https://www.poynter.org/reporting-editing/2026/federal-agents-arrest-journalists-don-lemon-and-georgia-fort-over-immigration-protest-coverage/)
+- [MTSU First Amendment Encyclopedia — Lemon charges](https://firstamendment.mtsu.edu/post/journalist-don-lemon-charged-with-federal-civil-rights-crimes-after-covering-anti-ice-church-protest/)
+- [Bloomberg Law — law firm capitulation analysis](https://news.bloomberglaw.com/legal-exchange-insights-and-commentary/big-law-firms-who-surrendered-to-trumps-demands-ended-up-losing)
+- [ABC News — OBBBA Medicaid/SNAP](https://abcnews.go.com/Politics/trumps-megabill-programs-medicare-snap/story?id=122460864)
+- [Senator Whitehouse — Medicare cuts](https://www.whitehouse.senate.gov/news/release/trumps-big-beautiful-for-billionaires-law-triggers-536-billion-cut-to-medicare-over-next-decade/)
+- [Washington Post — March 28 No Kings protest](https://www.washingtonpost.com/nation/2026/03/28/no-kings-protests-marches-record-turnout/)
+- [SCOTUSblog — birthright citizenship oral arguments](https://www.scotusblog.com/2026/04/supreme-court-appears-likely-to-side-against-trump-on-birthright-citizenship/)
+- [Bloomberg — Harvard funding appeal](https://www.bloomberg.com/news/articles/2026-04-15/harvard-funding-restoration-is-appealed-by-trump-administration)
 
 ### April 12, 2026 Monitoring Pass Sources
 - [Votebeat: Trump Mail Voting Executive Order — State Lawsuits (April 3, 2026)](https://www.votebeat.org/national/2026/04/03/donald-trump-2026-midterm-election-executive-order-state-lawsuit-mail-ballots-josh-shapiro/)

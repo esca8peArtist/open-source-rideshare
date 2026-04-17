@@ -1,6 +1,6 @@
 # Active Litigation Tracker: Democracy and Immigration Cases — April 2026
 
-*Last updated: April 13, 2026 (evening monitoring pass) — for entries added after March 19, see the "April 2026 Updates" section at the bottom of this document*
+*Last updated: April 17, 2026 (integration pass) — for entries added after March 19, see the "April 2026 Updates" section at the bottom of this document*
 
 ---
 
@@ -736,3 +736,117 @@ The government's demand that Xinis rule by April 17 or face an appeal to "a cour
 | TBD | Section 122 CIT case | Three-judge panel ruling on 10% global tariff (argument April 10; panel sharply skeptical; separate from IEEPA) |
 | TBD | Schedule Policy/Career | AFGE/AFSCME Maryland suit (amended complaint filed March 2026); no injunction yet |
 | TBD | MSPB / Federal Circuit | Jackler & Jaroch appeal; outcome will determine whether Schedule Policy/Career employees have any MSPB avenue |
+| May 15 | Powell/Fed Reserve | Trump ultimatum expires; watch for firing announcement. *Trump v. Cook* ruling will determine legal viability. |
+| June 2026 | *Trump v. Cook* | SCOTUS decision on whether president can remove Fed Board members at will |
+
+---
+
+## April 17, 2026 — Monitoring Integration Pass
+
+*Entries below integrate findings from the April 17, 2026 monitoring pass (monitoring-2026-04.md) into the active litigation tracker.*
+
+---
+
+### Category 4 Update — Birthright Citizenship Oral Argument Record (April 1, 2026)
+
+**Update to 4.1 Trump v. Barbara:**
+
+Oral arguments were held April 1, 2026. President Trump attended in person — the first sitting president in the modern era to attend Supreme Court oral arguments — and departed approximately halfway through. Multiple justices including Trump appointees expressed skepticism of the administration's position. Chief Justice Roberts directly rejected the administration's "new world" framing of the 14th Amendment: "It's the same Constitution." Solicitor General Sauer's argument — that the 14th Amendment was intended only for formerly enslaved people — was met with repeated pushback on the text of the Citizenship Clause and on *Wong Kim Ark* (1898). SCOTUSblog analysis after argument: a majority appears likely to rule against the administration. Missouri Independent (April 15) confirms justices appeared to distinguish between limiting immigration and rewriting the 14th Amendment. Decision expected by late June or early July 2026.
+
+The pattern is significant for the broader constitutional analysis: even a 6-3 conservative supermajority is proving unwilling to rewrite a century of constitutional interpretation on birthright citizenship. This is the administration's most extreme constitutional claim, and it is not finding traction even before friendly justices.
+
+**Sources:** [SCOTUSblog — oral argument analysis](https://www.scotusblog.com/2026/04/supreme-court-appears-likely-to-side-against-trump-on-birthright-citizenship/) | [NPR](https://www.npr.org/2026/04/01/nx-s1-5754762/trump-supreme-court-birthright-citizenship) | [Missouri Independent post-argument analysis](https://missouriindependent.com/2026/04/15/what-the-supreme-court-arguments-suggest-about-trumps-birthright-citizenship-case/)
+
+---
+
+### Category 5 Update — Don Lemon and Georgia Fort: First Federal Criminal Charges Against Prominent Journalist for Covering ICE Protest
+
+**New entry: *United States v. Lemon and Fort* (Minnesota federal court, indicted January 30, 2026)**
+
+- **Court**: U.S. District Court, District of Minnesota
+- **What happened**: Former CNN anchor Don Lemon and journalist Georgia Fort were arrested by federal agents on January 29–30, 2026, and indicted on federal civil rights charges arising from their coverage of an anti-ICE protest at Cities Church in St. Paul (a church whose pastor is an ICE official). Charges: conspiracy against religious freedom and interference with religious exercise at a place of worship.
+- **DOJ warrant history**: DOJ had previously sought arrest warrants twice; the chief district judge found "no evidence" of criminal behavior on both attempts. The eventual indictment was obtained through a different judge — a documented instance of DOJ forum-shopping after two judicial refusals.
+- **Significance**: First federal criminal charges against a nationally prominent journalist for covering an immigration protest. This is a qualitative escalation from the 2025 pattern of journalist arrests during enforcement actions: this case uses federal civil rights statutes as a speech-suppression mechanism specifically to deter press coverage of ICE activity. Lemon: "The First Amendment protects that work." Press freedom groups: "intimidation and harassment." The "no evidence" finding followed by successful indictment through a different judge is the mechanism to document.
+- **Where to track it**: [Poynter](https://www.poynter.org/reporting-editing/2026/federal-agents-arrest-journalists-don-lemon-and-georgia-fort-over-immigration-protest-coverage/) | [Al Jazeera](https://www.aljazeera.com/news/2026/1/30/journalist-don-lemon-arrested-in-connection-to-minnesota-ice-protest) | [MTSU First Amendment Encyclopedia](https://firstamendment.mtsu.edu/post/journalist-don-lemon-charged-with-federal-civil-rights-crimes-after-covering-anti-ice-church-protest/)
+
+---
+
+### New Category — Federal Reserve Independence: *Trump v. Cook*
+
+**New entry: *Trump v. Cook* (U.S. Supreme Court — decision expected June 2026)**
+
+- **Court**: U.S. Supreme Court
+- **What it concerns**: Whether the president can remove Federal Reserve Board member Lisa Cook "at will" rather than only "for cause" under the Federal Reserve Act. Oral arguments held January 2026; decision expected June 2026.
+- **Why it matters**: The ruling will likely determine the legal viability of Trump's threat to fire Fed Chair Jerome Powell. On April 15, 2026, Trump issued an explicit ultimatum: Powell resign by May 15 (when his chairmanship term expires) or be fired. Powell has stated he will remain through his term. The Federal Reserve Act permits removal "for cause" only; the administration's position is that the president can remove Fed governors at will. If SCOTUS rules in the administration's favor, it creates legal path to executive capture of monetary policy — the Turkey/Argentina playbook applied to the world's most influential central bank.
+- **Connection to Powell**: Powell's governor term (as distinct from his chairmanship term) runs until January 2028. If the administration prevails in *Trump v. Cook*, it could remove Powell from the Board entirely before his governor term expires. If the administration loses, firing Powell would require satisfying the "for cause" standard in federal court.
+- **Why it belongs in this tracker**: This is simultaneously a separation-of-powers case (can the president capture the Fed?), an economic policy case (forced rate cuts during inflation), and a rule-of-law test (what happens if SCOTUS rules against the administration and the president fires Powell anyway?). The May 15 date creates a potential crisis before the June SCOTUS ruling.
+- **Sources**: [CNBC — Trump ultimatum](https://www.cnbc.com/2026/04/15/trump-threatens-to-fire-powell-if-the-fed-chair-doesnt-leave-office-on-his-own.html) | [Al Jazeera](https://www.aljazeera.com/economy/2026/4/15/trump-escalates-threats-to-fire-us-federal-reserve-chair-powell) | [NPR](https://www.npr.org/2026/04/15/nx-s1-5786478/trump-federa-reserve-jerome-powell) | [The Conversation — economic harm analysis](https://theconversation.com/how-trumps-repeated-efforts-to-fire-federal-reserve-chair-powell-harm-the-economy-and-make-battling-inflation-harder-280766)
+
+---
+
+### New Category — Third-Country Deportations: Pattern of Due Process Violations
+
+**New tracking entry — Third-Country Deportation Program**
+
+- **What is being tracked**: The administration's program of deporting migrants to countries other than their home countries, including to countries where they have active US court protection orders.
+- **Scale**: At least 27 countries have signed third-country deportation agreements as of April 2026. Cost: over $40 million spent as of January 2026, including $32 million in direct payments to five receiving countries.
+- **Documented violations**:
+  - **El Salvador (CECOT)**: Hundreds of Venezuelans sent to CECOT; federal court ruled removals violated due process (no notice, no hearing). Documented conditions: beatings, rape, torture.
+  - **Cameroon (January 2026)**: 17 people deported; 8 of 9 in one batch had active US court orders protecting them from deportation to their home countries.
+  - **Democratic Republic of Congo (April 5, 2026)**: New third-country agreement signed; DRC to receive US deportees. Congressional Democrats demanded watchdog investigations.
+- **Kilmar Abrego Garcia** (see existing tracker entry): The most thoroughly documented individual case — 10+ court orders, 3 depositions, 3 discovery disputes over nearly a year; administration now seeking to deport to Liberia to circumvent withholding-of-removal order covering El Salvador.
+- **Why it matters**: Third-country deportation of people with active US withholding-of-removal orders is direct judicial order defiance at scale. Unlike individual contempt proceedings, this pattern involves dozens of documented cases across multiple countries. The DRC agreement signals continued program expansion.
+- **Where to track it**: [Third Country Deportation Watch](https://www.thirdcountrydeportationwatch.org) | [HRF ICE Flight Monitor monthly](https://humanrightsfirst.org/library/ice-flight-monitor-march-2026-report/) | [American Immigration Council factsheet](https://www.americanimmigrationcouncil.org/fact-sheet/what-are-third-country-removals-factsheet/) | [Al Jazeera — DRC deal](https://www.aljazeera.com/news/2026/4/5/dr-congo-to-receive-third-country-deportees-from-the-us-under-new-deal) | [Wikipedia — Abrego Garcia timeline](https://en.wikipedia.org/wiki/Deportation_of_Kilmar_Abrego_Garcia)
+
+---
+
+### Category 7 Update — Citizenship Verification EO: 23-State AG Coalition Suit
+
+**New entry alongside existing 7.x voting rights litigation:**
+
+- **What happened**: In April 2026, a 23-state attorney general coalition filed suit challenging Trump's executive order requiring citizenship verification for voter registration and restricting mail-in ballots. The order would require states to use federal citizenship data to verify registrations and impose restrictions on who receives mail ballots.
+- **Coalition**: California, New York, Illinois, Massachusetts, Michigan, Washington, Oregon, Colorado, and 15 others.
+- **Stakes**: If upheld before the 2026 midterms, the order could purge legitimately registered voters from rolls — particularly naturalized citizens and voters whose federal records contain errors. The six-month-to-midterms clock makes preliminary injunction timing critical.
+- **Related**: Democratic AGs filed a separate suit to prevent administration from withholding VOCA (Victims of Crime Act) funds from states refusing immigration enforcement cooperation — a coercive defunding tactic running in parallel to offensive litigation.
+- **Where to track it**: [Self Reliance Central — AG suit](https://selfreliancecentral.com/2026/04/04/blue-state-ags-sue-trump-to-keep-elections-wide-open-the-2026-midterm-fight-just-got-real/)
+
+---
+
+### New Entry — Harvard First Circuit Appeal
+
+- **Court**: U.S. Court of Appeals for the First Circuit
+- **Background**: In September 2025, a federal district court ruled that the Trump administration illegally froze more than $2 billion in Harvard's federal grants and contracts. Harvard refused to settle; Columbia settled for $221 million in July 2025 plus governance conditions; other elite universities also capitulated under funding pressure.
+- **Development (April 15, 2026)**: The Trump administration appealed the September 2025 district court ruling. The appeal means the funding freeze can continue during litigation — the injunction did not produce immediate restoration of funds, and the appellate process could take months to years.
+- **What's at stake**: Approximately $3 billion in frozen Harvard funds. If the First Circuit reverses and upholds the funding freeze, it removes the legal protection for those funds and creates precedent applicable to universities that have not yet settled. Human Rights Watch issued a March 18, 2026 report: "Academic Freedom in the US Under Threat."
+- **Pattern significance**: The university track mirrors the law firm track — institutions under coercive pressure are splitting between those that accommodate and those that resist. Harvard's continued resistance, backed by a favorable district court ruling, is now being tested at the appellate level.
+- **Where to track it**: [Bloomberg — appeal](https://www.bloomberg.com/news/articles/2026-04-15/harvard-funding-restoration-is-appealed-by-trump-administration) | [Columbia Spectator — one-year analysis](https://www.columbiaspectator.com/the-eye/2026/03/13/trump-threatened-harvards-and-columbias-funding-a-year-later-only-harvard-is-still-fighting/) | [Human Rights Watch — academic freedom report](https://www.hrw.org/news/2026/03/18/academic-freedom-in-the-us-under-threat)
+
+---
+
+### Category 5 Update — Law Firm Targeting: Resistance Wins Documented
+
+**Update to the existing law firm executive order litigation:**
+
+All four targeted firms (Perkins Coie, WilmerHale, Jenner & Block, Susman Godfrey) won federal district court rulings holding the executive orders violated the First Amendment.
+
+- **March 2–3, 2026 DOJ reversal sequence**: DOJ asked the D.C. Circuit to dismiss its appeals (March 2), reversed course and sought to continue the appeals (March 3). Mid-March: D.C. Circuit granted DOJ's motion to revive the appeals.
+- **Outcome data**: Bloomberg Law reported that firms that capitulated to the administration's demands "ended up losing" — they received worse outcomes than those that fought. All four resisting firms increased profits per partner in 2025 vs. 2024.
+- **Key finding for the resistance analysis**: Resistance succeeded where accommodation failed. This is documented, sourced, and generalizable to other institutional actors facing administration pressure.
+- **The D.C. Circuit appeals remain active**: If the administration prevails on appeal, it establishes precedent that executive orders targeting attorneys who opposed the administration are lawful — creating a tool to suppress legal representation hostile to the administration across every area of litigation tracked in this document.
+- **Sources**: [Bloomberg Law — capitulation analysis](https://news.bloomberglaw.com/legal-exchange-insights-and-commentary/big-law-firms-who-surrendered-to-trumps-demands-ended-up-losing) | [NPR — March reversal](https://www.npr.org/2026/03/03/nx-s1-5733945/trump-administration-reverses-course-on-law-firms-vowing-to-appeal) | [MTSU First Amendment Encyclopedia](https://firstamendment.mtsu.edu/article/trumps-executive-orders-against-law-firms/)
+
+---
+
+### April 17, 2026 Monitoring Pass Sources
+- [CNBC — Trump threatens to fire Powell](https://www.cnbc.com/2026/04/15/trump-threatens-to-fire-powell-if-the-fed-chair-doesnt-leave-office-on-his-own.html)
+- [SCOTUSblog — Birthright citizenship oral arguments](https://www.scotusblog.com/2026/04/supreme-court-appears-likely-to-side-against-trump-on-birthright-citizenship/)
+- [Supreme Court — Learning Resources v. Trump opinion](https://www.supremecourt.gov/opinions/25pdf/24-1287_4gcj.pdf)
+- [Poynter — Don Lemon and Georgia Fort arrests](https://www.poynter.org/reporting-editing/2026/federal-agents-arrest-journalists-don-lemon-and-georgia-fort-over-immigration-protest-coverage/)
+- [American Immigration Council — Third-country removals factsheet](https://www.americanimmigrationcouncil.org/fact-sheet/what-are-third-country-removals-factsheet/)
+- [Al Jazeera — DRC deportation deal](https://www.aljazeera.com/news/2026/4/5/dr-congo-to-receive-third-country-deportees-from-the-us-under-new-deal)
+- [Wikipedia — Kilmar Abrego Garcia case timeline](https://en.wikipedia.org/wiki/Deportation_of_Kilmar_Abrego_Garcia)
+- [Bloomberg — Harvard funding appeal](https://www.bloomberg.com/news/articles/2026-04-15/harvard-funding-restoration-is-appealed-by-trump-administration)
+- [Bloomberg Law — Law firm capitulation analysis](https://news.bloomberglaw.com/legal-exchange-insights-and-commentary/big-law-firms-who-surrendered-to-trumps-demands-ended-up-losing)
+- [Self Reliance Central — AG citizenship verification lawsuit](https://selfreliancecentral.com/2026/04/04/blue-state-ags-sue-trump-to-keep-elections-wide-open-the-2026-midterm-fight-just-got-real/)
+- [ABC News — OBBBA Medicaid/SNAP](https://abcnews.go.com/Politics/trumps-megabill-programs-medicare-snap/story?id=122460864)
+- [Senator Whitehouse — Medicare cuts](https://www.whitehouse.senate.gov/news/release/trumps-big-beautiful-for-billionaires-law-triggers-536-billion-cut-to-medicare-over-next-decade/)
