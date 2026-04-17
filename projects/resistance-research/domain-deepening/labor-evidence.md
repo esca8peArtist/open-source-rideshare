@@ -1,6 +1,8 @@
 # Labor Policy — Evidence Deepening
 
-*Prepared April 2026. Supplements Domain 17: Labor and Employment in the Democratic Renewal Proposal. Does not restate the reform architecture — deepens the evidentiary foundation with specific data, contested findings, and strongest counterarguments.*
+*Prepared April 2026. Elevated to Tier 1, April 2026 (Session 271): UK National Living Wage fully developed with Low Pay Commission outcomes data; Manning (2021 ILR Review) added to monopsony section with wage markdown meta-analysis findings (15–50%); Nordic transfer conditions added as Section 3.4b (employer association density mechanism, California FAST Act as US proof-of-concept); CBO 2023 $17 minimum wage analysis added; Section 10 added covering 2025–2026 rollback (NLRB structural disablement cross-reference, OSHA enforcement collapse, DOL budget cuts, EO 14236 federal contractor wage rescission, FAB 2025-1 independent contractor rollback, Davis-Bacon litigation pause).*
+
+*Supplements Domain 17: Labor and Employment in the Democratic Renewal Proposal. Does not restate the reform architecture — deepens the evidentiary foundation with specific data, contested findings, and strongest counterarguments.*
 
 ---
 
@@ -110,6 +112,8 @@ The failure of the standard competitive-market prediction was not a fluke — it
 
 **Alan Manning's foundational work**: Alan Manning (London School of Economics) published "Monopsony in Motion: Imperfect Competition in Labor Markets" (Princeton University Press, 2003) — the foundational theoretical treatment arguing that most labor markets exhibit monopsonistic features. In a monopsony or oligopsony, the employer has wage-setting power rather than being a price-taker. When wages are below the competitive level due to monopsony power, a minimum wage floor can actually *increase* both wages *and* employment — up to the point where the minimum wage equals the competitive market rate.
 
+**Manning's 2021 synthesis review**: Manning published "Monopsony in Labor Markets: A Review" in the *Industrial and Labor Relations Review* (2021), consolidating two decades of subsequent empirical work. The key aggregate finding: estimates of the labor supply elasticity to the individual firm — the measure that captures how much wage-setting power employers have — typically range between 2 and 6 across studies. A labor supply elasticity of 2 implies a wage markdown of approximately 33% below the competitive wage; an elasticity of 4 implies a markdown of approximately 20%. Meta-analyses synthesizing this literature find wage markdowns of 15–50% as typical across advanced economy labor markets. The implication is significant: workers are already being paid 15–50% less than their competitive wage due to employer market power. Minimum wage increases within that range do not reduce employment — they reduce the employer's market power rent.
+
 **Arindrajit Dube's Hamilton Project synthesis (2019)**: Dube's paper for the Brookings/Hamilton Project, "Monopsony in Labor Markets," brought the academic literature to a policy audience. His argument: search frictions, geographic immobility, information asymmetries, and firm-specific human capital all create wage-setting power for employers even in markets with many firms. The monopsony framework is not exotic — it describes most actual labor markets.
 
 **Empirical evidence of market concentration**: Azar, Marinescu, and Steinbaum (2022, *Review of Economic Studies*) measured labor market concentration using Herfindahl-Hirschman Indices calculated from online job posting data. They found that labor markets are substantially more concentrated than product markets: the average HHI for labor market concentration nationally was in the "highly concentrated" range by DoJ/FTC standards. Wages were 17% lower in the most concentrated labor markets compared to the least concentrated.
@@ -118,7 +122,7 @@ The failure of the standard competitive-market prediction was not a fluke — it
 
 **Benmelech, Bergman, Kim (2022)**: Examining manufacturing plant-level data, they found that labor market concentration depressed wages by 15–25% in their sample, with effects strongest in markets where a single employer dominates local hiring.
 
-Sources: [Alan Manning: Monopsony in Motion (2003)](https://press.princeton.edu/books/paperback/9780691123288/monopsony-in-motion); [Dube (2019 Hamilton Project): Monopsony in Labor Markets](https://www.brookings.edu/wp-content/uploads/2019/03/MonopsonyInLaborMarkets_ES.pdf); [Azar, Marinescu, Steinbaum (2022 RES): Labor Market Concentration](https://academic.oup.com/restud/article/89/2/680/6294359); [Rinz (2022 Census): Labor Market Concentration, Earnings Inequality, and Earnings Mobility](https://www.census.gov/library/working-papers/2022/adrm/CES-WP-18-30.html); [Benmelech, Bergman, Kim (2022 NBER): Strong Employers and Weak Employees](https://www.nber.org/papers/w24307)
+Sources: [Alan Manning: Monopsony in Motion (2003)](https://press.princeton.edu/books/paperback/9780691123288/monopsony-in-motion); [Manning (2021 ILR Review): Monopsony in Labor Markets: A Review](https://journals.sagepub.com/doi/10.1177/0019793920922499); [Dube (2019 Hamilton Project): Monopsony in Labor Markets](https://www.brookings.edu/wp-content/uploads/2019/03/MonopsonyInLaborMarkets_ES.pdf); [Azar, Marinescu, Steinbaum (2022 RES): Labor Market Concentration](https://academic.oup.com/restud/article/89/2/680/6294359); [Rinz (2022 Census): Labor Market Concentration, Earnings Inequality, and Earnings Mobility](https://www.census.gov/library/working-papers/2022/adrm/CES-WP-18-30.html); [Benmelech, Bergman, Kim (2022 NBER): Strong Employers and Weak Employees](https://www.nber.org/papers/w24307)
 
 ---
 
@@ -138,9 +142,20 @@ Seattle's minimum wage increases — from $9.47 (2014) to $15 for large employer
 
 **What actually happened**: IAB's own post-implementation evaluations found that employment held near-flat. The Federal Employment Agency (Bundesagentur für Arbeit) reported that total employment continued to rise through 2015–2019. Studies by Caliendo et al. (2018) found modest positive wage effects for affected workers, small and statistically insignificant employment effects at the aggregate level, and some reduction in hours in the most affected sectors (mini-jobs) but not in overall employment.
 
-**The UK National Living Wage**: The UK introduced a National Living Wage (NLW) — a minimum wage applying to workers aged 25 and over, set significantly above the existing minimum — in April 2016 at £7.20/hour. It has since risen to £11.44/hour (April 2024), reaching approximately 60% of median wages. The Low Pay Commission (LPC), an independent statutory body, publishes annual evaluations. Findings through 2024: no evidence of significant negative employment effects; the low-pay share of the workforce declined from approximately 21% to under 10% since 2016; wage compression has occurred at the bottom of the distribution without the predicted unemployment spike.
+**The UK National Living Wage**: The UK introduced a National Living Wage (NLW) — a minimum wage applying to workers aged 25 and over, set significantly above the existing minimum — in April 2016 at £7.20/hour. The policy was explicitly designed to reach 60% of median wages by 2020, a target it achieved ahead of schedule. By April 2024, the NLW stood at £11.44/hour — approximately 60% of UK median wages. In April 2025 it rose to £12.21/hour. The policy now covers all workers aged 21 and over following threshold changes in 2021 and 2024.
 
-Sources: [Jardim et al. (UW 2017): Minimum Wage Increases and Individual Employment Trajectories](https://www.nber.org/papers/w23101); [Dube (2019): Impacts of Minimum Wages: Review of the International Evidence](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/844350/impacts_of_minimum_wages_review_of_the_international_evidence_Arindrajit_Dube_web.pdf); [Reich, Allegretto, Godoey (2017): Seattle's Minimum Wage Experience](https://irle.berkeley.edu/seattles-minimum-wage-experience-2015-16/); [IAB: Evaluation of the German Minimum Wage](https://www.iab.de/en/publikationen/forschungsbericht.aspx/Publikation/2018/fb1818); [UK Low Pay Commission: National Living Wage Annual Reports](https://www.gov.uk/government/organisations/low-pay-commission)
+**Low Pay Commission outcomes evidence**: The Low Pay Commission, an independent statutory body that advises government on minimum wage levels, has published detailed annual evaluations since 2016. Key aggregate findings through 2024:
+
+- The low-pay share of the workforce (workers earning below two-thirds of median wages) declined from approximately 21% in 2015 to under 10% by 2023 — a reduction of roughly 3 million low-paid workers
+- Immediate spillover effects: A late-2016 LPC analysis found that a quarter of workers aged 25 and over received pay increases upon NLW introduction, including workers in the next tiers of the pay scale as employers maintained wage differentials
+- Employment effects: No evidence of significant negative employment effects from the introduction or subsequent increases. The LPC's own counterfactual modeling and academic evaluations consistently found near-zero employment effects through the £10+ range
+- Hours adjustments: There is some evidence of slight hours reduction in the most affected sectors (hospitality, retail), but no evidence of overall employment reduction — consistent with the monopsony framework prediction that wage gains in sub-competitive markets do not produce textbook disemployment
+
+**2024 LPC research program**: The Low Pay Commission commissioned research by Frontier Economics in 2024 examining the connection between labor market monopsony (concentration) and minimum wage employment effects for low-paid workers — directly testing whether the monopsony framework explains why the NLW has not produced predicted job losses. The Institute for Fiscal Studies also evaluated firm-level pay and contractual arrangement responses to the 2016 NLW introduction, finding firms primarily absorbed costs through reduced profit margins and productivity improvements rather than employment reduction.
+
+**The key transferable lesson for the US**: The UK experience demonstrates that a statutory minimum wage set at 60% of median wages — the OECD benchmark the US federal minimum wage sits nearly 30 percentage points below — can be implemented and maintained without the employment effects predicted by the standard competitive model. The US at $7.25 sits at roughly 31% of the median; the UK at £12.21 sits at approximately 62% of its median. A US minimum wage of $17/hour would bring the US to approximately 56-58% of median — still below the UK's achieved level.
+
+Sources: [Jardim et al. (UW 2017): Minimum Wage Increases and Individual Employment Trajectories](https://www.nber.org/papers/w23101); [Dube (2019): Impacts of Minimum Wages: Review of the International Evidence](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/844350/impacts_of_minimum_wages_review_of_the_international_evidence_Arindrajit_Dube_web.pdf); [Reich, Allegretto, Godoey (2017): Seattle's Minimum Wage Experience](https://irle.berkeley.edu/seattles-minimum-wage-experience-2015-16/); [IAB: Evaluation of the German Minimum Wage](https://www.iab.de/en/publikationen/forschungsbericht.aspx/Publikation/2018/fb1818); [UK Low Pay Commission: National Living Wage Annual Reports](https://www.gov.uk/government/organisations/low-pay-commission); [Low Pay Commission Research 2024 — GOV.UK](https://www.gov.uk/government/publications/low-pay-commission-research-2024); [How the National Living Wage Helps the UK's Poorest Households (The Conversation 2023)](https://theconversation.com/how-the-national-living-wage-helps-the-uks-poorest-households-new-research-226986)
 
 ---
 
@@ -240,6 +255,24 @@ The puzzle of Nordic union density — Denmark 67%, Finland 59%, Sweden 60% in 2
 **Design implication**: The Clean Slate for Worker Power proposal (Harvard Labor and Worklife Program / Roosevelt Institute, 2020) incorporates portable benefits administered through worker organizations as a partial analog — creating a financial nexus between union membership and benefit access without requiring the wholesale adoption of the Ghent model.
 
 Sources: [Scruggs (2002): The Ghent System and Union Membership in Europe](https://www.jstor.org/stable/2657504); [Rothstein (1992): Labor-Market Institutions and Working-Class Strength](https://www.cambridge.org/core/books/abs/structuring-politics/labormarket-institutions-and-workingclass-strength/1A3B9DD9CEB1E43FA32C5C2F4B26E43E); [Visser ICTWSS v6.1 2021](https://www.uva-aias.net/en/ictwss)
+
+---
+
+### 3.4b Nordic Transfer Conditions: Why the Models Work and What the US Would Require
+
+The Nordic sectoral bargaining systems — Denmark, Sweden, Norway — are frequently cited as models for US reform but rarely analyzed for what specific institutional conditions make them work. The transfer analysis matters: the conditions that sustain high coverage in the Nordic context do not exist in the US, and reform proposals that do not address this gap will not achieve comparable outcomes.
+
+**The coverage mechanism — not extension but employer association density**: Unlike France (which uses ministerial extension orders) or Germany (which has an extension mechanism that has been increasingly underused), Denmark and Sweden have no formal statutory extension mechanism for collective bargaining agreements. Coverage remains near-universal not through legal extension but through employer association density: Scandinavian employer associations represent 65–80% of all employers in their respective industries. When the employer association signs an agreement with the major union confederation, virtually all employers in the sector are bound — not by law but by membership in the association.
+
+**The self-reinforcing logic**: Nordic unions are strong enough that non-association employers feel competitive pressure to match the collective agreement terms (to compete for workers), and employer associations are strong enough that most employers prefer the coordination advantages of association membership over the instability of unilateral wage-setting. The system is self-sustaining once it reaches a coverage threshold; it is not self-starting from low coverage.
+
+**What broke in Germany**: The German employer association exit problem (Verbandsaustritt) — coverage declining from 68% in 1996 to 44% in 2022 — is the cautionary case for the Nordic model. German firms found they could leave employer associations (or form "OT associations" — Ohne Tarifbindung associations — that provide lobbying services without binding members to collective agreements) and achieve lower labor costs than competitors bound by sectoral agreements. The Nordic countries have not experienced comparable mass exit, partly because their systems were established under conditions of near-universal coverage that created stronger norms of participation.
+
+**Transfer conditions for the United States**: The Center for American Progress and People's Policy Project analyses of sectoral bargaining transfer identify the minimum institutional preconditions: (1) a mandatory employer registration or association membership requirement that gives the sectoral board jurisdiction over all employers in the sector (the Austrian WKO model is the closest analog); (2) an extension mechanism backed by legal enforcement, not voluntary association norms — because US employer associations are too weak and fragmented to replicate the Nordic coverage mechanism; (3) an independent sectoral wage board with enforcement capacity that does not depend on NLRB election-based union recognition as its prerequisite. California's Fast Food Council (FAST Recovery Act, 2023) is the first US experiment with this design — a sectoral wage-setting board with statutory authority covering all employers in fast food, regardless of unionization.
+
+**California FAST Act as proof-of-concept**: California's AB 1228 (signed September 2023) created a Fast Food Council with the authority to set minimum wages for the fast food sector — the first US sectoral wage board. The Council set a $20/hour minimum effective April 1, 2024, above California's general minimum. Industry challenged it through a referendum; the referendum campaign was withdrawn when restaurant industry groups negotiated directly with the Council. This is the closest the US has come to sectoral bargaining in practice and the most relevant near-term model for other states.
+
+Sources: [CEPR VoxEU: The Nordic Model of Wage Coordination at a Crossroads](https://cepr.org/voxeu/columns/nordic-model-wage-coordination-crossroads); [DLA Piper: Collective Bargaining Agreements in the Nordics](https://norway.dlapiper.com/en/news/collective-bargaining-agreements-nordics); [People's Policy Project: What the Nordics Can Teach California About Sector Bargaining (2023)](https://www.peoplespolicyproject.org/2023/10/10/what-the-nordics-can-teach-california-about-sector-bargaining/); [Center for American Progress: How to Promote Sectoral Bargaining in the United States (Madland 2019)](https://www.americanprogressaction.org/wp-content/uploads/sites/3/2019/07/How-to-Get-Sectoral.pdf); [NBER: Wage Compression Drives Nordic Income Equality (2025)](https://www.nber.org/digest/202505/wage-compression-drives-nordic-income-equality)
 
 ---
 
@@ -551,14 +584,20 @@ Sources: [Colvin (2018 EPI): The Growing Use of Mandatory Arbitration](https://w
 
 ### 8.1 What Reform Would Do to Wages
 
-**Federal minimum wage to $17**: The Congressional Budget Office's July 2021 analysis of the Raise the Wage Act (which would have phased in a $15 federal minimum by 2025) provides the closest comparable. CBO found:
+**Federal minimum wage to $15 (CBO 2021)**: The Congressional Budget Office's February 2021 analysis of the Raise the Wage Act (which would have phased in a $15 federal minimum by 2025) found:
 - 17 million workers directly affected (paid below the new minimum)
 - 10 million workers with wages just above the new minimum potentially receiving spillover increases
-- Median family income for affected workers in the lowest quintile would rise
 - Poverty reduction: approximately 900,000 people lifted above the poverty line
 - Employment effect: approximately 1.4 million fewer workers employed (wide confidence interval: 0–2.7 million)
+- Net federal budget effect: +$54 billion in cumulative deficit over 10 years (primarily from higher Social Security payments to higher-earning future beneficiaries, partially offset by payroll and income tax revenue gains)
 
-A $17 minimum — accounting for inflation since 2021 — would affect a somewhat larger population and produce proportionally larger wage increases for those who retain employment.
+**Federal minimum wage to $17 (CBO 2023)**: The Congressional Budget Office's December 2023 analysis of the Raise the Wage Act of 2023 — which would phase in a $17 federal minimum by 2029 — found:
+- More than 18 million workers would receive wage increases
+- Poverty reduction: approximately 400,000 workers lifted above the poverty line
+- Employment effect: approximately 700,000 workers fewer employed (lower than the $15 estimate because the $17 level phases in more slowly and the economy has changed since 2021)
+- The poverty reduction estimate is lower than the $15 scenario partly because a significant share of minimum wage workers are in households above the poverty line (secondary earners, workers in higher-income households)
+
+The divergence between the two estimates illustrates an important point: the employment effect uncertainty in CBO's models is large (confidence intervals span zero to several million), while the wage gains for those who remain employed are more precisely estimated and are large. A $17 minimum would increase wages significantly for affected workers; the uncertainty is about how many would face reduced hours or job loss, not about whether wages would rise.
 
 **FTC non-compete ban**: The FTC's own analysis (April 2024) estimated that banning non-competes would increase wages by approximately $300 billion per year across the affected workforce (30 million workers) — an average of $10,000 per year per affected worker. Even if one discounts this by 50% for job disruption and transition costs, the scale is substantial.
 
@@ -571,7 +610,7 @@ If private-sector union density increased from 6% to 20% — a substantial refor
 
 **Sectoral bargaining coverage increase**: Raising collective bargaining coverage from approximately 12% (current US combined estimate) to 50% — the German level — would, based on the cross-country relationship between coverage and wage inequality, significantly compress the wage distribution from below. Quantitative estimates for the US specific case are not available, but the OECD's cross-country regressions suggest that moving from US-level to EU-level coverage is associated with 5–8 Gini point reductions in wage inequality.
 
-Sources: [CBO: Raise the Wage Act (July 2021)](https://www.cbo.gov/publication/57413); [FTC: Analysis of Non-Compete Rule (April 2024)](https://www.ftc.gov/system/files/ftc_gov/pdf/noncompete-rule-ria.pdf); [EPI: Union Wage Premium (2024)](https://www.epi.org/publication/unions-help-reduce-disparities-and-provide-benefits-to-workers-and-their-families/)
+Sources: [CBO: Raise the Wage Act, February 2021](https://www.cbo.gov/publication/56975); [CBO: Raise the Wage Act of 2023, December 2023](https://www.cbo.gov/system/files/2023-12/The_Budgetary_and_Economic_Effects_of_S.%202488_the_Raise_the_Wage_Act_of_2023_1.pdf); [FTC: Analysis of Non-Compete Rule (April 2024)](https://www.ftc.gov/system/files/ftc_gov/pdf/noncompete-rule-ria.pdf); [EPI: Union Wage Premium (2024)](https://www.epi.org/publication/unions-help-reduce-disparities-and-provide-benefits-to-workers-and-their-families/)
 
 ---
 
@@ -731,6 +770,56 @@ Sources: [NALC: PRO Act Reintroduced (2025)](https://www.nalc.org/government-aff
 
 ---
 
+---
+
+## Section 10: 2025–2026 Rollback — Specific Administration Actions
+
+The 2025 Trump administration has executed a comprehensive rollback of labor enforcement infrastructure across multiple agencies simultaneously. Unlike prior deregulatory episodes that operated primarily through rulemaking, this rollback has combined staffing reductions, budget cuts, enforcement stops, and structural disablement to dismantle enforcement capacity across the DOL, NLRB, and OSHA concurrently.
+
+### 10.1 NLRB Structural Disablement
+
+This is documented in Section 9.1. Key items for cross-reference: Gwynne Wilcox fired January 27, 2025 (first Board member removed before term end in the NLRB's history); quorum paralysis for 345 days; 591 cases at peak backlog (January 2026); 17,000 open ULP investigations, more than half over six months old; NLRB-overseen union elections down 30% in 2025; 196 employees lost since inauguration against seven hires.
+
+**FY2026 budget proposed cut**: $285.2 million, down from $299.2 million in FY2025 — a 4.7% cut with additional proposed reduction of 99 employees. Trump's FY2027 budget proposes further NLRB reductions.
+
+### 10.2 OSHA Enforcement Collapse
+
+**Budget and staffing**: OSHA's proposed FY2026 budget cuts it from $632.3 million to $582.4 million — an 8% reduction. Staffing is reduced from 1,810 to 1,587, a 12.3% cut. Enforcement staff specifically is cut from 1,292 to 1,124, a 13% reduction.
+
+**Operational impact**: OSHA performed 20% fewer inspections and issued 42% fewer fines for severe workplace violations in 2025 compared to the Biden-era baseline. The administration's proposed budget would generate 30% fewer inspections going forward — extending OSHA's already-absurd "time to inspect every workplace once" from 165-190 years to approximately 266 years.
+
+**Penalty reduction for small businesses**: New guidelines issued in 2025 reduce penalties for failing to comply with safety standards at small businesses and businesses with no prior violation history. The definition of "immediately" for hazard abatement was changed from "during or on the day of inspection" to "within 15 days" — giving employers time to address violations discovered during inspections before being cited.
+
+**Heat standard abandoned**: The Biden OSHA had initiated rulemaking for a federal heat stress standard in 2021. The Trump administration did not finalize this rule before the transition; the rulemaking has been halted. The regulatory gap for outdoor and semi-outdoor workers (construction, agriculture, warehousing) in an era of intensifying heat events remains unfilled.
+
+### 10.3 DOL Budget Cuts and Enforcement Rollbacks
+
+**Budget**: Trump's FY2026 budget proposed cutting DOL by 34.9% compared to FY2025 enacted levels — approximately $3.63 billion out of a $13.9 billion budget. Specific enforcement agency impacts:
+- Wage and Hour Division (WHD): $25 million reduction, 400+ headcount reduction — the primary enforcement body for minimum wage, overtime, and tipped wage violations
+- Employment and Training Administration: 200+ full-time positions eliminated, $38 million cut; FTE declining from 634 to 433
+
+**Federal contractor minimum wage rescission (EO 14236, March 14, 2025)**: President Trump issued Executive Order 14236 revoking EO 14026 (Biden's 2021 executive order setting a $15 minimum wage for federal contractors). The federal contractor minimum wage had risen to $17.75/hour as of January 1, 2025 with automatic inflation-based adjustments. EO 14236 eliminated this floor for approximately 3.7 million federal contract workers. This is one of the largest single-action minimum wage rollbacks in US history, affecting workers across federal contracting in construction, food service, janitorial, and support services.
+
+**Independent contractor rule rollback (FAB 2025-1, May 2025)**: The Biden-era DOL had issued a 2024 rule reinstating the "economic reality" test for independent contractor classification under the FLSA with a multi-factor analysis that made it harder to classify workers as contractors. In May 2025, the Trump DOL issued Field Assistance Bulletin 2025-1 formally instructing investigators to stop applying the Biden standard and revert to the earlier two-factor test (control over work + opportunity for profit or loss). A formal proposed rule to replace the Biden standard was announced February 26, 2026 (public comments due April 28, 2026). This rollback directly affects the misclassification enforcement that protects gig workers and other workers whose effective compensation gap was documented in Section 4.
+
+**Davis-Bacon litigation pause**: The Biden DOL had expanded Davis-Bacon Act coverage — which requires federal construction contractors to pay prevailing wages — through significant 2024 rule amendments. On February 19, 2025, the Trump DOL requested and received a 90-day stay of litigation challenging those amendments, while new leadership reviewed the rule. The stay signals intent to roll back the Biden expansion. Davis-Bacon prevailing wages affect approximately $217 billion in annual federal construction contracting and the wages of hundreds of thousands of construction workers.
+
+### 10.4 The Cumulative Effect
+
+The simultaneous disablement of NLRB enforcement, OSHA enforcement, WHD enforcement, federal contractor wage standards, and independent contractor classification protections is not a single policy change — it is a coordinated withdrawal from the labor standards enforcement field. The practical consequence:
+
+- Workers illegally fired during organizing campaigns have no timely enforcement remedy
+- Workers in unsafe workplaces face reduced probability of OSHA inspection
+- Workers who should be earning prevailing wages on federal construction contracts face no effective WHD enforcement
+- Federal contract workers who had been earning $17.75/hour are back at $7.25/hour federal minimum
+- Gig workers misclassified as contractors face no enforcement standard protecting their FLSA rights
+
+The counter-strategy in this environment is the same as the counter-strategy when formal labor law is structurally hostile: consumer-facing brand pressure campaigns (CIW model), state-level enforcement in states with independent labor departments and state wage laws set above the federal floor, and organizing under state labor law where state protections exceed federal standards.
+
+Sources: [NLRB FY2026 Budget Justification](https://www.nlrb.gov/sites/default/files/attachments/pages/node-155/performance-budget-justification-2026.pdf); [Bloomberg Law: NLRB Staff Exodus Hinders Board Backlog](https://news.bloomberglaw.com/daily-labor-report/nlrb-staff-exodus-hinders-board-from-digging-out-of-deep-backlog); [JMBM: Key NLRB Developments in 2025 and What to Look for in 2026](https://articles.jmbm.com/2025/12/17/key-national-labor-relations-board-nlrb-developments-in-2025-and-what-to-look-for-in-2026/); [ISHN: Trump Administration Again Proposes Deep OSHA Budget Cuts](https://www.ishn.com/articles/115265-trump-administration-again-proposes-deep-osha-budget-cuts); [Bloomberg Law: Drop in Work Safety Inspectors to Undermine Enforcement Efforts](https://news.bloomberglaw.com/daily-labor-report/drop-in-work-safety-inspectors-to-undermine-enforcement-efforts); [OHS Online: OSHA Enforcement Trends Under the Trump Administration (April 2026)](https://ohsonline.com/articles/2026/04/01/osha-enforcement-trends-and-capacity-under-the-trump-administration.aspx); [Ogletree: Trump Ends $15/Hour Contractor Minimum Wage (EO 14236)](https://ogletree.com/insights-resources/blog-posts/president-trump-ends-15-per-hour-contractor-minimum-wage-rate-after-filing-a-brief-defending-power-to-set-the-minimum-wage/); [HR Law Watch: Trump Rescinds Biden-Era Federal Contractor Wage and Labor Provisions](https://www.hrlawwatch.com/2025/03/28/trump-rescinds-additional-biden-era-executive-orders-rolling-back-minimum-wage-and-labor-friendly-provisions-for-federal-contractors/); [HR Dive: DOL Moves to Loosen Independent Contractor Regulations](https://www.hrdive.com/news/dol-independent-contractor-rule-2026/813202/); [KTS Law: Trump DOL Pauses Davis-Bacon Act Litigation (February 2025)](https://ktslaw.com/en/insights/alert/2025/3/trump%20administrations%20dol%20pauses%20litigation%20of%20biden-era-rule-expanding-davis-bacon-act-coverage); [JFF: Trump Administration FY26 Budget Request Fact Sheet](https://www.jff.org/blog/fact-sheet-trump-administrations-fy26-budget-request/); [American Prospect: Trump's NLRB Doesn't Want to Investigate Worker Complaints (April 2026)](https://prospect.org/2026/04/15/trump-national-labor-relations-board-nlrb-investigate-worker-complaints/)
+
+---
+
 ## Key Numbers for Quick Reference
 
 | Data Point | Value | Source |
@@ -765,5 +854,12 @@ Sources: [NALC: PRO Act Reintroduced (2025)](https://www.nalc.org/government-aff
 | Workers who cannot afford FMLA leave | <20% of eligible take it | DOL survey |
 | IRS payroll tax loss from misclassification | ~$54B/year | IRS |
 | OSHA budget (FY2023) | $632M (~46% below 1980 inflation-adj.) | OSHA |
+| OSHA proposed FY2026 budget cut | 8% ($632M → $582M); 12% staffing reduction | DOL FY2026 Budget |
+| OSHA inspection reduction (2025) | 20% fewer inspections; 42% fewer fines for severe violations | OHS Online 2026 |
+| NLRB case backlog peak (Jan 2026) | 591 Board cases; 17,000 open ULP investigations | Bloomberg Law 2026 |
+| NLRB elections decline (2025) | 1,498 elections, down 30% from 2024 | CAP tracker |
+| Federal contractor minimum wage rescinded (March 2025) | $17.75/hr floor eliminated by EO 14236 | Ogletree/DOL |
 | US paid parental leave (federal) | 0 weeks | OECD |
 | Heat-related fatal work injuries increase 2013-2022 | +30% | BLS |
+| UK NLW low-pay share decline (2015-2023) | 21% → under 10% (approx. 3M workers) | LPC annual report |
+| Manning (2021) wage markdown estimate | 15–50% below competitive wage | ILR Review meta-analysis |

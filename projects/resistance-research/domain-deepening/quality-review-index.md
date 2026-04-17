@@ -12,6 +12,8 @@
 
 *Index updated April 2026, Session 270: national-security-evidence.md elevated from Tier 2+ to Tier 1. Actionable intelligence gap filled: existing placeholder AI section replaced with comprehensive Sections AI-1 through AI-6 covering: (1) most immediately actionable items keyed to FY2027 NDAA markup window (May-August 2026); (2) legislative vehicles with bill numbers and procedural posture — H.R. 6751 (Jayapal-Massie 2001 AUMF sunset, 240-day repeal), H.R. 7555 (Audit the Pentagon Act, Pocan-Biggs, 0.5%/1% penalty structure), enacted 2002/1991 AUMF repeal via FY2026 NDAA as established precedent, RECEIPTS Act (Ernst, $300M AI audit + legacy system replacement), FY2024 NDAA 1.5% cancellation trigger, five specific FY2027 NDAA provisions to push (Nunn-McCurdy second-breach reauthorization, right to repair expansion, SGE database, AUMF sunset amendment, USAID reconstitution); (3) federal agency pressure points including GAO investigation request mechanism (any member, email to CongRel@gao.gov, 6-18 month timeline), DoD IG Hotline process ((800) 424-9098, anonymous available), and FOIA pathways for DFAS, DCMA, and SAM.gov contract research; (4) ten organizations with specific roles and engagement mechanisms (POGO, National Priorities Project, Taxpayers for Common Sense, Stimson, Quincy, Center for International Policy, Win Without War, FCNL, AFSC, Council for a Livable World, Brennan Center, IAVA); (5) state-level leverage: state legislative AUMF resolutions (FCNL/Win Without War coordination networks), state pension fund shareholder engagement on contractor accountability (CalSTRS holdings in top contractors), National Guard deployment resistance grounded in December 2025 SCOTUS ruling blocking federalization of IL/TX Guard; (6) five time-bounded 2026 windows with specific named action mechanisms.*
 
+*Index updated April 2026, Session 271: labor-evidence.md elevated from Tier 2 to Tier 1. Four gaps filled: (1) UK National Living Wage developed from a single paragraph to a full subsection with Low Pay Commission outcomes evidence — low-pay share decline from 21% to under 10%, 3 million workers affected, spillover effects, 2024 LPC research program, and US transferability analysis; (2) Manning monopsony section expanded with his 2021 ILR Review synthesis — wage markdown 15–50% meta-analysis finding added, which directly explains why minimum wage increases within that range do not reduce employment; (3) Nordic transfer conditions added as Section 3.4b — the employer association density mechanism (65–80% coverage without formal extension), the German employer exit cautionary case, minimum institutional preconditions for US transfer, and California FAST Act as first US sectoral wage board proof-of-concept; (4) Section 10 added covering 2025–2026 rollback: OSHA budget/staffing/inspection collapse, DOL budget cuts (34.9% proposed), EO 14236 rescission of $17.75 federal contractor minimum wage, FAB 2025-1 independent contractor enforcement rollback, Davis-Bacon litigation pause, and the cumulative enforcement-field withdrawal with counter-strategy implications.*
+
 ---
 
 ## Summary Assessment
@@ -46,18 +48,18 @@ These files are ready for public release, citation in advocacy materials, and us
 14. housing-evidence.md *(elevated Session 268: Vienna/Singapore expanded with specific outcome numbers, fiscal estimates for zoning reform/LIHTC/CLT, actionable intelligence section, 2025-2026 rollback documentation)*
 15. economic-concentration-evidence.md *(elevated Session 269: Section 10 added — live enforcement proceedings with remedy-phase specificity, named legislative vehicles, state AG coalition pattern, organizations with pressure-point specificity, three time-bounded 2026 windows)*
 16. national-security-evidence.md *(elevated Session 270: actionable intelligence gap filled — Sections AI-1 through AI-6 added: FY2027 NDAA markup window as primary vehicle, H.R. 6751 2001 AUMF sunset with procedural posture, H.R. 7555 Audit the Pentagon Act with penalty structure, enacted 2002 AUMF repeal as precedent, RECEIPTS Act, GAO request mechanism, DoD IG Hotline process, FOIA pathways for DFAS/DCMA/SAM.gov, ten organizations with specific engagement mechanisms, state-level leverage including SCOTUS-grounded National Guard sovereignty argument, five time-bounded 2026 windows)*
+17. labor-evidence.md *(elevated Session 271: UK NLW developed with LPC outcomes — low-pay share 21% → under 10%, 2024 research program; Manning 2021 ILR Review wage markdown 15–50% meta-analysis added; Section 3.4b Nordic transfer conditions added — employer association density mechanism, German exit cautionary case, California FAST Act as US sectoral wage board proof-of-concept; CBO 2023 $17 analysis added; Section 10 added: OSHA enforcement collapse, DOL budget cuts, EO 14236 federal contractor wage rescission, FAB 2025-1 IC rollback, Davis-Bacon litigation pause)*
 
 ### Tier 2 — Adequate, Minor Gaps (7 files)
 
 Solid evidentiary foundations. Missing one or two dimensions that would make them Tier 1, but usable as-is for most purposes. Deepening one weak dimension would elevate each.
 
 9. immigration-evidence.md
-11. labor-evidence.md
-12. reparations-evidence.md
-13. social-safety-net-evidence.md
-14. rights-protection-evidence.md
-15. data-privacy-evidence.md
-16. domain-03-democratic-participation.md
+11. reparations-evidence.md
+12. social-safety-net-evidence.md
+13. rights-protection-evidence.md
+14. data-privacy-evidence.md
+15. domain-03-democratic-participation.md
 
 ### Tier 3 — Needs Targeted Deepening (0 files)
 
@@ -285,13 +287,13 @@ Rubric dimensions: **Updated data** (current through 2024–2025) | **Int'l benc
 | Dimension | Score | Notes |
 |---|---|---|
 | Updated data | Strong | BLS 2024: private sector density 6.0%, public 32.5%; 2024 wage data; Cengiz et al. 2019 QJE — foundational recent |
-| Int'l benchmarks | Adequate | Germany Works Councils and sectoral bargaining contrast; Manning LSE monopsony work; UK National Living Wage in gaps list but not developed in sections read |
-| Counterarguments | Strong | Card-Krueger revolution traced including the methodological attacks and their resolution; Seattle UW hours-reduction finding mentioned in gaps but monopsony rebuttal is strong |
-| Fiscal estimates | Needs Work | Explicit fiscal cost estimates for reform strands are in the gaps list as absent — this was acknowledged upfront. No numbers appear in sections read |
-| Sourcing | Strong | Card and Krueger 1994 AER; Dube, Lester, Reich 2010; Cengiz et al. 2019 QJE; Nobel Prize citation — all primary sourced |
-| Actionable intelligence | Needs Work | Sections read (120 of ~600+ lines) don't reach organizing/action section. What's visible is theoretical framework and evidence, not leverage points |
+| Int'l benchmarks | Strong | Germany Works Councils, sectoral bargaining, France/Austria coverage; UK NLW fully developed — LPC outcomes, low-pay share 21% → under 10%, 2024 research; Nordic transfer conditions (Section 3.4b): employer association density mechanism, German exit cautionary, California FAST Act; Manning 2021 wage markdown 15–50% meta-analysis |
+| Counterarguments | Strong | Card-Krueger revolution traced with methodological attacks and resolution; Seattle UW hours-reduction finding and its methodological flaw; 7 explicit counterarguments in dedicated section covering high-end minimum wage uncertainty, German coverage decline, union productivity tradeoff, portable benefits adverse selection, non-compete California exceptionalism, agricultural organizing structural constraints, Epic Systems political constraints |
+| Fiscal estimates | Strong | CBO 2021 ($15/17M workers, 900K poverty reduction, 1.4M job loss CI) and CBO 2023 ($17/18M workers, 400K poverty reduction, 700K job loss) both present; FTC non-compete ban $300B/year; union wage premium 10-19% by group; OSHA cost/benefit ($2.2B for full inspector capacity vs. $34B in injury savings); paid family leave $200B/year with Tax Policy Center payroll tax model |
+| Sourcing | Strong | Card and Krueger 1994 AER; Dube, Lester, Reich 2010; Cengiz et al. 2019 QJE; Manning 2021 ILR Review; Azar/Marinescu/Steinbaum 2022 RES; LPC annual reports; CBO 2021, 2023 — all primary sourced |
+| Actionable intelligence | Strong | Section 9: NLRB enforcement crisis documented with specific dates and numbers; SWU 535 cafes + contract status; ALU JFK8 + follow-on strategy; CIW Fair Food Program; Oklahoma SQ832 June 2026 ballot initiative; PRO Act (119th Congress) with Fitzpatrick bipartisan cosponsorship; state-level trifecta targets; organizations with URLs (EPI, NELP, AFL-CIO, Harvard Clean Slate, SWU, CIW, NDWA, One Fair Wage, Jobs with Justice); Section 10: full 2025–2026 rollback documentation |
 
-**Verdict**: Tier 2. The monopsony framework section is exceptional — the theoretical underpinning that explains why standard competitive-market predictions were wrong is exactly what's needed to give policymakers and advocates an answer to the "minimum wage destroys jobs" objection. Fiscal estimates gap acknowledged but not filled.
+**Verdict**: ~~Tier 2~~ **Tier 1** *(elevated Session 271)*. UK NLW developed from one paragraph to a full subsection with LPC evidence — low-pay share from 21% to under 10%, spillover effects, 2024 Frontier Economics/IFS research, US transferability analysis comparing NLW's 62% of median to US's 31%. Manning 2021 ILR Review added with wage markdown 15–50% meta-analysis finding that directly explains the minimum wage employment effects puzzle. Section 3.4b added on Nordic transfer conditions — the employer association density mechanism (65–80%, no formal extension required), the German employer exit cautionary case, minimum institutional preconditions for US transfer, and California FAST Act (AB 1228, 2023) as first US sectoral wage board proof-of-concept. CBO 2023 $17 analysis added to Section 8.1. Section 10 added: OSHA budget/staffing collapse (8% cut, 12% staffing, 20% fewer inspections, 266-year inspection cycle), DOL Wage and Hour Division 400+ staff cut, EO 14236 (March 14, 2025) rescission of $17.75 federal contractor minimum wage floor, FAB 2025-1 (May 2025) stopping Biden-era independent contractor classification enforcement, Davis-Bacon Biden-era rule litigation pause, and cumulative enforcement-field withdrawal analysis with counter-strategy implications.
 
 ---
 
@@ -443,7 +445,7 @@ All four Priority 1 items are done. Brief record:
 
 5. **judicial-independence-evidence.md**: COMPLETE (Session 267). Fiscal estimates added as Section 12 (SCOTUS expansion, term limits, ethics IG, lower court expansion — with summary table). Canada JAC/JAAC and South Africa JSC fully developed as Section 13. Counterargument on court reform as politicization — norm erosion objection, FDR miscalculation, arms race problem, counter-counter, and sequenced policy resolution — added as Section 14. File elevated to Tier 1.
 
-6. **labor-evidence.md**: Add fiscal cost estimates for minimum wage increases, sectoral bargaining pilots, and portable benefits schemes. Add actionable intelligence section naming current organizing campaigns (Amazon Labor Union, Starbucks Workers United, state minimum wage ballot initiative calendar).
+6. **labor-evidence.md**: COMPLETE (Session 271). UK NLW fully developed with LPC outcomes (low-pay share 21% → under 10%), Manning 2021 ILR Review wage markdown 15–50% meta-analysis added, Section 3.4b Nordic transfer conditions added (employer association density mechanism, German exit cautionary, California FAST Act), CBO 2023 $17 analysis added, Section 10 added covering full 2025–2026 rollback (OSHA enforcement collapse, DOL budget cuts, EO 14236 federal contractor wage rescission, FAB 2025-1 IC rollback, Davis-Bacon pause). File elevated to Tier 1.
 
 7. **healthcare-education-evidence.md**: Full read + add counterarguments section and fiscal estimates. The opening OECD evidence is strong; likely just needs the back half developed.
 
