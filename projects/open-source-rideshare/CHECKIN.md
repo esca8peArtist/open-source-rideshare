@@ -6,7 +6,263 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
-### feature/corporate-business-accounts — corporate fleet cost analytics (latest)
+### feature/corporate-business-accounts — add member ride quota management (latest)
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `c08f12d`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Implements per-member ride quota management for corporate accounts. Admins set maximum
+ride counts per period (daily/weekly/monthly) per employee. Quotas can be active or
+inactive (inactive keeps audit history without enforcing the limit). The system counts
+qualifying corporate rides (non-cancelled, linked to the account) in the current period
+window and exposes both admin and member-facing views of current usage.
+
+**Service functions** (in `services/corporate_member_ride_quota.py` — already present):
+- `set_quota` — create or reactivate quota, raises 409 on active duplicate
+- `update_quota` — partial update of max_rides or is_active
+- `deactivate_quota` — soft-disable without deleting
+- `delete_quota` — hard delete
+- `get_quota` — single quota by ID, scoped to account
+- `list_member_quotas` — filterable list (member, period, active_only)
+- `get_quota_usage` — returns quota/used/remaining for a (member, period) pair
+- `get_account_quota_summary` — all active quotas enriched with current usage
+
+**API endpoints** (in `api/v1/corporate_member_ride_quota.py`):
+- `GET  /corporate/accounts/me/ride-quotas/check?period=...` — member: own quota + usage
+- `GET  /corporate/accounts/me/ride-quotas` — member: all active quotas with usage
+- `POST /corporate/accounts/{account_id}/ride-quotas` — account-admin: set quota (201)
+- `GET  /corporate/accounts/{account_id}/ride-quotas/summary` — admin: all with usage
+- `GET  /corporate/accounts/{account_id}/ride-quotas` — admin: list (filterable)
+- `GET  /corporate/accounts/{account_id}/ride-quotas/{quota_id}` — admin: get one
+- `PUT  /corporate/accounts/{account_id}/ride-quotas/{quota_id}` — admin: update
+- `DELETE /corporate/accounts/{account_id}/ride-quotas/{quota_id}` — admin: hard delete (204)
+- `GET  /admin/corporate/accounts/{account_id}/ride-quotas` — platform-admin: list
+- `POST /admin/corporate/accounts/{account_id}/ride-quotas` — platform-admin: set quota
+- `GET  /admin/corporate/ride-quotas/exceeded` — platform-admin: cross-account exceeded view
+
+**Schemas** (in `schemas/corporate_member_ride_quota.py`):
+- `QuotaPeriod` enum: daily, weekly, monthly
+- `QuotaCreate` — max_rides validated 1–500
+- `QuotaUpdate` — partial update (all optional)
+- `QuotaResponse` — full quota record
+- `QuotaWithUsageResponse` — quota + current_period_rides, remaining_rides, quota_exceeded
+- `QuotaListResponse` — paginated list
+- `QuotaCheckResponse` — quota_active flag for unrestricted members
+
+**Files:** All files were present from previous implementation work. No new files created in
+this session. Router already registered in `backend/app/main.py` (line 181).
+
+**Test result:** 45/45 passing — schema tests (10), period helper tests (4), service tests
+(19), API layer tests (12). Covers set/update/deactivate/delete/get/list, quota exceeded,
+usage counting, account summary, member self-view, 404 on missing, 409 on duplicate.
+
+**Push status:** Pushed to `rideshare` remote (`feature/corporate-business-accounts`).
+
+**To merge:** Review and merge `feature/corporate-business-accounts` into `master` on the rideshare repo after review.
+
+---
+
+### feature/corporate-business-accounts — add member expense policy enforcement
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `d8bbe8c`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Implements a pre-booking policy enforcement layer. Before a corporate ride is
+confirmed, the booking engine can POST to a validation endpoint and receive a
+structured decision: ALLOWED, REQUIRES_APPROVAL (soft block — manager can
+override), or DENIED (hard block). The check merges the account-level ride
+policy with any per-member override (via the existing `get_effective_policy`
+service) and evaluates six policy dimensions: vehicle category, per-ride fare
+cap (with a 150% grace threshold for the soft block), business hours (Mon–Fri
+07:00–21:00 UTC), purpose required, approved purposes list, and monthly spend
+cap. No new database tables are required.
+
+**Files added:**
+- `backend/app/schemas/corporate_member_policy_enforcement.py` — `BookingPolicyCheckRequest`, `PolicyViolation`, `PolicyCheckOutcome` enum, `BookingPolicyCheckResponse`, `MonthlySpendResponse`
+- `backend/app/services/corporate_member_policy_enforcement.py` — `check_booking_against_policy`, `get_member_monthly_spend` (queries `rides` table for COMPLETED/IN_PROGRESS rides in current calendar month); six pure check functions exposed for unit testing
+- `backend/app/api/v1/corporate_member_policy_enforcement.py` — three endpoints: `POST /corporate/accounts/me/check-booking` (member self-check), `POST /corporate/accounts/{account_id}/members/{member_id}/check-booking` (admin), `GET /corporate/accounts/{account_id}/members/{member_id}/monthly-spend` (admin)
+- `backend/tests/test_corporate_member_policy_enforcement.py` — 68 tests covering all policy dimensions, boundary conditions (exactly at cap, exactly at 150%), business hours edge cases, multi-violation severity ordering, and all API endpoints
+
+**Files modified:**
+- `backend/app/main.py` — registered `corporate_member_policy_enforcement.router`
+
+**Design notes:**
+- Monthly spend query uses `rides.rider_id` joined to `BusinessAccountMember.user_id` — the `rides.corporate_account_id` FK points to the legacy `corporate_accounts` table, not `corporate_accounts_v2`; the service includes a comment flagging this for future migration cleanup.
+- The 150% fare threshold (REQUIRES_APPROVAL vs DENIED) is a named constant `_FARE_APPROVAL_RATIO` — easy to change without touching logic.
+
+**Test result:** 68/68 passing. No regressions.
+
+**Push status:** Pushed to `rideshare` remote (`feature/corporate-business-accounts`), forced update due to remote branch divergence.
+
+**To merge:** Review and merge `feature/corporate-business-accounts` into `master` on the rideshare repo after review.
+
+---
+
+### feature/corporate-business-accounts — add corporate spending limit alerts
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `fb2f2d1`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Adds a corporate spending limit alert system that fires when an account or member
+reaches 75%, 90%, or 100% of their monthly spend limit within a calendar period.
+Alerts are idempotent — the same threshold cannot be created twice for the same
+period. Member-level spend uses an approximation (account spend / active member
+count) due to invoices not carrying a member_id column; this limitation is
+documented clearly in the service module.
+
+**Files added:**
+- `backend/app/models/corporate_spending_alert.py` — `CorporateSpendingAlert` ORM model with `AlertType` enum (`warning_75pct`, `warning_90pct`, `limit_reached`); unique constraint on `(account_id, member_id, alert_type, period_year, period_month)`
+- `backend/app/schemas/corporate_spending_alert.py` — `SpendingAlertOut`, `SpendingAlertsListResponse`, `MemberSpendStatus`, `SpendingAlertsSummary`
+- `backend/app/services/corporate_spending_alert_service.py` — `check_and_create_alerts`, `get_account_alerts`, `get_member_alerts`, `get_alerts_summary`; auth helpers `_require_account_admin` / `_require_account_member`
+- `backend/app/api/v1/corporate_spending_alerts.py` — 5 endpoints: POST check (admin, 201), GET alerts list (admin), GET summary (admin), GET own alerts (member), GET platform admin cross-account view
+- `backend/app/db/migrations/versions/c3d4e5f6g7h8_corporate_spending_alerts.py` — Alembic migration (revision `c3d4e5f6g7h8`, down_revision `b2c3d4e5f6a7`) creating `corporate_spending_alerts` table
+- `backend/tests/test_corporate_spending_alerts.py` — 55 tests, no live DB
+
+**Files modified:**
+- `backend/app/main.py` — registered `corporate_spending_alerts.router`
+
+**Test result:** 55/55 passing. No regressions in full suite (2 pre-existing failures in `test_corporate_guest_pass` and `test_corporate_shuttle` unrelated to this change).
+
+**Push status:** Pushed to `rideshare` remote (`feature/corporate-business-accounts`).
+
+**To merge:** Review and merge `feature/corporate-business-accounts` into `master` on the rideshare repo after review.
+
+---
+
+### feature/corporate-business-accounts — add invoice due date and overdue tracking
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `41cbde3`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Adds `payment_terms_days` and `due_date` fields to `CorporateInvoice`, an Alembic
+migration, overdue detection service logic, and four new API endpoints for monitoring
+and scanning overdue invoices. 55 tests cover all schemas, service functions, and endpoints.
+
+**Files added:**
+- `backend/app/schemas/corporate_invoice_due_date.py` — `SetInvoiceDueDateRequest` (validates payment_terms_days 1-365), `OverdueInvoiceRow`, `OverdueInvoicesResponse`, `InvoiceOverdueScanResponse`
+- `backend/app/services/corporate_invoice_due_date.py` — `set_invoice_due_date`, `get_overdue_invoices`, `run_overdue_scan` (appends `[OVERDUE]` marker to notes for newly detected overdue invoices)
+- `backend/app/api/v1/corporate_invoice_due_date.py` — four endpoints: PUT due-date (member), GET overdue (member), GET overdue (admin), POST overdue-scan (admin)
+- `backend/app/db/migrations/versions/b2c3d4e5f6a7_corporate_invoice_due_date.py` — Alembic migration adding `payment_terms_days INTEGER` and `due_date DATE` columns plus an index
+- `backend/tests/test_corporate_invoice_due_date.py` — 55 tests, no live DB
+
+**Files modified:**
+- `backend/app/models/corporate_invoice.py` — added `payment_terms_days` and `due_date` mapped columns
+- `backend/app/main.py` — registered `corporate_invoice_due_date.router`
+
+**Test result:** 55/55 passing. No regressions in full suite (2 pre-existing failures in test_corporate_guest_pass and test_corporate_shuttle unrelated to this change).
+
+**Push status:** Push to remote denied (repository permissions); commit is local on `feature/corporate-business-accounts`.
+
+---
+
+### feature/corporate-business-accounts — replace in-memory expense report store with ORM model
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `258e794`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Replaces the in-memory `_REPORT_STORE` in the corporate expense report service with a
+proper SQLAlchemy ORM model and Alembic migration. All 65 tests remain passing.
+
+**Files added:**
+- `backend/app/models/corporate_generated_expense_report.py` — `CorporateGeneratedExpenseReport` ORM model with JSONB columns for `by_member`/`by_category`, FK to `corporate_accounts_v2` (CASCADE) and `users`, indexes on `corp_id`, `generated_by_id`
+- `backend/app/db/migrations/versions/a1b2c3d4e5f6_corporate_generated_expense_reports.py` — Alembic migration (revision `a1b2c3d4e5f6`, down_revision `z9a0b1c2d3e4`) creating the table with three indexes
+
+**Files modified:**
+- `backend/app/services/corporate_expense_report_service.py` — removed `_REPORT_STORE`, `_NEXT_ID`, `_next_report_id()`, `_reset_store()`; rewrote all four service functions to use `db.add/flush/refresh` (generate), count + page queries (list), and a filtered select by id+corp_id (get)
+- `backend/tests/test_corporate_expense_report_aggregates.py` — updated all tests to mock at the DB execute level; added `_db_for_list`, `_db_for_get`, `_make_orm_report` helpers; removed `_REPORT_STORE` direct manipulation
+
+**Test result:** 65/65 passing.
+
+**Push status:** Push to remote denied (repository permissions); commit is local on `feature/corporate-business-accounts`.
+
+---
+
+### feature/corporate-business-accounts — corporate expense reporting endpoints
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `ea7b1c0`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+Implements an aggregated corporate expense reporting feature.  Four new
+admin-only endpoints under `/api/v1/corporate/{corp_id}/expense-reports/`
+let account admins generate structured reports covering all rides billed to
+their account in a date range, retrieve previously generated reports, and
+download them as CSV.  The feature is architecturally separate from the
+existing individual expense-submission workflow.
+
+**Files added:**
+- `backend/app/api/v1/corporate_expense_report_aggregates.py` — FastAPI router with four endpoints (list, generate, detail, export CSV)
+- `backend/app/schemas/corporate_expense_report_aggregate.py` — Pydantic schemas: `ExpenseReportGenerateRequest`, `MemberExpenseSummary`, `CategoryExpenseSummary`, `GeneratedExpenseReportDetail`, `GeneratedExpenseReportListResponse`
+- `backend/app/services/corporate_expense_report_service.py` — service layer with `generate_expense_report`, `list_generated_reports`, `get_generated_report`, `export_report_csv`; uses an in-memory store (suitable for replacement with a DB-backed model)
+- `backend/tests/test_corporate_expense_report_aggregates.py` — 65 tests covering schema validation, service functions, edge cases (null fare, no vehicle type, date filtering, pagination), and patched API layer tests
+
+**Files modified:**
+- `backend/app/main.py` — imports and registers the new router
+
+**Test result:** 65 tests, all passing.
+
+**Design notes for review:**
+- The service uses an in-memory `_REPORT_STORE` dict rather than a new ORM model and migration.  This keeps the feature fully testable without a database and avoids schema migrations, but it means reports are not persistent across process restarts.  A follow-up can add a `CorporateGeneratedExpenseReport` table.
+- Ride fare is read from `actual_fare` with fallback to `estimated_fare`; category is read from `vehicle_type_preference` with fallback to `vehicle_type`.
+- All endpoints require the caller to be an active `ADMIN` member of the corporate account (checked via `BusinessAccountMember` query), matching the pattern in existing corporate services.
+
+---
+
+### feature/corporate-business-accounts — unit tests for vehicles and corporate travel itineraries
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `2efe7a3`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+178 new unit tests across two previously-uncovered modules.  Both files follow the established AsyncMock/MagicMock pattern (no live DB).  The key mocking insight documented inline: `db.execute` side_effect items must be plain `MagicMock` objects — not `AsyncMock` — so that `await db.execute(...)` resolves to a synchronous result rather than a nested coroutine.
+
+**Files added:**
+- `backend/tests/test_corporate_travel_itineraries.py` — 84 tests across 13 test classes covering `ItineraryStatus` enum, `create_itinerary`, `get_itinerary`, `update_itinerary` (partial-update assertion via fake class with `__setattr__` tracking), `cancel_itinerary`, `complete_itinerary`, `list_itineraries` (two-`execute` pattern), `add_ride_to_itinerary` (duplicate check), `remove_ride_from_itinerary`, `list_itinerary_rides`, `get_itinerary_summary` (null ride_id exclusion), `list_all_itineraries_platform`, and full Pydantic schema validation (empty/whitespace title, all-optional update, `from_attributes` round-trips).
+- `backend/tests/test_vehicles.py` — 94 tests across 10 test classes covering `VehicleType` (9 values), `VehicleServiceCategory` (5 values), `Vehicle` ORM model structure (table name, all 14 columns, defaults for capacity/is_active/is_wheelchair_accessible), `add_vehicle` endpoint (first-vehicle auto-sets `active_vehicle_id`, existing active not overridden, 409 at max-5, 422 invalid type, 404 no profile), `list_vehicles`, `get_vehicle`, `update_vehicle` (422 invalid type in update), `remove_vehicle` (soft-delete, clears `active_vehicle_id` only when matching), `set_active_vehicle`, and full schema validation (year 1990–2030 boundaries, capacity 1–15 boundaries, all-optional update, `from_attributes`).
+
+**Test result:** 178 new tests, all passing.
+
+---
+
+### feature/corporate-business-accounts — unit tests for document-expiry, safety, drivers
+
+**Branch:** `feature/corporate-business-accounts`
+**Commit:** `1608f9a`
+**Author:** Claude (claude-sonnet-4-6)
+**Date:** 2026-04-17
+
+**Summary:**
+230 new unit tests across three previously-uncovered API modules, following the established AsyncMock/MagicMock pattern from test_cancellation_policies.py. No live database used in any test.
+
+**Files added:**
+- `backend/tests/test_document_expiry.py` — 73 tests covering `_classify`/`_days_until` helpers, `ExpiryStatusResult`/`ExpiryScaResult` dataclasses, `get_driver_expiry_status`, `get_all_expiring_documents` (with doc_type filters and pagination), `run_expiry_scan` (idempotency), and all document-expiry schemas.
+- `backend/tests/test_safety.py` — 83 tests covering `trigger_sos` (notification resilience, participant checks), `resolve_sos` (status transitions, auth), `get_active_alerts`, emergency contact CRUD, `create_trip_share_token` (TTL, permission checks), `get_shared_trip` (valid/expired/missing tokens), all safety schemas, and ORM table structure.
+- `backend/tests/test_drivers.py` — 74 tests covering `_period_start` helper, `submit_document` (duplicate 409, all doc types), `review_document` (valid/invalid transitions, rejection reason required, auto-approve hook), `get_verification_status` (empty/partial/full, most-recent-per-type dedup), `VerificationError`, all driver/earnings/verification schemas, and DriverProfile/DriverDocument table structure.
+
+**Test result:** 10,178 passing (230 new, +1138 from baseline). The 2 pre-existing failures (`test_corporate_guest_pass`, `test_corporate_shuttle`) are unrelated.
+
+---
+
+### feature/corporate-business-accounts — corporate fleet cost analytics
 
 **Branch:** `feature/corporate-business-accounts`
 **Commit:** `9558413`
