@@ -9,7 +9,16 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 292
+**Sessions run**: 292, 293
+
+### Accomplished (Session 293)
+
+#### open-source-rideshare — Driver revenue projection COMPLETE (commit `708fc5e`)
+Forward-looking earnings intelligence for drivers, built on 8 weeks of completed ride history.
+- **`GET /driver/me/revenue-projection`**: trailing avg weekly earnings, projected monthly earnings (avg × 52/12 ≈ 4.33 weeks/month), trend classification (improving/stable/declining/insufficient_data), top-3 best earning hours, top-2 best earning days, full 24-entry hourly breakdown, 7-entry daily breakdown, per-week history for last 8 weeks
+- **Trend logic**: compares trailing 4-week avg vs prior 4-week avg; >10% delta classified as improving/declining
+- **Single DB query** — all aggregation in pure Python for testability; no model changes required
+- **58 tests** — **3,024 total unit-passing**
 
 ### Accomplished (Session 292)
 
@@ -57,7 +66,7 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — trip demand heatmap or driver revenue projections.
+3. **open-source-rideshare**: Next feature — trip demand heatmap or driver earnings comparison vs platform average.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---

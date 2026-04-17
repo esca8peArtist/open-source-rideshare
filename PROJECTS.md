@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 292)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 293)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 292: **Platform admin config API COMPLETE** (commit `b65bdb9`). 7 endpoints: GET/PUT config by key, list all/by category, bulk-update, seed defaults (17 entries across pricing/surge/safety/matching/features/notifications/compliance), change history per key. Persistent DB-backed (replaces in-memory dict). 46 tests. **Driver welfare summary COMPLETE** (commit `ab50bb2`). `GET /driver/me/welfare-summary` — shift hours, fatigue risk (low/moderate/high), weekly earnings, earnings goal progress %, insurance status (expiry warning at 30 days), cooperative standing, personalised welfare note. DriverShift + DriverEarningsGoal models. 56 tests. **Total: 2,966 tests passing.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap or driver revenue projections.
+**Current focus**: Session 293: **Driver revenue projection COMPLETE** (commit `708fc5e`). `GET /driver/me/revenue-projection` — 8-week ride history, trailing 4-week avg weekly earnings, projected monthly earnings (×52/12), trend (improving/stable/declining/insufficient_data), best earning hours (top-3), best earning days (top-2), full 24-entry hourly breakdown, 7-entry daily breakdown, per-week history. Single DB query; pure-Python aggregation. 58 tests. **Total: 3,024 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap or driver earnings comparison (vs platform avg).
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

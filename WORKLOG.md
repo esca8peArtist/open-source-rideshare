@@ -4,6 +4,40 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 293 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: April 20 framework waiting (3 days out)
+- open-source-rideshare: active — next feature: driver revenue projections
+- Selected: open-source-rideshare — driver revenue projection API
+
+### open-source-rideshare — Driver revenue projection API COMPLETE
+
+**Commit**: `708fc5e`
+
+**Files created**:
+- `app/schemas/driver_revenue_projection.py` — `HourlyBreakdown`, `DailyBreakdown`, `WeeklyEarnings`, `DriverRevenueProjection`
+- `app/services/driver_revenue_projection.py` — single-query service (completed rides, last 8 weeks); pure-Python aggregation: weekly history, trend classification (improving/stable/declining/insufficient_data), hourly/daily breakdowns, trailing 4-week avg, projected monthly earnings
+- `app/api/v1/driver_revenue_projection.py` — `GET /driver/me/revenue-projection`
+- `tests/test_driver_revenue_projection.py` — **58 tests** across 8 classes
+
+**Key design**:
+- 1 DB query (completed rides in last 8 weeks), all aggregation in Python — fully testable without a live DB
+- Trend: compares trailing 4-week avg vs prior 4-week avg; >10% delta = improving/declining
+- avg_weekly uses trailing TREND_WEEKS (4) window; projected monthly = avg_weekly × 52/12 ≈ 4.33
+- hourly/daily breakdowns average over num_weeks so they're per-week rates, not raw totals
+- best_earning_hours = top-3 hours; best_earning_days = top-2 day names
+
+**Test count**: 58 new → **3,024 unit-passing** (58/58 new, all existing passing)
+
+### PROJECTS.md + CHECKIN.md update
+
+---
+
 ## Session 292 — 2026-04-17
 
 ### Orient
