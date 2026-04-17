@@ -4,6 +4,51 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 291 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: no new resolutions; GitHub push still pending for rideshare
+- stockbot: paper trading live, awaiting cycle logs — no dev work available
+- April 20 results framework: can't fill (April 20 hasn't happened)
+- Highest-priority project with work: mfg-farm (Priority 2) — market research was complete but business plan and CAD designs were missing
+- Selected: mfg-farm — business plan + CadQuery parametric designs
+
+### mfg-farm — Business Plan COMPLETE
+
+**File**: `projects/mfg-farm/business-plan.md` (~650 lines)
+
+**Synthesizes existing research into an operational plan**:
+- Executive summary: lead product ModRun, 6-month target $1,500–$3,000/month, launch cost ~$240
+- Product catalog: 7 SKUs for Phase 1 (ModRun clips + rails + sets), pricing $8.99–$49.99, 65–72% net margins
+- Phase 2 products (Month 3–4): articulated flexi animal line + original planter line
+- Phase 3 products (Month 5–6): triggered by $2,000+/month
+- Product development plan: CadQuery → test print → photography → Etsy → Amazon
+- Fulfillment workflow: order → print queue → overnight print → morning QC → pack → Pirateship label → ship → Day 3–4 review request
+- Financial projections: conservative 6-month cumulative $9,619 net / optimistic $17,125 net. Break-even at Month 3–4
+- Machine investment timeline: second printer (P1S) triggered by $2,000+/month × 2 months + 80% utilization; resin at Month 6–9; laser at Month 9–12
+- Marketing strategy: Etsy launch first, $1–3/day Etsy Ads, 25-review gate before Amazon
+- Risk register: 8 risks with mitigations (IP, deplatforming, QC, shipping cost, filament, saturation)
+- Quick reference: SKU registry, filament color stock, weekly time budget
+
+### mfg-farm — CadQuery Parametric Designs COMPLETE
+
+**Files**:
+- `projects/mfg-farm/cadquery/modrun_clip.py` — parametric press-fit cable clip
+- `projects/mfg-farm/cadquery/modrun_rail.py` — parametric mounting rail (desk-clamp + adhesive variants)
+- `projects/mfg-farm/cadquery/README.md` — print settings, tuning guide, interface spec, test checklist
+
+**Design highlights**:
+- **Clip**: U-channel body with bore-gap for cable insertion, cantilever snap arm with NUB_HEIGHT/LEAD_ANGLE/LOCK_ANGLE geometry for click-in retention. Parametric bore_diameter (3mm/6mm/12mm). All tolerances exposed as module constants for per-printer tuning
+- **Rail**: 200mm body × 6 slots at 30mm pitch. Slot interface matches clip (SLOT_WIDTH=8mm, SLOT_DEPTH=6mm). Snap-nub recess inside each slot. Two mounting feet: desk_clamp (C-clamp, 15–30mm range, rubber pad recess) and adhesive (flat base with 4 × 20mm Command pad pockets)
+- **Interface contract**: SLOT_WIDTH/SLOT_DEPTH/FDM_TOLERANCE defined identically in both files — single source of truth for the press-fit geometry
+- **CLI**: `python modrun_clip.py --output-dir ./stl/` generates all 3 sizes; `python modrun_rail.py --variant both --output-dir ./stl/` generates both rails
+
+**BLOCKING GATE**: Test print required before listing. User needs to: install cadquery (`pip install cadquery`), generate STLs, print, tune tolerances per README checklist, photograph, then launch Etsy listing (copy ready in `etsy-listing-modrun.md`).
+
+### PROJECTS.md update
+- mfg-farm status updated to "Active — ready to prototype" with detailed next steps for user
+
 ## Session 102 — 2026-04-13
 
 ### Orient

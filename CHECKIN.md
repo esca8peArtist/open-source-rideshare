@@ -9,67 +9,66 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 289–290
+**Sessions run**: 291
 
-### Accomplished (Session 290)
+### Accomplished (Session 291)
 
-#### resistance-research — Healthcare op-ed COMPLETE (commits `45fd8ba`, `56eea69`)
-- **File**: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`
-- **Title**: "Six Weeks to Save Five Million People's Health Insurance"
-- **Target**: Vox (primary) / The Atlantic (secondary) — submission target April 22
-- **Thesis**: The CMS Medicaid work-requirements guidance due **June 1, 2026** is the highest-leverage healthcare intervention available without new legislation — broad exemption definitions can significantly reduce the 5.2M projected coverage losses from OBBBA
-- **Four evidence pillars**: OBBBA CBO 5.2M/Medicaid projection; ACA subsidy expiry (31M+ uninsured by 2027); Gresham v. Azar precedent (narrow exemptions strip legally compliant workers); Prior Auth Reform Act (248 House + 64 Senate co-sponsors, only obstacle = Finance scheduling)
-- **Specific ask**: (1) CMS broad exemptions for caregivers/rural workers/irregular employment by June 1; (2) Senate Finance to schedule Prior Auth Reform Act floor vote
-- ~918 words, includes pitch paragraph for submission email
+#### mfg-farm — Business plan COMPLETE (`projects/mfg-farm/business-plan.md`)
+- ~650 lines synthesizing market research into an operational plan
+- **Product catalog**: 7 Phase-1 SKUs (ModRun clips, rails, sets at $8.99–$49.99; 65–72% net margins); Phase-2 flexi animal line + planter line (Month 3–4); Phase-3 triggered by $2K+/month
+- **Fulfillment workflow**: order → print queue → overnight run → morning QC → pack → Pirateship → ship → Day 3–4 review request
+- **Financial projections**: conservative 6-month cumulative **$9,619 net**; optimistic **$17,125 net**; break-even at Month 3–4 (~$240 launch cost)
+- **Machine investment timeline**: second P1S printer triggered at $2K+/month × 2 months + 80% utilization; resin Month 6–9; laser Month 9–12
+- **Risk register**: 8 risks with mitigations (IP, deplatforming, QC, shipping, filament, saturation, etc.)
 
-#### open-source-rideshare — Rider emergency safety (commit `b2086d9`, branch `feature/rider-emergency-safety`)
-- **Why this exists**: Uber/Lyft have no real rider safety recourse — a cooperative is obligated to protect its members. Safety is the strongest differentiation argument.
-- **Feature 1 — Panic Button** (5 endpoints):
-  - `POST /riders/me/panic` — trigger alert against active ride; one ACTIVE alert per ride enforced
-  - `GET /riders/me/panic/{id}` — status (ownership-checked, 404 on mismatch)
-  - `DELETE /riders/me/panic/{id}` — cancel: within 30s → FALSE_ALARM, after → RESOLVED
-  - `GET /admin/panic-alerts` — ACTIVE alerts only, sorted oldest-first (most urgent first)
-  - `POST /admin/panic-alerts/{id}/resolve` — admin resolve with notes
-- **Feature 2 — Trusted Contacts** (5 endpoints + notification stub):
-  - `POST /riders/me/trusted-contacts` — add (max 3 active; deactivated don't count toward limit)
-  - `GET /riders/me/trusted-contacts` — list all (active + inactive)
-  - `PUT /riders/me/trusted-contacts/{id}` — partial update
-  - `DELETE /riders/me/trusted-contacts/{id}` — soft-delete (is_active=False)
-  - `GET /riders/me/trusted-contacts/{id}/notification-log` — last 30 notifications
-  - `send_trusted_contact_notifications()` — stub; creates TrustedContactNotification records (TRIP_START / TRIP_END / PANIC_ALERT), no real SMS/email yet
-- **95 tests, all passing**
-- Push blocked by remote permissions (esca8peArtist lacks org write access) — branch is local
-
-#### Housekeeping
-- BLOCKED.md: stale GitHub push entry (background-checks-firebase-push) marked resolved — session 289 proved push works
+#### mfg-farm — CadQuery parametric designs COMPLETE
+- **`cadquery/modrun_clip.py`**: parametric press-fit cable clip — bore_diameter parameter (3mm/6mm/12mm), U-channel body, cantilever snap arm with NUB geometry, location tabs, all tolerances exposed as module constants
+- **`cadquery/modrun_rail.py`**: parametric mounting rail — 200mm × 6 slots at 30mm pitch; nub recess in each slot; two mounting variants: `desk_clamp` (C-clamp, 15–30mm range, rubber pad recess) and `adhesive` (4 × Command-pad pockets)
+- **`cadquery/README.md`**: print settings, tuning guide, interface spec, first-print test checklist
+- **Interface contract**: SLOT_WIDTH=8mm / SLOT_DEPTH=6mm defined identically in both scripts — consistent press-fit geometry
 
 ---
 
 ### Needs Your Input
 
-**op-ed submission — action needed by April 22**
-The op-ed "Six Weeks to Save Five Million People's Health Insurance" is ready to submit. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. It includes a pitch paragraph at the top. If you want to submit it, you'll need to: (1) review and edit the draft, (2) create accounts / find submission portals for Vox and/or The Atlantic. The June 1 CMS deadline makes the timing meaningful — submitting now gives editors 5 weeks before the deadline lands.
+**mfg-farm — test print required to launch (HIGHEST PRIORITY)**
+Everything is ready: designs, listing copy, pricing, photo brief. The only gate is a test print.
+1. `pip install cadquery` (or `conda install -c conda-forge cadquery`)
+2. `cd projects/mfg-farm/cadquery && python modrun_clip.py --output-dir ./stl/ && python modrun_rail.py --output-dir ./stl/`
+3. Print `modrun_clip_3mm.stl`, `modrun_clip_6mm.stl`, `modrun_clip_12mm.stl`, `modrun_rail_desk_clamp.stl` in Matte Black PLA
+4. Check: clips snap into rail with moderate force; cable presses into bore; clamp grips a ~18mm test surface
+5. Tune parameters per `cadquery/README.md` if needed and reprint
+6. Take 5 photos (brief in `etsy-listing-modrun.md`)
+7. Go live on Etsy with the 4-piece set listing — copy is already done in `etsy-listing-modrun.md`
+
+**op-ed submission — action needed by April 22 (5 days away)**
+"Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. You need to: (1) review the draft, (2) submit to Vox and/or The Atlantic. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-The rideshare agent hit a permissions error pushing `feature/rider-emergency-safety`. Branch is local on the Pi with 95 passing tests. To push: either (a) add the Pi's GitHub account as a collaborator with write access to the repo, or (b) run `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` (95 tests) is local on the Pi. Push via: (a) grant Pi's GitHub account write access to the repo, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
-Paper trading live since April 14. Orchestrator still can't read logs without `STOCKBOT_API_KEY`. Drop cycle logs or a Trading page screenshot in INBOX.md when convenient.
+Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
 
 **April 20 results framework**
-`projects/resistance-research/monitoring/2026-04-20-results-framework.md` is pre-drafted. After April 20 events land (CAPE Phase 1, Abrego Garcia DOJ brief), drop outcomes in INBOX.md and the next session will fill in the framework and write a monitoring brief.
+`projects/resistance-research/monitoring/2026-04-20-results-framework.md` is pre-drafted. After April 20 events land (CAPE Phase 1, Abrego Garcia DOJ brief), drop outcomes in INBOX.md — next session fills the framework.
 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **resistance-research**: Fill April 20 results framework after events land (Apr 20 evening). OR advance mfg-farm competitive analysis if no event data yet.
-2. **open-source-rideshare**: Next feature after emergency safety — trip demand heatmap, driver revenue projections, or admin platform config API.
-3. **stockbot**: Share cycle logs to unblock model performance assessment.
-4. **mfg-farm**: Competitive analysis — pricing/volume data on top product categories.
+1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live. Orchestrator can help with print parameter tuning if you drop feedback in INBOX.md.
+2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
+3. **open-source-rideshare**: Next feature — trip demand heatmap, driver revenue projections, or admin platform config API.
+4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
 
 ### History
+
+#### Accomplished (Sessions 289–290)
+- **resistance-research**: Healthcare op-ed COMPLETE (`publications/op-ed-healthcare-june2026-deadline.md`, ~918 words, commits `45fd8ba`/`56eea69`). "Six Weeks to Save Five Million People's Health Insurance" — Vox/Atlantic target, April 22 submission, CMS June 1 deadline.
+- **open-source-rideshare**: Rider emergency safety COMPLETE (commit `b2086d9`, branch `feature/rider-emergency-safety`). PanicButton (5 endpoints, 30s FALSE_ALARM window) + TrustedContacts (5 endpoints + notification stub, max 3 active). 95 tests passing. Push blocked by org write access.
+- **Housekeeping**: BLOCKED.md stale entry (background-checks-firebase-push) marked resolved.
 
 #### Accomplished (Sessions 104–105)
 - **resistance-research**: Domain 9 Federalism & Local Democracy deepened (340 lines) — Shelby County § 4(b) mechanism, polling place closures by state, Birmingham wage preemption full litigation arc, Illinois 6,963-unit fragmentation, NPVIC 209 EVs, Swiss/German/Spain/Canada fiscal federalism. 20/22 deepening library.

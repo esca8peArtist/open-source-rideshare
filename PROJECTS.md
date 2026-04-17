@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-13 (Session 104)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 291)
 
 ---
 
@@ -27,11 +27,11 @@
 ### mfg-farm
 **Goal**: Build a fully automated manufacturing business centered on 3D printing, with a path to a full print farm. Sell products on Etsy, Amazon, and similar platforms. Develop a complete business plan: product selection driven by market demand and unique value proposition, pricing strategy, fulfillment workflow, and a scaling roadmap from single printer to multi-printer farm with multiple colors and material capabilities. Explore adjacent manufacturing (laser cutting, CNC, resin printing) and integrate where demand justifies it. The north star is maximizing income — product and machine decisions should be driven by data: what sells, what margins look like, and where automation creates the highest leverage.
 **Priority**: High
-**Status**: Active — planning phase
+**Status**: Active — ready to prototype
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/mfg-farm/`
-**Current focus**: Session 105: Project just created. First tasks: (1) market research — identify high-demand, high-margin 3D print product categories on Etsy/Amazon; (2) competitive analysis — pricing, volume, differentiation; (3) full business plan draft — product catalog, pricing, fulfillment, scaling roadmap, machine investment timeline; (4) identify which products require what capabilities (FDM colors, resin, laser cutting) to sequence machine investments correctly.
-**Blocked on**: —
+**Current focus**: Session 291: **Business plan COMPLETE** (`business-plan.md`). **CadQuery parametric designs COMPLETE** (`cadquery/modrun_rail.py`, `cadquery/modrun_clip.py`). Market research + competitive analysis were already complete (`market-research.md`). Etsy and Amazon listing copy already complete (`etsy-listing-modrun.md`). **Lead product: ModRun cable management system** — original design, Etsy-compliant, 65–72% net margins. **BLOCKING GATE: test print required.** User needs to: (1) run `pip install cadquery` in mfg-farm env or system Python, (2) run `python modrun_clip.py --output-dir ./stl/` and `python modrun_rail.py --output-dir ./stl/` to generate STL files, (3) test print and tune tolerance parameters, (4) photograph finished set, (5) list on Etsy. All copy, pricing, tags, photo brief are ready in `etsy-listing-modrun.md`.
+**Blocked on**: Test print (user action required — see focus above)
 **Notes**: Automation is the core constraint — products and workflows must be designed for minimal human touchpoints per unit. Physical products mean real fulfillment costs (packaging, shipping, storage) — factor these in from the start. Etsy and Amazon have different fee structures and audiences; may want both. Scaling from 1→N printers requires thinking about file management, queue management, quality control, and packaging throughput — not just the printers themselves.
 
 ---
