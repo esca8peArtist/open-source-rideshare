@@ -123,3 +123,18 @@ class SurgeZonePublicListResponse(BaseModel):
 
 class ToggleActiveRequest(BaseModel):
     is_active: bool
+
+
+class RiderSurgeCheckResponse(BaseModel):
+    """Response for the rider-facing surge check endpoint.
+
+    Tells a rider whether their pickup location is in an active surge zone,
+    what the current multiplier is, and provides a human-readable explanation
+    so they can make an informed booking decision.
+    """
+
+    in_surge_zone: bool
+    multiplier: float
+    zone_name: str | None = None
+    explanation: str
+    tip: str | None = None

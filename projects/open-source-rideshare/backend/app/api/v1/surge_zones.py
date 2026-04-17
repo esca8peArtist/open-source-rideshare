@@ -11,8 +11,9 @@ Admin endpoints (require admin auth):
   DELETE /admin/surge-zones/{id}               — hard-delete zone
   POST   /admin/surge-zones/{id}/activate      — toggle active state
 
-Public endpoint (no auth required):
+Public endpoints (no auth required):
   GET /pricing/surge-zones/active    — currently active zones for map display
+  GET /pricing/surge-check           — rider-facing: is my pickup location in a surge zone?
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import require_admin
 from app.db.database import get_db
 from app.schemas.surge_zone import (
+    RiderSurgeCheckResponse,
     SurgeZoneCreate,
     SurgeZoneListResponse,
     SurgeZonePublicListResponse,
@@ -48,6 +50,7 @@ from app.services.surge_zone_suggestions import get_zone_boundary_suggestions
 from app.services.surge_zones import (
     create_zone,
     delete_zone,
+    get_rider_surge_info,
     get_zone,
     list_zones,
     is_zone_active_now,
@@ -337,4 +340,51 @@ async def get_active_surge_zones(db: AsyncSession = Depends(get_db)):
             for z in active_now
         ],
         total=len(active_now),
+    )
+
+
+@public_router.get("/surge-check", response_model=RiderSurgeCheckResponse)
+async def rider_surge_check(
+    lat: float = Query(..., ge=-90.0, le=90.0, description="Pickup latitude"),
+    lon: float = Query(..., ge=-180.0, le=180.0, description="Pickup longitude"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Check whether a pickup location is currently in a surge pricing zone.
+
+    No authentication required. Riders call this with their pickup coordinates
+    before booking to understand whether surge pricing applies and why.
+
+    Returns:
+    - ``in_surge_zone``: true if the location is currently subject to surge pricing
+    - ``multiplier``: current fare multiplier (1.0 = standard rate, 1.8 = 80% higher)
+    - ``zone_name``: name of the active surge zone, or null if no surge
+    - ``explanation``: human-readable description for display in the rider app
+    - ``tip``: actionable suggestion for avoiding surge pricing, or null if no surge
+    """
+    zone = await get_rider_surge_info(db, lat, lon)
+
+    if zone is None:
+        return RiderSurgeCheckResponse(
+            in_surge_zone=False,
+            multiplier=1.0,
+            zone_name=None,
+            explanation="No surge pricing in your area. Fares are at the standard rate.",
+            tip=None,
+        )
+
+    pct = round((zone.multiplier - 1.0) * 100)
+    return RiderSurgeCheckResponse(
+        in_surge_zone=True,
+        multiplier=zone.multiplier,
+        zone_name=zone.name,
+        explanation=(
+            f"Demand is high near your pickup location ({zone.name}). "
+            f"Fares are currently {zone.multiplier:.1f}× the base rate "
+            f"({pct}% higher than normal). "
+            "Surge pricing helps attract more drivers to your area."
+        ),
+        tip=(
+            "Consider waiting a few minutes or moving your pickup point "
+            "slightly outside this area to avoid surge pricing."
+        ),
     )

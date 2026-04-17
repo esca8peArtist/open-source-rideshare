@@ -156,6 +156,35 @@ async def get_active_surge_multiplier(
     return best
 
 
+async def get_rider_surge_info(
+    db: AsyncSession,
+    lat: float,
+    lon: float,
+    now: datetime | None = None,
+) -> SurgePricingZone | None:
+    """Return the highest-multiplier active zone containing (lat, lon), or None.
+
+    Used by the rider-facing surge check endpoint to provide zone name and
+    description alongside the multiplier. Returns None when the rider is not
+    in any active surge zone.
+    """
+    result = await db.execute(
+        select(SurgePricingZone).where(SurgePricingZone.is_active.is_(True))
+    )
+    zones = list(result.scalars().all())
+
+    best_zone: SurgePricingZone | None = None
+    best_multiplier = 1.0
+    for zone in zones:
+        if not is_zone_active_now(zone, now):
+            continue
+        if _point_in_zone(lat, lon, zone):
+            if zone.multiplier > best_multiplier:
+                best_multiplier = zone.multiplier
+                best_zone = zone
+    return best_zone
+
+
 # ---------------------------------------------------------------------------
 # CRUD operations
 # ---------------------------------------------------------------------------
