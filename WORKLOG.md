@@ -4,6 +4,91 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 272 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- Previous session (271): labor-evidence.md elevated to Tier 1; corporate member ride quota management verified (45 tests, pushed).
+
+### Task Selection
+1. resistance-research: Elevate immigration-evidence.md Tier 2 → Tier 1 (Int'l benchmarks, counterarguments, actionable intelligence)
+2. open-source-rideshare: Department-level policy enforcement (CorporateDepartment model + membership + policy override + updated effective-policy resolution chain)
+
+Both delegated as parallel background agents.
+
+### open-source-rideshare: Corporate department-level policy enforcement — ALREADY COMPLETE (prior session)
+Agent verified: full three-tier policy hierarchy already implemented. 101 tests passing:
+- 52/52 in `tests/test_corporate_departments.py`
+- 49/49 in `tests/test_corporate_department_ride_policy.py`
+
+**Three-tier resolution chain already live**: account policy → department policy override (most-restrictive merge) → member override (highest precedence).
+
+Key files verified: `models/corporate_department.py`, `models/corporate_department_ride_policy.py`, `services/corporate_department.py`, `services/corporate_department_ride_policy.py` (`get_effective_policy_for_member`), `api/v1/corporate_departments.py`, `api/v1/corporate_department_ride_policy.py`. Migrations: `b2c3d4e5f6g7` + `i0j1k2l3m4n5`.
+
+Pushed to rideshare remote (feature/corporate-business-accounts).
+
+### resistance-research: immigration-evidence.md elevated Tier 2 → Tier 1 COMPLETE
+Local commit only. File: `domain-deepening/immigration-evidence.md` (399 → 636 lines). quality-review-index.md: **18 Tier 1, 5 Tier 2, 0 Tier 3** (was 17/6/0).
+
+**Section 9 — Int'l benchmarks deepened (all three subsections)**:
+- Canada: Statistics Canada 2024 longitudinal data — employment gap narrowed 13.1 → 6.5pp (2010-2023); 2016 cohort earnings trajectory ($58,400 yr-1 → $76,800 yr-5); 111,301 invitations in 2024; April 2026 CRS overhaul toward demonstrated earnings; overeducation rate 40% → 27%; H-1B dependency contrast with employer-portable Canadian model.
+- Germany: $150B annual output cost of unfilled positions; Blue Card + Opportunity Card numbers; sector specifics (healthcare, IT, trades); bilateral partner agreements (India, Brazil, Philippines, Morocco, Kenya); credential recognition bottleneck as design lesson.
+- Australia (Albanese reforms): NOM trajectory 528,000 → 306,000 → projected 260,000; Skills in Demand visa replacing TSS-482; 185,000 permanent places; 2023 Migration Strategy; temporary-to-permanent pathway structure.
+
+**Section 11 (new) — Counterarguments**:
+- 11.1 Enforcement-deterrence: Massey backfire finding; asylum seeker non-deterrability; IZA diminishing returns; policy implication (enforcement requires legal pathways to work).
+- 11.2 Rule-of-law objection: Heritage/FAIR framing engaged; 1986 IRCA comparison debunked; Sarah Song (NYU) statutory legalization analysis; Spain 2005 700,000-worker legalization; objection's internal inconsistency on employers vs. workers.
+- 11.3 Card-Borjas dispute deepened: Borjas 2017 reanalysis; Peri-Sparber task-specialization (O*NET, communication vs. manual); 2025 meta-analysis consensus; policy implication.
+
+**Section 12 (new) — Actionable Intelligence (AI-1 through AI-6)**:
+- AI-1: IRS-ICE data sharing litigation (two injunctions, pending circuit ruling); SHIELD Act H.R.3101; birthright citizenship SCOTUS ruling June-July 2026.
+- AI-2: DREAM Act S.3348 (2021 House 228-197, 9 GOP co-sponsors); Farm Workforce Modernization H.R.3227; FY2027 DHS appropriations leverage.
+- AI-3: Administrative vs. legislative pathways (parole-in-place, TPS, prosecutorial discretion vs. permanent citizenship/visa caps/Article I courts/right to counsel).
+- AI-4: Sanctuary policy — Printz anti-commandeering basis; July-August 2025 rulings upholding IL/Cook County/Chicago; April 2025 ruling blocking funding withholding from 16 jurisdictions.
+- AI-5: 7 organizations with specific roles — NILC, CLINIC, Vera, ACLU IRP, AIC, National Immigration Forum, NIJC.
+- AI-6: SCOTUS birthright citizenship (June-July 2026); IRS-ICE data litigation; Abrego Garcia contempt proceedings; FY2027 DHS/CJS appropriations; Farm Workforce Modernization agricultural employer pressure.
+
+---
+
+## Session 271 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- Previous session (270): national-security-evidence.md elevated to Tier 1; corporate expense policy enforcement complete (68 tests).
+
+### Task Selection
+1. resistance-research: Elevate labor-evidence.md Tier 2 → Tier 1 (Int'l benchmarks, fiscal estimates, actionable intelligence, 2025-2026 rollback)
+2. open-source-rideshare: Corporate member ride quota management (service + endpoints + tests)
+
+Both delegated as parallel background agents.
+
+### open-source-rideshare: Corporate member ride quota management — ALREADY COMPLETE (prior session)
+Agent verified: `corporate_member_ride_quota.py` model, schemas, service layer (set/update/deactivate/delete/get/list/usage/summary), and 11 API endpoints were all already implemented. 45 tests, 45 passing (1.03s). Router registered at main.py:181. Pushed to rideshare remote (feature/corporate-business-accounts).
+
+### resistance-research: labor-evidence.md elevated Tier 2 → Tier 1 COMPLETE
+Commit: feat(resistance-research): elevate labor-evidence.md Tier 2 → Tier 1. Local commit only (no push).
+
+File: `domain-deepening/labor-evidence.md`. Added ~200 lines across 4 areas:
+
+**Int'l benchmarks strengthened:**
+- UK National Living Wage: LPC finding that low-pay share fell 21% → under 10% (~3M workers); spillover to quarter of all workers 25+ at introduction; 2024 LPC/Frontier Economics research on monopsony; US transferability: UK NLW at 62% of median vs US at 31%; $17/hr would reach 56-58% — still below UK achieved level.
+- Manning 2021 ILR Review: wage markdowns 15-50% typical across advanced economies; the load-bearing number for minimum wage evidence — increases within the markdown range reduce employer monopsony rent without employment loss.
+- Nordic transfer conditions (Section 3.4b): DA/SAF employer associations represent 65-80% of employers — cannot be replicated through norms alone; requires mandatory association or statutory extension. California FAST Act (AB 1228, Sep 2023) is first US experiment with required design.
+
+**CBO 2023 $17 analysis:** 18M workers affected, 400K lifted from poverty, 700K job loss estimate — more current than the 2021 $15 analysis already in file.
+
+**Section 10: 2025-2026 Rollback** (matching anti-corruption/housing standard):
+- OSHA: 8% budget cut, 266-year inspection cycle projection, 20% fewer inspections, 42% fewer severe-violation fines
+- DOL Wage and Hour Division: 400+ staff reduction
+- EO 14236 (March 14, 2025): rescinded $17.75 federal contractor minimum wage — 3.7M contract workers, largest single-action minimum wage rollback in US history
+- FAB 2025-1 (May 2025): stopped Biden independent contractor classification enforcement; replacement rule open for comment through April 28, 2026
+- Davis-Bacon Biden-era expansion litigation pause
+- Synthesis: counter-strategy implications — consumer-pressure campaigns, state-level enforcement, organizing under state labor law
+
+quality-review-index.md: **17 Tier 1, 6 Tier 2, 0 Tier 3** (was 16/7/0).
+
 ## Session 270 — 2026-04-17
 
 ### Orient

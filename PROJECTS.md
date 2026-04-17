@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 270: **national-security-evidence.md elevated to Tier 1** (commit `4a88fe7`). Added AI-1 through AI-6 (~280 lines): H.R. 6751 (2001 AUMF sunset, Jayapal-Massie-Kaine-Young); Audit the Pentagon Act H.R. 7555 (Pocan-Biggs); FY2026 NDAA 2002 AUMF repeal precedent; GAO/DoD IG/FOIA pathways; 12 organizations (POGO, NPP, TCS, Quincy, Win Without War, FCNL, etc.); 10-state AUMF resolution targets; CalSTRS $489M shareholder engagement; FY2027 NDAA markup May-Aug 2026 as highest-leverage window. quality-review-index.md now: **16 Tier 1, 7 Tier 2, 0 Tier 3**. **Next**: Deepen remaining Tier 2 files (domain-03-democratic-participation, labor-evidence, rights-protection-evidence, immigration-evidence) OR publication-readiness formatting pass on the democratic renewal proposal.
+**Current focus**: Session 272: **immigration-evidence.md elevated to Tier 1** (local commit). Added: Canada/Germany/Australia int'l benchmarks deepened with 2024 data; Section 11 counterarguments (enforcement-deterrence Massey backfire, rule-of-law objection with Spain 2005 precedent, Card-Borjas Peri-Sparber resolution); Section 12 actionable intelligence (IRS-ICE data litigation, DREAM Act S.3348, Farm Workforce H.R.3227, sanctuary policy Tenth Amendment basis, 7 organizations, 5 named 2026 windows). quality-review-index.md now: **18 Tier 1, 5 Tier 2, 0 Tier 3**. **Next**: Deepen remaining Tier 2 files (domain-03-democratic-participation, rights-protection-evidence, social-safety-net-evidence, reparations-evidence, data-privacy-evidence) OR publication-readiness formatting pass on the democratic renewal proposal.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 270: **Corporate member expense policy enforcement complete** (commit `d8bbe8c`, 68 tests passing). Built enforcement layer over existing two-tier policy system: `BookingPolicyCheckRequest/Response` schemas, `check_booking_against_policy` service (vehicle category, fare cap with 150% soft-block threshold, business hours Mon-Fri 07:00-21:00 UTC, purpose required/allowed, monthly cap → REQUIRES_APPROVAL), 3 endpoints (member self-check, admin check, admin monthly-spend view), router registered in main.py. Pushed to rideshare remote. **Next**: Corporate member ride quota management OR department-level policy enforcement.
-**Last updated by**: orchestrator on 2026-04-17 (Session 270)
+**Current focus**: Session 272: **Department-level policy enforcement verified** (101 tests passing, pushed). Three-tier policy hierarchy fully implemented: account policy → department override → member override. Models: `CorporateDepartment`, `CorporateDepartmentMember`, `CorporateDepartmentRidePolicy`. Services: CRUD, membership, spend analytics, `get_effective_policy_for_member`. REST endpoints for both dept management and policy. **Next**: Corporate member onboarding workflow OR department budget enforcement (block bookings when dept monthly budget exceeded).
+**Last updated by**: orchestrator on 2026-04-17 (Session 272)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
