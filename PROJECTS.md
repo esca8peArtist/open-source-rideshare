@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 294)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 295)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 294: **Driver earnings comparison COMPLETE** (commit `f58b341`). `GET /driver/me/earnings-comparison` — compares trailing 4-week avg weekly earnings vs platform average across all active drivers. Returns driver_avg, platform_avg, difference_usd, difference_pct (None if platform_avg=0), percentile (rank/total/0–100 score), active_drivers_in_period, comparison_note. Single aggregating DB query (GROUP BY driver_id). 52 tests. **Total: 3,076 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap OR rider trip history with filters.
+**Current focus**: Session 295: **Rider trip history COMPLETE** (commit `9e634b5`). `GET /riders/me/trip-history` — paginated, filtered list of past trips. Filters: status (all/completed/cancelled), from_date, to_date, limit (1–100), offset. Returns total_count, trips[], filters_applied. fare_usd=actual_fare or estimated_fare; driver_rating=rider's rating of driver; newest-first order; 422 guard on date inversion. 57 tests. **Total: 3,133 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **3 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution. **Next**: Trip demand heatmap OR driver earnings history (time-series weekly breakdown).
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

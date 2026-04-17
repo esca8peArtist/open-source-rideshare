@@ -4,6 +4,41 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 295 — 2026-04-17
+
+### Orient
+- INBOX: empty — no new items
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no API key to pull cycle logs — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: April 20 framework waiting (3 days out)
+- Selected: open-source-rideshare — rider trip history with filters
+
+### open-source-rideshare — Rider trip history API COMPLETE
+
+**Commit**: `9e634b5`
+
+**Files created**:
+- `app/schemas/rider_trip_history.py` — `TripSummary`, `TripHistoryFilters`, `RiderTripHistory`
+- `app/services/rider_trip_history.py` — `_date_to_utc_start`, `_build_where_clauses`, `_ride_to_summary`, `get_rider_trip_history`; two-query pattern (COUNT + paginated SELECT)
+- `app/api/v1/rider_trip_history.py` — `GET /riders/me/trip-history`
+- `tests/test_rider_trip_history.py` — **57 tests** across 6 classes
+
+**Key design**:
+- Filters: `status` (all/completed/cancelled), `from_date` (YYYY-MM-DD inclusive), `to_date` (YYYY-MM-DD inclusive), `limit` (1–100, default 20), `offset` (≥0, default 0)
+- Two DB queries: COUNT for total (pre-pagination), SELECT+ORDER+LIMIT+OFFSET for page
+- `fare_usd` = actual_fare if set, else estimated_fare
+- `driver_rating` = Ride.rider_rating (rating the rider gave the driver)
+- 422 guard: from_date must not be after to_date
+- Ordered newest-first (Ride.requested_at desc)
+- `filters_applied` echoes all input params back in the response
+
+**Test count**: 57 new → **3,133 unit-passing** (57/57 new, all existing passing)
+
+### PROJECTS.md + CHECKIN.md update
+
+---
+
 ## Session 294 — 2026-04-17
 
 ### Orient

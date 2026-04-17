@@ -9,31 +9,26 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 292, 293
+**Sessions run**: 294, 295
 
-### Accomplished (Session 293)
+### Accomplished (Session 295)
 
-#### open-source-rideshare — Driver revenue projection COMPLETE (commit `708fc5e`)
-Forward-looking earnings intelligence for drivers, built on 8 weeks of completed ride history.
-- **`GET /driver/me/revenue-projection`**: trailing avg weekly earnings, projected monthly earnings (avg × 52/12 ≈ 4.33 weeks/month), trend classification (improving/stable/declining/insufficient_data), top-3 best earning hours, top-2 best earning days, full 24-entry hourly breakdown, 7-entry daily breakdown, per-week history for last 8 weeks
-- **Trend logic**: compares trailing 4-week avg vs prior 4-week avg; >10% delta classified as improving/declining
-- **Single DB query** — all aggregation in pure Python for testability; no model changes required
-- **58 tests** — **3,024 total unit-passing**
+#### open-source-rideshare — Rider trip history COMPLETE (commit `9e634b5`)
+Paginated, filtered trip history for riders.
+- **`GET /riders/me/trip-history`**: returns `total_count`, `trips[]`, `filters_applied`
+- **Filters**: `status` (all/completed/cancelled), `from_date` / `to_date` (YYYY-MM-DD, applied to requested_at), `limit` (1–100, default 20), `offset` (≥0, default 0)
+- `fare_usd` = actual_fare if completed, else estimated_fare; `driver_rating` = rider's rating of driver
+- Ordered newest-first; 422 guard when from_date > to_date
+- Two DB queries (COUNT + paginated SELECT) for correctness
+- **57 tests** — **3,133 total unit-passing**
 
-### Accomplished (Session 292)
+### Accomplished (Session 294)
 
-#### open-source-rideshare — Platform admin config API COMPLETE (commit `b65bdb9`)
-Persistent DB-backed configuration store replacing the in-memory settings dict.
-- **7 endpoints**: `GET/PUT /admin/config/{key}`, `GET /admin/config` (with category filter), `GET /admin/config/categories`, `POST /admin/config/seed`, `POST /admin/config/bulk-update`, `GET /admin/config/{key}/history`
-- **17 default config entries** across: pricing (base_fare, per_km_rate, per_min_rate, platform_fee_pct), surge (max_multiplier, min_demand_ratio), matching (max_search_radius_km, driver_timeout_sec), safety (panic_cancel_window_sec, max_trusted_contacts), features (pooling, fare_splitting, chat), notifications (notify_contacts_trip_start, panic_sms), compliance (max_daily/weekly_driver_hours)
-- **Full change audit trail**: every update writes a history entry (old value, new value, changed_by, reason)
-- **46 tests** — 2,910 total passing
-
-#### open-source-rideshare — Driver welfare summary COMPLETE (commit `ab50bb2`)
-Implemented an orphaned test file that existed without any backing code.
-- **`GET /driver/me/welfare-summary`**: shift hours this week/today, fatigue risk (low/moderate/high at 40h/50h thresholds), weekly earnings, tips, estimated hourly rate, earnings goal with progress %, insurance status (active/expiring_soon/expired/pending/not_on_file with 30-day warning), cooperative standing (approval, trips, rating, BGC), personalised welfare note
-- **New models**: `DriverShift` (shift tracking, ShiftStatus enum), `DriverEarningsGoal` (weekly/daily earnings targets)
-- **56 tests** — **2,966 total passing**
+#### open-source-rideshare — Driver earnings comparison COMPLETE (commit `f58b341`)
+Benchmarks each driver against the platform average.
+- **`GET /driver/me/earnings-comparison`**: trailing 4-week avg weekly earnings vs platform average; difference_usd, difference_pct (None if platform_avg=0), percentile (rank/total/0–100 score), active_drivers_in_period, comparison_note
+- Single aggregating DB query (GROUP BY driver_id); pure-Python ranking for testability
+- **52 tests** — **3,076 total unit-passing**
 
 ---
 
@@ -53,7 +48,7 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` branch has 4 sessions of work local on the Pi (2,966 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` branch has 6 sessions of work local on the Pi (3,133 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -66,7 +61,7 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — trip demand heatmap or driver earnings comparison vs platform average.
+3. **open-source-rideshare**: Next feature — trip demand heatmap or driver earnings time-series (weekly breakdown history).
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
