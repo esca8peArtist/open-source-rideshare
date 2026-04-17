@@ -32,6 +32,7 @@ from app.models.corporate_employee_invitation import (
 )
 from app.models.user import User
 from app.schemas.corporate_employee_invitation import BulkInvitationItem, InvitationCreate
+from app.services import corporate_member_onboarding as _onboarding_svc
 
 _DEFAULT_EXPIRY_DAYS = 7
 
@@ -540,4 +541,19 @@ async def accept_invitation(
     invitation.accepted_by_id = accepting_user_id
 
     await db.flush()
+
+    # Auto-create an onboarding record for the new member.  If one already
+    # exists (idempotent re-acceptance guard), we silently ignore the 409.
+    try:
+        await _onboarding_svc.create_onboarding(
+            db=db,
+            account_id=invitation.account_id,
+            member_id=accepting_user_id,
+            created_by_id=None,
+            invitation_id=invitation.id,
+        )
+    except HTTPException as exc:
+        if exc.status_code != status.HTTP_409_CONFLICT:
+            raise
+
     return invitation

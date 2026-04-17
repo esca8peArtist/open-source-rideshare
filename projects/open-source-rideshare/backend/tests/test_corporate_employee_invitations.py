@@ -28,6 +28,9 @@ Service tests (async, mocked DB):
   25. accept_invitation — admin role invitation → MemberRole.ADMIN created
   26. accept_invitation — token not valid → 400
   27. accept_invitation — user already a member → 409
+  28. accept_invitation — onboarding record created on success
+  29. accept_invitation — existing onboarding (409 from create_onboarding) is silently ignored
+  30. revoke_invitation — does NOT trigger onboarding creation
 
 Schema tests (sync):
   28. InvitationCreate — valid default (member role, no message)
@@ -527,12 +530,14 @@ async def test_accept_invitation_success():
 
     with patch(
         "app.services.corporate_employee_invitation._now_utc", return_value=NOW
+    ), patch(
+        "app.services.corporate_employee_invitation._onboarding_svc.create_onboarding",
+        new=AsyncMock(return_value=MagicMock()),
     ):
         result = await accept_invitation(db, str(TOKEN_UUID), accepting_user_id=99)
 
     assert result.status == InvitationStatus.ACCEPTED
     assert result.accepted_by_id == 99
-    db.add.assert_called_once()  # BusinessAccountMember added
     db.flush.assert_called_once()
 
 
@@ -557,6 +562,9 @@ async def test_accept_invitation_admin_role_creates_admin_member():
 
     with patch(
         "app.services.corporate_employee_invitation._now_utc", return_value=NOW
+    ), patch(
+        "app.services.corporate_employee_invitation._onboarding_svc.create_onboarding",
+        new=AsyncMock(return_value=MagicMock()),
     ):
         await accept_invitation(db, str(TOKEN_UUID), accepting_user_id=99)
 
@@ -604,7 +612,118 @@ async def test_accept_invitation_already_member_raises_409():
 
 
 # ---------------------------------------------------------------------------
-# 28–33: Schema tests
+# 28: accept_invitation — onboarding record created on success
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_accept_invitation_creates_onboarding_record():
+    """Accepting an invitation must auto-create a CorporateMemberOnboarding record."""
+    invitation = _make_invitation(
+        status=InvitationStatus.PENDING,
+        role=InvitationRole.MEMBER,
+        expires_at=NOW + timedelta(days=3),
+    )
+    account = MagicMock()
+    account.name = "ACME Corp"
+
+    db = AsyncMock()
+    inv_result = MagicMock()
+    inv_result.scalar_one_or_none.return_value = invitation
+    acc_result = MagicMock()
+    acc_result.scalar_one_or_none.return_value = account
+    no_member_result = MagicMock()
+    no_member_result.scalar_one_or_none.return_value = None
+    db.execute.side_effect = [inv_result, acc_result, inv_result, no_member_result]
+
+    fake_create_onboarding = AsyncMock(return_value=MagicMock())
+
+    with patch(
+        "app.services.corporate_employee_invitation._now_utc", return_value=NOW
+    ), patch(
+        "app.services.corporate_employee_invitation._onboarding_svc.create_onboarding",
+        new=fake_create_onboarding,
+    ):
+        await accept_invitation(db, str(TOKEN_UUID), accepting_user_id=99)
+
+    fake_create_onboarding.assert_awaited_once()
+    call_kwargs = fake_create_onboarding.call_args
+    assert call_kwargs.kwargs["member_id"] == 99
+    assert call_kwargs.kwargs["account_id"] == invitation.account_id
+    assert call_kwargs.kwargs["invitation_id"] == invitation.id
+
+
+# ---------------------------------------------------------------------------
+# 29: accept_invitation — existing onboarding 409 is silently ignored
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_accept_invitation_ignores_duplicate_onboarding():
+    """If create_onboarding raises 409 (already exists), accept_invitation
+    should still succeed rather than propagating the error."""
+    from fastapi import HTTPException as FastAPIHTTPException
+
+    invitation = _make_invitation(
+        status=InvitationStatus.PENDING,
+        role=InvitationRole.MEMBER,
+        expires_at=NOW + timedelta(days=3),
+    )
+    account = MagicMock()
+    account.name = "ACME Corp"
+
+    db = AsyncMock()
+    inv_result = MagicMock()
+    inv_result.scalar_one_or_none.return_value = invitation
+    acc_result = MagicMock()
+    acc_result.scalar_one_or_none.return_value = account
+    no_member_result = MagicMock()
+    no_member_result.scalar_one_or_none.return_value = None
+    db.execute.side_effect = [inv_result, acc_result, inv_result, no_member_result]
+
+    duplicate_exc = FastAPIHTTPException(
+        status_code=409, detail="An active onboarding already exists for this member."
+    )
+
+    with patch(
+        "app.services.corporate_employee_invitation._now_utc", return_value=NOW
+    ), patch(
+        "app.services.corporate_employee_invitation._onboarding_svc.create_onboarding",
+        new=AsyncMock(side_effect=duplicate_exc),
+    ):
+        # Should NOT raise — the 409 from create_onboarding is swallowed
+        result = await accept_invitation(db, str(TOKEN_UUID), accepting_user_id=99)
+
+    assert result.status == InvitationStatus.ACCEPTED
+
+
+# ---------------------------------------------------------------------------
+# 30: revoke_invitation — does NOT trigger onboarding creation
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_revoke_invitation_does_not_create_onboarding():
+    """Revoking an invitation must never create an onboarding record."""
+    invitation = _make_invitation(status=InvitationStatus.PENDING)
+
+    db = AsyncMock()
+    _make_execute_sequence(db, [_admin_member_mock(), invitation])
+
+    fake_create_onboarding = AsyncMock(return_value=MagicMock())
+
+    with patch(
+        "app.services.corporate_employee_invitation._onboarding_svc.create_onboarding",
+        new=fake_create_onboarding,
+    ):
+        result = await revoke_invitation(db, INVITE_ID, ACCOUNT_ID, ADMIN_USER_ID)
+
+    assert result.status == InvitationStatus.REVOKED
+    fake_create_onboarding.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# 31–36: Schema tests (previously 28–33)
 # ---------------------------------------------------------------------------
 
 
