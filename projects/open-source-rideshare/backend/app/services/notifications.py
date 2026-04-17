@@ -48,6 +48,7 @@ class NotificationType(str, enum.Enum):
     RIDE_IN_PROGRESS = "ride_in_progress"
     RIDE_ASSIGNED = "ride_assigned"
     RIDE_COMPLETED_DRIVER = "ride_completed_driver"
+    ROUTE_DEVIATION = "route_deviation"
 
 
 @dataclass
@@ -239,7 +240,7 @@ async def filter_channels_by_preferences(
         NotificationType.RIDE_COMPLETED, NotificationType.DRIVER_EN_ROUTE,
         NotificationType.DRIVER_ARRIVED, NotificationType.RIDE_REMINDER,
         NotificationType.RIDE_IN_PROGRESS, NotificationType.RIDE_ASSIGNED,
-        NotificationType.RIDE_COMPLETED_DRIVER,
+        NotificationType.RIDE_COMPLETED_DRIVER, NotificationType.ROUTE_DEVIATION,
     }
     payment_types = {
         NotificationType.PAYMENT_RECEIVED, NotificationType.PAYOUT_COMPLETED,

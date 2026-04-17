@@ -312,3 +312,25 @@ async def notify_ride_completed_driver(
         )
     except Exception:
         logger.exception("Failed to send ride_completed_driver notification for ride %d", ride_id)
+
+
+async def notify_route_deviation(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+    dropoff_address: str = "",
+) -> None:
+    """Notify rider that the driver has deviated significantly from the expected route."""
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.ROUTE_DEVIATION,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            dropoff_address=dropoff_address,
+        )
+    except Exception:
+        logger.exception("Failed to send route_deviation notification for ride %d", ride_id)

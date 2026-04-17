@@ -116,6 +116,16 @@ async def update_my_location(
             user.id,
         )
 
+    # Best-effort route deviation check — must not block the response.
+    try:
+        import asyncio
+        from app.services.route_deviation import check_and_notify_deviation
+        asyncio.ensure_future(
+            check_and_notify_deviation(user_id=user.id, lat=req.lat, lng=req.lng, db=db)
+        )
+    except Exception:
+        logger.warning("Could not schedule route deviation check for driver user %d", user.id)
+
     return DriverLocationResponse(
         lat=req.lat,
         lng=req.lng,

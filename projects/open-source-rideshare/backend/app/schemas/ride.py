@@ -217,6 +217,14 @@ class RideReceiptResponse(BaseModel):
     currency: str = "USD"
 
 
+class RouteDeviationStatusResponse(BaseModel):
+    """Route deviation status for an active or recently completed ride."""
+
+    ride_id: int
+    deviation_detected: bool
+    flagged_at: datetime | None = None
+
+
 class RiderStatsResponse(BaseModel):
     """Lifetime statistics summary for a rider."""
 

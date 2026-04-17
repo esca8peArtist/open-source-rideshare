@@ -174,6 +174,15 @@ def ride_completed_driver(fare: float | str = "", **kw) -> TemplateResult:
     )
 
 
+def route_deviation(dropoff_address: str = "", **kw) -> TemplateResult:
+    dest_part = f" to {dropoff_address}" if dropoff_address else ""
+    return (
+        "Route alert",
+        f"Your driver appears to have deviated from the expected route{dest_part}. Tap to check your trip or contact support.",
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -192,6 +201,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_IN_PROGRESS: ride_in_progress,
     NotificationType.RIDE_ASSIGNED: ride_assigned,
     NotificationType.RIDE_COMPLETED_DRIVER: ride_completed_driver,
+    NotificationType.ROUTE_DEVIATION: route_deviation,
 }
 
 

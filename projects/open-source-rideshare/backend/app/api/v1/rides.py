@@ -26,6 +26,7 @@ from app.schemas.ride import (
     RideRequest,
     RideRatingRequest,
     RideResponse,
+    RouteDeviationStatusResponse,
     ScheduleRideRequest,
 )
 from app.schemas.eta import DriverETAResponse, DriverLocationResponse, TripETAResponse
@@ -1251,4 +1252,37 @@ async def reverse_geocode_location(
     return ReverseGeocodeResponse(
         display_name=result["display_name"],
         short_address=result["short_address"],
+    )
+
+
+@router.get(
+    "/{ride_id}/route-deviation-status",
+    response_model=RouteDeviationStatusResponse,
+    summary="Check route deviation status for a ride",
+)
+async def get_route_deviation_status(
+    ride_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return whether the driver deviated significantly from the expected route.
+
+    The requesting user must be the rider or driver on the ride.
+    Useful for riders checking whether their active trip is on-course, and for
+    support agents reviewing completed rides.
+    """
+    result = await db.execute(
+        select(Ride).where(Ride.id == ride_id)
+    )
+    ride = result.scalar_one_or_none()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    if user.id not in (ride.rider_id, ride.driver_id):
+        raise HTTPException(status_code=403, detail="Not authorized to view this ride")
+
+    return RouteDeviationStatusResponse(
+        ride_id=ride_id,
+        deviation_detected=ride.route_deviation_flagged_at is not None,
+        flagged_at=ride.route_deviation_flagged_at,
     )

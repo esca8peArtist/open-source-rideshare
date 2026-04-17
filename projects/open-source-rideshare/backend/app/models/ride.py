@@ -63,6 +63,9 @@ class Ride(Base):
     reminder_1hr_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reminder_15min_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Route deviation — set once when a significant deviation is first detected
+    route_deviation_flagged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # If generated from a recurring ride template
     recurring_ride_id: Mapped[int | None] = mapped_column(
         ForeignKey("recurring_rides.id"), nullable=True, index=True
