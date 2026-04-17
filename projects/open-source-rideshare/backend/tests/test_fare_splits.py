@@ -23,6 +23,7 @@ from app.services.fare_splitting import (
     create_split_payment,
     expire_pending_splits,
     get_fare_split,
+    handle_split_payment_succeeded,
     respond_to_split,
     update_split_amounts_for_actual_fare,
     _split_to_dict,
@@ -1269,3 +1270,844 @@ class TestFareSplitEdgeCases:
         db = _make_db_session(ride=ride)
         result = await create_fare_split(1, 1, [{"user_id": 2}], True, db)
         assert "error" not in result
+
+
+# ===========================================================================
+# Comprehensive Unit Tests (task-specified coverage)
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Helper factories using the _make_db pattern from test_driver_dividends.py
+# ---------------------------------------------------------------------------
+
+def _seq_scalar_one(item) -> MagicMock:
+    """Result where .scalar_one_or_none() returns item."""
+    r = MagicMock()
+    r.scalar_one_or_none.return_value = item
+    scalars_mock = MagicMock()
+    scalars_mock.all.return_value = [item] if item is not None else []
+    r.scalars.return_value = scalars_mock
+    return r
+
+
+def _seq_scalars_list(items: list) -> MagicMock:
+    """Result where .scalars().all() returns items."""
+    r = MagicMock()
+    r.scalar_one_or_none.return_value = items[0] if items else None
+    scalars_mock = MagicMock()
+    scalars_mock.all.return_value = items
+    r.scalars.return_value = scalars_mock
+    return r
+
+
+def _seq_none() -> MagicMock:
+    """Result that returns nothing."""
+    r = MagicMock()
+    r.scalar_one_or_none.return_value = None
+    scalars_mock = MagicMock()
+    scalars_mock.all.return_value = []
+    r.scalars.return_value = scalars_mock
+    return r
+
+
+def _seq_db(*results) -> AsyncMock:
+    """AsyncSession that returns results in sequence per execute() call."""
+    db = AsyncMock()
+    db.execute = AsyncMock(side_effect=list(results))
+    db.add = MagicMock()
+    db.commit = AsyncMock()
+    db.refresh = AsyncMock()
+    return db
+
+
+def _fs_ride(
+    id: int = 1,
+    rider_id: int = 10,
+    status: RideStatus = RideStatus.COMPLETED,
+    estimated_fare: float = 40.0,
+    actual_fare: float | None = None,
+) -> MagicMock:
+    ride = MagicMock(spec=Ride)
+    ride.id = id
+    ride.rider_id = rider_id
+    ride.status = status
+    ride.estimated_fare = estimated_fare
+    ride.actual_fare = actual_fare
+    return ride
+
+
+def _fs_split(
+    id: int = 1,
+    ride_id: int = 1,
+    user_id: int | None = 10,
+    is_initiator: bool = True,
+    status: SplitStatus = SplitStatus.ACCEPTED,
+    share_amount: float = 20.0,
+    share_percentage: float = 50.0,
+    invite_phone: str | None = None,
+    invite_email: str | None = None,
+) -> MagicMock:
+    s = MagicMock(spec=FareSplit)
+    s.id = id
+    s.ride_id = ride_id
+    s.user_id = user_id
+    s.is_initiator = is_initiator
+    s.status = status
+    s.share_amount = share_amount
+    s.share_percentage = share_percentage
+    s.invite_phone = invite_phone
+    s.invite_email = invite_email
+    s.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+    s.responded_at = None
+    s.stripe_payment_intent_id = None
+    return s
+
+
+# ---------------------------------------------------------------------------
+# TestFareSplitSchemas — schema validation (items 1-8)
+# ---------------------------------------------------------------------------
+
+class TestFareSplitSchemas:
+    def test_rejects_empty_participants_list(self):
+        """1. CreateFareSplitRequest rejects empty participants list."""
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            CreateFareSplitRequest(participants=[])
+
+    def test_rejects_more_than_4_participants(self):
+        """2. CreateFareSplitRequest rejects > 4 participants."""
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            CreateFareSplitRequest(
+                participants=[SplitParticipant(user_id=i) for i in range(1, 6)]
+            )
+
+    def test_rejects_participant_with_no_identifier(self):
+        """3. CreateFareSplitRequest rejects participant with no user_id, phone, or email."""
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            CreateFareSplitRequest(participants=[SplitParticipant()])
+
+    def test_split_participant_rejects_zero_share_percentage(self):
+        """4. SplitParticipant rejects share_percentage of 0."""
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            SplitParticipant(user_id=1, share_percentage=0.0)
+
+    def test_split_participant_rejects_over_100_share_percentage(self):
+        """5. SplitParticipant rejects share_percentage > 100."""
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            SplitParticipant(user_id=1, share_percentage=100.1)
+
+    def test_split_participant_accepts_50_percent(self):
+        """6. SplitParticipant accepts share_percentage of 50.0."""
+        p = SplitParticipant(user_id=1, share_percentage=50.0)
+        assert p.share_percentage == 50.0
+
+    def test_accepts_valid_two_participant_request(self):
+        """7. CreateFareSplitRequest accepts valid 2-participant split."""
+        req = CreateFareSplitRequest(
+            participants=[
+                SplitParticipant(user_id=2),
+                SplitParticipant(email="friend@example.com"),
+            ]
+        )
+        assert len(req.participants) == 2
+
+    def test_split_equally_defaults_to_true(self):
+        """8. Defaults: split_equally=True."""
+        req = CreateFareSplitRequest(participants=[SplitParticipant(user_id=2)])
+        assert req.split_equally is True
+
+
+# ---------------------------------------------------------------------------
+# TestCreateFareSplit2 — create_fare_split service (items 9-29)
+# Uses _seq_db helper for sequenced execute() results.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestCreateFareSplit2:
+    async def test_error_if_ride_not_found(self):
+        """9. Returns error if ride not found."""
+        db = _seq_db(_seq_none())
+        result = await create_fare_split(99, 10, [{"user_id": 2}], True, db)
+        assert "error" in result
+        assert "not found" in result["error"].lower()
+
+    async def test_error_if_not_initiator(self):
+        """10. Returns error if initiator_id != ride.rider_id."""
+        ride = _fs_ride(rider_id=10)
+        db = _seq_db(_seq_scalar_one(ride))
+        result = await create_fare_split(1, 99, [{"user_id": 2}], True, db)
+        assert "error" in result
+        assert "initiator" in result["error"].lower()
+
+    async def test_error_if_ride_status_cancelled(self):
+        """11/12. Returns error if ride.status is CANCELLED."""
+        ride = _fs_ride(status=RideStatus.CANCELLED)
+        db = _seq_db(_seq_scalar_one(ride))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" in result
+        assert "cancelled" in result["error"].lower()
+
+    async def test_error_if_active_split_exists(self):
+        """13. Returns error if an active split already exists for the ride."""
+        ride = _fs_ride()
+        existing = _fs_split()
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([existing]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" in result
+        assert "already exists" in result["error"].lower()
+
+    async def test_error_if_too_many_participants(self):
+        """14. Returns error if total participants (including initiator) > 5."""
+        ride = _fs_ride()
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        participants = [{"user_id": i} for i in range(2, 7)]  # 5 + initiator = 6
+        result = await create_fare_split(1, 10, participants, True, db)
+        assert "error" in result
+        assert "4 participants" in result["error"]
+
+    async def test_equal_split_share_amount(self):
+        """15. Equal split: share_amount = fare / n_participants (rounded to 2 dp)."""
+        ride = _fs_ride(estimated_fare=60.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}, {"user_id": 3}], True, db)
+        assert "error" not in result
+        for split in result["splits"]:
+            assert split["share_amount"] == pytest.approx(20.0, abs=0.01)
+
+    async def test_equal_split_share_percentage(self):
+        """16. Equal split: share_percentage = 100.0 / n_participants."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" not in result
+        for split in result["splits"]:
+            assert split["share_percentage"] == pytest.approx(50.0, abs=0.01)
+
+    async def test_equal_split_initiator_accepted_others_pending(self):
+        """17. Equal split: initiator gets SplitStatus.ACCEPTED, others get PENDING."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" not in result
+        initiator = next(s for s in result["splits"] if s["is_initiator"])
+        others = [s for s in result["splits"] if not s["is_initiator"]]
+        assert initiator["status"] == SplitStatus.ACCEPTED.value
+        for o in others:
+            assert o["status"] == SplitStatus.PENDING.value
+
+    async def test_equal_split_initiator_flag_set(self):
+        """18. Equal split: initiator has is_initiator=True."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" not in result
+        initiators = [s for s in result["splits"] if s["is_initiator"]]
+        assert len(initiators) == 1
+
+    async def test_custom_split_initiator_pct_is_remainder(self):
+        """19. Custom split: initiator_pct = 100 - sum(participant_pcts)."""
+        ride = _fs_ride(estimated_fare=100.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(
+            1, 10,
+            [{"user_id": 2, "share_percentage": 30.0}],
+            False, db,
+        )
+        assert "error" not in result
+        initiator = next(s for s in result["splits"] if s["is_initiator"])
+        assert initiator["share_percentage"] == pytest.approx(70.0, abs=0.01)
+
+    async def test_custom_split_error_participant_pcts_exceed_100(self):
+        """20. Custom split: returns error if participant pcts sum > 100."""
+        ride = _fs_ride(estimated_fare=100.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(
+            1, 10,
+            [
+                {"user_id": 2, "share_percentage": 60.0},
+                {"user_id": 3, "share_percentage": 60.0},
+            ],
+            False, db,
+        )
+        assert "error" in result
+        assert "100%" in result["error"] or "exceed" in result["error"].lower()
+
+    async def test_custom_split_error_if_initiator_pct_zero(self):
+        """21. Custom split: returns error if initiator_pct == 0."""
+        ride = _fs_ride(estimated_fare=100.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(
+            1, 10,
+            [{"user_id": 2, "share_percentage": 100.0}],
+            False, db,
+        )
+        assert "error" in result
+        assert "initiator" in result["error"].lower()
+
+    async def test_custom_split_error_if_participant_percentage_none(self):
+        """22. Custom split: returns error if a participant has None/0 share_percentage."""
+        ride = _fs_ride(estimated_fare=100.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(
+            1, 10,
+            [{"user_id": 2, "share_percentage": None}],
+            False, db,
+        )
+        assert "error" in result
+
+    async def test_phone_lookup_resolves_user(self):
+        """23. Phone lookup: if participant has phone and no user_id, db resolves user."""
+        ride = _fs_ride(estimated_fare=40.0)
+        found_user = MagicMock()
+        found_user.id = 77
+        db = _seq_db(
+            _seq_scalar_one(ride),         # ride
+            _seq_scalars_list([]),           # existing splits
+            _seq_scalar_one(found_user),     # phone lookup
+        )
+        result = await create_fare_split(
+            1, 10,
+            [{"phone": "+15551234567"}],
+            True, db,
+        )
+        assert "error" not in result
+        participant = next(s for s in result["splits"] if not s["is_initiator"])
+        assert participant["user_id"] == 77
+
+    async def test_email_lookup_resolves_user(self):
+        """24. Email lookup: if participant has email and no user_id, db resolves user."""
+        ride = _fs_ride(estimated_fare=40.0)
+        found_user = MagicMock()
+        found_user.id = 88
+        db = _seq_db(
+            _seq_scalar_one(ride),         # ride
+            _seq_scalars_list([]),           # existing splits
+            _seq_scalar_one(found_user),     # email lookup (phone not provided so only email query fires)
+        )
+        result = await create_fare_split(
+            1, 10,
+            [{"email": "friend@example.com"}],
+            True, db,
+        )
+        assert "error" not in result
+        participant = next(s for s in result["splits"] if not s["is_initiator"])
+        assert participant["user_id"] == 88
+
+    async def test_rounding_adjustment_total_equals_fare(self):
+        """25. Rounding adjustment: if total_assigned != fare, difference added to initiator."""
+        ride = _fs_ride(estimated_fare=10.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(
+            1, 10,
+            [{"user_id": 2}, {"user_id": 3}],  # 3-way split of $10
+            True, db,
+        )
+        assert "error" not in result
+        total = sum(s["share_amount"] for s in result["splits"])
+        assert round(total, 2) == pytest.approx(10.0, abs=0.01)
+
+    async def test_returns_expected_keys(self):
+        """26. Returns dict with ride_id, total_fare, split_count, splits, all_accepted, all_paid."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" not in result
+        for key in ("ride_id", "total_fare", "split_count", "splits", "all_accepted", "all_paid"):
+            assert key in result
+
+    async def test_all_accepted_true_only_when_all_accepted_or_paid(self):
+        """27. all_accepted=True only when all non-cancelled splits are ACCEPTED or PAID."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" not in result
+        # Participant is PENDING → all_accepted must be False
+        assert result["all_accepted"] is False
+
+    async def test_all_paid_true_only_when_all_splits_paid(self):
+        """28. all_paid=True only when all splits are PAID."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        assert "error" not in result
+        assert result["all_paid"] is False
+
+    async def test_db_commit_called_after_creating_splits(self):
+        """29. db.commit() is called after creating splits."""
+        ride = _fs_ride(estimated_fare=40.0)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        await create_fare_split(1, 10, [{"user_id": 2}], True, db)
+        db.commit.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# TestGetFareSplit2 — get_fare_split service (items 30-35)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestGetFareSplit2:
+    async def test_error_if_ride_not_found(self):
+        """30. Returns error if ride not found."""
+        db = _seq_db(_seq_none())
+        result = await get_fare_split(99, 10, db)
+        assert "error" in result
+        assert "not found" in result["error"].lower()
+
+    async def test_error_if_no_active_splits(self):
+        """31. Returns error if no active splits found."""
+        ride = _fs_ride()
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await get_fare_split(1, 10, db)
+        assert "error" in result
+        assert "no fare split" in result["error"].lower()
+
+    async def test_error_if_user_not_authorized(self):
+        """32. Returns error if user is not a participant and not the ride owner."""
+        ride = _fs_ride(rider_id=10)
+        split = _fs_split(user_id=10)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([split]))
+        result = await get_fare_split(1, 99, db)
+        assert "error" in result
+        assert "not authorized" in result["error"].lower()
+
+    async def test_returns_split_for_participant(self):
+        """33. Returns split details for a participant."""
+        ride = _fs_ride(rider_id=10, estimated_fare=40.0)
+        split = _fs_split(user_id=20, is_initiator=False)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([split]))
+        result = await get_fare_split(1, 20, db)
+        assert "error" not in result
+        assert result["ride_id"] == 1
+
+    async def test_returns_split_for_ride_owner(self):
+        """34. Returns split details for the ride owner (who is not a participant)."""
+        ride = _fs_ride(rider_id=10, estimated_fare=40.0)
+        split = _fs_split(user_id=20, is_initiator=False)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([split]))
+        result = await get_fare_split(1, 10, db)
+        assert "error" not in result
+
+    async def test_uses_actual_fare_when_set(self):
+        """35a. Uses actual_fare if set."""
+        ride = _fs_ride(rider_id=10, estimated_fare=40.0, actual_fare=42.50)
+        split = _fs_split(user_id=10)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([split]))
+        result = await get_fare_split(1, 10, db)
+        assert "error" not in result
+        assert result["total_fare"] == pytest.approx(42.50)
+
+    async def test_falls_back_to_estimated_fare(self):
+        """35b. Falls back to estimated_fare when actual_fare is None."""
+        ride = _fs_ride(rider_id=10, estimated_fare=35.0, actual_fare=None)
+        split = _fs_split(user_id=10)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([split]))
+        result = await get_fare_split(1, 10, db)
+        assert "error" not in result
+        assert result["total_fare"] == pytest.approx(35.0)
+
+
+# ---------------------------------------------------------------------------
+# TestRespondToSplit2 — respond_to_split service (items 36-44)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestRespondToSplit2:
+    async def test_error_if_split_not_found(self):
+        """36. Returns error if split not found."""
+        db = _seq_db(_seq_none())
+        result = await respond_to_split(99, 10, True, db)
+        assert "error" in result
+        assert "not found" in result["error"].lower()
+
+    async def test_error_if_not_authorized(self):
+        """37. Returns error if split.user_id != user_id."""
+        split = _fs_split(user_id=10, is_initiator=False, status=SplitStatus.PENDING)
+        db = _seq_db(_seq_scalar_one(split))
+        result = await respond_to_split(1, 99, True, db)
+        assert "error" in result
+        assert "not authorized" in result["error"].lower()
+
+    async def test_error_if_is_initiator(self):
+        """38. Returns error if is_initiator=True."""
+        split = _fs_split(user_id=10, is_initiator=True, status=SplitStatus.PENDING)
+        db = _seq_db(_seq_scalar_one(split))
+        result = await respond_to_split(1, 10, True, db)
+        assert "error" in result
+        assert "initiator" in result["error"].lower()
+
+    async def test_error_if_not_pending(self):
+        """39. Returns error if split.status != PENDING."""
+        split = _fs_split(user_id=10, is_initiator=False, status=SplitStatus.ACCEPTED)
+        db = _seq_db(_seq_scalar_one(split))
+        result = await respond_to_split(1, 10, True, db)
+        assert "error" in result
+        assert "accepted" in result["error"].lower()
+
+    async def test_accepting_sets_status_accepted(self):
+        """40a. Accepting sets status=ACCEPTED."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        db = _seq_db(_seq_scalar_one(split))
+        await respond_to_split(1, 10, True, db)
+        assert split.status == SplitStatus.ACCEPTED
+
+    async def test_accepting_sets_responded_at(self):
+        """40b. Accepting sets responded_at to a datetime."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        db = _seq_db(_seq_scalar_one(split))
+        await respond_to_split(1, 10, True, db)
+        assert split.responded_at is not None
+        assert isinstance(split.responded_at, datetime)
+
+    async def test_declining_sets_status_declined(self):
+        """41a. Declining sets status=DECLINED."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        initiator = _fs_split(
+            id=2, user_id=5, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalar_one(split), _seq_scalar_one(initiator))
+        await respond_to_split(1, 10, False, db)
+        assert split.status == SplitStatus.DECLINED
+
+    async def test_declining_sets_responded_at(self):
+        """41b. Declining sets responded_at to a datetime."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        initiator = _fs_split(
+            id=2, user_id=5, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalar_one(split), _seq_scalar_one(initiator))
+        await respond_to_split(1, 10, False, db)
+        assert split.responded_at is not None
+
+    async def test_declining_redistributes_share_to_initiator(self):
+        """42. Declining redistributes share_amount to initiator's split."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=15.0, share_percentage=37.5,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        initiator = _fs_split(
+            id=2, user_id=5, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=25.0, share_percentage=62.5,
+        )
+        db = _seq_db(_seq_scalar_one(split), _seq_scalar_one(initiator))
+        await respond_to_split(1, 10, False, db)
+        assert initiator.share_amount == pytest.approx(40.0)
+
+    async def test_declining_zeroes_declined_split_amounts(self):
+        """43. Declining sets split.share_amount = 0.0 and share_percentage = 0.0."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        initiator = _fs_split(
+            id=2, user_id=5, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalar_one(split), _seq_scalar_one(initiator))
+        await respond_to_split(1, 10, False, db)
+        assert split.share_amount == 0.0
+        assert split.share_percentage == 0.0
+
+    async def test_db_commit_called_after_accept(self):
+        """44. db.commit() called after response."""
+        split = _fs_split(
+            user_id=10, is_initiator=False, status=SplitStatus.PENDING,
+        )
+        split.created_at = datetime(2026, 4, 1, tzinfo=timezone.utc)
+        split.responded_at = None
+        split.invite_phone = None
+        split.invite_email = None
+        db = _seq_db(_seq_scalar_one(split))
+        await respond_to_split(1, 10, True, db)
+        db.commit.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# TestCancelFareSplit2 — cancel_fare_split service (items 45-51)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestCancelFareSplit2:
+    async def test_error_if_ride_not_found(self):
+        """45. Returns error if ride not found."""
+        db = _seq_db(_seq_none())
+        result = await cancel_fare_split(99, 10, db)
+        assert "error" in result
+        assert "not found" in result["error"].lower()
+
+    async def test_error_if_user_not_ride_rider_id(self):
+        """46. Returns error if user is not ride.rider_id."""
+        ride = _fs_ride(rider_id=10)
+        db = _seq_db(_seq_scalar_one(ride))
+        result = await cancel_fare_split(1, 99, db)
+        assert "error" in result
+
+    async def test_error_if_no_active_splits(self):
+        """47. Returns error if no active splits exist."""
+        ride = _fs_ride(rider_id=10)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([]))
+        result = await cancel_fare_split(1, 10, db)
+        assert "error" in result
+        assert "no active" in result["error"].lower()
+
+    async def test_error_if_any_split_paid(self):
+        """48. Returns error if any split is PAID."""
+        ride = _fs_ride(rider_id=10)
+        paid = _fs_split(status=SplitStatus.PAID)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([paid]))
+        result = await cancel_fare_split(1, 10, db)
+        assert "error" in result
+        assert "paid" in result["error"].lower()
+
+    async def test_cancels_all_non_cancelled_splits(self):
+        """49. Cancels all non-cancelled splits (sets status=CANCELLED)."""
+        ride = _fs_ride(rider_id=10)
+        s1 = _fs_split(id=1, status=SplitStatus.ACCEPTED)
+        s2 = _fs_split(id=2, user_id=20, is_initiator=False, status=SplitStatus.PENDING)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([s1, s2]))
+        await cancel_fare_split(1, 10, db)
+        assert s1.status == SplitStatus.CANCELLED
+        assert s2.status == SplitStatus.CANCELLED
+
+    async def test_returns_expected_dict(self):
+        """50. Returns dict with ride_id, status='cancelled', splits_cancelled count."""
+        ride = _fs_ride(rider_id=10)
+        s1 = _fs_split(id=1, status=SplitStatus.ACCEPTED)
+        s2 = _fs_split(id=2, user_id=20, is_initiator=False, status=SplitStatus.PENDING)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([s1, s2]))
+        result = await cancel_fare_split(1, 10, db)
+        assert result["ride_id"] == 1
+        assert result["status"] == "cancelled"
+        assert result["splits_cancelled"] == 2
+
+    async def test_db_commit_called(self):
+        """51. db.commit() called."""
+        ride = _fs_ride(rider_id=10)
+        s1 = _fs_split(status=SplitStatus.ACCEPTED)
+        db = _seq_db(_seq_scalar_one(ride), _seq_scalars_list([s1]))
+        await cancel_fare_split(1, 10, db)
+        db.commit.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# TestExpirePendingSplits2 — expire_pending_splits service (items 52-57)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestExpirePendingSplits2:
+    async def test_returns_0_if_no_pending(self):
+        """52. Returns 0 if no pending splits."""
+        db = _seq_db(_seq_scalars_list([]))
+        count = await expire_pending_splits(1, db)
+        assert count == 0
+
+    async def test_sets_expired_splits_to_expired_status(self):
+        """53. Sets expired splits to status=EXPIRED."""
+        pending = _fs_split(
+            user_id=20, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        initiator = _fs_split(
+            id=2, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([pending]), _seq_scalar_one(initiator))
+        await expire_pending_splits(1, db)
+        assert pending.status == SplitStatus.EXPIRED
+
+    async def test_redistributes_expired_amount_to_initiator(self):
+        """54. Redistributes each expired split's share_amount to initiator."""
+        pending = _fs_split(
+            user_id=20, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=15.0, share_percentage=30.0,
+        )
+        initiator = _fs_split(
+            id=2, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=35.0, share_percentage=70.0,
+        )
+        db = _seq_db(_seq_scalars_list([pending]), _seq_scalar_one(initiator))
+        await expire_pending_splits(1, db)
+        assert initiator.share_amount == pytest.approx(50.0)
+        assert initiator.share_percentage == pytest.approx(100.0)
+
+    async def test_zeroes_expired_split_amounts(self):
+        """55. Sets each expired split's share_amount and share_percentage to 0."""
+        pending = _fs_split(
+            user_id=20, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        initiator = _fs_split(
+            id=2, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([pending]), _seq_scalar_one(initiator))
+        await expire_pending_splits(1, db)
+        assert pending.share_amount == 0.0
+        assert pending.share_percentage == 0.0
+
+    async def test_returns_count_of_expired(self):
+        """56. Returns count of expired splits."""
+        p1 = _fs_split(
+            id=1, user_id=20, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=10.0, share_percentage=25.0,
+        )
+        p2 = _fs_split(
+            id=2, user_id=21, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=10.0, share_percentage=25.0,
+        )
+        initiator = _fs_split(
+            id=3, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([p1, p2]), _seq_scalar_one(initiator))
+        count = await expire_pending_splits(1, db)
+        assert count == 2
+
+    async def test_db_commit_called(self):
+        """57. db.commit() called."""
+        pending = _fs_split(
+            user_id=20, is_initiator=False, status=SplitStatus.PENDING,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        initiator = _fs_split(
+            id=2, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([pending]), _seq_scalar_one(initiator))
+        await expire_pending_splits(1, db)
+        db.commit.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# TestUpdateSplitAmounts2 — update_split_amounts_for_actual_fare (items 58-62)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestUpdateSplitAmounts2:
+    async def test_noop_if_no_active_splits(self):
+        """58. No-ops if no active splits found."""
+        db = _seq_db(_seq_scalars_list([]))
+        await update_split_amounts_for_actual_fare(1, 50.0, db)
+        db.commit.assert_not_awaited()
+
+    async def test_recalculates_unpaid_splits(self):
+        """59. Recalculates unpaid splits based on actual_fare and share_percentage."""
+        s1 = _fs_split(
+            id=1, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        s2 = _fs_split(
+            id=2, user_id=20, is_initiator=False, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([s1, s2]))
+        await update_split_amounts_for_actual_fare(1, 60.0, db)
+        assert s1.share_amount == pytest.approx(30.0)
+        assert s2.share_amount == pytest.approx(30.0)
+
+    async def test_does_not_change_paid_splits(self):
+        """60. Does not change PAID splits."""
+        paid = _fs_split(
+            id=1, user_id=10, is_initiator=True, status=SplitStatus.PAID,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        unpaid = _fs_split(
+            id=2, user_id=20, is_initiator=False, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([paid, unpaid]))
+        await update_split_amounts_for_actual_fare(1, 60.0, db)
+        # Paid split stays at original $20
+        assert paid.share_amount == pytest.approx(20.0)
+
+    async def test_rounding_adjustment_applied_to_initiator(self):
+        """61. Rounding adjustment applied to initiator if total doesn't sum to unpaid_fare."""
+        initiator = _fs_split(
+            id=1, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=0.0, share_percentage=33.33,
+        )
+        p2 = _fs_split(
+            id=2, user_id=20, is_initiator=False, status=SplitStatus.ACCEPTED,
+            share_amount=0.0, share_percentage=33.33,
+        )
+        p3 = _fs_split(
+            id=3, user_id=21, is_initiator=False, status=SplitStatus.ACCEPTED,
+            share_amount=0.0, share_percentage=33.34,
+        )
+        db = _seq_db(_seq_scalars_list([initiator, p2, p3]))
+        actual_fare = 10.0
+        await update_split_amounts_for_actual_fare(1, actual_fare, db)
+        total = initiator.share_amount + p2.share_amount + p3.share_amount
+        assert round(total, 2) == pytest.approx(actual_fare, abs=0.01)
+
+    async def test_db_commit_called(self):
+        """62. db.commit() called."""
+        s = _fs_split(
+            id=1, user_id=10, is_initiator=True, status=SplitStatus.ACCEPTED,
+            share_amount=20.0, share_percentage=50.0,
+        )
+        db = _seq_db(_seq_scalars_list([s]))
+        await update_split_amounts_for_actual_fare(1, 60.0, db)
+        db.commit.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# TestHandleSplitPaymentSucceeded2 — handle_split_payment_succeeded (items 63-64)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+class TestHandleSplitPaymentSucceeded2:
+    async def test_sets_status_to_paid_if_found(self):
+        """63. Sets split status to PAID if found."""
+        split = _fs_split(status=SplitStatus.ACCEPTED)
+        db = _seq_db(_seq_scalar_one(split))
+        await handle_split_payment_succeeded(1, db)
+        assert split.status == SplitStatus.PAID
+        db.commit.assert_awaited_once()
+
+    async def test_noop_if_split_not_found(self):
+        """64. No-ops if split not found."""
+        db = _seq_db(_seq_none())
+        await handle_split_payment_succeeded(999, db)
+        db.commit.assert_not_awaited()
