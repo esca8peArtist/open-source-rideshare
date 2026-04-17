@@ -929,6 +929,17 @@ async def complete_ride(
         rider_id=ride.rider_id, fare=ride.actual_fare,
     )
 
+    # Notify trusted contacts with notify_on_trip_end=True — fire-and-forget.
+    try:
+        from app.services.rider_safety import send_trusted_contact_notifications
+        from app.schemas.rider_safety import TrustedContactNotificationType
+        await send_trusted_contact_notifications(
+            db, ride_id=ride.id, rider_id=ride.rider_id,
+            notification_type=TrustedContactNotificationType.TRIP_END,
+        )
+    except Exception:
+        pass  # never block ride operations on contact notification failure
+
     return {"status": "completed", "fare": ride.actual_fare}
 
 

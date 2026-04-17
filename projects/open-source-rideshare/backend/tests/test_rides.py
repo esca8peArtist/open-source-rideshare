@@ -525,6 +525,75 @@ class TestCompleteRide:
         mock_engine.set_driver_available.assert_awaited_once_with(20)
 
     @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    @patch("app.api.v1.rides.get_matching_engine", new_callable=AsyncMock)
+    async def test_trip_end_notifies_trusted_contacts(self, mock_engine_fn, mock_ws):
+        """complete_ride calls send_trusted_contact_notifications with TRIP_END."""
+        from app.api.v1.rides import complete_ride
+
+        mock_engine = AsyncMock()
+        mock_engine_fn.return_value = mock_engine
+
+        driver = _make_user(user_id=20, role=UserRole.DRIVER)
+        ride = _make_ride(driver_id=20, status=RideStatus.IN_PROGRESS, estimated_fare=15.50)
+
+        profile = MagicMock()
+        profile.total_trips = 5
+
+        ride_result = MagicMock()
+        ride_result.scalar_one_or_none.return_value = ride
+        profile_result = MagicMock()
+        profile_result.scalar_one_or_none.return_value = profile
+
+        db = AsyncMock()
+        db.execute.side_effect = [ride_result, profile_result]
+
+        with patch(
+            "app.services.rider_safety.send_trusted_contact_notifications",
+            new_callable=AsyncMock,
+            return_value=[],
+        ) as mock_notify:
+            await complete_ride(ride_id=1, driver=driver, db=db)
+
+        mock_notify.assert_awaited_once()
+        kwargs = mock_notify.call_args.kwargs
+        from app.schemas.rider_safety import TrustedContactNotificationType
+        assert kwargs["notification_type"] == TrustedContactNotificationType.TRIP_END
+        assert kwargs["rider_id"] == ride.rider_id
+
+    @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    @patch("app.api.v1.rides.get_matching_engine", new_callable=AsyncMock)
+    async def test_trip_end_notification_failure_does_not_block_completion(self, mock_engine_fn, mock_ws):
+        """complete_ride proceeds even if trusted contact notification fails."""
+        from app.api.v1.rides import complete_ride
+
+        mock_engine = AsyncMock()
+        mock_engine_fn.return_value = mock_engine
+
+        driver = _make_user(user_id=20, role=UserRole.DRIVER)
+        ride = _make_ride(driver_id=20, status=RideStatus.IN_PROGRESS, estimated_fare=15.50)
+
+        profile = MagicMock()
+        profile.total_trips = 5
+
+        ride_result = MagicMock()
+        ride_result.scalar_one_or_none.return_value = ride
+        profile_result = MagicMock()
+        profile_result.scalar_one_or_none.return_value = profile
+
+        db = AsyncMock()
+        db.execute.side_effect = [ride_result, profile_result]
+
+        with patch(
+            "app.services.rider_safety.send_trusted_contact_notifications",
+            new_callable=AsyncMock,
+            side_effect=Exception("Service unavailable"),
+        ):
+            result = await complete_ride(ride_id=1, driver=driver, db=db)
+        assert result == {"status": "completed", "fare": 15.50}
+
+    @pytest.mark.asyncio
     async def test_409_when_not_in_progress(self):
         from app.api.v1.rides import complete_ride
 
