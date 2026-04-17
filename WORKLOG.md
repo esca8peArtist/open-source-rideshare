@@ -4,6 +4,56 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 302 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: GitHub push still unresolved; all other blocks resolved
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on test print (user action)
+- resistance-research: April 20 framework ready to fill April 20 evening; no work needed yet
+- Selected: open-source-rideshare (next task: scheduled ride reminders)
+
+### open-source-rideshare — Route deviation detection COMPLETE
+
+**Commit**: `3125230`
+
+**Discovery**: All route deviation feature files were already implemented but uncommitted in the working tree (from a prior session). Found 1 failing test (`test_calls_send_ride_notification_with_correct_args`) — patch path was wrong (`app.services.notifications.send_ride_notification` instead of `app.services.notification_events.send_ride_notification`). Fixed.
+
+**Files committed**:
+- `app/services/route_deviation.py` — cross-track distance geometry (Haversine + bearing), `check_and_notify_deviation` fire-and-forget service
+- `app/models/ride.py` — `route_deviation_flagged_at` column
+- `app/db/migrations/versions/h2i3j4k5l6m7_add_route_deviation_flagged_at.py`
+- `app/schemas/ride.py` — `RouteDeviationStatusResponse`
+- `app/services/notifications.py` — `ROUTE_DEVIATION` NotificationType in ride_types
+- `app/services/notification_templates.py` — `route_deviation` template (push+SMS)
+- `app/services/notification_events.py` — `notify_route_deviation` dispatcher
+- `app/api/v1/rides.py` — `GET /{ride_id}/route-deviation-status` endpoint
+- `app/api/v1/driver_location.py` — hook to fire deviation check on location update
+- `tests/test_route_deviation.py` — 30 tests
+
+**Test count**: 30 new → **3,449 unit-passing**
+
+---
+
+### open-source-rideshare — Trusted contact notification wiring COMPLETE
+
+**Commit**: `ede14a4`
+
+**Gap identified**: `send_trusted_contact_notifications` was imported in `rider_safety.py` but never called from any endpoint. Two places had clear hooks:
+- `post_trigger_panic` — should fire `PANIC_ALERT` notifications to contacts with `notify_on_panic=True`
+- `start_ride` — should fire `TRIP_START` notifications to contacts with `notify_on_trip_start=True`
+
+**Changes**:
+- `app/api/v1/rider_safety.py` — added `TrustedContactNotificationType` import; wired PANIC_ALERT after `trigger_panic` succeeds; fire-and-forget with exception logging
+- `app/api/v1/rides.py` — wired TRIP_START after ride transitions to IN_PROGRESS; fire-and-forget with silent exception swallow
+- `tests/test_rider_safety.py` — 2 new tests: panic endpoint calls notify with correct args, panic proceeds on failure
+- `tests/test_rides.py` — 2 new tests: start_ride calls notify with TRIP_START, start_ride proceeds on failure
+
+**Test count**: 4 new → **3,453 unit-passing**
+
+---
+
 ## Session 301 — 2026-04-17
 
 ### open-source-rideshare — Ride status push notifications COMPLETE

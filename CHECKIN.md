@@ -9,34 +9,34 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 294–301
+**Sessions run**: 294–302
 
-### Accomplished (Session 301)
+### Accomplished (Session 302)
 
-#### open-source-rideshare — Ride status push notifications COMPLETE (commit `df7a4f3`)
-Closed the driver-side notification gap — all key status transitions now notify both rider and driver:
+#### open-source-rideshare — Route deviation detection COMPLETE (commit `3125230`)
+When a driver submits a location update during an IN_PROGRESS ride, the platform now checks cross-track distance (perpendicular distance from driver's position to the pickup→dropoff line). If deviation exceeds 1 km and the ride hasn't already been flagged, the rider receives a push+SMS alert and the flag is set (idempotent — fires once per ride).
 
-**New notification types** (3): `RIDE_IN_PROGRESS`, `RIDE_ASSIGNED`, `RIDE_COMPLETED_DRIVER`
+- `route_deviation.py`: cross-track geometry + `check_and_notify_deviation` fire-and-forget
+- `Ride.route_deviation_flagged_at` column + migration
+- `GET /{ride_id}/route-deviation-status` — rider/driver-scoped deviation check endpoint
+- `ROUTE_DEVIATION` NotificationType in ride_types (respects rider preferences)
+- `notify_route_deviation` dispatcher + `route_deviation` template (push+SMS)
+- `beckn-protocol.md`: Beckn/ONDC interoperability research (design notes for community)
+- **30 new tests** — **3,449 total unit-passing**
 
-**New templates**:
-- `ride_in_progress` — push only; includes dropoff address; sent to rider when ride starts
-- `ride_assigned` — push+SMS; includes rider name + pickup address; sent to driver on new ride assignment
-- `ride_completed_driver` — push only; includes fare; sent to driver on completion
+#### open-source-rideshare — Trusted contact notification wiring COMPLETE (commit `ede14a4`)
+`send_trusted_contact_notifications` existed but was never called. Closed two gaps:
 
-**New dispatchers** (notification_events.py): `notify_ride_started`, `notify_driver_assigned`, `notify_ride_completed_driver` — all fire-and-forget, exception-safe
+- Panic button (`POST /riders/me/panic`) → now fires `PANIC_ALERT` to contacts with `notify_on_panic=True` — fire-and-forget, failure logged but never blocks the alert
+- Trip start (`POST /rides/{id}/start`) → now fires `TRIP_START` to contacts with `notify_on_trip_start=True` — fire-and-forget, silent failure so ride is never blocked
 
-**Hooks in rides.py**:
-- `start_ride()` → rider gets "Your ride has started" (was missing entirely)
-- `accept_ride()` + `_match_ride_background()` → driver gets "New ride assigned" with pickup address
-- `complete_ride()` → driver gets "Ride complete" with fare (rider already got this; driver was missing)
+**4 new tests** — **3,453 total unit-passing**
 
-**45 new tests** — **3,419 total unit-passing**
+### Accomplished (Sessions 300–301)
 
-### Accomplished (Session 300)
-
-#### open-source-rideshare — Driver live location updates COMPLETE (commit `c1772d5`)
-- `PUT /drivers/me/location`, `GET /drivers/me/location`, `GET /riders/nearby-drivers`, `GET /admin/drivers/locations`, `GET /admin/drivers/{driver_id}/location`
-- **42 new tests** — **3,374 total unit-passing**
+#### open-source-rideshare — Driver live location + ride status notifications COMPLETE
+- Driver location: `PUT/GET /drivers/me/location`, `GET /riders/nearby-drivers`, admin views (42 tests)
+- Ride status notifications: 3 new types (RIDE_IN_PROGRESS, RIDE_ASSIGNED, RIDE_COMPLETED_DRIVER), 3 templates, 3 dispatchers, hooks in start/accept/complete endpoints (45 tests)
 
 ---
 
@@ -56,7 +56,7 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` now has 11 sessions of work locally (3,419 tests). Push via: (a) grant Pi's GitHub account write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+`feature/rider-emergency-safety` now has 13 sessions of work locally (3,453 tests). Push via: (a) grant Pi GitHub write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -69,7 +69,7 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — scheduled ride reminders (1-hour + 15-minute push reminders before pickup).
+3. **open-source-rideshare**: Next feature — TRIP_END trusted contact notification (wire `complete_ride` → TRIP_END); or driver photo/plate verification endpoint at pickup.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
