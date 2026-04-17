@@ -9,12 +9,18 @@ Provides detailed rating analytics beyond a simple average:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.driver import DriverProfile
 from app.models.ride import Ride, RideStatus
+
+# Thresholds matching the rider-rating low-rated logic.
+_LOW_RATED_THRESHOLD = 3.0
+_LOW_RATED_MIN_RATINGS = 5
+_LOW_RATED_WINDOW_DAYS = 30
 
 
 @dataclass(frozen=True)
@@ -140,6 +146,60 @@ async def get_rider_ratings(
         recent_average=None,
         recent_count=0,
     )
+
+
+async def list_low_rated_drivers(
+    db: AsyncSession,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[dict]:
+    """Return driver IDs flagged as low-rated with their recent averages.
+
+    A driver is low-rated when their 30-day average (from ride.driver_rating)
+    is below 3.0 and they have received more than 5 ratings in that window.
+    Results are sorted by average ascending (worst first).
+
+    Args:
+        db: Active async database session.
+        limit: Maximum number of results.
+        offset: Pagination offset.
+
+    Returns:
+        List of dicts with driver_id, recent_avg, and recent_count.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(days=_LOW_RATED_WINDOW_DAYS)
+
+    query = (
+        select(
+            Ride.driver_id,
+            func.avg(Ride.driver_rating).label("recent_avg"),
+            func.count(Ride.driver_rating).label("recent_count"),
+        )
+        .where(
+            Ride.driver_rating.isnot(None),
+            Ride.status == RideStatus.COMPLETED,
+            Ride.completed_at >= cutoff,
+        )
+        .group_by(Ride.driver_id)
+        .having(
+            func.count(Ride.driver_rating) > _LOW_RATED_MIN_RATINGS,
+            func.avg(Ride.driver_rating) < _LOW_RATED_THRESHOLD,
+        )
+        .order_by(func.avg(Ride.driver_rating).asc())
+        .limit(limit)
+        .offset(offset)
+    )
+
+    result = await db.execute(query)
+    rows = result.all()
+    return [
+        {
+            "driver_id": row.driver_id,
+            "recent_avg": round(float(row.recent_avg), 2),
+            "recent_count": row.recent_count,
+        }
+        for row in rows
+    ]
 
 
 async def update_driver_rating_avg(driver_user_id: int, db: AsyncSession) -> float | None:
