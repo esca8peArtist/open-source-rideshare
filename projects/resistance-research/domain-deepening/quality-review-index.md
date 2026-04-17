@@ -6,6 +6,8 @@
 
 *Index updated April 2026, Session 267: judicial-independence-evidence.md elevated from Tier 2 to Tier 1. Three gaps filled: fiscal estimates for SCOTUS expansion, term limits, and independent ethics IG (Section 12); full development of Canada JAC/JAAC model and South Africa JSC (Section 13); counterargument on court reform as politicization with counter-counter and policy sequencing resolution (Section 14).*
 
+*Index updated April 2026, Session 268: housing-evidence.md elevated from Tier 2 to Tier 1. Four gaps filled: Vienna Gemeindebau section expanded with construction cost comparisons (€150-200k/unit vs. US LIHTC $400-600k), rent levels (€7-8/sqm vs. €15-20/sqm market), waitlist data (26,000 households, ~1-2 year wait), income ceiling (€53,340/year net), Klimabonus passive-house mandate, and Gemeinschaftliche Wohnprojekte co-housing model; Singapore HDB section added as Section 9.1b with coverage (79% of residents), homeownership rate (88.9%), resale prices (SGD 500-600k vs. SGD 1.2M+ private), construction cost (SGD 200-350k/unit), BTO scheme, income ceiling (SGD 14,000/month), and Land Acquisition Act as irreplaceable enabling condition; fiscal estimates added for zoning reform (YIMBY Act near-zero cost, transportation conditioning $5-15B leverage, Hsieh-Moretti $1.7T GDP gain, Minneapolis 6-10% rent reduction), LIHTC alternatives (all-in $400-600k/unit current vs. $280-420k direct grant alternative, Vienna non-profit analog at $180-280k/unit), and CLT scaling ($2.5-4B over 10 years vs. $31-37.5B voucher equivalent); Actionable Intelligence section added as Section 13 (federal legislation vehicles, state pressure points through 2026, organizations to support, specific appropriations and rulemaking pressure points); 2025-2026 rollback documentation added as Section 14 (AFFH suspension affecting $7B in annual grants, HUD discretionary budget cut ~20%, 400 FTE reduction, Section 8 under-funded by 100,000 vouchers, manufactured housing code update as surviving regulatory gain, record 770,000 PIT count backdrop).*
+
 ---
 
 ## Summary Assessment
@@ -20,7 +22,7 @@ The domain-deepening corpus is substantially stronger than a typical policy rese
 
 ## Publication-Readiness Tiers
 
-### Tier 1 — Publish As-Is (13 files)
+### Tier 1 — Publish As-Is (14 files)
 
 These files are ready for public release, citation in advocacy materials, and use as evidence foundations for the proposal. Minor additions would improve them but are not required.
 
@@ -37,8 +39,9 @@ These files are ready for public release, citation in advocacy materials, and us
 11. healthcare-education-evidence.md *(elevated Session 264: counterarguments section added, fiscal estimates completed with Stanford/UCSF BIR savings quantified, actionable intelligence section added)*
 12. tax-policy-evidence.md *(elevated Session 265: duplication with fiscal-reform resolved through explicit scope differentiation, ETI literature added, "starve the beast" empirical record added, actionable intelligence section added)*
 13. judicial-independence-evidence.md *(elevated Session 267: fiscal estimates for SCOTUS expansion/term limits/ethics IG added as Section 12; Canada JAC/JAAC and South Africa JSC fully developed as Section 13; counterargument on court reform as politicization — norm erosion objection, FDR miscalculation, arms race problem — with counter-counter and policy sequencing resolution added as Section 14)*
+14. housing-evidence.md *(elevated Session 268: Vienna/Singapore expanded with specific outcome numbers, fiscal estimates for zoning reform/LIHTC/CLT, actionable intelligence section, 2025-2026 rollback documentation)*
 
-### Tier 2 — Adequate, Minor Gaps (10 files)
+### Tier 2 — Adequate, Minor Gaps (9 files)
 
 Solid evidentiary foundations. Missing one or two dimensions that would make them Tier 1, but usable as-is for most purposes. Deepening one weak dimension would elevate each.
 
@@ -48,10 +51,9 @@ Solid evidentiary foundations. Missing one or two dimensions that would make the
 13. social-safety-net-evidence.md
 14. rights-protection-evidence.md
 15. data-privacy-evidence.md
-16. housing-evidence.md
-17. economic-concentration-evidence.md
-18. domain-03-democratic-participation.md
-19. national-security-evidence.md *(elevated Session 263: counterargument section developed, deterrence theory vs. accidental war risk treated, "hollowing out" objection to audit requirements added; classified Tier 2+ rather than Tier 1 pending full actionable intelligence development)*
+16. economic-concentration-evidence.md
+17. domain-03-democratic-participation.md
+18. national-security-evidence.md *(elevated Session 263: counterargument section developed, deterrence theory vs. accidental war risk treated, "hollowing out" objection to audit requirements added; classified Tier 2+ rather than Tier 1 pending full actionable intelligence development)*
 
 ### Tier 3 — Needs Targeted Deepening (0 files)
 
@@ -246,14 +248,14 @@ Rubric dimensions: **Updated data** (current through 2024–2025) | **Int'l benc
 
 | Dimension | Score | Notes |
 |---|---|---|
-| Updated data | Strong | 4.03 million gap (2025); 22.4 million cost-burdened renters (record, 2024); 770,000 HUD PIT Count 2024 (+18%); Q4 2024 homeownership data by race |
-| Int'l benchmarks | Adequate | Vienna and Singapore referenced in gaps list but not fully developed in sections read. Community Land Trusts as third model present but thin on international comparators |
+| Updated data | Strong | 4.03 million gap (2025); 22.4 million cost-burdened renters (record, 2024); 770,000 HUD PIT Count 2024 (+18%); Q4 2024 homeownership data by race; 2025-2026 rollback documentation (AFFH suspension, HUD budget cuts, voucher under-funding) |
+| Int'l benchmarks | Strong | Vienna expanded: €150-200k/unit construction cost, €7-8/sqm rent, 26,000 waitlist, €53,340 income ceiling, Klimabonus passive-house mandate. Singapore HDB added: 79% coverage, 88.9% homeownership rate, SGD 500-600k resale price, SGD 200-350k/unit construction cost, Land Acquisition Act as irreplaceable enabling condition |
 | Counterarguments | Strong | Diamond et al. 2019 San Francisco rent control study (15% long-run supply reduction); Hsieh-Moretti correction with caveat; filtering evidence both directions |
-| Fiscal estimates | Adequate | LIHTC cost-efficiency concerns raised; Pennsylvania land value tax referenced. No cost estimates for proposed reforms |
-| Sourcing | Strong | Harvard JCHS, HUD AHAR, NLIHC, Glaeser/Gyourko NBER all primary-sourced |
-| Actionable intelligence | Needs Work | Sections read (120 lines of ~600+) don't reach actionable section — incomplete assessment. What's visible is primarily evidence rather than organizing targets |
+| Fiscal estimates | Strong | Zoning reform: YIMBY Act near-zero cost, transportation conditioning $5-15B leverage, Hsieh-Moretti $1.7T GDP gain, Minneapolis 6-10% rent reduction. LIHTC: $400-600k/unit current vs. $280-420k direct grant alternative, Vienna non-profit analog $180-280k/unit. CLT scaling: $2.5-4B over 10 years vs. $31-37.5B voucher equivalent |
+| Sourcing | Strong | Harvard JCHS, HUD AHAR, NLIHC, Glaeser/Gyourko NBER all primary-sourced; GAO, CBO, Lincoln Institute, Grounded Solutions Network added for fiscal section |
+| Actionable intelligence | Strong | Section 13 added: YIMBY Act S.1614/H.R.3009, state pressure points (CA, CO, MT, NY, TX through 2026), organizations (NLIHC, Up For Growth, Grounded Solutions, LISC, Habitat), FY2027 appropriations and AFFH litigation pressure points, LIHTC Ways and Means window, 2026 state ballot initiatives |
 
-**Verdict**: Tier 2 (based on partial read — file is long). The evidence base is excellent. The Hsieh-Moretti GDP drag finding with its correction (the honest version includes the caveat that supply reform alone doesn't close the affordability gap for bottom quintile) is exactly the kind of nuanced treatment that makes a document credible to skeptics.
+**Verdict**: ~~Tier 2~~ **Tier 1** *(elevated Session 268)*. Vienna Gemeindebau section fully developed with specific outcome numbers. Singapore HDB added as Section 9.1b with full coverage, cost, and transferability analysis including the Land Acquisition Act constraint that is rarely stated plainly. Fiscal estimates subsection added under Section 12 covering zoning reform, LIHTC alternatives, and CLT scaling with comparison figures. Actionable intelligence added as Section 13. 2025-2026 rollback documentation added as Section 14 covering AFFH suspension, HUD budget/staff reductions, Section 8 under-funding, and the manufactured housing code update as the surviving regulatory gain.
 
 ---
 
@@ -445,7 +447,7 @@ All four Priority 1 items are done. Brief record:
 
 8. **reparations-evidence.md**: Add Germany Holocaust reparations as the structural success model (the one case where the framework worked). Add cost estimate for HR 40 commission process. Develop the objection-to-reparations section more fully — the targeting/descendant-definition questions will be the primary political friction.
 
-9. **housing-evidence.md**: Add Vienna and Singapore social housing comparators with specific outcome numbers. Add fiscal estimates for zoning reform, LIHTC alternatives, and Community Land Trust scaling.
+9. **housing-evidence.md**: COMPLETE (Session 268). Vienna Gemeindebau expanded with construction cost comparisons, rent levels, waitlist data, income ceiling, Klimabonus, and co-housing model. Singapore HDB added as Section 9.1b. Fiscal estimates added for zoning reform, LIHTC alternatives, and CLT scaling. Actionable intelligence added as Section 13. 2025-2026 rollback documentation added as Section 14. File elevated to Tier 1.
 
 10. **economic-concentration-evidence.md**: Add actionable intelligence naming live FTC/DOJ cases, specific legislative vehicles (Competition and Antitrust Law Enforcement Reform Act), and state AG enforcement actions as near-term leverage points.
 
