@@ -28,6 +28,7 @@ from app.models.driver_performance import DriverPerformanceAlert, DriverPerforma
 from app.models.ride import RideStatus
 from app.services.driver_performance import (
     ALERT_HIGH_CANCELLATION,
+    ALERT_HIGH_NO_SHOW,
     ALERT_LOW_ACCEPTANCE,
     ALERT_LOW_RATING,
     ALERT_LOW_SCORE,
@@ -57,6 +58,8 @@ def _make_snapshot(**kwargs) -> DriverPerformanceSnapshot:
         total_rides_offered=60,
         total_rides_accepted=55,
         total_rides_cancelled_by_driver=5,
+        total_no_shows=0,
+        no_show_rate=0.0,
         acceptance_rate=0.90,
         completion_rate=0.95,
         cancellation_rate=0.09,
@@ -830,3 +833,97 @@ class TestAdminPerformanceEndpoints:
         data = resp.json()
         assert data["limit"] == 10
         assert data["offset"] == 0
+
+
+# ---------------------------------------------------------------------------
+# No-show rate — alert and metric tests
+# ---------------------------------------------------------------------------
+
+
+class TestNoShowRateAlert:
+    """Tests for the high_no_show alert threshold and rate computation."""
+
+    def _make_db(self, existing_types: set[str] | None = None) -> AsyncMock:
+        from unittest.mock import AsyncMock, MagicMock
+
+        db = AsyncMock()
+        existing = existing_types or set()
+        rows = [(t,) for t in existing]
+        result_mock = MagicMock()
+        result_mock.all.return_value = rows
+        db.execute = AsyncMock(return_value=result_mock)
+        db.flush = AsyncMock()
+        db.add = MagicMock()
+        return db
+
+    @pytest.mark.asyncio
+    async def test_high_no_show_creates_alert(self):
+        """no_show_rate above threshold triggers high_no_show alert."""
+        snap = _make_snapshot(
+            no_show_rate=0.15,  # above ALERT_HIGH_NO_SHOW=0.10
+            total_no_shows=8,
+        )
+        db = self._make_db()
+        alerts = await check_and_create_alerts(db, snap)
+        types = [a.alert_type for a in alerts]
+        assert "high_no_show" in types
+
+    @pytest.mark.asyncio
+    async def test_no_alert_when_no_show_rate_at_threshold(self):
+        """no_show_rate exactly at threshold does not trigger alert."""
+        snap = _make_snapshot(
+            no_show_rate=ALERT_HIGH_NO_SHOW,  # == 0.10 — not above, no alert
+            total_no_shows=5,
+        )
+        db = self._make_db()
+        alerts = await check_and_create_alerts(db, snap)
+        types = [a.alert_type for a in alerts]
+        assert "high_no_show" not in types
+
+    @pytest.mark.asyncio
+    async def test_no_alert_when_no_show_rate_zero(self):
+        snap = _make_snapshot(no_show_rate=0.0, total_no_shows=0)
+        db = self._make_db()
+        alerts = await check_and_create_alerts(db, snap)
+        types = [a.alert_type for a in alerts]
+        assert "high_no_show" not in types
+
+    @pytest.mark.asyncio
+    async def test_duplicate_no_show_alert_not_created(self):
+        """Does not create a second high_no_show alert if one already exists."""
+        snap = _make_snapshot(no_show_rate=0.20, total_no_shows=10)
+        db = self._make_db(existing_types={"high_no_show"})
+        alerts = await check_and_create_alerts(db, snap)
+        types = [a.alert_type for a in alerts]
+        assert "high_no_show" not in types
+
+    def test_alert_high_no_show_constant_value(self):
+        assert ALERT_HIGH_NO_SHOW == 0.10
+
+
+class TestNoShowRateMetrics:
+    """Tests for no_show_rate and total_no_shows fields on snapshot/schema."""
+
+    def test_snapshot_has_total_no_shows_field(self):
+        from app.models.driver_performance import DriverPerformanceSnapshot
+        assert hasattr(DriverPerformanceSnapshot, "total_no_shows")
+
+    def test_snapshot_has_no_show_rate_field(self):
+        from app.models.driver_performance import DriverPerformanceSnapshot
+        assert hasattr(DriverPerformanceSnapshot, "no_show_rate")
+
+    def test_snapshot_response_schema_has_no_show_fields(self):
+        from app.schemas.driver_performance import DriverPerformanceSnapshotResponse
+        fields = DriverPerformanceSnapshotResponse.model_fields
+        assert "total_no_shows" in fields
+        assert "no_show_rate" in fields
+
+    def test_scorecard_schema_has_no_show_rate(self):
+        from app.schemas.driver_performance import DriverScorecardResponse
+        fields = DriverScorecardResponse.model_fields
+        assert "no_show_rate" in fields
+
+    def test_trend_schema_has_no_show_rate(self):
+        from app.schemas.driver_performance import PerformanceTrendResponse
+        fields = PerformanceTrendResponse.model_fields
+        assert "no_show_rate" in fields

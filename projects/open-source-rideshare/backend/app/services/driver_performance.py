@@ -37,7 +37,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.driver import DriverProfile
 from app.models.driver_performance import DriverPerformanceAlert, DriverPerformanceSnapshot
-from app.models.ride import Ride, RideStatus
+from app.models.ride import CancellationCategory, Ride, RideStatus
 from app.models.rider_rating import RiderRating
 from app.models.user import User, UserRole
 
@@ -63,6 +63,7 @@ MAX_RATING = 5.0
 # Alert thresholds
 ALERT_LOW_ACCEPTANCE = 0.70
 ALERT_HIGH_CANCELLATION = 0.20
+ALERT_HIGH_NO_SHOW = 0.10  # more than 10 % of accepted rides result in a no-show
 ALERT_LOW_RATING = 3.5
 ALERT_LOW_SCORE = 60.0
 
@@ -185,9 +186,15 @@ async def calculate_period_metrics(
     }
     total_accepted = sum(1 for r in rides if r.status in accepted_statuses)
 
+    # Rides specifically flagged as DRIVER_NO_SHOW (auto-detected or manually reported)
+    total_no_shows = sum(
+        1 for r in rides if r.cancellation_category == CancellationCategory.DRIVER_NO_SHOW
+    )
+
     acceptance_rate = total_accepted / total_offered if total_offered > 0 else 0.0
     completion_rate = total_completed / total_accepted if total_accepted > 0 else 0.0
     cancellation_rate = total_cancelled / total_accepted if total_accepted > 0 else 0.0
+    no_show_rate = total_no_shows / total_accepted if total_accepted > 0 else 0.0
 
     # Rider ratings received this period (driver_rating column on Ride)
     rated_rides = [r for r in rides if r.driver_rating is not None]
@@ -216,6 +223,8 @@ async def calculate_period_metrics(
         "on_time_rate": round(on_time_rate, 4),
         "average_rider_rating": round(average_rider_rating, 4),
         "total_rider_ratings": total_rider_ratings,
+        "total_no_shows": total_no_shows,
+        "no_show_rate": round(no_show_rate, 4),
         "total_complaints": 0,  # complaint tracking TBD — admin can set directly
     }
 
@@ -331,6 +340,11 @@ async def check_and_create_alerts(
     if snapshot.cancellation_rate > ALERT_HIGH_CANCELLATION:
         candidates.append(
             ("high_cancellation", ALERT_HIGH_CANCELLATION, snapshot.cancellation_rate)
+        )
+
+    if snapshot.no_show_rate > ALERT_HIGH_NO_SHOW:
+        candidates.append(
+            ("high_no_show", ALERT_HIGH_NO_SHOW, snapshot.no_show_rate)
         )
 
     if snapshot.total_rider_ratings > 0 and snapshot.average_rider_rating < ALERT_LOW_RATING:
@@ -515,6 +529,7 @@ async def get_performance_trend(
             "acceptance_rate": _compute_trend([], True, 0.02),
             "completion_rate": _compute_trend([], True, 0.02),
             "cancellation_rate": _compute_trend([], False, 0.01),
+            "no_show_rate": _compute_trend([], False, 0.01),
             "on_time_rate": _compute_trend([], True, 0.02),
             "average_rider_rating": _compute_trend([], True, 0.1),
             "fleet_avg_score": None,
@@ -629,6 +644,9 @@ async def get_performance_trend(
         ),
         "cancellation_rate": _compute_trend(
             [s.cancellation_rate for s in snapshots], False, 0.01
+        ),
+        "no_show_rate": _compute_trend(
+            [s.no_show_rate for s in snapshots], False, 0.01
         ),
         "on_time_rate": _compute_trend(
             [s.on_time_rate for s in snapshots], True, 0.02

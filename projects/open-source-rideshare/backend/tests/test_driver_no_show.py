@@ -731,3 +731,115 @@ def test_scheduler_imports_detect_driver_no_shows():  # 43
     # Verify the import path used in _scheduler_loop works
     from app.services.driver_no_show import detect_driver_no_shows
     assert callable(detect_driver_no_shows)
+
+
+# ---------------------------------------------------------------------------
+# Auto-rebooking — notification template
+# ---------------------------------------------------------------------------
+
+
+def test_template_body_with_new_ride_mentions_rebook():  # 44
+    _, body, _ = _tpl_driver_no_show(wait_minutes=15, new_ride_id=99)
+    assert "99" in body
+    assert "new driver" in body.lower() or "rebook" in body.lower() or "requested" in body.lower()
+
+
+def test_template_body_without_new_ride_asks_to_request():  # 45
+    _, body, _ = _tpl_driver_no_show(wait_minutes=15, new_ride_id=None)
+    assert "please request" in body.lower() or "request a new" in body.lower()
+
+
+def test_template_body_no_ride_id_no_rebook_language():  # 46
+    _, body, _ = _tpl_driver_no_show(new_ride_id=None)
+    # Should not mention a ride number
+    assert "#" not in body
+
+
+# ---------------------------------------------------------------------------
+# Auto-rebooking — new_ride_id in response
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_report_returns_new_ride_id_when_rebook_succeeds():  # 47
+    """report_driver_no_show returns new_ride_id when auto-rebook creates a ride."""
+    from app.services.driver_no_show import report_driver_no_show
+
+    ride = _make_ride(status=RideStatus.ARRIVED, arrived_at=NOW - timedelta(minutes=5))
+    db = _mock_db(ride)
+
+    # Simulate successful rebook: db.add is called, refresh sets new ride id
+    new_ride = MagicMock()
+    new_ride.id = 999
+
+    async def mock_refresh(obj):
+        obj.id = 999
+
+    db.refresh = mock_refresh
+
+    patches = [
+        patch("app.services.payments.process_refund", new_callable=AsyncMock, return_value={}),
+        patch("app.services.matching.get_matching_engine", new_callable=AsyncMock),
+        patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock),
+        patch("app.services.notification_events.notify_driver_no_show", new_callable=AsyncMock),
+        patch("app.services.audit_events.audit_ride_cancelled", new_callable=AsyncMock),
+    ]
+    with patches[0], patches[1], patches[2], patches[3], patches[4]:
+        result = await report_driver_no_show(ride_id=ride.id, rider_id=ride.rider_id, db=db, now=NOW)
+
+    assert "new_ride_id" in result
+
+
+@pytest.mark.asyncio
+async def test_notify_driver_no_show_passes_new_ride_id():  # 48
+    """notify_driver_no_show forwards new_ride_id to send_ride_notification."""
+    from app.services.notification_events import notify_driver_no_show
+
+    db = AsyncMock()
+    result = MagicMock()
+    result.one_or_none.return_value = MagicMock(phone="555-0001", email="r@x.com")
+    db.execute.return_value = result
+
+    with patch(
+        "app.services.notification_events.send_ride_notification", new_callable=AsyncMock
+    ) as mock_send:
+        await notify_driver_no_show(db, rider_id=1, ride_id=42, wait_minutes=15, new_ride_id=99)
+
+    mock_send.assert_called_once()
+    assert mock_send.call_args.kwargs.get("new_ride_id") == 99
+
+
+@pytest.mark.asyncio
+async def test_rebook_failure_does_not_propagate():  # 49
+    """If auto-rebook fails (e.g., DB error on new ride), the no-show still succeeds."""
+    from app.services.driver_no_show import report_driver_no_show
+
+    ride = _make_ride(status=RideStatus.ARRIVED, arrived_at=NOW - timedelta(minutes=5))
+    db = _mock_db(ride)
+
+    # Make db.add raise to simulate rebook failure after first commit
+    add_call_count = [0]
+    original_add = db.add
+
+    def failing_add(obj):
+        add_call_count[0] += 1
+        if add_call_count[0] > 0:
+            # First add (new ride) should raise
+            raise RuntimeError("DB constraint error")
+
+    db.add = failing_add
+
+    patches = [
+        patch("app.services.payments.process_refund", new_callable=AsyncMock, return_value={}),
+        patch("app.services.matching.get_matching_engine", new_callable=AsyncMock),
+        patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock),
+        patch("app.services.notification_events.notify_driver_no_show", new_callable=AsyncMock),
+        patch("app.services.audit_events.audit_ride_cancelled", new_callable=AsyncMock),
+    ]
+    with patches[0], patches[1], patches[2], patches[3], patches[4]:
+        result = await report_driver_no_show(ride_id=ride.id, rider_id=ride.rider_id, db=db, now=NOW)
+
+    # Should still return a valid result — just no new_ride_id
+    assert result["status"] == "cancelled"
+    assert result["reason"] == "driver_no_show"
+    assert result.get("new_ride_id") is None

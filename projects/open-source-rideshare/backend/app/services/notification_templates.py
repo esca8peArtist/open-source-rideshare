@@ -183,13 +183,21 @@ def route_deviation(dropoff_address: str = "", **kw) -> TemplateResult:
     )
 
 
-def driver_no_show(wait_minutes: int | str = "", **kw) -> TemplateResult:
+def driver_no_show(
+    wait_minutes: int | str = "", new_ride_id: int | None = None, **kw
+) -> TemplateResult:
     wait_part = f" after {wait_minutes} minutes" if wait_minutes else ""
-    return (
-        "Driver no-show — ride cancelled",
-        f"Your driver did not arrive{wait_part}. Your ride has been cancelled and any payment will be refunded. Please request a new ride.",
-        _PUSH_SMS,
-    )
+    if new_ride_id:
+        body = (
+            f"Your driver did not arrive{wait_part}. Any payment will be refunded. "
+            f"We've automatically requested a new driver for you (ride #{new_ride_id})."
+        )
+    else:
+        body = (
+            f"Your driver did not arrive{wait_part}. Your ride has been cancelled "
+            "and any payment will be refunded. Please request a new ride."
+        )
+    return ("Driver no-show — ride cancelled", body, _PUSH_SMS)
 
 
 # Registry mapping NotificationType to template functions

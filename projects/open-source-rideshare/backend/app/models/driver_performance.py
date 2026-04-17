@@ -50,6 +50,10 @@ class DriverPerformanceSnapshot(Base):
     total_rides_accepted: Mapped[int] = mapped_column(Integer, default=0)
     total_rides_cancelled_by_driver: Mapped[int] = mapped_column(Integer, default=0)
 
+    # No-show metrics (subset of driver-cancelled rides)
+    total_no_shows: Mapped[int] = mapped_column(Integer, default=0)
+    no_show_rate: Mapped[float] = mapped_column(Float, default=0.0)
+
     # Rate metrics (0.0 – 1.0)
     acceptance_rate: Mapped[float] = mapped_column(Float, default=0.0)
     completion_rate: Mapped[float] = mapped_column(Float, default=0.0)

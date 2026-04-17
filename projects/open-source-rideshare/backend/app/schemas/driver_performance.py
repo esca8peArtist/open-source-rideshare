@@ -87,6 +87,7 @@ class PerformanceTrendResponse(BaseModel):
     acceptance_rate: MetricTrend
     completion_rate: MetricTrend
     cancellation_rate: MetricTrend
+    no_show_rate: MetricTrend
     on_time_rate: MetricTrend
     average_rider_rating: MetricTrend
 
@@ -115,11 +116,13 @@ class DriverPerformanceSnapshotResponse(BaseModel):
     total_rides_offered: int
     total_rides_accepted: int
     total_rides_cancelled_by_driver: int
+    total_no_shows: int
 
     # Rates
     acceptance_rate: float
     completion_rate: float
     cancellation_rate: float
+    no_show_rate: float
 
     # Timing
     average_pickup_time_minutes: float
@@ -154,6 +157,8 @@ class DriverScorecardResponse(BaseModel):
     score_tier: str = Field(..., description="bronze / silver / gold / platinum")
     acceptance_rate: float
     completion_rate: float
+    cancellation_rate: float
+    no_show_rate: float
     on_time_rate: float
     average_rider_rating: float
     total_rides_completed: int

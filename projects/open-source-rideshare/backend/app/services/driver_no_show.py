@@ -38,8 +38,14 @@ _NO_SHOW_REPORTABLE_STATUSES = frozenset([
 ])
 
 
-async def _process_no_show(ride: Ride, db: AsyncSession, *, now: datetime) -> None:
-    """Core logic: mark ride cancelled, refund, notify. Caller commits."""
+async def _process_no_show(ride: Ride, db: AsyncSession, *, now: datetime) -> int | None:
+    """Core logic: mark ride cancelled, refund, notify, auto-rebook.
+
+    Returns the new ride ID if a replacement ride was successfully created,
+    or None if rebooking was skipped or failed.
+
+    Caller is responsible for the outer transaction.
+    """
     from app.services.audit_events import audit_ride_cancelled
     from app.services.notification_events import notify_driver_no_show
     from app.services.payments import process_refund
@@ -93,20 +99,75 @@ async def _process_no_show(ride: Ride, db: AsyncSession, *, now: datetime) -> No
     except Exception:
         logger.exception("Refund failed for ride %d (driver no-show) — requires manual review", ride.id)
 
-    # Push + SMS to rider
-    await notify_driver_no_show(db, rider_id=ride.rider_id, ride_id=ride.id, wait_minutes=wait_minutes)
+    # Auto-rebook: create a new REQUESTED ride with the same pickup/dropoff/fare
+    new_ride_id: int | None = None
+    try:
+        new_ride = Ride(
+            rider_id=ride.rider_id,
+            status=RideStatus.REQUESTED,
+            pickup_location=ride.pickup_location,
+            dropoff_location=ride.dropoff_location,
+            pickup_address=ride.pickup_address,
+            dropoff_address=ride.dropoff_address,
+            estimated_fare=ride.estimated_fare,
+            distance_km=ride.distance_km,
+            duration_min=ride.duration_min,
+            accessibility_required=ride.accessibility_required,
+            vehicle_type_preference=ride.vehicle_type_preference,
+        )
+        db.add(new_ride)
+        await db.commit()
+        await db.refresh(new_ride)
+        new_ride_id = new_ride.id
+
+        logger.info(
+            "Auto-rebooked ride %d → new ride %d for rider %d after driver no-show",
+            ride.id,
+            new_ride_id,
+            ride.rider_id,
+        )
+
+        # Kick off dispatch for the replacement ride (fire-and-forget)
+        try:
+            from app.services.matching import get_matching_engine
+            engine = await get_matching_engine()
+            await engine.dispatch(new_ride_id)
+        except Exception:
+            logger.exception(
+                "Dispatch failed for replacement ride %d — rider %d will need to request manually",
+                new_ride_id,
+                ride.rider_id,
+            )
+    except Exception:
+        logger.exception(
+            "Auto-rebook failed for ride %d — rider %d will need to request manually",
+            ride.id,
+            ride.rider_id,
+        )
+
+    # Push + SMS to rider (mention auto-rebook if it succeeded)
+    await notify_driver_no_show(
+        db,
+        rider_id=ride.rider_id,
+        ride_id=ride.id,
+        wait_minutes=wait_minutes,
+        new_ride_id=new_ride_id,
+    )
 
     # Audit log
     try:
+        rebook_note = f", rebooked as ride {new_ride_id}" if new_ride_id else ""
         await audit_ride_cancelled(
             db,
             ride_id=ride.id,
             cancelled_by=None,
             role="system",
-            reason=f"driver_no_show: waited {wait_minutes} min",
+            reason=f"driver_no_show: waited {wait_minutes} min{rebook_note}",
         )
     except Exception:
         logger.exception("Audit log failed for ride %d driver no-show", ride.id)
+
+    return new_ride_id
 
 
 async def report_driver_no_show(
@@ -142,12 +203,13 @@ async def report_driver_no_show(
     if ride.driver_no_show_reported_at is not None:
         raise ValueError("A no-show has already been reported for this ride")
 
-    await _process_no_show(ride, db, now=now)
+    new_ride_id = await _process_no_show(ride, db, now=now)
 
     return {
         "status": "cancelled",
         "reason": "driver_no_show",
         "refund_initiated": True,
+        "new_ride_id": new_ride_id,
     }
 
 

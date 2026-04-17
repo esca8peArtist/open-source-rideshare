@@ -341,8 +341,12 @@ async def notify_driver_no_show(
     rider_id: int,
     ride_id: int,
     wait_minutes: int = 0,
+    new_ride_id: int | None = None,
 ) -> None:
-    """Notify rider that their driver did not arrive and the ride has been cancelled."""
+    """Notify rider that their driver did not arrive and the ride has been cancelled.
+
+    If *new_ride_id* is set the message will mention the auto-rebooked replacement ride.
+    """
     try:
         phone, email = await _get_user_contact(db, rider_id)
         await send_ride_notification(
@@ -353,6 +357,7 @@ async def notify_driver_no_show(
             phone=phone,
             email=email,
             wait_minutes=wait_minutes,
+            new_ride_id=new_ride_id,
         )
     except Exception:
         logger.exception("Failed to send driver_no_show notification for ride %d", ride_id)
