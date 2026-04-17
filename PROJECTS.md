@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 302)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 306)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 302: **Route deviation detection COMPLETE** (commit `3125230`). Cross-track geometry (Haversine + bearing), `check_and_notify_deviation` fire-and-forget in driver location update, idempotent flag per ride, `ROUTE_DEVIATION` notification type + template (push+SMS), `GET /{ride_id}/route-deviation-status` endpoint (rider/driver scoped), migration. **Trusted contact wiring COMPLETE** (commit `ede14a4`): panic endpoint now calls `send_trusted_contact_notifications(PANIC_ALERT)` and `start_ride` calls `send_trusted_contact_notifications(TRIP_START)` — both fire-and-forget. **34 new tests. Total: 3,453 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety. **Next**: TRIP_END trusted contact notification (wire into complete_ride); or driver photo/plate verification endpoint at pickup.
+**Current focus**: Session 306: **Structured cancellation categories + rider cancel rate tracking COMPLETE** (commit `5830c3b`). CancellationCategory enum (13 values), cancelled_by column on rides, RiderCancellationStats table (fire-and-forget updates on rider cancel), GET /riders/me/cancel-stats, GET /admin/riders/{rider_id}/cancel-stats. **37 new tests. Total: 3,528 unit-passing tests.** Push blocked — no GitHub credentials on Pi. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety. **Next**: Driver no-show protection — rider reports driver no-show after X min at pickup, triggers automated refund/rebook.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

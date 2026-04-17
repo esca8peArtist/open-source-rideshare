@@ -4,6 +4,117 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 306 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: GitHub push still blocked (no auth); no new blocks
+- stockbot: paper trading live, no cycle logs available — no dev work possible
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 results framework ready; event not yet happened
+- Selected: open-source-rideshare — ride cancellation flow improvements
+
+### open-source-rideshare — Structured cancellation categories + rider cancel rate tracking COMPLETE
+
+**Commit**: `5830c3b`
+
+**Features**:
+
+1. **Structured cancellation reasons** — `CancellationCategory` enum (13 values: rider-side WRONG_PICKUP, WAIT_TOO_LONG, FOUND_OTHER_RIDE, PLANS_CHANGED, DRIVER_NOT_ACCEPTABLE, PRICE_TOO_HIGH, SAFETY_CONCERN, OTHER; driver-side VEHICLE_ISSUE, RIDER_NO_SHOW, UNABLE_TO_LOCATE, EMERGENCY, DRIVER_OTHER). Cancel endpoint now accepts `category` field + optional free-text `reason` note. Both stored on ride row.
+
+2. **`cancelled_by` column** — ride row now records "rider" or "driver" on every cancel; `CancelResponse` includes `cancelled_by` field.
+
+3. **Rider cancellation rate tracking** — new `rider_cancellation_stats` table (one row per rider) tracking `total_rides_requested`, `total_cancellations`, `cancellations_in_grace_period`, `cancellations_with_fee`, `cancellation_rate` (0–1), `last_cancel_at`, `last_cancel_category`. Updated fire-and-forget on every rider-initiated cancel — never blocks the cancel response.
+
+4. **New endpoints**:
+   - `GET /riders/me/cancel-stats` — rider views own lifetime stats (returns zeroed response if no rides yet)
+   - `GET /admin/riders/{rider_id}/cancel-stats` — admin views any rider's stats (404 if no row)
+
+**New files**:
+- `app/models/rider_cancellation_stats.py`
+- `app/services/rider_cancellation_stats.py`
+- `app/api/v1/rider_cancellation_stats.py`
+- `app/db/migrations/versions/j4k5l6m7n8o9_add_cancellation_category.py`
+- `app/db/migrations/versions/k5l6m7n8o9p0_add_rider_cancellation_stats.py`
+- `tests/test_rider_cancellation_stats.py`
+
+**Test count**: 37 new → **3,528 total passing**
+
+---
+
+## Session 305 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: GitHub push still unresolved; no new blocks
+- Selected: open-source-rideshare (next task: trip sharing link — already partially built, needed completion)
+
+### open-source-rideshare — Trip sharing link COMPLETE
+
+**Commit**: `57e6f6d`
+
+**Feature**: Rider generates a shareable link for friends/family to track their ride in real-time. Link is public (no auth), expires 24 hours, includes live driver GPS coordinates updated as the driver moves.
+
+**What was already there**: Token generation, 24hr TTL, public GET view with basic ride info (status, addresses, driver name, vehicle).
+
+**What was missing / added**:
+- `SharedTripView` extended: `driver_lat`, `driver_lng`, `driver_location_updated_at` — pulls from `DriverProfile.current_location` (PostGIS) so watchers see driver's live position
+- `TripShareSummary` schema — for listing tokens
+- `get_shared_trip_detail` service — ride + live driver coords in one call
+- `revoke_trip_share_token` service — creator-only delete
+- `list_trip_share_tokens` service — non-expired tokens by user
+- `GET /safety/share` — list my active share tokens (authenticated)
+- `DELETE /safety/share/{token}` — revoke (creator only; 403 for wrong user, 404 if missing)
+- `view_shared_trip` endpoint updated to use new detail function and return driver coords
+
+**Test count**: 18 new → **3,491 unit-passing**
+
+---
+
+## Session 304 — 2026-04-17
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: GitHub push still unresolved; no new blocks
+- stockbot: paper trading live, no cycle logs available — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 results framework ready; filling on April 20 evening
+- Selected: open-source-rideshare (next task: driver photo/plate verification)
+
+### open-source-rideshare — Driver pickup verification COMPLETE
+
+**Commit**: `f4a7a80`
+
+**Feature**: Rider confirms driver identity (photo match) and vehicle license plate before entering the vehicle. Only available when ride status = ARRIVED. Mismatch flagged for ops review but never blocks the rider.
+
+**Changes**:
+- `app/models/ride.py` — `pickup_verification_at`, `driver_photo_confirmed`, `plate_confirmed` columns
+- `app/db/migrations/versions/i3j4k5l6m7n8_add_pickup_verification.py` — Alembic migration
+- `app/schemas/ride.py` — `PickupVerificationRequest`, `PickupVerificationResponse`
+- `app/services/pickup_verification.py` — `verify_pickup()` service: validates ARRIVED status and ownership, writes result, logs mismatch
+- `app/api/v1/rides.py` — `POST /rides/{ride_id}/verify-pickup` (rider-only, 404/403/400 error mapping)
+- `tests/test_pickup_verification.py` — 18 new unit tests (11 service + 7 endpoint)
+
+**Test count**: 18 new → **3,473 unit-passing**
+
+---
+
+## Session 303 — 2026-04-17
+
+### open-source-rideshare — TRIP_END trusted contact notification COMPLETE
+
+**Commit**: `a1ac332`
+
+**Gap closed**: `complete_ride` had PANIC_ALERT (session 302) and TRIP_START (session 302) wired for trusted contacts, but TRIP_END was still missing. All three lifecycle hooks are now active.
+
+**Changes**:
+- `app/api/v1/rides.py` — added `send_trusted_contact_notifications(TRIP_END)` fire-and-forget block in `complete_ride`, after `audit_ride_completed` and before `return`
+- `tests/test_rides.py` — 2 new tests in `TestCompleteRide`: verify TRIP_END notification called with correct args; verify completion proceeds on notification failure
+
+**Test count**: 2 new → **3,455 unit-passing**
+
+---
+
 ## Session 302 — 2026-04-17
 
 ### Orient

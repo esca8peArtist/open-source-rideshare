@@ -9,7 +9,58 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions run**: 294–302
+**Sessions run**: 294–306
+
+### Accomplished (Session 306)
+
+#### open-source-rideshare — Structured cancellation categories + rider cancel rate tracking COMPLETE (commit `5830c3b`)
+
+Cancellation flow now has three improvements:
+
+**Structured cancellation reasons** — `CancellationCategory` enum (13 values). Riders pick from WRONG_PICKUP, WAIT_TOO_LONG, FOUND_OTHER_RIDE, PLANS_CHANGED, DRIVER_NOT_ACCEPTABLE, PRICE_TOO_HIGH, SAFETY_CONCERN, OTHER. Drivers pick from VEHICLE_ISSUE, RIDER_NO_SHOW, UNABLE_TO_LOCATE, EMERGENCY, DRIVER_OTHER. Free-text `reason` note still accepted alongside. Both stored on the ride row (`cancellation_category`, `cancelled_by`).
+
+**Rider cancel rate tracking** — new `rider_cancellation_stats` table (one row per rider). Tracks `total_rides_requested`, `total_cancellations`, `cancellations_in_grace_period`, `cancellations_with_fee`, `cancellation_rate`. Updated fire-and-forget on every rider cancel — never blocks the response.
+
+**New endpoints**:
+- `GET /riders/me/cancel-stats` — rider views own stats (returns zeroed defaults if no rides yet)
+- `GET /admin/riders/{rider_id}/cancel-stats` — admin views any rider (404 if no row)
+
+**37 new tests** — **3,528 total unit-passing**
+
+### Accomplished (Session 305)
+
+#### open-source-rideshare — Trip sharing link COMPLETE (commit `57e6f6d`)
+Riders can now generate a shareable link (`POST /safety/share`) that lets friends and family track the ride in real-time — no login required to view. The shared view now includes **live driver GPS coordinates** (lat/lng/updated_at) pulled from `DriverProfile.current_location`, so the watcher sees exactly where the driver is as location updates come in.
+
+New functionality over the existing stub:
+- `SharedTripView` extended with `driver_lat`, `driver_lng`, `driver_location_updated_at`
+- `GET /safety/share` — list caller's active (non-expired) share tokens
+- `DELETE /safety/share/{token}` — revoke a token (creator only; 403 for wrong user, 404 if missing)
+- `get_shared_trip_detail` service — ride + live driver coords in one DB round-trip
+- `revoke_trip_share_token` / `list_trip_share_tokens` service functions
+- **18 new tests** — **3,491 total unit-passing**
+
+### Accomplished (Session 304)
+
+#### open-source-rideshare — Driver pickup verification COMPLETE (commit `f4a7a80`)
+Rider can now confirm the driver's photo and vehicle plate match before entering the vehicle. Only available when the driver has marked the ride ARRIVED. A mismatch is logged and flagged for ops review — but the rider retains full autonomy over whether to enter. Subsequent calls overwrite the previous result (last-write-wins) so the rider can correct a mistaken tap.
+
+- `app/models/ride.py` — `pickup_verification_at`, `driver_photo_confirmed`, `plate_confirmed` columns
+- `app/db/migrations/versions/i3j4k5l6m7n8_add_pickup_verification.py` — migration
+- `app/schemas/ride.py` — `PickupVerificationRequest`, `PickupVerificationResponse`
+- `app/services/pickup_verification.py` — `verify_pickup()` service
+- `app/api/v1/rides.py` — `POST /rides/{ride_id}/verify-pickup`
+- **18 new tests** — **3,473 total unit-passing**
+
+### Accomplished (Session 303)
+
+#### open-source-rideshare — TRIP_END trusted contact notification COMPLETE (commit `a1ac332`)
+Closed the last gap in trusted contact lifecycle coverage. `complete_ride` now calls `send_trusted_contact_notifications(TRIP_END)` — fire-and-forget, never blocks ride completion.
+
+- `app/api/v1/rides.py` — TRIP_END wired into `complete_ride` after audit, same pattern as TRIP_START
+- **2 new tests** — **3,455 total unit-passing**
+
+All three trusted contact notification types are now wired: PANIC_ALERT (panic endpoint), TRIP_START (start_ride), TRIP_END (complete_ride).
 
 ### Accomplished (Session 302)
 
@@ -69,7 +120,7 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
 2. **resistance-research**: Fill April 20 results framework (Apr 20 evening) once event data is available.
-3. **open-source-rideshare**: Next feature — TRIP_END trusted contact notification (wire `complete_ride` → TRIP_END); or driver photo/plate verification endpoint at pickup.
+3. **open-source-rideshare**: Next feature — driver no-show protection (rider can report driver no-show after X minutes at pickup, triggers automated refund/rebook flow).
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
