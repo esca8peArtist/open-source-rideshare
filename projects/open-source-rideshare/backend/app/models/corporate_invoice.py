@@ -87,6 +87,15 @@ class CorporateInvoice(Base):
 
     notes: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
+    payment_terms_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Number of days from invoice finalization after which payment is due.
+    # When None, due_date has no auto-calculated value.
+
+    due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Explicit due date.  Auto-populated on finalization when payment_terms_days is
+    # set (finalized_at.date() + timedelta(days=payment_terms_days)).
+    # Can also be set manually via the due-date endpoint.
+
     generated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
