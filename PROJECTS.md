@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 263)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 264)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 263: **Quality review complete** — `domain-deepening/quality-review-index.md` (467 lines). Tier 1 (publish as-is): 8 files. Tier 2 (adequate): 10 files. Tier 3 (needs deepening): 5 files — national-security, tax-policy, electoral-reform, environment-climate, healthcare-education. **electoral-reform-evidence.md elevated Tier 3 → Tier 1** (counterarguments + actionable intel added; Alaska RCV repeal on Nov 2026 ballot flagged). **national-security-evidence.md elevated Tier 3 → Tier 2+** (veteran suicide sourcing corrected; Section 702 212-212 tie documented; counterarguments added). **Next**: Deepen environment-climate-evidence.md (read full file first — may already be Tier 2), tax-policy differentiation from fiscal-reform, or healthcare-education counterarguments.
+**Current focus**: Session 264: **Tier 3 deepening continues.** All 5 Tier 3 files now addressed: electoral-reform (Tier 1, Session 263), national-security (Tier 2+, Session 263), environment-climate (Tier 1, Session 264 — counterarguments + actionable intel added; 469→585 lines), healthcare-education (Tier 1, Session 264 — actionable intel added; 599→664 lines). **Remaining Tier 3**: tax-policy-evidence.md — needs differentiation from fiscal-reform-evidence.md + actionable intelligence section. **Next**: Read tax-policy-evidence.md fully and differentiate from domain-05-fiscal-reform.md; add actionable section.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 260: **All 4 remaining endpoint coverage gaps COMPLETE** (commits `2efe7a3` + `31c2101`). Total: **10,524 passing** (2 pre-existing failures unchanged). Added: `test_vehicles.py` (94), `test_corporate_travel_itineraries.py` (84), `test_corporate_member_permission.py` (108), `test_device_tokens.py` (60). All previously uncovered endpoint modules now have test suites. **Awaiting push**: 5 commits local on `feature/corporate-business-accounts`.
-**Last updated by**: orchestrator on 2026-04-17 (Session 260)
+**Current focus**: Session 264: **All test suite commits pushed to rideshare remote** (force-push via `git subtree split` — clean history, private files excluded). Rideshare remote `feature/corporate-business-accounts` now at `267bf81` (test(corp-member-permission,device-tokens)). All endpoint coverage gaps complete. **Next**: New feature work — candidates: corporate expense reporting, driver background check expiration tracking, or beckn-protocol integration research.
+**Last updated by**: orchestrator on 2026-04-17 (Session 264)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

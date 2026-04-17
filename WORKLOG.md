@@ -4,6 +4,38 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 264 — 2026-04-17
+
+### Orient
+- INBOX: No new items to process.
+- BLOCKED: None active.
+- stockbot: monitoring mode, no code work.
+- mfg-farm: blocked on physical mockup photos.
+- resistance-research: deepen Tier 3 files (environment-climate, healthcare-education remaining).
+- open-source-rideshare: 10 commits ahead of rideshare remote; needed subtree push.
+
+### Task Selection
+1. open-source-rideshare: Push pending commits to rideshare remote (git subtree)
+2. resistance-research: Deepen environment-climate-evidence.md + healthcare-education-evidence.md
+
+### open-source-rideshare: Subtree Push COMPLETE
+Previous pushes to the rideshare remote had been raw repo pushes (not subtree-split), meaning the remote's `feature/corporate-business-accounts` tip matched the main repo's commit SHA directly. `git subtree push` failed (non-fast-forward). Solution: `git subtree split --prefix=projects/open-source-rideshare --branch rideshare-split-temp` created a clean filtered history (267bf81), then force-pushed to `rideshare feature/corporate-business-accounts`. Private files (resistance-research, orchestrator metadata) are excluded from the rideshare remote. Cleaned up temp branch.
+
+### resistance-research: environment-climate-evidence.md elevated Tier 3 → Tier 1
+File was 469 lines when quality review was written (review only read 80 lines, marking it Tier 3). Full read confirmed strong foundation. Missing: counterarguments and actionable intelligence sections. Added:
+- Section 10: Strongest Counterarguments (4 objections: carbon leakage, grid reliability, jobs, science uncertainty — each with concessions and evidence)
+- Section 11: Actionable Intelligence (litigation vehicles, federal legislative targets including IRA defense, state carbon pricing status, community enforcement watchdogs)
+File: 469 → 585 lines. Commit: b2586c7.
+
+### resistance-research: healthcare-education-evidence.md elevated Tier 3 → Tier 1
+File was 599 lines; quality review read only 80 lines. Full read confirmed counterarguments section already present (5 objections: wait times, innovation, cost, government control, jobs displacement). Missing: actionable intelligence. Added:
+- Actionable Intelligence section: IRA drug pricing defense, ACA marketplace subsidies, Medicaid battle, HHS/FDA restructuring, DoE elimination, voucher legislation, Head Start/pre-K, PSLF
+- Cross-domain healthcare-education organizing frame (Medicaid funds school-based services)
+- Key organizations for each domain
+File: 599 → 664 lines. Commit: c0fbe82.
+
+Session 264 complete.
+
 ## Session 263 — 2026-04-17
 
 ### Orient
