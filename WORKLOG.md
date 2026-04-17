@@ -11140,3 +11140,43 @@ Task 3 — labor-evidence.md deepened (5d539b4):
   - Organization landscape: EPI, NELP, AFL-CIO, Clean Slate + organizing orgs + state pressure map
 
 Session 266 complete.
+
+---
+
+## Session 268 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None active.
+- resistance-research: Next task — deepen housing-evidence.md to Tier 1 (Vienna/Singapore specific numbers, fiscal estimates for zoning reform / LIHTC alternatives / CLT scaling, actionable intelligence section, 2025-2026 rollback documentation).
+- open-source-rideshare: Next feature — corporate invoice due date and overdue tracking.
+
+### Task selection
+1. resistance-research: housing-evidence.md Tier 1 elevation (delegated to resistance-research agent).
+2. open-source-rideshare: Corporate invoice due date + overdue tracking (delegated to open-source-rideshare agent).
+
+### resistance-research: housing-evidence.md elevated to Tier 1
+Commits: d38edfc, d3b3ed2
+
+housing-evidence.md (633 → 865 lines). Four gaps filled:
+- **Vienna Gemeindebau expanded** (Section 9.1): construction cost €150-200k/unit vs. US LIHTC $400-600k; rents €7-8/sqm subsidized vs. €15-20/sqm market; waitlist 26,000 households ~1-2 yr wait; income ceiling €53,340/yr net (~160% AMI); Klimabonus passive-house mandate; Gemeinschaftliche Wohnprojekte co-housing model; 2021 new-build resumption.
+- **Singapore HDB added as Section 9.1b**: 79% resident coverage; 88.9% homeownership; SGD 500-600k resale vs. SGD 1.2M+ private; construction cost SGD 200-350k/unit; BTO 2-5x oversubscribed; income ceiling SGD 14,000/month; Land Acquisition Act as irreplaceable enabling condition named explicitly.
+- **Fiscal estimates added (Section 12 new subsection)**: Zoning reform (YIMBY Act near-zero, transportation conditioning $5-15B leverage, $1.7T Hsieh-Moretti gain, Minneapolis 6-10% rent reduction zero cost); LIHTC alternatives ($400-600k current vs. $280-420k direct grant; Vienna analog $180-280k + $3-5k/yr operating); CLT scaling ($2.5-4B/10yr for 250k units vs. $31-37.5B voucher equivalent).
+- **Section 13 Actionable Intelligence**: YIMBY Act S.1614/H.R.3009, Housing Choice Act, Ending Homelessness Act; state pressure points (CA/CO/MT/NY/TX); organizations (NLIHC, Up For Growth, NAEH, Grounded Solutions, LISC, Habitat); FY2027 THUD appropriations + AFFH litigation window + Ways and Means LIHTC window.
+- **Section 14 2025-2026 Rollback**: AFFH suspended Jan 20 2025 ($7B formula grants now without fair housing conditions); HUD $2.6B budget cut / 400 FTE reduction; Section 8 under-funded 100,000 vouchers; 770,000 PIT count backdrop.
+
+quality-review-index.md: Tier 1 14 (was 13), Tier 2 9 (was 10). Domain 13 housing card: Int'l benchmarks → Strong, Fiscal estimates → Strong, Actionable intelligence → Strong.
+
+### open-source-rideshare: Corporate invoice due date and overdue tracking
+Commit: 41cbde3 — pushed to rideshare remote (esca8peArtist/open-source-rideshare)
+
+New files:
+- `backend/app/schemas/corporate_invoice_due_date.py` — SetInvoiceDueDateRequest (payment_terms_days 1-365 validated), OverdueInvoiceRow, OverdueInvoicesResponse, InvoiceOverdueScanResponse
+- `backend/app/services/corporate_invoice_due_date.py` — set_invoice_due_date (rejects PAID/VOID), get_overdue_invoices (FINALIZED + due_date < as_of), run_overdue_scan (newly-flagged detection via [OVERDUE] note tag)
+- `backend/app/api/v1/corporate_invoice_due_date.py` — PUT .../invoices/{id}/due-date; GET .../invoices/overdue (member); GET /admin/corporate/invoices/overdue; POST /admin/corporate/invoices/overdue-scan
+- `backend/app/db/migrations/versions/b2c3d4e5f6a7_corporate_invoice_due_date.py` — Alembic migration (down_revision a1b2c3d4e5f6), adds payment_terms_days INTEGER + due_date DATE + index
+- `backend/tests/test_corporate_invoice_due_date.py` — 55 tests, 55 passing
+
+Modified: `backend/app/models/corporate_invoice.py` (payment_terms_days + due_date columns); `backend/app/main.py` (router registered).
+
+Session 268 complete.
