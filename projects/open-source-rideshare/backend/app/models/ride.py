@@ -20,6 +20,32 @@ class RideStatus(str, enum.Enum):
     CANCELLED = "cancelled"
 
 
+class CancellationCategory(str, enum.Enum):
+    """Structured reason for a ride cancellation.
+
+    Rider categories (WRONG_PICKUP through OTHER) help the platform
+    understand friction points.  Driver categories (VEHICLE_ISSUE through
+    DRIVER_OTHER) inform driver-side quality monitoring.
+    """
+
+    # Rider-initiated
+    WRONG_PICKUP = "wrong_pickup"
+    WAIT_TOO_LONG = "wait_too_long"
+    FOUND_OTHER_RIDE = "found_other_ride"
+    PLANS_CHANGED = "plans_changed"
+    DRIVER_NOT_ACCEPTABLE = "driver_not_acceptable"
+    PRICE_TOO_HIGH = "price_too_high"
+    SAFETY_CONCERN = "safety_concern"
+    OTHER = "other"
+
+    # Driver-initiated
+    VEHICLE_ISSUE = "vehicle_issue"
+    RIDER_NO_SHOW = "rider_no_show"
+    UNABLE_TO_LOCATE = "unable_to_locate"
+    EMERGENCY = "emergency"
+    DRIVER_OTHER = "driver_other"
+
+
 class Ride(Base):
     __tablename__ = "rides"
 
@@ -79,6 +105,12 @@ class Ride(Base):
     rider_rating: Mapped[int | None] = mapped_column(nullable=True)
     driver_rating: Mapped[int | None] = mapped_column(nullable=True)
     cancellation_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Structured cancellation category (replaces free-text-only reason)
+    cancellation_category: Mapped[CancellationCategory | None] = mapped_column(
+        Enum(CancellationCategory), nullable=True
+    )
+    # Who cancelled — "rider" | "driver"
+    cancelled_by: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
     rider = relationship("User", foreign_keys=[rider_id], backref="rides_as_rider")
     driver = relationship("User", foreign_keys=[driver_id], backref="rides_as_driver")

@@ -976,6 +976,8 @@ async def cancel_ride(
     ride.status = RideStatus.CANCELLED
     ride.cancelled_at = datetime.now(timezone.utc)
     ride.cancellation_reason = req.reason
+    ride.cancellation_category = req.category
+    ride.cancelled_by = cancelled_by
     await db.commit()
 
     from app.api.websocket import notify_ride_status
@@ -1022,8 +1024,27 @@ async def cancel_ride(
                 "Failed to create cancellation payment intent for ride %d", ride.id, exc_info=True,
             )
 
+    # Update rider cancellation stats (fire-and-forget — never blocks response)
+    if cancelled_by == "rider":
+        try:
+            from app.services.rider_cancellation_stats import record_rider_cancellation
+            in_grace = policy.fee == 0.0 and ride.matched_at is not None
+            await record_rider_cancellation(
+                db,
+                rider_id=ride.rider_id,
+                had_fee=policy.fee > 0,
+                in_grace_period=in_grace,
+                category=req.category,
+            )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Failed to update rider cancel stats for ride %d", ride.id, exc_info=True,
+            )
+
     return CancelResponse(
         status="cancelled",
+        cancelled_by=cancelled_by,
         cancellation_fee=policy.fee,
         fee_reason=policy.reason,
         payment_required=payment_result.get("payment_required", False),

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from app.models.ride import CancellationCategory
 from app.models.vehicle import VehicleServiceCategory
 
 
@@ -116,11 +117,13 @@ class TipRequest(BaseModel):
 
 
 class CancelRequest(BaseModel):
-    reason: str | None = None
+    category: CancellationCategory | None = None
+    reason: str | None = None  # optional free-text note alongside category
 
 
 class CancelResponse(BaseModel):
     status: str
+    cancelled_by: str | None = None
     cancellation_fee: float = 0.0
     fee_reason: str = ""
     payment_required: bool = False
