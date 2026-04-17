@@ -1,6 +1,41 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
+**Sessions**: 257–282
+
+---
+
+### Accomplished (Session 282)
+
+#### resistance-research — Cross-domain synthesis op-ed (commit `b1dec21`)
+
+New file: `projects/resistance-research/synthesis-electoral-architecture-op-ed.md`
+~2,800 words. Publishable op-ed/policy brief.
+
+**"The Architecture of Collapse: Why Electoral Reform Is the Upstream Fix"**
+
+Synthesizes the entire resistance-research archive's most important structural findings into a single coherent document:
+
+- **Three reinforcing feedback loops** shown as interconnected rather than independent:
+  1. Primary-extremism trap: SMSP → gerrymandering → safe seats → primary dominance → extremism → dysfunction → executive overreach
+  2. Donor-capture spiral: dark money → policy favoring elites → voter distrust → depressed general turnout → primary dominance (feeds loop 1)
+  3. Information ecosystem collapse: 1,800 newspapers closed → factual disaggregation → reduced electoral accountability → donor capture (feeds loop 2)
+
+- **Electoral reform as upstream fix**: Proportional representation terminates gerrymandering mathematically; RCV restructures primary incentives toward coalition-building; both are statutory (no constitutional amendment required, just a Congress willing to pass the Fair Representation Act)
+
+- **Alaska 2026 as concrete anchor**: 743-vote near-miss → three exploitable structural advantages (Anchorage undervoted precincts HD18/19/22, rural Native GOTV gap HD37-40, anti-dark-money messaging for moderate Republicans) → Murkowski as decisive variable
+
+- **Theory of change sequenced**: statutory-only immediate wins vs. long-term constitutional fixes; Poland/Hungary divergence as the warning; 3.5% threshold → 8–9M already mobilized, need organizational depth to sustain it
+
+---
+
+### Accomplished (Session 281)
+
+#### open-source-rideshare — Rider-facing surge check endpoint (commit `d6a81b7`, pushed)
+
+New endpoint: `GET /pricing/surge-check?lat={lat}&lon={lon}`
+
+**Period**: 2026-04-17
 **Sessions**: 257–281
 
 ---

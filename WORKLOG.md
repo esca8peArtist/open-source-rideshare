@@ -4,6 +4,34 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 282 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: None.
+- stockbot (#1): monitoring-only, no code work.
+- mfg-farm (#2): blocked on physical test prints — not actionable.
+- resistance-research (#3): synthesis op-ed identified as highest-priority work.
+- open-source-rideshare (#4): driver quest system is already fully implemented (70 tests pass) — not the next task.
+- Selected: resistance-research synthesis op-ed.
+
+### Task selected
+Cross-domain synthesis: "The Architecture of Collapse" — connecting electoral system failures, campaign finance capture, information ecosystem collapse, and the Alaska RCV fight as a concrete 2026 leverage point. Synthesizes democratic-renewal-proposal Domains 1-2, Alaska RCV brief, campaign finance deep-dive, and crisis analysis into a single publishable document.
+
+### resistance-research: cross-domain synthesis op-ed (commit b1dec21)
+
+New file: `projects/resistance-research/synthesis-electoral-architecture-op-ed.md`
+~2,800 words. Publishable op-ed/policy brief.
+
+**Core argument:**
+- Three reinforcing feedback loops (primary-extremism trap → SMSP → gerrymandering → safe seats → primary dominance → extremism; donor-capture-unresponsiveness spiral → dark money → policy favoring elites → distrust → depressed turnout; information ecosystem collapse → factual disaggregation → reduced electoral accountability)
+- These loops are not independent — they amplify each other through primary dominance as the shared mechanism
+- Electoral reform (proportional representation + RCV) is causally upstream of multiple loops — the intervention with the highest structural leverage
+- Alaska 2026 RCV fight as concrete anchor: 743-vote near-miss, three structural advantages (Anchorage undervoted precincts HD18/19/22, rural Native GOTV gap HD37-40, anti-dark-money messaging for moderate Republicans), Murkowski as decisive variable
+- Theory of change sequenced by time horizon: statutory-only fixes (redistricting commissions, Fair Representation Act, AVR) vs. constitutional-amendment-required (Citizens United reversal)
+
+Session 282 complete.
+
 ## Session 281 — 2026-04-17
 
 ### Orient

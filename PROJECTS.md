@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 280)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 282)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 280: **Alaska RCV repeal 2026 field ops brief COMPLETE** (commit `72005ca`, `monitoring/alaska-rcv-repeal-2026.md`, 412 lines). Key findings: 743-vote near-miss in 2024 won on late-counted absentee ballots; 2026 harder (Trump endorsement, Sullivan+Begich on ballot); 3 structural defense advantages (Anchorage undervoted precincts HD18/19/22, rural Native GOTV gap HD37-40, absentee ballot chase program); anti-dark-money angle underused (repeal also removes campaign finance disclosure); Murkowski endorsement key for Mat-Su. **Next**: Synthesis of cross-domain connections for op-ed/policy brief. OR resistance-research domain deepening. OR next rideshare feature (driver incentives/quest progress).
+**Current focus**: Session 282: **Cross-domain synthesis op-ed COMPLETE** (commit `b1dec21`, `synthesis-electoral-architecture-op-ed.md`, ~2,800 words). "The Architecture of Collapse: Why Electoral Reform Is the Upstream Fix" — synthesizes democratic-renewal-proposal Domains 1-2, Alaska RCV brief, campaign finance deep-dive, and crisis analysis. Shows three reinforcing feedback loops (primary-extremism, donor-capture, info-ecosystem-collapse) converging on primary dominance as the root mechanism; electoral reform (proportional rep + RCV) as the upstream statutory fix that disrupts all three; Alaska 2026 as concrete near-term anchor; theory of change sequenced by statutory vs. constitutional requirements. **Next**: Synthesis suitable for publication — potential outreach to The Atlantic, The Guardian opinion, or Washington Post Democracy vertical. OR domain-deepening for any remaining thin domains. OR next rideshare feature.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 281: **Rider-facing surge check endpoint COMPLETE** (commit `d6a81b7`, pushed, branch `feature/rider-fare-transparency`). GET /pricing/surge-check?lat=&lon= — public endpoint; returns in_surge_zone, multiplier, zone_name, human-readable explanation (with zone name + multiplier + % increase), and actionable tip; 28 tests passing. **Waiting user review**: feature/corporate-business-accounts AND feature/rider-fare-transparency (both ready to merge). **Next**: Start fresh feature on driver incentives/quest progress, OR resistance-research synthesis op-ed.
-**Last updated by**: orchestrator on 2026-04-17 (Session 281)
+**Current focus**: Session 281: **Rider-facing surge check endpoint COMPLETE** (commit `d6a81b7`, pushed, branch `feature/rider-fare-transparency`). GET /pricing/surge-check?lat=&lon= — public endpoint; returns in_surge_zone, multiplier, zone_name, human-readable explanation (with zone name + multiplier + % increase), and actionable tip; 28 tests passing. **Driver quest system**: already fully implemented (70 tests pass) — model, service, schemas, API, all registered. **Waiting user review**: feature/corporate-business-accounts AND feature/rider-fare-transparency (both ready to merge). **Next**: Fresh feature — driver earnings guarantee, pooled rides improvements, or other driver-facing feature.
+**Last updated by**: orchestrator on 2026-04-17 (Session 282)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
