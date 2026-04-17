@@ -20,6 +20,8 @@ from app.schemas.ride import (
     FareEstimateResponse,
     GeocodeRequest,
     GeocodeResponse,
+    PickupVerificationRequest,
+    PickupVerificationResponse,
     ReverseGeocodeRequest,
     ReverseGeocodeResponse,
     RideReceiptResponse,
@@ -47,6 +49,7 @@ from app.services.promos import redeem_promo, validate_promo
 from app.services.routing import RoutingError, get_multi_stop_route, get_route
 from app.services.saved_locations import get_saved_location
 from app.services.scheduling import check_overlap, validate_schedule_time
+from app.services.pickup_verification import verify_pickup
 
 router = APIRouter(prefix="/rides", tags=["rides"])
 
@@ -1308,3 +1311,45 @@ async def get_route_deviation_status(
         deviation_detected=ride.route_deviation_flagged_at is not None,
         flagged_at=ride.route_deviation_flagged_at,
     )
+
+
+@router.post(
+    "/{ride_id}/verify-pickup",
+    response_model=PickupVerificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Verify driver identity and vehicle plate at pickup",
+    description=(
+        "The rider confirms whether the driver's photo and license plate match "
+        "what is shown in the app before entering the vehicle.  Only available "
+        "while the ride is in ARRIVED status (driver has marked arrival).\n\n"
+        "A mismatch is recorded and flagged for ops review, but does not block "
+        "the rider from proceeding — they retain full autonomy over whether to "
+        "enter the vehicle.  Subsequent calls overwrite the previous result so "
+        "the rider can correct a mistaken tap."
+    ),
+)
+async def post_verify_pickup(
+    ride_id: int,
+    body: PickupVerificationRequest,
+    rider: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> PickupVerificationResponse:
+    """Record the rider's pickup verification result."""
+    try:
+        result = await verify_pickup(
+            db=db,
+            ride_id=ride_id,
+            rider_id=rider.id,
+            driver_photo_confirmed=body.driver_photo_confirmed,
+            plate_confirmed=body.plate_confirmed,
+        )
+    except LookupError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ride not found")
+    except PermissionError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to verify this ride")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    await db.commit()
+
+    return PickupVerificationResponse(**result)

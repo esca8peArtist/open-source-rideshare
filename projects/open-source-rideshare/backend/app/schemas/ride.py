@@ -217,6 +217,23 @@ class RideReceiptResponse(BaseModel):
     currency: str = "USD"
 
 
+class PickupVerificationRequest(BaseModel):
+    """Rider reports whether the driver's photo and license plate match at pickup."""
+
+    driver_photo_confirmed: bool
+    plate_confirmed: bool
+
+
+class PickupVerificationResponse(BaseModel):
+    """Result of a pickup verification submission."""
+
+    ride_id: int
+    driver_photo_confirmed: bool
+    plate_confirmed: bool
+    verified_at: datetime
+    mismatch_flagged: bool  # True if either confirmation was False
+
+
 class RouteDeviationStatusResponse(BaseModel):
     """Route deviation status for an active or recently completed ride."""
 

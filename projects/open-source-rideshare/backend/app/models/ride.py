@@ -66,6 +66,11 @@ class Ride(Base):
     # Route deviation — set once when a significant deviation is first detected
     route_deviation_flagged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Pickup verification — rider confirms driver identity and vehicle plate before entering
+    pickup_verification_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    driver_photo_confirmed: Mapped[bool | None] = mapped_column(nullable=True)
+    plate_confirmed: Mapped[bool | None] = mapped_column(nullable=True)
+
     # If generated from a recurring ride template
     recurring_ride_id: Mapped[int | None] = mapped_column(
         ForeignKey("recurring_rides.id"), nullable=True, index=True
