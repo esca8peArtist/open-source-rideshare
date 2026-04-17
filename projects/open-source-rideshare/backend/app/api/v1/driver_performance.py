@@ -32,10 +32,12 @@ from app.schemas.driver_performance import (
     DriverPerformanceAlertResponse,
     DriverPerformanceSnapshotResponse,
     DriverScorecardResponse,
+    PerformanceTrendResponse,
 )
 from app.services.driver_performance import (
     bulk_recalculate_all_drivers,
     get_current_snapshot,
+    get_performance_trend,
     get_snapshot_history,
 )
 
@@ -82,6 +84,33 @@ async def get_my_performance_history(
     """Return up to the last 52 weekly performance snapshots for the authenticated driver."""
     snapshots = await get_snapshot_history(db, driver_id=user.id, limit=limit)
     return snapshots
+
+
+@router.get(
+    "/drivers/me/performance/trend",
+    response_model=PerformanceTrendResponse,
+    summary="Get driver performance trend analysis",
+    description=(
+        "Returns a trend analysis of the authenticated driver's performance over "
+        "the last *weeks* weekly snapshots. "
+        "Includes per-metric trend direction (improving/declining/stable/unknown), "
+        "a linear score-velocity in points-per-week, "
+        "fleet comparison (average score and this driver's percentile rank), "
+        "and qualitative lists of strengths and improvement areas. "
+        "``weekly_scores`` is ordered oldest → newest for charting. "
+        "Returns ``snapshots_analyzed: 0`` when no snapshot history exists yet."
+    ),
+)
+async def get_my_performance_trend(
+    weeks: int = Query(
+        8, ge=1, le=52, description="Number of weekly snapshots to analyse (1–52)"
+    ),
+    user: User = Depends(require_driver),
+    db: AsyncSession = Depends(get_db),
+):
+    """Trend analysis for the authenticated driver's performance scorecard."""
+    data = await get_performance_trend(db, driver_id=user.id, weeks=weeks)
+    return PerformanceTrendResponse(**data)
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +241,30 @@ async def admin_get_driver_performance_history(
     """Return up to 52 performance snapshots for the specified driver, newest first."""
     snapshots = await get_snapshot_history(db, driver_id=driver_id, limit=limit)
     return snapshots
+
+
+@router.get(
+    "/admin/drivers/{driver_id}/performance/trend",
+    response_model=PerformanceTrendResponse,
+    summary="Get performance trend analysis for a specific driver (admin)",
+    description=(
+        "Returns the same trend analysis as the driver self-view endpoint but for "
+        "any driver by ID. Useful for admin dashboards and coaching workflows. "
+        "Returns ``snapshots_analyzed: 0`` when no snapshot history exists yet "
+        "(does not 404 — the driver may simply be new)."
+    ),
+)
+async def admin_get_driver_performance_trend(
+    driver_id: int,
+    weeks: int = Query(
+        8, ge=1, le=52, description="Number of weekly snapshots to analyse (1–52)"
+    ),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Trend analysis for a specific driver (admin view)."""
+    data = await get_performance_trend(db, driver_id=driver_id, weeks=weeks)
+    return PerformanceTrendResponse(**data)
 
 
 @router.get(

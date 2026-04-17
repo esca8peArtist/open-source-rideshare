@@ -7,6 +7,9 @@ Provides:
 - AdminPerformanceListResponse       — paginated wrapper for the admin list
 - AdminRecalculateResponse           — result of a bulk recalculation run
 - DriverPerformanceAlertResponse     — single alert record
+- MetricTrend                        — trend data for a single KPI metric
+- WeeklyScorePoint                   — one data point in the weekly score series
+- PerformanceTrendResponse           — full trend analysis response
 """
 
 from __future__ import annotations
@@ -14,6 +17,89 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from pydantic import BaseModel, Field
+
+# ---------------------------------------------------------------------------
+# Trend analysis schemas
+# ---------------------------------------------------------------------------
+
+
+class MetricTrend(BaseModel):
+    """Trend data for a single KPI metric over the analysis window.
+
+    ``direction`` is one of: ``improving``, ``declining``, ``stable``, ``unknown``.
+    ``unknown`` means there is only one snapshot (no previous to compare against).
+    For ``cancellation_rate`` *lower* values are better, so a decrease is
+    reported as ``improving`` and an increase as ``declining``.
+    """
+
+    current: float = Field(..., description="Value in the most-recent snapshot")
+    previous: float | None = Field(None, description="Value in the preceding snapshot")
+    four_week_avg: float | None = Field(
+        None, description="Average over up to the last 4 snapshots"
+    )
+    direction: str = Field(
+        ..., description="improving | declining | stable | unknown"
+    )
+    change_from_previous: float | None = Field(
+        None, description="Absolute change: current − previous"
+    )
+
+
+class WeeklyScorePoint(BaseModel):
+    """One data point in the driver's weekly performance score series."""
+
+    period_start: date
+    performance_score: float
+    score_tier: str
+    rides_completed: int
+
+
+class PerformanceTrendResponse(BaseModel):
+    """Full trend analysis for a driver over a requested window of weeks.
+
+    ``score_velocity`` is the least-squares slope of the weekly performance
+    scores in points-per-week; positive values mean improvement.
+
+    ``score_percentile`` is the driver's position relative to the rest of the
+    fleet (0 = bottom, 100 = top).  ``None`` when fleet data is unavailable.
+
+    ``strengths`` lists the metric names where the driver is at or above the
+    platform target threshold.  ``improvement_areas`` lists those that fall
+    below threshold.  Both lists are drawn from:
+    ``acceptance_rate``, ``completion_rate``, ``on_time_rate``,
+    ``average_rider_rating``, ``cancellation_rate``.
+    """
+
+    driver_id: int
+    weeks_requested: int
+    snapshots_analyzed: int
+    overall_direction: str = Field(
+        ..., description="improving | declining | stable | unknown"
+    )
+    score_velocity: float = Field(
+        ..., description="Points per week (positive = improving)"
+    )
+    current_score: float
+    current_tier: str
+
+    # Per-metric trends
+    performance_score: MetricTrend
+    acceptance_rate: MetricTrend
+    completion_rate: MetricTrend
+    cancellation_rate: MetricTrend
+    on_time_rate: MetricTrend
+    average_rider_rating: MetricTrend
+
+    # Fleet comparison
+    fleet_avg_score: float | None = None
+    score_percentile: int | None = None
+
+    # Qualitative summary
+    strengths: list[str]
+    improvement_areas: list[str]
+
+    # Raw weekly data for charting (oldest → newest)
+    weekly_scores: list[WeeklyScorePoint]
 
 
 class DriverPerformanceSnapshotResponse(BaseModel):

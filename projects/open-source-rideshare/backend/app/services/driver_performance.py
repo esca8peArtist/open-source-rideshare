@@ -372,6 +372,278 @@ def _current_period() -> tuple[date, date]:
     return monday, sunday
 
 
+# ---------------------------------------------------------------------------
+# Trend analysis helpers (pure functions — no DB dependency)
+# ---------------------------------------------------------------------------
+
+# Target thresholds for strengths/improvement classification
+TARGET_CANCELLATION_RATE = 0.10  # cancellation_rate below this is "good"
+
+
+def _metric_direction(
+    current: float,
+    previous: float | None,
+    higher_is_better: bool,
+    threshold: float,
+) -> str:
+    """Return trend direction for a single metric.
+
+    Returns one of: ``improving``, ``declining``, ``stable``, ``unknown``.
+    ``unknown`` is returned when *previous* is ``None`` (no prior data point).
+    ``threshold`` sets the minimum absolute change required to classify as
+    improving or declining (prevents noise from being labelled as a trend).
+    """
+    if previous is None:
+        return "unknown"
+    change = current - previous
+    if higher_is_better:
+        if change > threshold:
+            return "improving"
+        if change < -threshold:
+            return "declining"
+    else:  # lower is better (e.g. cancellation_rate)
+        if change < -threshold:
+            return "improving"
+        if change > threshold:
+            return "declining"
+    return "stable"
+
+
+def _compute_trend(
+    values: list[float],
+    higher_is_better: bool,
+    threshold: float,
+) -> dict[str, Any]:
+    """Build a MetricTrend dict from a chronological (oldest→newest) list.
+
+    ``threshold`` is the minimum absolute change to call a move "improving"
+    or "declining" rather than "stable".
+
+    Returns a dict that maps directly onto the ``MetricTrend`` schema.
+    """
+    if not values:
+        return {
+            "current": 0.0,
+            "previous": None,
+            "four_week_avg": None,
+            "direction": "unknown",
+            "change_from_previous": None,
+        }
+
+    current = values[-1]
+    previous = values[-2] if len(values) >= 2 else None
+    four_week_values = values[-4:]
+    four_week_avg = round(sum(four_week_values) / len(four_week_values), 4)
+
+    direction = _metric_direction(current, previous, higher_is_better, threshold)
+    change = round(current - previous, 4) if previous is not None else None
+
+    return {
+        "current": round(current, 4),
+        "previous": round(previous, 4) if previous is not None else None,
+        "four_week_avg": four_week_avg,
+        "direction": direction,
+        "change_from_previous": change,
+    }
+
+
+def _score_velocity(scores: list[float]) -> float:
+    """Least-squares slope of weekly performance scores (points per week).
+
+    Positive means improving, negative means declining.  Returns 0.0 when
+    fewer than two data points are available.
+
+    Uses the analytical formula for a simple linear regression against an
+    integer index (0, 1, 2, …) representing evenly-spaced weeks.
+    """
+    n = len(scores)
+    if n < 2:
+        return 0.0
+    x_bar = (n - 1) / 2.0
+    y_bar = sum(scores) / n
+    numerator = sum((i - x_bar) * (scores[i] - y_bar) for i in range(n))
+    denominator = sum((i - x_bar) ** 2 for i in range(n))
+    if denominator == 0:
+        return 0.0
+    return round(numerator / denominator, 3)
+
+
+# ---------------------------------------------------------------------------
+# Trend analysis service
+# ---------------------------------------------------------------------------
+
+
+async def get_performance_trend(
+    db: AsyncSession,
+    driver_id: int,
+    weeks: int = 8,
+) -> dict[str, Any]:
+    """Compute trend analysis for a driver over the last *weeks* snapshots.
+
+    Fetches up to ``weeks`` most-recent snapshots, then:
+    - Computes per-metric trend direction and velocity
+    - Computes fleet-wide score comparison (average + percentile)
+    - Identifies strengths and improvement areas vs. target thresholds
+    - Returns a dict matching the ``PerformanceTrendResponse`` schema
+
+    The ``weekly_scores`` list is ordered oldest → newest for charting.
+    """
+    # Fetch the most-recent `weeks` snapshots for this driver, newest first
+    result = await db.execute(
+        select(DriverPerformanceSnapshot)
+        .where(DriverPerformanceSnapshot.driver_id == driver_id)
+        .order_by(DriverPerformanceSnapshot.period_start.desc())
+        .limit(weeks)
+    )
+    # Reverse to chronological order (oldest → newest) for trend computation
+    snapshots: list[DriverPerformanceSnapshot] = list(
+        reversed(result.scalars().all())
+    )
+
+    # Empty response when driver has no snapshot data yet
+    if not snapshots:
+        empty_trend = _compute_trend([], True, 1.0)
+        return {
+            "driver_id": driver_id,
+            "weeks_requested": weeks,
+            "snapshots_analyzed": 0,
+            "overall_direction": "unknown",
+            "score_velocity": 0.0,
+            "current_score": 0.0,
+            "current_tier": "bronze",
+            "performance_score": empty_trend,
+            "acceptance_rate": _compute_trend([], True, 0.02),
+            "completion_rate": _compute_trend([], True, 0.02),
+            "cancellation_rate": _compute_trend([], False, 0.01),
+            "on_time_rate": _compute_trend([], True, 0.02),
+            "average_rider_rating": _compute_trend([], True, 0.1),
+            "fleet_avg_score": None,
+            "score_percentile": None,
+            "strengths": [],
+            "improvement_areas": [],
+            "weekly_scores": [],
+        }
+
+    current = snapshots[-1]
+    scores = [s.performance_score for s in snapshots]
+    velocity = _score_velocity(scores)
+
+    # Overall direction from score velocity (1 pt/week threshold)
+    if velocity > 1.0:
+        overall_direction = "improving"
+    elif velocity < -1.0:
+        overall_direction = "declining"
+    elif len(snapshots) < 2:
+        overall_direction = "unknown"
+    else:
+        overall_direction = "stable"
+
+    # Fleet comparison — latest snapshot per driver across the whole platform
+    latest_subq = (
+        select(
+            DriverPerformanceSnapshot.driver_id,
+            func.max(DriverPerformanceSnapshot.period_start).label("max_period"),
+        )
+        .group_by(DriverPerformanceSnapshot.driver_id)
+        .subquery()
+    )
+    fleet_result = await db.execute(
+        select(DriverPerformanceSnapshot.performance_score).join(
+            latest_subq,
+            (DriverPerformanceSnapshot.driver_id == latest_subq.c.driver_id)
+            & (
+                DriverPerformanceSnapshot.period_start
+                == latest_subq.c.max_period
+            ),
+        )
+    )
+    all_scores = [row[0] for row in fleet_result.all()]
+    fleet_avg_score = (
+        round(sum(all_scores) / len(all_scores), 2) if all_scores else None
+    )
+    score_percentile = (
+        int(
+            100
+            * sum(1 for s in all_scores if s <= current.performance_score)
+            / len(all_scores)
+        )
+        if all_scores
+        else None
+    )
+
+    # Strengths and improvement areas (vs. platform target thresholds)
+    strengths: list[str] = []
+    improvement_areas: list[str] = []
+
+    if current.acceptance_rate >= TARGET_ACCEPTANCE:
+        strengths.append("acceptance_rate")
+    else:
+        improvement_areas.append("acceptance_rate")
+
+    if current.completion_rate >= TARGET_COMPLETION:
+        strengths.append("completion_rate")
+    else:
+        improvement_areas.append("completion_rate")
+
+    if current.on_time_rate >= TARGET_ON_TIME:
+        strengths.append("on_time_rate")
+    else:
+        improvement_areas.append("on_time_rate")
+
+    if current.total_rider_ratings > 0:
+        if current.average_rider_rating >= TARGET_RATING:
+            strengths.append("average_rider_rating")
+        else:
+            improvement_areas.append("average_rider_rating")
+
+    if current.cancellation_rate <= TARGET_CANCELLATION_RATE:
+        strengths.append("cancellation_rate")
+    else:
+        improvement_areas.append("cancellation_rate")
+
+    # Weekly chart data (oldest → newest, for front-end rendering)
+    weekly_scores = [
+        {
+            "period_start": s.period_start,
+            "performance_score": s.performance_score,
+            "score_tier": s.score_tier,
+            "rides_completed": s.total_rides_completed,
+        }
+        for s in snapshots
+    ]
+
+    return {
+        "driver_id": driver_id,
+        "weeks_requested": weeks,
+        "snapshots_analyzed": len(snapshots),
+        "overall_direction": overall_direction,
+        "score_velocity": velocity,
+        "current_score": current.performance_score,
+        "current_tier": current.score_tier,
+        "performance_score": _compute_trend(scores, True, 1.0),
+        "acceptance_rate": _compute_trend(
+            [s.acceptance_rate for s in snapshots], True, 0.02
+        ),
+        "completion_rate": _compute_trend(
+            [s.completion_rate for s in snapshots], True, 0.02
+        ),
+        "cancellation_rate": _compute_trend(
+            [s.cancellation_rate for s in snapshots], False, 0.01
+        ),
+        "on_time_rate": _compute_trend(
+            [s.on_time_rate for s in snapshots], True, 0.02
+        ),
+        "average_rider_rating": _compute_trend(
+            [s.average_rider_rating for s in snapshots], True, 0.1
+        ),
+        "fleet_avg_score": fleet_avg_score,
+        "score_percentile": score_percentile,
+        "strengths": strengths,
+        "improvement_areas": improvement_areas,
+        "weekly_scores": weekly_scores,
+    }
+
+
 async def bulk_recalculate_all_drivers(db: AsyncSession) -> dict[str, Any]:
     """Recalculate snapshots for all active drivers for the current period.
 
