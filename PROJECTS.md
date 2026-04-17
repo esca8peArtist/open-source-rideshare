@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 254)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 261)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 109: **Publication-ready formatting pass COMPLETE** (commit `b467e0b`). Removed 1,200+ word internal changelog from header, replaced with clean date line. Added revision history appendix at end. Fixed "Twenty Domains" → "Twenty-Two Domains" in section 5.4. Standardized 113 subheadings to colon format. Document is now clean and shareable externally. **Next**: No further autonomous work identified — document is evidence-dense, coverage-complete, and publication-ready. User may choose to share, convert to PDF, or commission professional layout.
+**Current focus**: Session 262: **Domain 4 Digital Government Infrastructure deepening COMPLETE** — `domain-deepening/domain-04-digital-government.md`. Primary findings: DOGE-SSA NUMIDENT incident (548M records, voter-roll matching) is the definitive governance-architecture-before-technology proof case; IRS IMF modernization $15B over budget across 35 years; DoD 7th consecutive audit failure ($886B unaccountable); Direct File suspended November 2025 despite 94% user satisfaction; 18F cut by DOGE; Estonia 100% digital services as of December 2024; Denmark MitID transition complete June 2023; Aadhaar exclusion anatomy updated with Supreme Court ruling; Brazil Portal da Transparência shows transparency tool without enforcement = insufficient. **22-domain evidence deepening set is now fully complete.** All companion files in `domain-deepening/`. Next: quality review pass across all companion files, or publication-preparation formatting pass.
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,7 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 254: **Pool Ride Tests + Growth Strategy COMPLETE** (commit `25ebb35`). 65 unit tests for ride pooling (`tests/test_pools.py`) — haversine math, direction matching, pool lifecycle (create/join/leave/pickup/dropoff), discount tiers, schemas, models. Growth strategy document (`growth-strategy.md`) — 12-section bootstrapping plan: cooperative operator thesis, NYC Phase 1 (Drivers Cooperative NYC partnership), driver acquisition model, network effect thresholds, revenue model, 12-month roadmap. **Total tests: 9,704 passing** (was 9,586). Previous: Session 253 (fleet fuel logs: `eac7f37`). **Next**: Beckn Protocol interoperability research/design doc, OR improve WAV dispatch integration into ride matching pipeline, OR any new task from Anya.
+**Current focus**: Session 260: **All 4 remaining endpoint coverage gaps COMPLETE** (commits `2efe7a3` + `31c2101`). Total: **10,524 passing** (2 pre-existing failures unchanged). Added: `test_vehicles.py` (94), `test_corporate_travel_itineraries.py` (84), `test_corporate_member_permission.py` (108), `test_device_tokens.py` (60). All previously uncovered endpoint modules now have test suites. **Awaiting push**: 5 commits local on `feature/corporate-business-accounts`.
+**Last updated by**: orchestrator on 2026-04-17 (Session 260)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
