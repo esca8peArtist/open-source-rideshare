@@ -7,6 +7,7 @@ from app.api.v1 import accessibility, admin, admin_financials, admin_ride_export
 from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api.v1.fare_preview import router as fare_preview_router
+from app.api.v1.platform_transparency import router as platform_transparency_router
 from app.api.v1.rider_savings_summary import router as rider_savings_summary_router
 from app.api import websocket
 from app.config import settings
@@ -88,6 +89,7 @@ app.include_router(complaints.router, prefix="/api/v1")
 app.include_router(surge_zones_admin_router, prefix="/api/v1")
 app.include_router(surge_zones_public_router, prefix="/api/v1")
 app.include_router(fare_preview_router, prefix="/api/v1")
+app.include_router(platform_transparency_router, prefix="/api/v1")
 app.include_router(rider_savings_summary_router, prefix="/api/v1")
 app.include_router(surge_waitlist_rider_router, prefix="/api/v1")
 app.include_router(surge_waitlist_public_router, prefix="/api/v1")
