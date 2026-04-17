@@ -4664,3 +4664,12 @@ Root cause: `!checkin` reads `## Since Last Check-in` from CHECKIN.md. Orchestra
 - CHECKIN.md updated with full accomplishments
 - INBOX cleared
 - Committing final CHECKIN update
+
+## Session 290 — 2026-04-17
+
+### resistance-research: Op-ed draft COMPLETE
+- File: projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md
+- 918 words, target Vox/Atlantic, submission April 22
+- Thesis: CMS Medicaid work-requirements implementation guidance (due June 1, 2026) is the highest-leverage intervention available without new legislation — broad exemption definitions can meaningfully reduce projected 5M coverage losses from OBBBA
+- Key ask: CMS issue broad exemption guidance by June 1; parallel pressure on Senate Finance Committee for Prior Authorization Reform Act floor vote (H.R. 3514 / S. 1816, 248 House + 64 Senate co-sponsors)
+- Commit: 45fd8ba
