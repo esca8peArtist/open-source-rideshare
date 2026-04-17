@@ -4986,3 +4986,31 @@ open-source-rideshare: Driver performance trend analysis
 ### Session end
 - Next for open-source-rideshare: trip demand heatmap OR rider app feature
 - CHECKIN.md updated
+
+## Session 299 — 2026-04-17
+
+### Orient
+- INBOX: Empty — nothing to process.
+- BLOCKED: GitHub push blocked (no resolution); all other blocks resolved.
+- stockbot (#1): No dev work available — waiting on user cycle logs.
+- mfg-farm (#2): Blocked on user test print.
+- resistance-research (#3): April 20 framework waits on events; op-ed ready to submit.
+- open-source-rideshare (#4): Next feature = trip demand heatmap.
+
+### Task selected
+open-source-rideshare: Trip demand heatmap (driver positioning + admin analytics)
+
+### open-source-rideshare: Trip demand heatmap COMPLETE
+- Commit: 537a3c5, branch: feature/rider-emergency-safety
+- New endpoints:
+  - GET /drivers/demand-heatmap — driver view: pickup hotspot grid, 1–30 day lookback, 3 resolutions (low/medium/high), sorted by demand desc; no fare data
+  - GET /admin/analytics/demand-heatmap — admin view: same grid + avg_fare/total_fare per cell, explicit date range, UTC hour-of-day filter, ISO day-of-week filter (0=Mon…6=Sun)
+- Grid bucketing via PostgreSQL round(cast(ST_Y/ST_X, numeric), N) — no new dependencies
+- Resolution: low≈11km (0.1°), medium≈1.1km (0.01°, default), high≈110m (0.001°)
+- Service: pure helpers (resolution_degrees, resolution_decimal_places, build_cell) independently testable
+- 24 new tests (pure helpers + service + endpoint), 3,332 total unit-passing
+- push blocked (no GitHub credentials on Pi)
+
+### Session end
+- Next for open-source-rideshare: driver live location updates OR surge analytics
+- CHECKIN.md updated
