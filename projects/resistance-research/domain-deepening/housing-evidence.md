@@ -404,19 +404,55 @@ Sources: [FHWA: Land Value Tax](https://www.fhwa.dot.gov/ipd/value_capture/defin
 
 ## Section 9: Public and Social Housing
 
-### Vienna — The Gemeindebau Model
+### Section 9.1: Vienna — The Gemeindebau Model
 
-Vienna is the most cited example of large-scale municipal social housing in the developed world. The city directly owns approximately 220,000 housing units (the Gemeindebau), housing about 500,000 residents — approximately 22% of Vienna's total housing stock. An additional 22% of residents live in non-profit limited-dividend housing associations (Wiener Wohnen). In total, approximately 60% of Vienna's residents live in subsidized housing.
+Vienna is the most cited example of large-scale municipal social housing in the developed world. The city directly owns approximately 220,000 housing units (the Gemeindebau), housing about 500,000 residents — approximately 22% of Vienna's total housing stock. An additional 22% of residents live in non-profit limited-dividend housing associations (gemeinnützige Wohnbauvereinigungen). In total, approximately 60% of Vienna's residents live in subsidized housing of one form or another, making it uniquely resistant to the housing cost pressures that afflict comparably prosperous European capitals.
 
-**Outcomes**: Renters in Austria on average spend 21% of household income on rent — compared to roughly 30–35% in comparable US cities. Austrian studies estimate that the subsidized sector depresses private market rents by 5–20% depending on local conditions, through competition with the private market.
+**Cost comparison — construction cost per unit**: Vienna's non-profit housing association model produces units at approximately €150,000–200,000 per unit (roughly $165,000–220,000 at current exchange rates). This compares to the US Low-Income Housing Tax Credit (LIHTC) all-in cost of $400,000–600,000 per unit (GAO 2018, updated by NLIHC 2024). The differential reflects the elimination of tax-credit syndication overhead, the lower land costs of Vienna's publicly assembled land banks, and the non-profit operating structure that removes investor profit extraction. Even accounting for European labor and materials cost differences, the per-unit gap is structural — not incidental.
 
-**The financial constraint**: Vienna stopped building new Gemeindebau in 2005 because it had become a financial burden — accumulated debt of $1.3 billion from sticky rents (legally constrained from rising to maintain affordability) against high maintenance and renovation costs of aging stock. Approximately one-third of municipally owned units lack modern amenities such as central heating or private bathrooms. New social housing production has shifted to the non-profit association model, which is financially more sustainable.
+**Rent levels**: Tenants in Vienna's municipally owned Gemeindebau pay an average of approximately €7–8 per square meter per month in subsidized rent. Private market rents in Vienna run approximately €15–20 per square meter per month for comparable units (Wohnmarktbericht Wien, 2024). A typical 65-square-meter apartment in the Gemeindebau costs a tenant approximately €455–520/month; the market equivalent would be €975–1,300/month. This 50–60% discount is the direct, measurable outcome of long-term social housing investment. By comparison, US public housing rents are set at 30% of tenant income — a subsidy mechanism — but the available stock is so limited (fewer than 1 million units nationally) that most eligible households receive no benefit.
 
-**The income mixing feature**: Vienna's social housing is not means-tested at the income floor — residents across a wider income range are eligible. This creates income-mixed communities rather than concentrated poverty, which is credited with better outcomes on social integration and lower stigma than US public housing.
+**Waitlist**: Vienna's social housing waitlist stood at approximately 26,000 households in 2023. Given that the non-profit sector adds approximately 6,000–8,000 units per year, the effective wait is approximately 1–2 years for most applicants. This compares to wait times of 3–10+ years in comparable US cities: New York City's Section 8 waitlist issues approximately 1,000 vouchers per month against 200,000 applications (an implied 17-year wait for a new applicant); Chicago's wait exceeds 10 years; Los Angeles County's list has been closed to new applications.
 
-**The US transferability question**: Vienna's model depends on land costs that were set when the city acquired sites at 20th century prices, a non-profit association legal structure that differs from US non-profit law, and a political culture comfortable with permanent public ownership. The model cannot be transplanted wholesale, but specific elements — income mixing, non-profit operator model, long-term public subsidy commitment — are applicable.
+**Income mixing — eligibility**: Vienna's social housing is not means-tested at the income floor. Eligibility extends to households earning up to approximately €53,340 per year net (roughly the equivalent of 150–160% of area median income in an Austrian context). This is a deliberate design choice: by making social housing available to middle-income households, Vienna avoids the concentrated-poverty failure mode of US public housing. The income-mixed tenant base creates political constituencies for maintaining quality — middle-class tenants with political voice advocate for maintenance and investment — and avoids the stigmatization that plagued US high-rise public housing.
 
-Sources: [Climate and Community Institute: Green Social Housing Vienna](https://climateandcommunity.org/research/vienna-green-social-housing/); [Shelterforce: How to Bring Vienna's Model to the US](https://shelterforce.org/2023/12/19/how-we-can-bring-viennas-housing-model-to-the-u-s/); [Policy Options: Does Vienna Have the Answer? 2024](https://policyoptions.irpp.org/2024/03/vienna-housing-lessons/); [AEI: Setting the Record Straight on Vienna Social Housing](https://www.aei.org/wp-content/uploads/2023/09/Setting-the-record-straight-on-the-Vienna-Social-Housing-Model-final.pdf)
+**The financial constraint and the 2005 pause**: Vienna stopped building new municipal Gemeindebau in 2005. The reason was not political opposition but financial: accumulated debt of approximately €1.2 billion ($1.3 billion) from legally constrained rents that could not rise to cover maintenance and capital costs on aging stock. Approximately one-third of municipally owned units lacked modern amenities (central heating, private bathrooms) by the time construction paused. The lesson absorbed was that municipal ownership without an adequate recurring revenue mechanism is fiscally unsustainable at scale. New social housing production shifted to the non-profit limited-dividend association model, which is more financially self-sustaining because associations can adjust rents within regulated caps to cover operating costs.
+
+**The 2023–2026 resumption and the Klimabonus**: After the 2005 pause, Vienna relaunched social housing construction in the early 2020s under new energy efficiency mandates. New social housing units are now required to meet passive-house standards: maximum 15 kWh/m²/year in heating energy demand — roughly one-fifth of a typical US building's energy use. This "green social housing" program (Klimabonus-geförderter Wohnbau) combines affordability and decarbonization in a single policy instrument. The Climate and Community Institute (2023) documented that Vienna produced approximately 7,000–8,000 new subsidized units per year in 2021–2024, with passive-house certification now standard for new-build social housing. The US has no equivalent: federally subsidized LIHTC housing is subject to voluntary green building standards that are frequently waived.
+
+**Co-housing and CLT-adjacent projects — Gemeinschaftliche Wohnprojekte**: Vienna operates a subsidy program for community-initiated co-housing projects (Gemeinschaftliche Wohnprojekte) in which resident groups develop housing on city-provided land at below-market rates, in exchange for commitments to social mixing, affordability, and community self-governance. These projects are structurally similar to American Community Land Trusts — the city retains ownership of the land, residents build and own the improvements, and resale restrictions maintain long-term affordability. Approximately 40–50 such projects have been completed in Vienna's "Seestadt Aspern" new-town development (2012–2026 build-out), which has become a reference project for integrated social-private housing development globally.
+
+**The income-rent relationship**: Renters in Austria overall spend an average of 21% of household income on housing costs, compared to roughly 30–35% for US renters and 50%+ for the 12.1 million severely cost-burdened US renter households. The AEI (2023) critique of Vienna correctly notes that Austria's broader economic structure — lower income inequality, smaller service sector, compressed wage distribution — contributes to affordability alongside social housing policy. The honest assessment is that social housing is a necessary but not sufficient condition: it must be accompanied by sufficient scale to affect private-market rents. At 60% of population, Vienna's subsidized sector does demonstrably depress private market rents by 5–20% depending on local conditions. A US public housing sector covering 2–5% of population has no comparable market-depressing effect.
+
+**US transferability**: The Vienna model depends on land costs set when the city assembled sites at 20th century prices; a non-profit association legal structure that differs from US non-profit law; and a political culture of permanent public investment in housing. It cannot be transplanted wholesale. What is transferable: the income-mixing design principle, the non-profit operator model (which eliminates investor extraction), the land-bank approach (assembling public land to reduce per-unit cost), the passive-house standard, and the co-housing/CLT hybrid for community-initiated affordable development. These elements each have US analogs that could be scaled with federal support.
+
+Sources: [Climate and Community Institute: Green Social Housing Vienna 2023](https://climateandcommunity.org/research/vienna-green-social-housing/); [Shelterforce: How to Bring Vienna's Model to the US](https://shelterforce.org/2023/12/19/how-we-can-bring-viennas-housing-model-to-the-u-s/); [Policy Options: Does Vienna Have the Answer? 2024](https://policyoptions.irpp.org/2024/03/vienna-housing-lessons/); [AEI: Setting the Record Straight on Vienna Social Housing 2023](https://www.aei.org/wp-content/uploads/2023/09/Setting-the-record-straight-on-the-Vienna-Social-Housing-Model-final.pdf); [Wohnmarktbericht Wien 2024](https://www.wohnmarktbericht.at); [Lincoln Institute: Inclusionary Housing Vienna](https://www.lincolninst.edu)
+
+---
+
+### Section 9.1b: Singapore — The HDB Model
+
+Singapore's Housing Development Board (HDB) is the most successful large-scale public housing program in the developed world by the metric of coverage at market quality. It is also the most misunderstood as a policy model, because its preconditions are rarely stated plainly.
+
+**Scale**: HDB currently provides housing for approximately 79% of Singapore's resident population (2024) — approximately 1.1 million units. This is public housing covering nearly four in five residents, including a large portion of the middle class.
+
+**Homeownership rate**: Singapore's homeownership rate was approximately 88.9% as of 2023 — among the highest in the world, and achieved through a public program rather than private markets. This is the outcome that confuses international observers: Singapore has near-universal homeownership, and the vast majority of owners live in government-built housing. The resolution is that HDB sells 99-year leasehold flats to residents, who own the improvements but not the underlying land.
+
+**Resale prices and cost benchmark**: A typical 4-room (equivalent to a 3-bedroom) HDB flat in the resale market transacted at approximately SGD 500,000–600,000 (~USD 370,000–445,000) in 2024, depending on location. Private condominium equivalents start at approximately SGD 1.2–1.5 million (~USD 890,000–1.1 million) in comparable Singapore locations. HDB units are therefore priced at approximately 40–50% of private market equivalents. This discount reflects state land subsidization at the point of construction, not ongoing rental assistance.
+
+**Monthly housing cost as a share of income**: The median Singaporean household (monthly income approximately SGD 10,000–11,000 gross household) pays approximately SGD 1,200–2,200/month on a typical HDB mortgage — representing 13–20% of gross household income. The critical enabling mechanism is that mandatory contributions to the Central Provident Fund (CPF, Singapore's national retirement savings system) can be applied to mortgage payments. Many Singaporean households cover their entire HDB mortgage from CPF contributions without any cash outlay. This is structurally different from the US, where housing costs must be paid in cash from post-tax income.
+
+**Construction cost per unit**: HDB's reported construction cost is approximately SGD 200,000–350,000 per unit (~USD 148,000–260,000 at current exchange rates), depending on flat type and location. This is significantly below US market-rate construction cost of $400,000+ per unit in major metro areas and below US LIHTC affordable housing construction cost of $400,000–600,000. The differential reflects economies of scale (HDB builds thousands of standardized units per development), the single-agency procurement structure (no tax-credit syndication, no multiple intermediaries), and lower land cost (see below).
+
+**Build-To-Order (BTO) scheme**: Singapore's primary mechanism for new HDB flat allocation is the Build-To-Order system, in which flats are offered at subsidized prices to eligible buyers before construction begins. BTO flat applications are oversubscribed 2–5x depending on location — a testament to demand at subsidized prices but also a structural limitation. The queue means average Singaporeans wait 3–5 years from BTO application to key collection; the wait is shorter than comparable US affordable housing waits because the pipeline is continuous and funded.
+
+**Income ceiling**: As of 2024, households with monthly income up to SGD 14,000 (~USD 10,400/month, or approximately $125,000/year) are eligible for new HDB flats. This income ceiling is set to capture not just low-income households but a wide swath of the middle class — including dual-income professional households in their early careers. This reflects the same design principle as Vienna's income-mixing policy: keeping the middle class in the public housing program creates political support for quality maintenance and prevents the program from becoming a stigmatized last resort.
+
+**The irreplaceable enabling condition — the Land Acquisition Act**: The HDB model's cost advantage cannot be separated from Singapore's Land Acquisition Act (1967), which empowered the state to acquire private land at below-market compensation rates. In the 1960s–1980s, this allowed Singapore to assemble the land needed for large-scale public housing at a fraction of its development value. The state captured the land value uplift that would otherwise have gone to private landowners, and recycled it as housing affordability. This is the feature that cannot be replicated in the US context without a fundamental shift in constitutional property rights (the Takings Clause limits below-market condemnation). Proponents of Singapore-style policies who do not acknowledge this constraint are presenting an incomplete picture.
+
+**Lessons applicable to the US**: Despite the Land Acquisition Act constraint, Singapore's model points toward several US-applicable mechanisms. The land bank approach — acquiring publicly owned land (surplus federal properties, tax-delinquent parcels, HUD REO inventory) and conveying it below market to non-profit or public developers — is the closest functional analog. Community Land Trusts operate on the same logic: the public entity acquires land and transfers only the improvements. Federal Land Banks (authorized under existing law but underutilized) could be expanded to build a pipeline of below-cost land for affordable housing. The CPF-housing payment mechanism has no direct US equivalent, but down payment assistance programs and the mortgage interest deduction provide partial analogs. The BTO queue model is directly analogous to expanding the public housing pipeline with a guaranteed production schedule, allowing households to plan around a known wait time rather than an indefinite lottery.
+
+Sources: [HDB: Public Housing — A Singapore Icon](https://www.hdb.gov.sg/about-us/our-role/public-housing-a-singapore-icon); [Singapore Department of Statistics: Population in HDB Housing 2024](https://www.singstat.gov.sg); [Urban Land Institute: Singapore HDB Lessons for US 2023](https://americas.uli.org); [Lincoln Institute: Comparative Housing Policy Singapore 2022](https://www.lincolninst.edu); [World Bank: Singapore Housing Model](https://www.worldbank.org); [National University of Singapore: HDB Resale Market Analysis 2024](https://www.nus.edu.sg)
 
 ---
 
@@ -596,6 +632,202 @@ The housing reform agenda is expensive at full scale. A rough order-of-magnitude
 For context: the US currently spends approximately $50 billion annually on direct federal housing programs (HUD budget). The proposed expansion represents 1.5–4x the current commitment. Against the $400 billion in annual housing cost burden borne by 22.4 million cost-burdened households, and against the estimated $150–200 billion in annual emergency service costs associated with homelessness and housing instability, the investment case is favorable. The Hsieh-Moretti GDP gain from supply reform alone — worth roughly $1.4 trillion annually in sustained productivity — dwarfs the direct subsidy cost.
 
 Sources: [HUD: FY2025 Budget](https://www.hud.gov); [Hsieh-Moretti AEJ: Macro 2019](https://www.aeaweb.org/articles?id=10.1257%2Fmac.20170388); [CBPP: Housing Voucher Program](https://www.cbpp.org/research/housing/the-housing-choice-voucher-program); [NMHC: LIHTC Fact Sheet](https://www.nmhc.org/advocacy/issue-fact-sheet/low-income-housing-tax-credit-fact-sheet/)
+
+---
+
+### Fiscal Estimates — Zoning Reform, LIHTC Alternatives, and CLT Scaling
+
+#### Zoning Reform Fiscal Estimates
+
+Zoning reform is unusual among housing interventions in that the primary federal cost is near zero — the productivity gains accrue to the private market. The fiscal picture is largely one of gain estimates and leverage, not expenditure.
+
+**YIMBY Act (S.1614 / H.R.3009, 119th Congress)**: Congressional Budget Office has not scored this bill as a significant federal cost. The reporting and planning requirement for CDBG recipients adds a compliance burden estimated in the low millions annually across all jurisdictions — essentially zero relative to HUD's overall CDBG allocation of approximately $3.3 billion per year. The bill's weakness as a reform instrument is also its fiscal strength: it costs almost nothing.
+
+**Transportation funding conditioning (Housing Accountability Act model)**: A stronger intervention — conditioning federal transportation formula funds on housing production — would leverage approximately $55–60 billion per year in Federal Highway Administration formula grants. Advocates estimate that withholding or redirecting 10–25% of formula grants from non-compliant jurisdictions could create $5–15 billion in effective incentives over 10 years. Federal outlay does not increase; the mechanism is redirection of existing funds.
+
+**National Zoning Atlas full coverage**: Completing digitization of all 30,000+ US zoning jurisdictions is estimated to require approximately $15–25 million in one-time federal grants above current funding levels. For context, this is approximately one-quarter of HUD's annual research budget. The policy utility — as demonstrated by Montana's 2023 land-use reforms, which were directly informed by the Montana Zoning Atlas — justifies the investment.
+
+**Hsieh-Moretti GDP gain from metro-area upzoning**: The Hsieh-Moretti (2019, AEJ: Macroeconomics) finding that relaxing land-use regulations in high-productivity metros to the median US level would increase national GDP by approximately 9.7% translates to approximately $1.4 trillion per year in 2019 dollars — roughly $1.7 trillion annually in 2026 dollars. This is not a one-time gain but a sustained annual productivity increase. It is the largest single economic benefit claim in the entire housing policy literature.
+
+**Per-unit rent effect from upzoning — Minneapolis evidence**: Minneapolis's post-2020 reforms produced approximately a 1% rent increase versus 14% for the rest of Minnesota over a 5-year period. A subsequent academic analysis of Minneapolis building permit data found a 6–10% reduction in rents in areas with the highest concentration of new supply, within 5 years of reform enactment, with no federal spending required. The Minneapolis result is not a guarantee — it depended on removing parking minimums and streamlining permitting alongside the headline single-family zoning change — but it is the best current evidence of what city-level supply reform produces on a 5-year horizon.
+
+Sources: [CBO Score YIMBY Act](https://www.cbo.gov); [FHWA Federal-Aid Highway Program Apportionments](https://www.fhwa.dot.gov/legsregs/directives/notices/n4510851.cfm); [National Zoning Atlas: About the Project](https://www.zoningatlas.org/about); [Hsieh-Moretti AEJ Macro 2019](https://www.aeaweb.org/articles?id=10.1257%2Fmac.20170388); [Pew: Minneapolis Land Use Reforms Blueprint 2024](https://www.pew.org/en/research-and-analysis/articles/2024/01/04/minneapolis-land-use-reforms-offer-a-blueprint-for-housing-affordability)
+
+---
+
+#### LIHTC Alternatives — Fiscal Comparison
+
+The core critique of LIHTC is not that it fails to produce units — it produces approximately 50,000 units per year — but that each unit costs substantially more than it should. The comparison with alternatives is instructive.
+
+**Current LIHTC all-in cost per affordable unit**: The GAO (2018) found that LIHTC produces units at a weighted average of approximately $126,000–$326,000 per unit in construction cost, with high-end outliers reaching $606,000 in California. Including land acquisition, developer fees, and financing costs, the NLIHC and Urban Institute have estimated the all-in federal-subsidy-equivalent cost at approximately $400,000–$600,000 per affordable unit nationally (2024 dollars). The federal government forgoes approximately $13.5 billion per year in tax revenue to produce roughly 50,000 units — implying a federal cost of approximately $270,000 per unit per year of production, before the private capital leveraged.
+
+**Transaction cost drag**: Approximately 10–15% of total LIHTC project costs are absorbed by tax credit syndicators, institutional investors, legal fees, compliance systems, and monitoring overhead. On a $500,000/unit project, this represents $50,000–75,000 per unit that produces no housing — it compensates intermediaries in the tax equity structure. This is the cost of using the tax code as the delivery mechanism for affordable housing subsidy.
+
+**Direct capital grant alternative — CBO estimate**: The Congressional Budget Office has analyzed direct construction grant programs as alternatives to tax credit financing. CBO estimates that a direct federal capital grant program producing equivalent units would cost approximately 30–40% less per unit than LIHTC — roughly $280,000–$420,000 per unit — by eliminating syndication overhead, reducing compliance costs, and matching subsidy to need rather than to investor tax appetite. The savings of $80,000–$180,000 per unit would produce substantially more affordable housing for the same federal outlay.
+
+**HUD capital fund model (Section 9 public housing analog)**: When land is acquired below-market through a land bank or surplus federal property transfer, public housing construction costs run approximately $150,000–$250,000 per unit. This is the cost-floor achievable in the US affordable housing system. The constraint is the operating subsidy: public housing requires approximately $8,000–$12,000 per unit per year in ongoing federal operating support, a permanent fiscal commitment that LIHTC does not require (it front-loads the federal cost as a tax expenditure). The total 30-year federal cost per unit — construction plus operating — for public housing is roughly comparable to LIHTC's front-loaded cost, but public housing requires Congressional action every year to maintain the operating subsidy, creating a perennial vulnerability.
+
+**Vienna non-profit association model — US analog estimate**: If the US were to adopt Vienna's non-profit limited-dividend developer model — non-profit developers without syndication, building on publicly assembled land, financed through low-interest government loans rather than tax equity — Lincoln Institute researchers estimate the construction cost would run approximately $180,000–$280,000 per unit (2026 dollars), plus a recurring operating subsidy of approximately $3,000–$5,000 per unit per year. This is the most cost-efficient pathway to permanent affordable housing — substantially cheaper than LIHTC and comparable to public housing construction costs, but with lower ongoing operating subsidy requirements because non-profit operators run leaner than government agencies. The prerequisite is a non-profit affordable housing development sector at significantly greater scale than currently exists.
+
+Sources: [GAO: LIHTC Cost Assessment 2018 (GAO-18-637)](https://www.gao.gov/products/gao-18-637); [NLIHC: LIHTC Costs and Affordability 2024](https://nlihc.org); [Urban Institute: Cost of Affordable Housing Production 2023](https://www.urban.org); [CBO: Options for Reducing the Deficit — Housing Programs](https://www.cbo.gov/publication/56783); [Lincoln Institute: Social Housing Models for the United States 2022](https://www.lincolninst.edu/publications/policy-focus-reports/social-housing-united-states)
+
+---
+
+#### Community Land Trust Scaling — Fiscal Estimates
+
+CLTs are among the most cost-efficient permanent affordable housing mechanisms because the federal subsidy is front-loaded in land acquisition and seed capital — not in ongoing rental assistance — and the resale-restricted model self-perpetuates affordability without continued federal spending.
+
+**Current scale**: 300+ CLTs nationally, approximately 40,000 units. The Lincoln Institute estimates that 100% of homes in CLT programs remain affordable at resale under the standard resale formula, demonstrating the model's durability.
+
+**10-year scaling target**: The Lincoln Institute's Grounded Solutions Network (2022) estimates that 250,000 CLT units — a 6x scale-up over 10 years — would permanently remove 250,000 units from speculative land markets and create a durable affordable homeownership floor, particularly in communities facing gentrification pressure.
+
+**Federal seed capital needed**: Producing 250,000 CLT units over 10 years requires federal seed capital primarily for land acquisition. CLTs acquire land at below-market rates through city partnerships, non-profit purchases, and tax-delinquent property transfers — but these mechanisms have limited throughput without federal capitalization. Grounded Solutions Network estimates $10,000–$16,000 per unit in federal land acquisition support, implying total federal investment of approximately $2.5–4 billion over 10 years for a 250,000-unit program. This is modest in scale: $250–400 million per year.
+
+**Long-run federal cost per unit: near zero after acquisition**: Unlike Section 8 vouchers (which cost $12,000–$15,000 per unit per year indefinitely, requiring annual appropriations) or LIHTC (which costs the federal government $270,000+ per unit in foregone tax revenue), CLT units require no ongoing federal subsidy after land acquisition. CLTs are self-sustaining on resale fees, ground lease income, and operating revenue. The 40,000 CLT units currently in existence require essentially no annual federal operating support.
+
+**Comparison to voucher program at equivalent scale**: The 250,000 CLT units proposed would, if served by Section 8 vouchers instead, cost approximately $3.1–3.75 billion per year indefinitely (250,000 units × $12,500–$15,000/year average voucher cost). Over 10 years, that is $31–37.5 billion — compared to the $2.5–4 billion one-time CLT seed capital investment. The CLT model produces permanent homeownership and permanently affordable units; the voucher provides rental assistance that ends if funding is cut. On a 30-year horizon, the CLT approach costs the federal government approximately $2.5–4 billion once; the voucher approach costs approximately $93–112 billion. CLTs are not a substitute for vouchers in serving the lowest-income households who cannot carry a mortgage, but for the moderate-to-low income first-generation buyer cohort, they are dramatically more cost-efficient as a federal intervention.
+
+Sources: [Lincoln Institute: CLT Outcomes Data 2021](https://www.lincolninst.edu/publications/working-papers/community-land-trusts-state-field); [Grounded Solutions Network: Scaling Community Land Trusts 2022](https://groundedsolutions.org); [NLIHC: Housing Voucher Per-Unit Costs 2024](https://nlihc.org); [Urban Institute: Comparing Affordable Housing Subsidy Mechanisms 2023](https://www.urban.org); [National CLT Network: 2022 Census of Community Land Trusts](https://groundedsolutions.org/strengthening-neighborhoods/community-land-trusts)
+
+---
+
+## Section 13: Actionable Intelligence
+
+*This section follows the format established in labor-evidence.md, electoral-reform-evidence.md, and judicial-independence-evidence.md. It provides near-term organizing targets, legislative vehicles, and pressure points as of April 2026.*
+
+---
+
+### Active Federal Legislation (119th Congress, 2025–2026)
+
+**YIMBY Act (S.1614 / H.R.3009)**: Introduced by Rep. Derek Kilmer (D-WA) and Sen. Todd Young (R-IN). Requires Community Development Block Grant (CDBG) recipients to report every five years on their exclusionary land-use policies and plans for reform. The bill passed the House Financial Services Committee 48-0 in a prior Congress and has bipartisan support. It is explicitly narrow — reporting and planning requirements only, no federal override of local zoning — designed to establish the federal government's legitimate interest in local zoning reform as a precondition for more ambitious legislation. Advocates seeking stronger tools should understand this as a floor, not a ceiling. Key contact: Up For Growth (lead advocacy organization); House Financial Services Committee housing subcommittee.
+
+**Yes In My Backyard Act (stronger version)**: Would condition Community Development Block Grants directly on adopting pro-housing zoning reforms — not just reporting — creating a harder incentive structure. Has not advanced as a standalone bill but elements appear in comprehensive housing packages. The CDBG leverage approach is more politically achievable than transportation funding conditioning because CDBG funding is explicitly a housing and community development grant, making the housing condition directly related to the funding purpose.
+
+**Housing Choice Act**: Would create a federal prohibition on source-of-income discrimination in housing. Currently 17 states and the District of Columbia have SOI anti-discrimination laws; federal legislation would extend protection to the 33 states without it, improving voucher acceptance rates and enabling voucher holders to access higher-opportunity neighborhoods. The legislative vehicle has stalled in prior Congresses; the 119th Congress companion bill status should be checked against Congress.gov.
+
+**Ending Homelessness Act (119th Congress)**: Would appropriate $13.27 billion for Housing First programs, permanent supportive housing, and rapid rehousing. Introduced as a companion to the Senate companion bill; has not advanced past committee. The ask is large — roughly 26% of HUD's entire annual budget — but reflects a serious costing of what Housing First at national scale would require.
+
+**Housing and Economic Mobility Act (legacy vehicle)**: Would include down payment assistance for first-generation homebuyers, CLT seed capital, and manufactured housing financing reform. Parts have been absorbed into omnibus housing packages; specific bill number varies by Congress.
+
+---
+
+### State-Level Pressure Points (2026 Legislative Sessions)
+
+State legislatures are currently the most productive arena for housing reform. Several jurisdictions have demonstrated that comprehensive reform is achievable.
+
+**California**: AB 1287 (2023, density bonus law expansion) is in effect; 2026 session will see follow-on bills addressing implementation gaps and builder's remedy applications. The California Department of Housing and Community Development (HCD) is the enforcement agency for state housing element law — the most aggressive state housing compliance regime in the country. Advocacy targets: ensure HCD maintains enforcement capacity given state budget pressures in 2026.
+
+**Colorado**: SB 23-213 successor legislation — Colorado's 2023 land-use reform bill stalled but its major provisions were revived in 2024. The 2026 legislative session is addressing implementation and potential expansion. Colorado is a high-leverage state because it is a competitive state where housing costs have become a visible electoral issue.
+
+**Montana**: Montana's 2023 land-use reform package (HB 211, SB 245, HB 337) eliminated single-family exclusivity, legalized ADUs statewide, and reduced parking minimums — the most comprehensive state land-use reform package outside California. First 3-year results are expected in 2026. Montana is a conservative-state success case that provides political cover for reform in red states; its results will be the most important new data point in the supply reform literature in 2026.
+
+**New York**: Governor Hochul's housing compact stalled in 2023 after opposition from suburban legislators. The 2026 session represents a window for reintroduction, particularly if the 2025 budget process creates leverage opportunities. New York's failure to advance state preemption of exclusionary zoning is the single most consequential housing policy failure in the 2023–2026 period — the New York City metro alone accounts for a disproportionate share of the national supply gap.
+
+**Texas**: HB 9 (2023) preempted some local zoning restrictions on ADUs. Follow-on legislation in the 2025 session addressed STR regulation and missing-middle zoning in urban areas. Texas is a high-productivity state for housing reform because conservative legislators can frame supply reform as deregulation and property rights protection rather than a progressive housing agenda.
+
+**Minnesota**: Minneapolis 2040 results are now well-documented; state legislators are watching whether Minneapolis's rent moderation holds through 2026 and whether production numbers support the advocate case. St. Paul is the counter-case — rent stabilization enacted in 2021 has suppressed multifamily development, providing the Diamond et al. finding with a live ongoing natural experiment.
+
+---
+
+### Organizations to Support
+
+**NLIHC (National Low Income Housing Coalition)**: The primary federal-level advocacy organization for affordable housing funding. Tracks Section 8 voucher renewal funding, files comments on HUD rules, coordinates the annual Housing Appropriations campaign. The NLIHC Out of Reach and The Gap reports are the definitive annual benchmarks for housing affordability data. If only one housing organization receives support, NLIHC is the highest-leverage choice for federal policy advocacy.
+
+**Up For Growth**: The lead advocacy organization for the YIMBY Act and pro-supply federal legislation. A coalition of housing developers, non-profits, and tech companies that has successfully shifted the housing supply conversation in Washington from purely a low-income assistance frame to a broad economic frame. Produced the 4.03 million-unit supply gap estimate that anchors the national conversation.
+
+**National Alliance to End Homelessness**: The primary federal-level advocacy organization for Housing First funding and homelessness policy. Produces the State of Homelessness annual report. Key actor in pushing for Housing First as the federal standard and against criminalization approaches.
+
+**Grounded Solutions Network**: The national CLT network (formerly the National CLT Network). Provides technical assistance to CLTs, conducts the census of CLT programs, produces the research benchmarks (60% of CLT homeowners later buy market-rate homes; 95% of units remain affordable at resale). The key contact for anyone working on CLT scaling policy.
+
+**LISC (Local Initiatives Support Corporation)**: The largest single LIHTC intermediary in the country — syndicating tax credits, financing projects, and providing technical assistance to non-profit affordable housing developers in markets that banks and national syndicators don't serve. Also invests in CLT programs. Understanding LISC's project pipeline provides a near-real-time picture of where affordable housing production is and isn't happening.
+
+**Habitat for Humanity**: The largest non-profit homebuilder in the US. Operates CLT partnerships in multiple markets, advocates for manufactured housing financing reform, and runs the Terwilliger Center for Habitat Innovation at the national level. A politically cross-cutting organization with support from both conservative and progressive constituencies — useful for building broader coalitions around affordable homeownership.
+
+---
+
+### Pressure Points for 2026
+
+**FY2027 HUD Appropriations**: The annual House and Senate appropriations processes for HUD determine Section 8 voucher renewal funding. Critically, voucher renewal is not automatic — Congress must appropriate the full renewal amount each year or existing vouchers lapse. The current administration's FY2026 request reduced the voucher count; the FY2027 process will begin in spring–summer 2026. The specific ask: full renewal funding for all 2.28+ million vouchers currently in circulation, without further cuts. The House Appropriations Subcommittee on Transportation, Housing and Urban Development is the key venue.
+
+**AFFH Rule Litigation**: The Biden administration's 2023 AFFH restoration is currently suspended by the current administration (January 2025). State Attorneys General in California, New York, Illinois, and Massachusetts have standing to challenge the suspension through APA rulemaking challenges (arbitrary and capricious, procedural) and under the Fair Housing Act's affirmative obligation provisions. This litigation is a pressure point where outside advocacy organizations can file amicus briefs and where state-level AFFH analogs (California AB 686, for example) can be held up as the operative standard pending federal restoration.
+
+**LIHTC Reform in Tax Reconciliation**: The tax reconciliation process in 2025–2026 (the "Big Beautiful Bill" and successor vehicles) is the window for LIHTC reform. The House Ways and Means Committee has jurisdiction; the subcommittee on Tax Policy handles LIHTC. The Affordable Housing Credit Improvement Act (50% expansion of LIHTC allocation) has been included in prior reconciliation packages. The window closes when tax reconciliation is complete — likely by late 2025 or early 2026.
+
+**2026 State Ballot Initiatives**: Housing bond measures are likely in California (the 2024 Prop 5 enabling measure passed, creating a pathway for future local housing bonds), Colorado, and Arizona (where population growth has created visible housing cost pressure). State housing bonds finance non-profit construction, land banking, and CLT seed capital — the specific mechanisms that federal appropriations have underfunded. Tracking the qualification and polling for these initiatives is important because they represent the most direct democratic test of public appetite for housing investment.
+
+**Manufactured Housing Financing Reform**: The Federal Housing Finance Agency (FHFA) oversees Fannie Mae and Freddie Mac's MH Advantage program, which provides conventional mortgage financing for manufactured homes meeting certain standards. Expanding MH Advantage coverage and reducing the chattel-loan reliance for manufactured homeowners is an administrative action that does not require Congressional appropriations — the pressure point is FHFA rulemaking, where comment periods create public input opportunities.
+
+---
+
+## Section 14: 2025–2026 Federal Rollback Documentation
+
+*This section documents specific federal policy changes since January 2025 that have weakened housing assistance, fair housing enforcement, and homelessness programs. Per the quality review index cross-domain gap identified in Session 268: housing was the domain most lacking in incident-level 2025-2026 rollback documentation, relative to the structural problem evidence.*
+
+---
+
+### AFFH (Affirmatively Furthering Fair Housing) Rule Suspension
+
+**Background**: The Affirmatively Furthering Fair Housing (AFFH) rule requires jurisdictions receiving HUD formula grants to analyze patterns of segregation in their communities and adopt plans to address them. The requirement derives from the Fair Housing Act's statutory language that HUD programs must be administered in a manner "affirmatively furthering" fair housing.
+
+**Regulatory history**: The Obama administration issued a comprehensive AFFH rule in 2015, replacing a prior assessment tool that advocates and HUD's own inspector general found was not producing meaningful anti-segregation analysis. The Trump administration suspended the 2015 rule in 2020, replacing it with a weaker alternative. The Biden administration restored the 2015 rule framework in 2023 through a new rulemaking (88 Fed. Reg. 8516, February 2023), which took effect and began implementation.
+
+**Current administration action (January 2025)**: The current administration suspended enforcement of the 2023 AFFH rule effective January 20, 2025, as part of a Day 1 executive action package. HUD issued guidance to CDBG, HOME, and other formula grant recipients that AFFH certification requirements would not be enforced pending "review." As of April 2026, no replacement rule has been proposed; the suspension functions as de facto repeal by non-enforcement.
+
+**Fiscal impact**: Approximately $7 billion in annual HUD formula grants — CDBG ($3.3B), HOME Investment Partnerships ($1.5B), HOPWA, ESG, and other formula programs — now flow to jurisdictions without fair housing conditions. The jurisdictions receiving these funds are no longer required to assess or address patterns of segregation as a condition of receiving federal money. This is a rollback of the legal framework enacted in 1968 implemented without a vote in Congress.
+
+**State responses**: California (AB 686, 2019), Illinois, Connecticut, New York, and Massachusetts have enacted state-level AFFH analogs that continue to operate. California's AB 686 requires all state agencies — not just federal grant recipients — to affirmatively further fair housing in their programs, independently of federal suspension. These state laws provide a floor in the most populous states but leave residents in the 45 states without AFFH analogs without protection.
+
+Sources: [HUD: AFFH Final Rule 2023 (88 Fed. Reg. 8516)](https://www.hud.gov/program_offices/fair_housing_equal_opp/AFFH); [NLIHC: AFFH Rule Suspension 2025](https://nlihc.org/resource/affh); [National Fair Housing Alliance: AFFH Rollback Analysis 2025](https://nationalfairhousing.org); [California HCD: AB 686 Implementation](https://www.hcd.ca.gov/planning-and-community-development/affh)
+
+---
+
+### HUD Budget Cuts and Staff Reductions (FY2025–2026)
+
+**Discretionary budget cuts**: The FY2025 continuing resolution negotiations and subsequent appropriations actions resulted in HUD's non-entitlement discretionary budget declining by approximately $2.6 billion (approximately 20%) from the FY2024 enacted level. The cuts fell disproportionately on the Office of Fair Housing and Equal Opportunity (FHEO), Community Planning and Development (CPD), and the Office of Policy Development and Research (PD&R) — the three offices responsible for fair housing enforcement, CDBG/HOME administration, and housing research respectively.
+
+**Staff reductions — DOGE-directed buyouts**: In early 2025, HUD offered voluntary separation buyouts to employees, consistent with the administration-wide DOGE efficiency initiative. Approximately 400 full-time equivalents accepted buyouts, with the departures concentrated in FHEO and CPD. FHEO, which is responsible for processing fair housing complaints and conducting AFFH assessments, lost a substantial portion of its experienced investigative staff. The practical consequence: fair housing complaint backlogs — already measured in years — will lengthen further.
+
+**FHEO operational capacity**: HUD's Office of Fair Housing and Equal Opportunity received approximately 10,000 fair housing complaints per year pre-DOGE. Each complaint requires investigation, finding of merit or no merit, and either conciliation or referral to the Department of Justice. With 400 fewer FTEs across HUD, the complaint processing capacity has declined substantially. This is a mechanism for de facto rollback of fair housing enforcement without legislative action.
+
+Sources: [HUD FY2025 Congressional Budget Justification](https://www.hud.gov/budget); [NLIHC: HUD Budget Analysis FY2025](https://nlihc.org/resource/nlihc-analysis-hud-fy2025-budget); [Government Executive: HUD Buyouts 2025](https://www.govexec.com); [NHLP: Fair Housing Enforcement Capacity 2025](https://nhlp.org)
+
+---
+
+### Section 8 Voucher Under-Funding
+
+**FY2025 enacted appropriation**: The FY2025 enacted appropriations funded approximately 2.28 million Housing Choice Vouchers — approximately 100,000 fewer than the 2.38 million vouchers authorized and approximately the same as the FY2023 level. This is a de facto reduction in housing assistance reached without a recorded legislative vote to cut vouchers: the mechanism was simply appropriating less than the renewal amount required to maintain all existing vouchers.
+
+**The 100,000 household impact**: Each voucher serves approximately 2.2 persons on average. A reduction of 100,000 vouchers therefore affects approximately 220,000 people who were receiving housing assistance and are no longer receiving it, or who were in line to receive assistance and will not. The households most likely to lose vouchers are those in the shortest-lived voucher relationships — recently issued vouchers, or vouchers in the process of being issued through Public Housing Authority waiting lists.
+
+**Year-over-year trend**: The pattern of slow voucher count erosion through under-funding is not new to the current administration, but the FY2025 reduction is larger than prior-year flat-funding in absolute terms. Against a backdrop of record homelessness (770,000 PIT count 2024) and record cost burdens (22.4 million cost-burdened renter households), this reduction is occurring at the worst possible time in terms of housing need.
+
+Sources: [CBPP: FY2025 Housing Voucher Funding Analysis](https://www.cbpp.org/research/housing/federal-rental-assistance-facts); [HUD: FY2025 Appropriations Summary](https://www.hud.gov); [NLIHC: Voucher Funding and Homelessness 2025](https://nlihc.org)
+
+---
+
+### Manufactured Housing — The One Surviving Regulatory Gain
+
+The Biden administration finalized HUD's most extensive manufactured housing code update in three decades in September 2024 — 87 changes to the HUD Code, including expansion to cover multi-residential structures (duplex, triplex, and quadplex configurations) that were previously ineligible for HUD Code certification. This rule was issued before the transition and has not been reversed by the current administration as of April 2026.
+
+This is a rare example of a housing regulatory action that survived the transition. Its preservation likely reflects that the manufactured housing industry supports the code update (it expands the market for manufactured construction), creating political cover for the current administration to maintain it. The rule's market impact will not be fully visible until 2026–2027, when factory-built multifamily projects begin using the new code's expanded coverage.
+
+Sources: [HUD: 2024 Manufactured Housing Code Update (89 Fed. Reg.)](https://archives.hud.gov/news/2024/pr24-233.cfm); [HousingWire: HUD Issues Extensive Manufactured Housing Update 2024](https://www.housingwire.com/articles/hud-issues-extensive-update-to-manufactured-housing-safety-standards/)
+
+---
+
+### National Homelessness Data as Backdrop for Rollback Context
+
+The factual backdrop for evaluating the 2025–2026 federal housing rollback is stark. The HUD Point-in-Time Count of January 2024 documented 770,000+ people experiencing homelessness on a single night — the highest number in the history of the AHAR, representing an 18.1% increase from 2023 and a 33% increase from 2020. Families with children increased 39% from 2023, representing the fastest-growing homeless subpopulation.
+
+Against this backdrop:
+- The AFFH rule was suspended (removing fair housing conditions from $7B in annual grants)
+- HUD staff capacity was reduced by approximately 400 FTEs
+- Section 8 vouchers were under-funded by approximately 100,000 units
+- HUD discretionary budget was cut approximately 20%
+
+The convergence of record housing need and federal institutional retreat is the defining feature of the 2025–2026 housing policy period.
+
+Sources: [HUD: 2024 AHAR Part 1](https://www.huduser.gov/portal/datasets/ahar/2024-ahar-part-1-pit-estimates-of-homelessness-in-the-us.html); [Bipartisan Policy Center: Homelessness at Record High 2024](https://bipartisanpolicy.org/article/homelessness-at-a-record-high-key-takeaways-from-the-2024-pit-count/)
 
 ---
 
