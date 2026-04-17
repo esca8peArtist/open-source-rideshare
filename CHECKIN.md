@@ -8,57 +8,64 @@
 
 ## Since Last Check-in
 
-**Period**: April 14, 2026
-**Sessions run**: 105–106
+**Period**: 2026-04-17
+**Sessions run**: 289–290
 
-### Accomplished (Session 106)
+### Accomplished (Session 290)
 
-#### Discord bot investigation — stale status updates
-Root cause identified and fixed. The `!checkin` command reads `## Since Last Check-in` from CHECKIN.md. The orchestrator was writing WORKLOG entries but not consistently archiving and replacing the CHECKIN section. Sessions 105 committed PROJECTS/WORKLOG updates but left CHECKIN's "Since Last Check-in" stuck on Session 104 content. Fix: CHECKIN.md now properly archived and replaced this session; going forward each session will write a fresh section. No code change needed in the bot itself — the issue was the orchestrator workflow, not the bot.
+#### resistance-research — Healthcare op-ed COMPLETE (commits `45fd8ba`, `56eea69`)
+- **File**: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`
+- **Title**: "Six Weeks to Save Five Million People's Health Insurance"
+- **Target**: Vox (primary) / The Atlantic (secondary) — submission target April 22
+- **Thesis**: The CMS Medicaid work-requirements guidance due **June 1, 2026** is the highest-leverage healthcare intervention available without new legislation — broad exemption definitions can significantly reduce the 5.2M projected coverage losses from OBBBA
+- **Four evidence pillars**: OBBBA CBO 5.2M/Medicaid projection; ACA subsidy expiry (31M+ uninsured by 2027); Gresham v. Azar precedent (narrow exemptions strip legally compliant workers); Prior Auth Reform Act (248 House + 64 Senate co-sponsors, only obstacle = Finance scheduling)
+- **Specific ask**: (1) CMS broad exemptions for caregivers/rural workers/irregular employment by June 1; (2) Senate Finance to schedule Prior Auth Reform Act floor vote
+- ~918 words, includes pitch paragraph for submission email
 
-#### mfg-farm — Market Research COMPLETE
-- **861 lines**: `projects/mfg-farm/market-research.md`
-- **Top product picks** (by net margin, automation score): cable management (68% margin, 9/10 automation), articulated flexi animals (AMS multi-color advantage, 20,000+ unit proven demand), vase-mode planters (fastest print per dollar, zero post-processing), pet memorials (highest margins 68–78%), gaming desk organizers (Amazon-primary, PETG, two-tone premium)
-- **Critical Etsy policy note**: June 10, 2025 policy update bans sales of prints based on third-party STL files — even commercially licensed ones. All designs must be original. This is an existential constraint on the business model.
-- **Platform fee reality**: Etsy's effective rate on a $25 sale is ~16.8% + 15% Offsite Ads on referred sales = 30%+ burden on some sales. Amazon Handmade 15% flat. Fee table and break-even analysis included.
-- **Machine sequencing**: Next printer → Bambu P1S (~$699–949, same AMS, lower cost than X1C). Resin at $3K+/mo revenue milestone. Laser cutter at $5–8K/mo as complementary line (6–8 week ROI on engraving).
-- **IP risk**: Nintendo, Disney, Games Workshop, Hasbro all actively enforce. Multiple DMCA = permanent ban. All designs must be original.
+#### open-source-rideshare — Rider emergency safety (commit `b2086d9`, branch `feature/rider-emergency-safety`)
+- **Why this exists**: Uber/Lyft have no real rider safety recourse — a cooperative is obligated to protect its members. Safety is the strongest differentiation argument.
+- **Feature 1 — Panic Button** (5 endpoints):
+  - `POST /riders/me/panic` — trigger alert against active ride; one ACTIVE alert per ride enforced
+  - `GET /riders/me/panic/{id}` — status (ownership-checked, 404 on mismatch)
+  - `DELETE /riders/me/panic/{id}` — cancel: within 30s → FALSE_ALARM, after → RESOLVED
+  - `GET /admin/panic-alerts` — ACTIVE alerts only, sorted oldest-first (most urgent first)
+  - `POST /admin/panic-alerts/{id}/resolve` — admin resolve with notes
+- **Feature 2 — Trusted Contacts** (5 endpoints + notification stub):
+  - `POST /riders/me/trusted-contacts` — add (max 3 active; deactivated don't count toward limit)
+  - `GET /riders/me/trusted-contacts` — list all (active + inactive)
+  - `PUT /riders/me/trusted-contacts/{id}` — partial update
+  - `DELETE /riders/me/trusted-contacts/{id}` — soft-delete (is_active=False)
+  - `GET /riders/me/trusted-contacts/{id}/notification-log` — last 30 notifications
+  - `send_trusted_contact_notifications()` — stub; creates TrustedContactNotification records (TRIP_START / TRIP_END / PANIC_ALERT), no real SMS/email yet
+- **95 tests, all passing**
+- Push blocked by remote permissions (esca8peArtist lacks org write access) — branch is local
 
-#### resistance-research — Domain 5 Fiscal Reform and Tax Policy COMPLETE
-- **~450 lines**: `projects/resistance-research/domain-deepening/domain-05-fiscal-reform.md`
-- **Core finding**: In 2018, the 400 wealthiest families paid a lower effective all-in rate (23%) than the bottom 50% (24.2%) — first time in data back to 1960
-- **Three structural mechanisms**: (1) buy-borrow-die — stepped-up basis costs $40–50B/yr; (2) corporate offshore profit shifting — $200–250B/yr base erosion; (3) CAMT raised $572M vs $35B projection in 2024 (2% of expected) due to depreciation carveouts
-- **IRS collapse**: IRA's $80B rescinded to $38B; $1.3B already collected from high-income targets before rescission; $200B annual enforcement revenue lost at 5:1 ROI
-- **Direct File ended**: Nov 2025, 94% user satisfaction, killed under industry lobbying pressure. Sweden files 74% of returns via SMS.
-- **Norway wealth tax update**: 30 emigrations from 2022 rate increase, but total revenue rose 34B kroner (2025) vs 27B (2022) — broad base outgrows high-net-worth emigration
-- **Reform revenue**: $400–600B/yr near-term (stepped-up basis, GILTI, CAMT fix, IRS, FTT, carbon); +$150–250B medium-term (wealth tax, estate reform). US at 25.6% tax-to-GDP vs 34.1% OECD average = $2.3T gap.
-- **Deepening library: 21 of 22 domains complete. Remaining: Domain 19 (National Security/Foreign Policy)**
-- Committed `2a1cac2`
+#### Housekeeping
+- BLOCKED.md: stale GitHub push entry (background-checks-firebase-push) marked resolved — session 289 proved push works
 
 ---
 
 ### Needs Your Input
 
-**Discord bot showing stale status updates**
-Root cause identified: The `!checkin` command reads the `## Since Last Check-in` section from CHECKIN.md. The orchestrator was not properly archiving and replacing this section at the end of each session — it wrote to the WORKLOG but didn't always replace the "Since Last Check-in" block, so the bot kept surfacing the same Session 104 content across multiple sessions.
+**op-ed submission — action needed by April 22**
+The op-ed "Six Weeks to Save Five Million People's Health Insurance" is ready to submit. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. It includes a pitch paragraph at the top. If you want to submit it, you'll need to: (1) review and edit the draft, (2) create accounts / find submission portals for Vox and/or The Atlantic. The June 1 CMS deadline makes the timing meaningful — submitting now gives editors 5 weeks before the deadline lands.
 
-Fix applied this session: The "Since Last Check-in" section is now properly archived to History and replaced with current session content. This should resolve repeated updates going forward.
+**open-source-rideshare — GitHub push permission**
+The rideshare agent hit a permissions error pushing `feature/rider-emergency-safety`. Branch is local on the Pi with 95 passing tests. To push: either (a) add the Pi's GitHub account as a collaborator with write access to the repo, or (b) run `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
 
-If `!status` also showed stale content, it reads the last 20 lines of WORKLOG.md — if no WORKLOG entry was added for a session, the tail doesn't change. Session 106 adds a proper WORKLOG entry.
+**Stockbot — paper trading cycle logs (ongoing)**
+Paper trading live since April 14. Orchestrator still can't read logs without `STOCKBOT_API_KEY`. Drop cycle logs or a Trading page screenshot in INBOX.md when convenient.
 
-**Stockbot — paper trading cycle logs**
-Paper trading has been live since April 14 (first market open). The orchestrator cannot read cycle logs without `STOCKBOT_API_KEY` in the environment. To assess model performance, either: (a) share cycle log output in INBOX.md, or (b) screenshot the Trading page at `http://127.0.0.1:8000` and drop path in INBOX.
-
-**Resistance-research — April 17/20 events**
-Today is April 14. The April 17 stay expiry and April 20 CAPE/Abrego Garcia briefing deadlines are imminent. If you have outcomes or news updates, drop them in INBOX.md and the next session will write a monitoring brief.
+**April 20 results framework**
+`projects/resistance-research/monitoring/2026-04-20-results-framework.md` is pre-drafted. After April 20 events land (CAPE Phase 1, Abrego Garcia DOJ brief), drop outcomes in INBOX.md and the next session will fill in the framework and write a monitoring brief.
 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **mfg-farm**: Market research underway this session — review findings and decide product focus.
-2. **resistance-research**: Domain 5 (Fiscal Reform) deepening underway this session — 21/22 done after.
-3. **stockbot**: Share cycle logs or Trading page screenshot to unblock model performance assessment.
-4. **open-source-rideshare**: 2,769 tests passing — next candidates: trip demand heatmap, driver revenue projections, platform admin config API.
+1. **resistance-research**: Fill April 20 results framework after events land (Apr 20 evening). OR advance mfg-farm competitive analysis if no event data yet.
+2. **open-source-rideshare**: Next feature after emergency safety — trip demand heatmap, driver revenue projections, or admin platform config API.
+3. **stockbot**: Share cycle logs to unblock model performance assessment.
+4. **mfg-farm**: Competitive analysis — pricing/volume data on top product categories.
 
 ---
 

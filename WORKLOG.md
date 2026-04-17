@@ -4667,6 +4667,24 @@ Root cause: `!checkin` reads `## Since Last Check-in` from CHECKIN.md. Orchestra
 
 ## Session 290 — 2026-04-17
 
+### Orient
+- INBOX: Empty — nothing to process.
+- BLOCKED: GitHub push entry (stale — session 289 pushed successfully). Marked resolved and cleaned up.
+- stockbot (#1): No dev work available — waiting on user cycle logs.
+- resistance-research (#3): April 20 results framework pre-drafted; April 22 op-ed target live — drafting now.
+- open-source-rideshare (#4): Driver dispute resolution done; next = rider emergency safety.
+
+### Tasks selected
+1. resistance-research: Op-ed draft for Vox/Atlantic (April 22 target)
+2. open-source-rideshare: Rider emergency safety features (panic button + trusted contacts)
+
+### open-source-rideshare: Rider emergency safety COMPLETE
+- PanicAlert: 5 endpoints (trigger/get/cancel/admin-list/admin-resolve)
+- TrustedContact: 5 endpoints (add/list/update/deactivate/notification-log)
+- TrustedContactNotification: stub send function + log model
+- 95 new tests, all passing
+- Commit: b2086d9, branch: feature/rider-emergency-safety (local — push blocked by remote permissions)
+
 ### resistance-research: Op-ed draft COMPLETE
 - File: projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md
 - 918 words, target Vox/Atlantic, submission April 22
