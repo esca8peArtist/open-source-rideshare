@@ -175,6 +175,8 @@ Section 702 of the Foreign Intelligence Surveillance Act authorizes the intellig
 
 **What the 2024 reauthorization (RISAA) did and did not do**: Congress reauthorized Section 702 in April 2024 through the Reforming Intelligence and Securing America Act (RISAA). The RISAA extended 702 authority through April 2026 (now up for renewal again). Key changes: mandatory annual query training for FBI personnel, enhanced oversight for "sensitive queries" involving politicians, media, and religious organizations, and enhanced DOJ IG oversight. What RISAA did not do: require a warrant before the FBI conducts US person queries. Civil liberties advocates from ACLU to CDT argued that the warrant requirement was the central reform; it was not included. The FBI reported conducting only 5,518 US person queries in 2024 — a 99.8% reduction from the 3.4 million in 2021 — but oversight bodies have noted compliance issues with how queries are now counted and reported.
 
+**How close the warrant requirement came**: The warrant requirement was not rejected by a comfortable margin. On April 12, 2024, minutes before the final RISAA vote, the House voted 212-212 on an amendment introduced by Rep. Andy Biggs (R-AZ) that would have required the FBI to obtain a warrant before querying Section 702 data for US person communications. A tied vote fails under House rules, meaning a one-vote shift would have passed the requirement. The amendment drew support from a cross-partisan coalition of Judiciary Committee privacy hawks (both Republican and progressive Democratic) against Intelligence Committee members and the White House, which opposed any warrant requirement. The 212-212 result is the specific near-miss that demonstrates the structural fix was genuinely within reach — and was blocked at the narrowest possible margin by intelligence establishment opposition.
+
 The Section 702 debate illustrates the proposal's core argument: Congress produces scandal-driven reform that addresses the documented abuse while preserving the underlying structural authority. The warrant requirement was the structural fix; the training requirement is the optics fix.
 
 Sources: [FISA Section 702 and the Reforming Intelligence and Securing America Act (CRS)](https://www.congress.gov/crs-product/R48592); [Section 702: 2026 Resource Page (Brennan Center)](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page); [Four Reasons FISA 702 Still Needs a Warrant Rule (CDT)](https://cdt.org/insights/four-reasons-fisa-702-still-needs-a-warrant-rule-for-us-person-queries/); [The Truth Behind Section 702 Query Statistics (Just Security)](https://www.justsecurity.org/135283/truth-behind-section-702-query-statistics/); [DOJ OIG: Review of FBI's Querying](https://oig.justice.gov/sites/default/files/reports/26-002_0.pdf)
@@ -232,7 +234,9 @@ Sources: [Brennan Center: Foreign Intelligence Surveillance Resource Page](https
 
 ### 4.1 Suicide Methodology: The "22 a Day" Number and Its Revision
 
-The widely cited "22 veterans per day" figure comes from a 2012 VA study based on data from 21 states that tracked veteran status on death certificates. The current VA figure — 16.8 per day as of 2022 data — is based on a more complete dataset (all 50 states) and is not directly comparable to the 2012 figure. The difference is partly methodological: the 2012 study covered fewer states and may have captured a different demographic mix.
+The widely cited "22 veterans per day" figure comes from a 2012 VA study based on data from 21 states that tracked veteran status on death certificates. The VHA's 2024 National Veteran Suicide Prevention Annual Report — covering 2022 data from all 50 states — puts the figure at 17.6 veterans per day. (An earlier version of this document cited 16.8/day, which was the figure from the 2023 report covering 2021 data; the 2024 report revised the number upward with updated methodology.) Neither figure is directly comparable to the original "22/day" estimate: the 2012 study covered only 21 states and may have captured a different demographic mix, and methodological changes in how veteran status is identified on death certificates affect all cross-year comparisons. A useful internal breakdown: of the 17.6 per day in 2022, approximately 7 per day were veterans who had received VHA care in 2021 or 2022; the remaining 10.6 per day were veterans who had not recently engaged with VHA services — the population hardest to reach through VA outreach programs.
+
+*Sourcing note: Use the VHA 2024 Annual Report figure of 17.6/day when citing recent data. The "22/day" figure remains in wide circulation but refers to a 2012 study with a smaller state sample. Both figures reflect a genuine crisis; neither supports the claim that things have improved.*
 
 Critically, the revision does not represent improvement. The age-adjusted suicide rate for veterans in 2022 was 1.5 times higher than for non-veteran adults after adjusting for age differences. Veterans remain at substantially elevated suicide risk compared to the general population regardless of which figure is used.
 
@@ -646,3 +650,158 @@ Sources: [OECD Development Assistance Committee Data](https://www.oecd.org/en/to
 ---
 
 *Sources consulted for this document beyond those cited inline: [Brennan Center National Security Research](https://www.brennancenter.org/issues/protect-our-democracy/national-security); [Arms Control Association Factsheets](https://www.armscontrol.org/factsheets); [Congressional Research Service Defense Reports](https://www.congress.gov/crs-product); [SIPRI Arms Transfers Database 2024](https://www.sipri.org/sites/default/files/2025-03/fs_2503_at_2024_0.pdf); [Brown University Costs of War Project](https://costsofwar.watson.brown.edu); [Project On Government Oversight Defense Research](https://www.pogo.org/defense); [Government Accountability Office National Security Reports](https://www.gao.gov/national-security); [Econofact: Pentagon Seventh Audit](https://econofact.org/factbrief/has-the-pentagon-failed-its-7th-audit-in-a-row)*
+
+---
+
+## Counterarguments and Responses
+
+*This section documents the strongest objections to Domain 19's reform proposals and the best available evidence-based responses. The goal is not to dismiss these arguments but to sharpen the case against them. Each counterargument is stated in its strongest form before the response.*
+
+---
+
+### CA-1: Deterrence Has Worked — The Case for Accepting Accident Risk as the Price of Peace
+
+**The counterargument in full**: Nuclear deterrence under MAD is not a theoretical model — it is a proven empirical record. No nuclear exchange has occurred between nuclear-armed states in 78 years. Kenneth Waltz's core argument is that the fear of mutual annihilation imposes a discipline on statecraft that no other mechanism replicates: leaders who might otherwise miscalculate in conventional conflict are sobered by the knowledge that escalation leads to civilizational destruction. The near-misses (Petrov 1983, Able Archer, NORAD false alarms) prove the stability of deterrence, not its fragility — in every case, the system worked. Decision-makers at multiple levels exercised judgment and the deterrence equilibrium held. The appropriate inference is not that the system is dangerously fragile but that it has demonstrated resilience across six decades of Cold War, post-Cold War instability, and new multipolarity. Weakening deterrence through arms control concessions, ICBM elimination, or NFU declarations invites the adversary miscalculation that has, so far, been successfully deterred.
+
+**The response**:
+
+The deterrence-has-worked argument has real empirical weight and should not be dismissed. The response does not contest the historical record — it contests the inference drawn from it.
+
+First, survivorship bias: we observe the near-misses that were resolved correctly. We have no data on near-misses that were mishandled in ways we cannot detect, or on the probability distribution of outcomes across the universe of possible crisis scenarios. The Petrov case was revealed only in 1998, 15 years after the event, and only because Petrov survived to tell the story. The documented near-miss record is almost certainly incomplete.
+
+Second, the argument that near-misses prove system resilience assumes that the same individual judgments would be replicated reliably across future crises. Petrov was one person, on one shift, in one moment. His decision to not relay the alarm violated his explicit orders. The deterrence system held because one officer broke protocol correctly. This is not a robust stability mechanism — it is a narrative of extreme contingency that we are reframing as resilience in hindsight.
+
+Third, and most important for current policy: the Cold War arms control architecture that reduced accidental war risk (inspection rights under New START, intermediate-range missile limits under the INF Treaty, confidence-building measures under the Open Skies Treaty) has been dismantled. The argument that deterrence has been stable historically provides no basis for inferring that the current trajectory — simultaneous three-leg modernization, collapsed arms control, shortened warning times from new INF deployments, and no trilateral framework for the US-Russia-China dynamic — is equally stable. The risk calculus has changed since the Cold War's end; the deterrence-as-proven argument references a structural context that no longer fully exists.
+
+The reform position is not that deterrence doesn't work. It is that the marginal increase in accidental war risk from the current trajectory — even if small — has an expected cost so large (nuclear exchange) that arms control investment is justified on basic expected-value grounds regardless of one's prior on deterrence theory.
+
+Sources: [The Spread of Nuclear Weapons: A Debate Renewed — Waltz and Sagan (Stanford)](https://politicalscience.stanford.edu/publications/spread-nuclear-weapons-debate-renewed-second-edition); [Scott Sagan, "Why Waltz Is Wrong" (Waging Peace)](https://www.wagingpeace.org/why-waltz-is-wrong/); [1983 Soviet Nuclear False Alarm Incident (Wikipedia)](https://en.wikipedia.org/wiki/1983_Soviet_nuclear_false_alarm_incident); [Nuclear Strategy of MAD Ignores Human Fallibility (Truthout)](https://truthout.org/articles/nuclear-strategy-of-mutual-assured-destruction-ignores-human-fallibility-accident-risk/)
+
+---
+
+### CA-2: Defense Industry as Strategic Industrial Base — The Case for Procurement Continuity
+
+**The counterargument in full**: The defense industry is not simply a vendor relationship — it is a strategic national asset that must be maintained continuously because it cannot be rebuilt quickly. Shipbuilding capacity, precision manufacturing, metallurgy, propulsion systems, advanced electronics: these capabilities are embodied in a workforce and supply chain that atrophies if procurement is interrupted. The production line for a nuclear submarine cannot be restarted after a five-year gap; the skilled welders, machinists, and engineers will have retired or moved to other industries, and new cohorts take a decade to train. Allies who have allowed their defense industrial bases to atrophy — Germany in the 1990s-2010s, the UK's surface ship capacity — are now struggling to reconstitute capability in the face of a revanchist Russia. Continuity of procurement, even at costs above optimal efficiency, preserves the option value of the industrial base when it is needed urgently. Disrupting F-35 production or Sentinel ICBM development to achieve audit compliance or cost savings would impose restructuring costs that exceed the savings and leave gaps in US industrial capacity that would take 20-30 years to reverse.
+
+**The response**:
+
+This is the most sophisticated version of the defense procurement continuity argument and deserves a direct engagement rather than a dismissal of the "jobs" framing.
+
+The industrial base preservation argument is genuinely valid for a narrow category of capabilities: submarine construction, strategic bomber production, and nuclear warhead manufacturing are legitimate examples where the US has essentially one or two production facilities and the workforce would be difficult to reconstitute. The Columbia-class program's delays, driven partly by industrial base constraints at Electric Boat and Newport News, illustrate the problem the argument identifies. Reformers should acknowledge that preserving submarine production capacity is a real security imperative.
+
+Where the argument breaks down is when it is generalized to cover the entire defense acquisition portfolio. Lockheed Martin's F-35 production would not collapse if the program were restructured to address the sustainment cost problem — Lockheed Martin is a profitable corporation that would adapt. The Sentinel ICBM program's Nunn-McCurdy breach does not justify unlimited cost growth simply because disrupting it would impose restructuring costs; Nunn-McCurdy was designed precisely to force this cost-benefit analysis. The argument that any disruption to any program imposes irrecoverable industrial base losses is a rhetorical expansion of a legitimate narrow claim.
+
+The appropriate scope of the industrial base preservation argument: it justifies sustained investment in submarine shipbuilding, nuclear warhead production infrastructure, and advanced propulsion manufacturing where there genuinely are one or two suppliers and no commercial equivalents. It does not justify the general claim that DoD procurement accountability must be subordinated to industrial continuity for all programs, or that audit requirements are precluded by industrial base concerns. Germany and the UK — the cases the argument cites — allowed their industrial bases to atrophy through budget choices, not through audit requirements. Better financial oversight would not prevent US industrial base investment; it would redirect spending toward capability that actually delivers, rather than capability locked behind cost overruns.
+
+Sources: [CSIS: Fixing the DoD Audit Problem](https://www.csis.org/analysis/fixing-dods-audit-problem); [Stimson Center: Acquisition Reform at a Crossroads (2025)](https://www.stimson.org/2025/acquisition-reform-at-a-crossroads/); [Quincy Institute: Keys to a More Efficient Defense at Lower Cost](https://quincyinst.org/research/keys-to-developing-a-more-efficient-effective-defense-at-lower-cost/)
+
+---
+
+### CA-3: The "Hollowing Out" Objection — Why Audit Requirements May Compromise Operational Security
+
+**The counterargument in full**: The DoD's audit failures are not simply a matter of negligence or resistance to accountability. Many of the financial records that auditors cannot verify involve classified programs, sensitive collection capabilities, special access programs (SAPs), and covert operations for which full financial documentation — maintained in auditable form, accessible to auditors with appropriate clearances — would itself constitute a security risk. Asset valuations for classified aircraft, costs for signals intelligence collection systems, expenditure documentation for covert operations: these cannot be maintained in the same auditable format as, say, the Army's vehicle inventory. The 63% of DoD components that received disclaimer-of-opinion findings are not all engaging in fraud — many are protecting legitimate secrets. Requiring full audit-ready financial documentation for classified programs would either force disclosure of sensitive program information to a broader auditor pool, or would produce "cleaned up" financial records that satisfy auditors but misrepresent actual program details. Both outcomes are worse than the status quo.
+
+**The response**:
+
+The classified-program objection is the strongest technical argument against DoD audit requirements and the one most often deployed by DoD insiders. It deserves a precise response.
+
+The objection correctly identifies that classified program financial management faces different constraints than unclassified programs. The US does have a system for auditing classified programs: the DoD Inspector General has Top Secret/SCI clearances and special access program (SAP) clearances specifically to audit classified programs. The GAO's National Security and International Affairs division has clearances for classified work. The audit failures are not primarily caused by the classified program problem — they are caused by incompatible financial management systems across DoD components (the DoD uses hundreds of legacy financial management systems that cannot talk to each other), incomplete property records, and inconsistent asset valuation methodologies that predate the audit requirement.
+
+The GAO's own analysis of why the DoD cannot pass audits is instructive on this point: the primary barriers are data quality, system interoperability, and property accountability — not classification. The $715 billion in undocumentable journal voucher adjustments are not classified operations; they are bookkeeping entries made to force accounting systems to balance because the underlying records do not exist or cannot be reconciled. Lockheed Martin's estimate that producing F-35 parts inventory records would take 450,000 labor hours is not a classified security problem; it is a contractor data management failure that the government allows because the contract structure does not require it.
+
+The legitimate accommodation for classified programs: auditors with appropriate clearances should review classified program financial management in classified settings, with findings reported to Congress through appropriate classified channels. This is how the system is supposed to work. The hollowing-out objection conflates the legitimate security constraint (auditors need clearances) with an illegitimate one (programs should be exempt from financial accountability because they are classified). No peer democracy accepts the latter.
+
+Sources: [Taxpayers for Common Sense: Why Can't the Pentagon Pass an Audit?](https://www.taxpayer.net/budget-appropriations-tax/why-cant-the-pentagon-pass-an-audit/); [POGO Fact Sheet: Auditing the Department of Defense](https://www.pogo.org/fact-sheets/fact-sheet-auditing-the-department-of-defense); [Econofact: Has the Pentagon Failed Its 7th Audit in a Row?](https://econofact.org/factbrief/has-the-pentagon-failed-its-7th-audit-in-a-row)
+
+---
+
+### CA-4: Veterans Benefits Fiscal Sustainability — The Case Against Uncapped Expansion
+
+**The counterargument in full**: The PACT Act's implementation is generating fiscal costs that were substantially underestimated when the legislation was passed. The Toxic Exposures Fund cost $20 billion in FY2024, $30.4 billion in FY2025, and is projected to reach $52.6 billion in FY2026 — a 163% increase in two years. The VA's total FY2025 budget exceeded $400 billion, driven by mandatory benefits spending that Congress has no realistic mechanism to cap. Expanding presumptive conditions for PFAS, depleted uranium, and additional burn pit exposures — as the proposal recommends — will extend the cost trajectory. The fiscal argument is not that veterans do not deserve benefits; it is that open-ended entitlement expansion without cost controls or means testing creates budget dynamics that are difficult to reverse and crowd out other priorities including, eventually, VA healthcare infrastructure itself. Germany, which the proposal cites as a model, structures veteran benefits through a system that includes means testing, co-pays for higher-income recipients, and defined benefit structures that are more fiscally predictable than the US presumptive conditions model.
+
+**The response**:
+
+The cost trajectory is real and the fiscal concern is legitimate. The PACT Act's costs are accelerating faster than the original CBO estimates, and the VA budget is on an expansion path that Congress did not fully anticipate when it voted for the presumptive conditions model. Acknowledging this is necessary for credibility — dismissing the fiscal constraint strengthens the political opposition.
+
+The response, however, turns on three points.
+
+First, the cost escalation reflects the scope of the injury, not a design flaw in the benefits structure. The rapid increase in approved claims is because the exposure was real and widespread — hundreds of thousands of veterans were genuinely harmed by burn pit exposure, Agent Orange, and toxic contamination. The fiscal surprise is an indictment of the original cost estimates, not of the policy decision to recognize these harms. The alternative — denying benefits to veterans with genuine service-connected conditions because the cost is high — is not a fiscally sustainable policy in a democracy; it is a political choice to distribute costs onto veterans and their families.
+
+Second, the Agent Orange precedent is directly relevant here: cost projections for expanding presumptive conditions have consistently proven more manageable over time than initial estimates suggested, because the cohort of eligible veterans is finite and ages out. The PACT Act cohort will similarly age; the $52.6 billion FY2026 projection is not a permanent baseline.
+
+Third, the comparison to German means-testing obscures the structural difference: Germany's comprehensive healthcare and social insurance system provides baseline coverage that reduces the specialized obligation the US places on veteran-specific programs. The US means-testing argument for veterans benefits is strongest when the alternative — civilian social insurance — is adequate. In the US context, means-testing VA benefits primarily shifts costs to veterans with private insurance or Medicare, not to a comprehensive alternative that provides equivalent coverage.
+
+The fiscally responsible framing: invest in VA capacity and claims processing efficiency to reduce the cost-per-claim (which is currently elevated by the backlog-driven appeals process), and structure expansion of presumptive conditions with adequate appropriations rather than through mandatory spending designations that create the uncapped dynamic the objection identifies.
+
+Sources: [VA Budget Tops $400 Billion for 2025 (American Legion)](https://www.legion.org/information-center/news/veterans-healthcare/2025/june/va-budget-tops-400-billion-for-2025-from-higher-spending-on-mandated-benefits-medical-care); [PACT Act Impact: How One Bill Transformed VA Disability Benefits (VA Claims Insider)](https://vaclaimsinsider.com/pact-act-va-disability-benefits/); [VHA 2024 National Veteran Suicide Prevention Annual Report](https://www.mentalhealth.va.gov/docs/data-sheets/2024/2024-Annual-Report-Part-1-of-2_508.pdf)
+
+---
+
+## Actionable Intelligence
+
+*This section documents organizations, legislative vehicles, and pressure points for advancing Domain 19 reforms. Updated April 2026.*
+
+---
+
+### AI-1: Core Organizations
+
+**Project On Government Oversight (POGO)**
+The primary nonpartisan watchdog on Pentagon accountability. POGO runs the Center for Defense Information (integrated 2012), conducts investigations into weapons program failures, audits the revolving door, and publishes the annual "Wastebook" equivalent for defense. POGO's Congressional Training Program trains House and Senate staff on oversight methodology — a direct pipeline for building audit reform capacity on both sides of the aisle. POGO has testified before Congress on DoD audit failures, contractor accountability, and the F-35 program. Their factsheet on DoD auditing is the most frequently cited non-governmental source in congressional testimony on the topic.
+URL: [pogo.org](https://www.pogo.org/) | Investigations portal: [pogo.org/investigates](https://www.pogo.org/investigates)
+
+**Stimson Center — National Security Reform Program**
+Stimson's national security reform work focuses on acquisition reform, Pentagon budget efficiency, and oversight infrastructure. The Stimson/Quincy/Taxpayers for Common Sense joint report (2025) identified $60+ billion in DoD savings achievable without reducing capability — providing the cost-benefit framework that defense-skeptical Republicans and progressive Democrats can share. Stimson published analysis of the 2025 reconciliation bill's defense slush fund provisions and has been active in acquisition reform advocacy in the 119th Congress.
+URL: [stimson.org/program/national-security-reform](https://www.stimson.org/program/national-security-reform/)
+
+**Quincy Institute for Responsible Statecraft**
+A transpartisan foreign policy think tank focused on restraint, diplomacy-first approaches, and war powers reform. Quincy's "Democratizing Foreign Policy" program directly targets the AUMF architecture, war powers restoration, and congressional reclamation of foreign policy authority. Quincy publishes Responsible Statecraft, which covers Pentagon budget issues and has developed the "alternative security budget" analytical framework showing reallocation from legacy procurement to cyber/climate/diplomacy.
+URL: [quincyinst.org](https://quincyinst.org/) | War powers program: [quincyinst.org/program-areas/democratizing-foreign-policy](https://quincyinst.org/program-areas/democratizing-foreign-policy/)
+
+**Brennan Center for Justice — National Security Program**
+The primary civil liberties research and litigation organization on Section 702, EO 12333, PCLOB, and surveillance reform. Brennan Center produces the authoritative resource pages on each FISA reauthorization cycle (their 2026 resource page on Section 702 renewal is the best single reference for the current legislative fight). They litigate civil liberties cases in parallel with policy advocacy.
+URL: [brennancenter.org](https://www.brennancenter.org/issues/protect-our-democracy/national-security) | 702 resource page: [brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page)
+
+**Friends Committee on National Legislation (FCNL)**
+The Quaker lobby; the oldest registered peace lobby in Washington. FCNL runs the War Powers campaign, the most organized constituent-pressure operation for AUMF repeal and War Powers Resolution reform. They maintain district-by-district contact infrastructure and have secured co-sponsors for war powers legislation across multiple Congresses through constituent pressure on individual members.
+URL: [fcnl.org/warpowers](https://www.fcnl.org/warpowers)
+
+**Veterans Service Organizations (VSOs) for Reform**
+Veterans for Common Sense, Iraq and Afghanistan Veterans of America (IAVA), and Vietnam Veterans of America have all taken positions supporting expanded presumptive conditions, VA staffing, and opposing privatization. IAVA in particular runs an active legislative scorecard and constituent engagement program. The VSO community is the most effective political counterweight to the "veterans benefits are too expensive" argument because it reframes fiscal constraints as a breach of the military compact.
+URL: [iava.org](https://iava.org/)
+
+---
+
+### AI-2: Legislative Vehicles (119th Congress, 2025-2026)
+
+**Section 702 Reauthorization (Active — expires April 2026)**
+The most immediate pressure point in Domain 19. Section 702 is currently up for renewal, and as of April 2026 the House is again positioning a clean extension without a warrant requirement. The 212-212 tie vote from 2024 established that the warrant amendment has a viable coalition; the task is converting two votes in the current Congress. The cross-partisan Biggs-led coalition (conservative Republicans + progressive Democrats) is the vehicle. Brennan Center and CDT are running the civil liberties side; POGO has published on the FBI querying abuse. Constituent pressure on Intelligence Committee members who voted against the warrant amendment is the highest-leverage action.
+Key vote to watch: House floor vote on clean extension vs. amendment-attached version.
+Reference: [CRS: FISA Section 702 and RISAA (R48592)](https://www.congress.gov/crs-product/R48592)
+
+**AUMF Repeal Legislation**
+The 2002 Iraq AUMF repeal passed the Senate in 2023 (S.316, Kaine-Young) and again in 2025. The 2001 AUMF has not been the subject of active repeal legislation with viable floor prospects, but Sen. Tim Kaine (D-VA) and others have introduced sunset legislation repeatedly. The legislative vehicle for 2001 AUMF reform would most likely be an amendment to the NDAA — the one defense bill that must pass annually and provides a vehicle for attaching war powers provisions.
+
+**NDAA Annual Authorization**
+The National Defense Authorization Act (NDAA) must pass every year and is the primary vehicle for defense accountability provisions. GAO-required reporting amendments, financial management improvement mandates, and BRAC-like commission language have all been advanced through NDAA amendment processes. The window for 2026 NDAA mark-up in the Armed Services Committees (typically spring-summer) is the annual opportunity to advance audit enforcement, Nunn-McCurdy reform, and acquisition oversight provisions.
+
+**PCLOB Reauthorization and Independence**
+The Privacy and Civil Liberties Oversight Board has been effectively defunded by the Trump administration's firing of Democratic members and is operating without quorum. Legislation to provide PCLOB with independent budget authority (removing it from executive branch control), fixed terms, and removal-for-cause protections is the structural fix. This has been introduced in multiple Congresses without floor votes; the 2026 FISA reauthorization debate is the best near-term vehicle for attaching PCLOB independence provisions.
+
+**VA MISSION Act Reform and Privatization Limits**
+Legislation to cap the percentage of VA care that can be delivered through community providers, require quality comparisons before community referrals, and mandate VA staffing targets (to address the 43,000-position vacancy) has been introduced by VSO-aligned members. The VA appropriations process is the annual vehicle; the FY2027 military construction and VA appropriations bill will be the next opportunity.
+
+---
+
+### AI-3: Near-Term Pressure Points (April-December 2026)
+
+1. **Section 702 floor vote**: The warrant requirement amendment needs two votes to change from the 2024 212-212 tie. The specific members who voted against the warrant amendment in 2024 while representing competitive districts are the highest-leverage targets for constituent pressure. The Brennan Center's district-by-district analysis and FCNL's contact infrastructure are the organizing tools for this campaign.
+
+2. **FY2027 NDAA mark-up**: The House and Senate Armed Services Committee mark-ups (typically May-June) are where audit enforcement provisions, Sentinel ICBM cost-growth oversight, and BRAC-model commission language can be advanced. POGO and Stimson are the organizations with staff relationships on these committees and the capacity to draft technical amendment language.
+
+3. **Pentagon 8th audit cycle (results expected late 2026)**: The Pentagon failed its 8th consecutive audit in December 2025. The pattern — seven then eight consecutive failures, GAO projection of failures through 2028 — creates an annual media and congressional hearing opportunity. The hook for 2026: the Pentagon has now been failing audits for as long as the War on Terror has been running. The gap between the defense budget's size and the accountability infrastructure's adequacy is the organizing frame.
+
+4. **USAID dissolution litigation and reconstitution**: Multiple lawsuits challenging the Trump administration's USAID dissolution are proceeding. Court decisions in 2026 may create reinstatement obligations; whether and how those obligations are enforced will depend on congressional pressure. The State/USAID funding level in FY2027 appropriations (or a continuing resolution) will determine whether the diplomatic capacity argument remains hypothetical or becomes urgent.
+
+5. **New START successor negotiations (long-shot)**: With New START suspended and Russia maintaining its suspension, the window for new bilateral arms control is closed in the near term. The near-term actionable: Build support for resuming nuclear risk reduction dialogue through track 1.5 and track 2 channels. The Arms Control Association and Carnegie Endowment for International Peace run these processes; Stimson's nuclear program is the think tank entry point.
+
+Sources: [Brennan Center: Section 702 2026 Resource Page](https://www.brennancenter.org/our-work/research-reports/section-702-foreign-intelligence-surveillance-act-fisa-2026-resource-page); [POGO Congressional Oversight of Defense Spending](https://www.pogo.org/analyses/congressional-oversight-of-defense-spending); [Stimson: What You Need to Know About Pentagon Spending in H.R. 1 (2025)](https://www.stimson.org/2025/what-you-need-to-know-about-pentagon-and-military-related-spending-in-h-r-1/); [Quincy Institute: Democratizing Foreign Policy](https://quincyinst.org/program-areas/democratizing-foreign-policy/); [FCNL War Powers Campaign](https://www.fcnl.org/warpowers); [VHA 2024 National Veteran Suicide Prevention Annual Report](https://news.va.gov/137221/va-2024-suicide-prevention-annual-report/); [Ohio Star: Section 702 Warrant Amendment 212-212 Tie Vote](https://theohiostar.com/news/amendment-in-gop-houses-fisa-renewal-bill-for-warrant-requirement-fails-in-tie-vote-212-212/jtnews/2024/04/12/)
