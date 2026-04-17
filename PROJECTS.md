@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-17 (Session 269)
+> **Last updated by**: orchestrator on 2026-04-17 (Session 278)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 277: **Publication-readiness formatting pass COMPLETE** (commit `413a917`). 3 formatting defects fixed in democratic-renewal-proposal.md: numbered list collision in Section 3.2, missing separators before Domains 10 and 16. All 22 domains verified present and in order. executive-summary.md already publication-ready. **Next**: Monitoring pass — check 2026 actionable intelligence windows across domain files for time-sensitive developments (Section 702 expiration, SNAP/Farm Bill deadlines, state legislative sessions). OR begin synthesis of cross-domain connections for op-ed/policy brief version.
+**Current focus**: Session 278: **2026 actionable windows monitoring brief COMPLETE** (commit `186d03e`, `monitoring/2026-04-17-actionable-windows.md`, 316 lines). Key live windows: Section 702 lapsed April 20 (warrant-req coalition window live NOW), Farm Bill House vote before May 1, Nebraska Medicaid work req goes live May 1 + CMS IFR due June 1, ACA PTCs expired Dec 31 (premiums doubled), Alaska RCV repeal on Nov 3 ballot. **Next**: Synthesis of cross-domain connections for op-ed/policy brief version. OR deepen Alaska RCV repeal response (0.23% margin from 2024 — specific field ops research).
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,8 +66,8 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 277: **Driver earnings comparison COMPLETE** (commit `aed89c6`, pushed). GET /drivers/me/earnings-comparison — actual OpenRide payouts vs. estimated Uber/Lyft for same trips using 2025 rate cards; 29 tests passing. Trip purpose codes were already complete (commit `564a580`). **Next**: Rider fare transparency endpoint — show riders the exact fare breakdown (driver payout %, platform fee %, taxes) so they understand where their money goes vs. Uber/Lyft. Directly addresses the platform's price-transparency mission.
-**Last updated by**: orchestrator on 2026-04-17 (Session 277)
+**Current focus**: Session 278: **Rider fare transparency COMPLETE** (commit `a975ce0`, pushed, branch `feature/rider-fare-transparency`). GET /rides/{ride_id}/fare-breakdown — per-ride fare decomposition: driver payout, platform fee (reads actual Payment record; falls back to 10% constant with is_estimated flag), taxes; competitor comparison (Uber 26.5%, Lyft 22.5%); human-readable transparency note; 50 tests (42 pass, 8 skipped DB). Platform_fee=0.0 per OpenRide zero-commission model surfaced honestly. **Waiting user review**: feature/corporate-business-accounts (full corporate accounts feature set, 9 components). **Next**: Rider trip rating UI or driver location sharing, OR merge corporate branch and continue on fresh feature.
+**Last updated by**: orchestrator on 2026-04-17 (Session 278)
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

@@ -1,7 +1,54 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-17
-**Sessions**: 257–277
+**Sessions**: 257–278
+
+---
+
+### Accomplished (Session 278)
+
+#### open-source-rideshare — Rider fare transparency endpoint (50 tests, pushed, commit `a975ce0`, branch `feature/rider-fare-transparency`)
+
+New endpoint: `GET /rides/{ride_id}/fare-breakdown`
+
+Shows riders the exact fare breakdown for any completed ride: driver payout (amount + %), OpenRide platform fee (amount + %), taxes, and a competitor comparison showing what Uber (26.5%) and Lyft (22.5%) would have taken from the same fare. Includes a human-readable transparency note. Key decision: platform_fee reads the actual Payment record (currently 0.0 per OpenRide's zero-commission model) and surfaces it honestly; cash/legacy rides fall back to a 10% constant with `platform_fee_is_estimated=True` flagged in the response. Auth: riders can only see their own rides (404 returned for both not-found and unauthorized to avoid ownership leakage). 42 pass, 8 skipped (DB integration, same as existing test suite pattern).
+
+#### resistance-research — 2026 actionable windows monitoring brief (commit `186d03e`)
+
+New file: `monitoring/2026-04-17-actionable-windows.md` (316 lines, 12 sources). Key findings from web research:
+
+**Immediate (now):**
+- **Section 702 (FISA)**: Lapsed April 20. FISC recertification keeps collection running to ~March 2027. Warrant-requirement coalition window is live NOW — highest momentum is immediately post-expiration. Contact Senate Judiciary Committee members.
+
+**May deadlines:**
+- **Farm Bill**: House floor vote expected before May 1 (Thompson confirmed April 16). Rules Committee signaling last week of April. Passed committee 34-17. Senate still needs 60 votes. Hard deadline: September 30.
+- **Nebraska Medicaid work requirements**: Go live May 1 — 8 months ahead of the federal January 2027 deadline. CMS Interim Final Rule due June 1; that rule's public comment period is the most actionable pressure point. 4.8M projected to lose coverage nationally under OBBBA.
+
+**Ongoing:**
+- **ACA enhanced PTCs**: Expired December 31, 2025. House passed 3-year extension January 2026 (230-196). Senate CARE Act in active negotiation. Premiums already doubled for subsidized enrollees ($1,016 avg annual increase).
+- **Alaska RCV repeal**: On November 3 ballot. 2024 defeat was 0.23% — narrowest in Alaska history. Highest-priority defensive electoral reform action this year. Michigan RCV is closed (RankMIVote withdrew December 2025, pivoted to 2028).
+
+---
+
+### Needs Your Input
+
+#### open-source-rideshare — Two feature branches ready for review
+
+**1. `feature/corporate-business-accounts`** — Full corporate accounts feature (9 components):
+- Three-tier corporate policy hierarchy (account → department → member override)
+- Booking eligibility enforcement (policy, blackout, quotas, spend limit, dept budget, onboarding)
+- Invoice due dates + overdue tracking
+- Spending alerts (75%/90%/100% thresholds)
+- Member onboarding with checklist enforcement
+- Invitation → onboarding auto-trigger
+- Expense report generation (member + admin + CSV)
+- Trip purpose codes (admin CRUD, rider tag, analytics)
+- Driver earnings comparison (Uber/Lyft rate card comparison)
+
+**2. `feature/rider-fare-transparency`** — Rider fare breakdown endpoint (this session)
+- GET /rides/{ride_id}/fare-breakdown with competitor fee comparison and transparency note
+
+Both pushed to `rideshare` remote. Ready to merge to master when you approve.
 
 ---
 

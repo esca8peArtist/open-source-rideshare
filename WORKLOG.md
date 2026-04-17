@@ -11524,6 +11524,47 @@ Session 275–276 complete.
 
 ---
 
+## Session 278 — 2026-04-17
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- open-source-rideshare: corporate-business-accounts feature complete, waiting user review to merge. Next: rider fare transparency endpoint.
+- resistance-research: All 23 domain files Tier 1. Next: 2026 actionable intelligence monitoring pass.
+
+### Task selection
+(1) open-source-rideshare: rider fare transparency endpoint — GET /rides/{ride_id}/fare-breakdown. Delegated to rideshare subagent (background).
+(2) resistance-research: 2026 actionable windows monitoring pass — scan domain files + web research for time-sensitive 2026 windows. Delegated to resistance-research subagent (background).
+
+### resistance-research: 2026 actionable windows monitoring brief
+Commit: 186d03e
+
+New file: `monitoring/2026-04-17-actionable-windows.md` (316 lines). Key findings from web research:
+- Section 702 (FISA): LAPSED April 20 (3 days ago). FISC recertification keeps collection running to ~March 2027. Legislative window for warrant-requirement coalition is live right now — highest momentum immediately post-expiration.
+- Farm Bill: House floor vote before May 1 (Thompson confirmed April 16). Rules Committee signaling last week of April. Passed committee 34-17. Senate needs 60 votes. Hard deadline: September 30.
+- Medicaid work requirements: Nebraska goes LIVE May 1 (8 months ahead of federal Jan 2027 deadline). CMS Interim Final Rule due June 1 — public comment window is most actionable pressure point. 4.8M projected to lose coverage nationally.
+- ACA enhanced PTCs: EXPIRED Dec 31, 2025. House passed 3-year extension Jan 2026 (230-196). Senate CARE Act in negotiation. Premiums already doubled for subsidized enrollees ($1,016 avg annual increase).
+- Alaska RCV repeal: On November 3 ballot. 2024 defeat was 0.23% — narrowest in Alaska history. Highest-priority defensive electoral reform action.
+- Michigan RCV: CLOSED — RankMIVote withdrew December 2025, pivoted to 2028.
+
+Session 278 complete.
+
+### open-source-rideshare: Rider fare transparency endpoint
+Commit: a975ce0 — pushed to rideshare remote (branch: feature/rider-fare-transparency)
+
+New files:
+- `backend/app/schemas/rider_fare_transparency.py` — CompetitorFeeComparison + FareBreakdownResponse schemas
+- `backend/app/services/rider_fare_transparency.py` — get_fare_breakdown() with auth checks, fare decomposition, competitor comparisons, transparency note
+- `backend/app/api/v1/rider_fare_transparency.py` — GET /rides/{ride_id}/fare-breakdown
+- `backend/tests/test_rider_fare_transparency.py` — 50 tests (42 pass, 8 skipped/DB integration)
+
+Key decisions:
+- Platform fee: reads actual Payment record (platform_fee=0.0 per OpenRide zero-commission model); falls back to OPENRIDE_PLATFORM_FEE_RATE=0.10 constant for cash/legacy rides, surfaces platform_fee_is_estimated=True flag
+- Competitor rates: Uber 26.5% (25-28% midpoint), Lyft 22.5% (20-25% midpoint) — 2025 national avg
+- Auth: 404 for not-found + non-completed + wrong-rider (no ownership leakage); 403 for cross-rider access
+
+---
+
 ## Session 277 — 2026-04-17
 
 ### Orient
