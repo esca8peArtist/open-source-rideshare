@@ -162,6 +162,18 @@ class BookingEligibilityResponse(BaseModel):
                            monthly_budget set.  Empty when the member belongs to
                            no departments with a budget cap.
 
+    Onboarding
+    ----------
+    onboarding_incomplete:    True when an active (non-completed) onboarding
+                              record exists for this member and the
+                              ``policy_acknowledged`` step has not been marked
+                              complete.  False when no onboarding record exists
+                              (onboarding is optional/admin-initiated) or when
+                              onboarding status is 'completed'.
+    onboarding_pending_steps: Names of all steps where ``completed == False``
+                              in the active onboarding record.  Empty when
+                              onboarding_incomplete is False.
+
     Denial reasons
     --------------
     denial_reasons: Human-readable list of all reasons the ride was rejected.
@@ -197,6 +209,10 @@ class BookingEligibilityResponse(BaseModel):
     # Department budget
     dept_budget_exceeded: bool = False
     dept_budget_details: List[DeptBudgetCheckSummary] = []
+
+    # Onboarding
+    onboarding_incomplete: bool = False
+    onboarding_pending_steps: List[str] = []
 
     # Denial summary
     denial_reasons: List[str]

@@ -207,6 +207,7 @@ async def _run_check(
     params=None,
     account_id=ACCOUNT_ID,
     member_id=MEMBER_ID,
+    onboarding_record=None,
 ):
     """Helper that patches all service dependencies and calls check_booking_eligibility."""
     if member is None:
@@ -232,11 +233,15 @@ async def _run_check(
     member_result = MagicMock()
     member_result.scalar_one_or_none.return_value = member
 
-    # _get_current_month_member_spend: execute returns scalar_one = spend_usd
+    # Step 0 onboarding query: second execute returns onboarding record (scalar_one_or_none)
+    onboarding_result = MagicMock()
+    onboarding_result.scalar_one_or_none.return_value = onboarding_record
+
+    # _get_current_month_member_spend: third execute returns scalar_one = spend_usd
     spend_result = MagicMock()
     spend_result.scalar_one.return_value = spend_usd
 
-    db.execute = AsyncMock(side_effect=[member_result, spend_result])
+    db.execute = AsyncMock(side_effect=[member_result, onboarding_result, spend_result])
 
     quota_map = {"daily": quota_daily, "weekly": quota_weekly, "monthly": quota_monthly}
 
@@ -733,6 +738,139 @@ def test_dept_budget_remaining_floored_at_zero():
         budget_exceeded=False,
     )
     assert under_summary.budget_remaining_usd == Decimal("374.50")
+
+
+# ===========================================================================
+# Onboarding enforcement tests (51-58)
+# ===========================================================================
+
+
+def _make_onboarding_record(
+    policy_acknowledged_complete: bool = True,
+    extra_pending_steps: list[str] | None = None,
+) -> MagicMock:
+    """Build a mock CorporateMemberOnboarding with configurable step completion."""
+    from app.models.corporate_member_onboarding import ONBOARDING_STEPS
+
+    record = MagicMock()
+    steps_completed: dict = {}
+    for step in ONBOARDING_STEPS:
+        if step == "policy_acknowledged":
+            completed = policy_acknowledged_complete
+        elif extra_pending_steps and step in extra_pending_steps:
+            completed = False
+        else:
+            completed = True
+        steps_completed[step] = {"completed": completed, "completed_at": None, "completed_by_id": None, "notes": None, "auto_detected": False}
+    record.steps_completed = steps_completed
+    return record
+
+
+@pytest.mark.asyncio
+async def test_no_onboarding_record_booking_proceeds():
+    """Test 51: No onboarding record → onboarding_incomplete=False, booking proceeds normally."""
+    result = await _run_check(onboarding_record=None)
+
+    assert result.onboarding_incomplete is False
+    assert result.onboarding_pending_steps == []
+    assert result.eligible is True
+    assert not any("onboarding" in r.lower() or "policy acknowledgement" in r.lower() for r in result.denial_reasons)
+
+
+@pytest.mark.asyncio
+async def test_active_onboarding_policy_ack_true_other_pending_proceeds():
+    """Test 52: Active onboarding, policy_acknowledged=True, other steps pending → onboarding_incomplete=False."""
+    record = _make_onboarding_record(
+        policy_acknowledged_complete=True,
+        extra_pending_steps=["first_corporate_ride", "onboarding_complete_confirmed"],
+    )
+    result = await _run_check(onboarding_record=record)
+
+    assert result.onboarding_incomplete is False
+    assert result.eligible is True
+
+
+@pytest.mark.asyncio
+async def test_active_onboarding_policy_ack_false_blocks_booking():
+    """Test 53: Active onboarding, policy_acknowledged=False → onboarding_incomplete=True, eligible=False."""
+    record = _make_onboarding_record(policy_acknowledged_complete=False)
+    result = await _run_check(onboarding_record=record)
+
+    assert result.onboarding_incomplete is True
+    assert result.eligible is False
+    assert any("policy acknowledgement" in r.lower() or "onboarding" in r.lower() for r in result.denial_reasons)
+
+
+@pytest.mark.asyncio
+async def test_completed_onboarding_does_not_block():
+    """Test 54: Completed onboarding (status='completed') → onboarding_incomplete=False, booking proceeds.
+
+    When the onboarding record has status='completed', the query filters it out
+    (status != 'completed'), so no record is returned and the check is skipped.
+    """
+    # Simulate the DB returning None because the query excludes completed records
+    result = await _run_check(onboarding_record=None)
+
+    assert result.onboarding_incomplete is False
+    assert result.eligible is True
+
+
+@pytest.mark.asyncio
+async def test_onboarding_incomplete_plus_policy_violation_both_in_denial_reasons():
+    """Test 55: Active onboarding incomplete + policy violation → both denial reasons present."""
+    record = _make_onboarding_record(policy_acknowledged_complete=False)
+    policy = _make_effective_policy(allowed_vehicle_categories=["xl"])
+    params = _default_params(vehicle_category="standard")
+    result = await _run_check(
+        onboarding_record=record,
+        effective_policy=policy,
+        params=params,
+    )
+
+    assert result.eligible is False
+    assert result.onboarding_incomplete is True
+    assert result.policy_check_passed is False
+    assert len(result.denial_reasons) >= 2
+    assert any("policy acknowledgement" in r.lower() or "onboarding" in r.lower() for r in result.denial_reasons)
+    assert any("vehicle" in r.lower() or "category" in r.lower() for r in result.denial_reasons)
+
+
+@pytest.mark.asyncio
+async def test_onboarding_pending_steps_lists_correct_names():
+    """Test 56: onboarding_pending_steps lists correct pending step names."""
+    record = _make_onboarding_record(
+        policy_acknowledged_complete=False,
+        extra_pending_steps=["first_corporate_ride"],
+    )
+    result = await _run_check(onboarding_record=record)
+
+    assert "policy_acknowledged" in result.onboarding_pending_steps
+    assert "first_corporate_ride" in result.onboarding_pending_steps
+
+
+@pytest.mark.asyncio
+async def test_onboarding_pending_steps_empty_when_policy_ack_complete():
+    """Test 57: onboarding_pending_steps is empty when policy_acknowledged is complete and all other steps done."""
+    record = _make_onboarding_record(
+        policy_acknowledged_complete=True,
+        extra_pending_steps=[],
+    )
+    result = await _run_check(onboarding_record=record)
+
+    assert result.onboarding_incomplete is False
+    assert result.onboarding_pending_steps == []
+
+
+@pytest.mark.asyncio
+async def test_onboarding_complete_does_not_add_to_denial_reasons():
+    """Test 58: onboarding_incomplete=False does not add to denial_reasons."""
+    record = _make_onboarding_record(policy_acknowledged_complete=True)
+    result = await _run_check(onboarding_record=record)
+
+    assert result.onboarding_incomplete is False
+    # No onboarding-related denial reason should be present
+    assert not any("policy acknowledgement" in r.lower() or "onboarding" in r.lower() for r in result.denial_reasons)
+    assert result.denial_reasons == []
 
 
 # ===========================================================================

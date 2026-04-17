@@ -9,6 +9,7 @@ calls ``check_booking_eligibility`` to determine:
   * Was it auto-approved?
 
 Policy layers evaluated (in order):
+  0. Onboarding completion          (policy_acknowledged step must be done)
   1. 3-tier effective ride policy  (vehicle category, per-ride cost, purpose,
                                     business hours)
   2. Blackout periods               (hard block or override-with-approval)
@@ -38,6 +39,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.corporate import BusinessAccountMember
 from app.models.corporate_department import CorporateDepartment, CorporateDepartmentMember
+from app.models.corporate_member_onboarding import CorporateMemberOnboarding
 from app.models.ride import Ride
 from app.schemas.corporate_booking_eligibility import (
     BookingEligibilityResponse,
@@ -266,6 +268,37 @@ async def check_booking_eligibility(
     ride_dt: datetime = params.ride_dt or datetime.now(tz=timezone.utc)
 
     # ------------------------------------------------------------------
+    # 0. Onboarding completion check (Step 0 — runs before policy)
+    # ------------------------------------------------------------------
+    onboarding_incomplete = False
+    onboarding_pending_steps: list[str] = []
+
+    onboarding_result = await db.execute(
+        select(CorporateMemberOnboarding).where(
+            CorporateMemberOnboarding.member_id == user_id,
+            CorporateMemberOnboarding.account_id == account_id,
+            CorporateMemberOnboarding.status != "completed",
+        )
+    )
+    active_onboarding = onboarding_result.scalar_one_or_none()
+
+    if active_onboarding is not None:
+        steps = active_onboarding.steps_completed or {}
+        # Collect all steps that are not yet complete
+        onboarding_pending_steps = [
+            step_name
+            for step_name, step_data in steps.items()
+            if not step_data.get("completed", False)
+        ]
+        policy_ack = steps.get("policy_acknowledged", {})
+        if not policy_ack.get("completed", False):
+            onboarding_incomplete = True
+            denial_reasons.append(
+                "Corporate policy acknowledgement is required before booking. "
+                "Please complete your onboarding checklist."
+            )
+
+    # ------------------------------------------------------------------
     # 2. Effective policy check (3-tier)
     # ------------------------------------------------------------------
     effective_policy = await get_effective_policy_for_member(db, account_id, member_id)
@@ -444,7 +477,8 @@ async def check_booking_eligibility(
     blackout_hard_block = in_blackout and not blackout_override_allowed
 
     eligible = (
-        policy_check_passed
+        not onboarding_incomplete
+        and policy_check_passed
         and not any_quota_exceeded
         and not spend_limit_exceeded
         and not dept_budget_exceeded
@@ -471,5 +505,7 @@ async def check_booking_eligibility(
         spend_limit_exceeded=spend_limit_exceeded,
         dept_budget_exceeded=dept_budget_exceeded,
         dept_budget_details=dept_budget_details,
+        onboarding_incomplete=onboarding_incomplete,
+        onboarding_pending_steps=onboarding_pending_steps,
         denial_reasons=denial_reasons,
     )
