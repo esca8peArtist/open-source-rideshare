@@ -537,6 +537,71 @@ The international comparison data is unambiguous on one point and contested on a
 
 ---
 
+---
+
+## Actionable Intelligence
+
+### Healthcare Reform — Near-Term Pressure Points (April 2026)
+
+**IRA Drug Pricing Defense**:
+The Inflation Reduction Act's Medicare drug price negotiation provisions are the most consequential near-term healthcare battleground. The IRA allows Medicare to negotiate drug prices directly for the first time in its history. Phase 1 negotiations (10 drugs) are complete; Phase 2 (15 additional drugs, 2025) is underway. The 2025 budget reconciliation bill contains provisions restricting or eliminating these negotiations under pressure from pharmaceutical industry lobbying.
+
+- **Active campaigns**: AARP's "Protect Medicare Negotiation" campaign — the most organized national pressure effort, targeting Republican members in districts with high Medicare enrollment. AARP has documented that the negotiated drugs save Medicare patients an average of $800/year per prescription.
+- **Industry lobbying**: PhRMA's "innovation" argument (see Objection 2 above) is the primary legislative vehicle for restricting negotiations. The counterargument — that NIH funded 99% of new drug development over the past decade — is the most effective factual rebuttal in lobbying contexts.
+- **State-level analog**: Maryland, California, Oregon, and Washington have enacted state-level drug pricing transparency and affordability review bodies. California AB 852 (2022) and the California Prescription Drug Affordability Board are the most advanced models for state-level administered pricing.
+
+**ACA Marketplace Subsidies**:
+Enhanced subsidies through the IRA (eliminating the premium cliff for incomes above 400% FPL) produced record ACA marketplace enrollment of 21.4 million in 2024. These subsidies expire at end of 2025 without congressional action. Extension of the enhanced subsidies is the most time-sensitive legislative vehicle for preventing coverage losses.
+- **Pressure target**: Senate Finance Committee Republicans from states with high marketplace enrollment — Montana, Alaska, Maine, North Carolina, Pennsylvania.
+- **Data weapon**: KFF enrollment tracking by congressional district — maps exactly how many constituents in each district benefit from enhanced subsidies.
+
+**Medicaid**:
+The 2025 reconciliation bill contains proposals for per-capita Medicaid caps, work requirements, and reduction in the federal match rate (FMAP). CBO has scored various versions of these proposals as cutting Medicaid enrollment by 10-15 million over 10 years. This is the largest proposed health coverage reduction since the ACA's passage.
+- **State-level impact**: States currently on Medicaid expansion (40 states + DC) would face the highest fiscal pressure — either absorb reduced federal funding or cut coverage. Governors of expansion states (including several Republican governors) have been the most effective voices against per-capita caps.
+- **Organizing target**: Disability rights organizations (ADAPT, National Council on Disability), hospital systems, and rural healthcare providers are the organized constituency most aligned against Medicaid cuts — rural hospitals in Republican districts are disproportionately Medicaid-dependent.
+
+**HHS/FDA Restructuring**:
+DOGE-directed cuts to HHS include FDA inspection staff, CDC epidemiology programs, and NIH research funding. The most actionable pressure points:
+- **FDA drug safety**: The FDA is required to inspect drug manufacturing facilities on statutory timelines. Staffing cuts create inspection backlogs that create drug quality risks — a politically salient argument for both parties. The 2025 budget includes cutting FDA user-fee funded inspector positions (which are industry-funded and require congressional waiver to cut).
+- **NIH research funding**: NIH budget cuts of 25-35% are proposed. The most politically effective frame is economic — NIH grants fund university research in all 50 states, employing graduate students and faculty whose salaries would disappear. AAMC maintains congressional district-by-district NIH funding maps.
+
+---
+
+### Education Reform — Near-Term Pressure Points (April 2026)
+
+**Department of Education Restructuring**:
+President Trump signed an executive order in March 2025 directing the elimination or restructuring of the Department of Education. While full legislative elimination requires congressional action (unlikely to reach 60 Senate votes), DOGE is reducing DoE staffing below functional capacity for several programs:
+- **Title I equalization**: The Title I program — $18B/year in supplemental funding for schools serving high concentrations of low-income students — is administered by DoE. Staffing cuts impair program monitoring and enforcement of equalization provisions.
+- **IDEA special education**: Federal special education monitoring and enforcement (under IDEA) is conducted by DoE's Office of Special Education Programs. Staff reductions have already produced backlogs in state compliance reviews.
+- **Pressure target**: National Education Association (4M members), American Federation of Teachers (1.7M members), and the Council of Chief State School Officers (all 50 state education chiefs) — who are uniformly opposed to function-eliminating restructuring regardless of party affiliation.
+
+**School Choice / Voucher Legislation (Federal)**:
+The Education Freedom Scholarships Act, reintroduced in 2025, would create a federal tax credit for donations to state scholarship-granting organizations. This is the legislative vehicle for federal voucher expansion without direct appropriation. CBO estimates the federal tax credit cost at $5-10B over 10 years, while state programs would direct funds predominantly to private school families (as the Indiana and Louisiana evidence predicts).
+- **Pressure mechanism**: In states where voucher programs have produced documented test score declines (Indiana, Louisiana, Ohio, DC), local parent and teacher organizing has been the most effective opposition. Requiring rigorous outcome reporting as a condition of federal tax credit eligibility is a defensible bipartisan requirement.
+
+**Title I and Pre-K Funding**:
+Head Start is operated by HHS rather than DoE — making it vulnerable to HHS cuts rather than DoE restructuring. The 2025 budget proposal includes a 15% Head Start funding reduction, affecting approximately 50,000 children's enrollment.
+- **What works**: Head Start has survived 60 years of budget fights because it has organized parent constituencies in every congressional district. The National Head Start Association maintains real-time advocacy infrastructure.
+- **Pre-K expansion pathway**: 19 states + DC now operate state-funded universal pre-K. The most recent expansions (Minnesota, 2023; Arizona, 2022; Idaho, 2023) demonstrate continued bipartisan momentum at the state level independent of federal action. State-level advocacy is currently more viable than federal given the political environment.
+
+**Student Debt and Higher Education Affordability**:
+The Supreme Court's 2023 ruling (Biden v. Nebraska) blocking the broad student debt cancellation program left approximately $1.7 trillion in outstanding federal student loan debt. The Education Department's ongoing rulemaking on income-driven repayment (IDR) and Public Service Loan Forgiveness (PSLF) remains the primary near-term debt relief mechanism.
+- **PSLF advocacy**: Public Service Loan Forgiveness has forgiven $56B for 780,000 borrowers since 2017 overhaul. Recent DOGE proposals to restrict eligibility are a concrete organizing target for teachers, nurses, social workers, and public defenders — bipartisan professional constituencies.
+
+---
+
+### Cross-Domain Organizing Infrastructure
+
+**Healthcare-Education Overlap**:
+The most politically underutilized organizing frame is the healthcare-education nexus: Medicaid funds school-based health services in every public school in the US. When Medicaid is cut, school nurses, counselors, and mental health services lose funding without any connection to "entitlement spending" debates. This is a factual reframing that broadens the constituency for Medicaid defense to include suburban education advocates.
+
+**Key Organizations**:
+- **Healthcare**: AARP (healthcare; 38M members), Families USA (ACA defense), Community Catalyst (community health centers), National Alliance of Mental Illness (NAMI) (Medicaid mental health parity)
+- **Education**: NEA, AFT, National Parent Teacher Association, Learning Policy Institute (research arm), Alliance for Excellent Education (secondary education reform)
+- **Both**: Children's Defense Fund (cross-domain child welfare), Urban Institute (research bridging healthcare and education)
+
+---
+
 ## Key Citations
 
 1. OECD Health at a Glance 2023: https://www.oecd.org/en/publications/health-at-a-glance-2023_7a7afb35-en.html
