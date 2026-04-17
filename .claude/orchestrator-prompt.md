@@ -46,13 +46,7 @@ If you hit something you can't resolve in 2-3 attempts:
 - Pick the next project and continue
 
 ### 6. Discord Notifications
-Send a notification after completing a meaningful chunk of work or hitting a block:
-```bash
-curl -s -H "Content-Type: application/json" \
-  -d "{\"content\":\"[Claude] MESSAGE\"}" \
-  "$DISCORD_WEBHOOK_URL"
-```
-Keep messages brief: what was done, what's next or what's blocked.
+Do NOT send Discord notifications. The orchestrator shell script sends an automated 2-hour summary via a background watchdog — that is the only notification the user wants. Do not run any curl commands to Discord, regardless of what was accomplished or blocked.
 
 ### 7. Prepare Check-in
 Before finishing the session, update CHECKIN.md:
@@ -75,6 +69,9 @@ Before finishing the session, update CHECKIN.md:
 6. Leave every project in a committable state at the end of the session
 7. Check-in cadence is daily (sometimes twice daily) — pace work accordingly
 8. When stockbot code is ready to deploy to Jetson (paper trading features complete, tests passing), create a `DEPLOY_READY` file in the workspace root: `touch /home/awank/dev/SuperClaude_Framework/DEPLOY_READY`. The deploy script runs automatically after the session ends.
+9. **NEVER modify this file** (`orchestrator-prompt.md`) or any file under `.claude/`. These are system configuration files set by the user. Treat them as read-only.
+10. **NEVER modify BLOCKED.md resolved entries** — only add new blocks under `## Active Blocks`. Do not reformat, reorder, or move entries between sections.
+11. **NEVER reformat INBOX.md** — only add items under `## New Items` and wrap processed items in `<!-- Processed ... -->` comments. Do not alter the structure outside those lines.
 
 ---
 
