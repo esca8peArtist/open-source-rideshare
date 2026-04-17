@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.ride import CancellationCategory, Ride, RideStatus
 from app.models.surge_event import SurgeEventType, SurgePricingEvent
 
 logger = logging.getLogger(__name__)
@@ -105,6 +106,25 @@ class DemandHeatmapCell:
     geohash: str
     event_count: int
     avg_combined_multiplier: float
+
+
+@dataclass
+class DailyPriceSensitivity:
+    date: str  # YYYY-MM-DD
+    total_cancellations: int
+    price_cancellations: int
+    surge_events: int
+    price_cancellation_rate: float
+
+
+@dataclass
+class PriceSensitivityReport:
+    period_days: int
+    total_cancellations: int
+    price_cancellations: int
+    price_cancellation_rate: float
+    total_surge_events: int
+    daily_breakdown: list[DailyPriceSensitivity]
 
 
 # ---------------------------------------------------------------------------
@@ -257,3 +277,113 @@ async def get_demand_heatmap(
         )
         for row in result
     ]
+
+async def get_price_sensitivity_report(
+    db: AsyncSession,
+    days: int = 30,
+) -> PriceSensitivityReport:
+    """Return price sensitivity analytics for the last *days* days.
+
+    Answers: how many riders are abandoning due to pricing, and how does that
+    rate compare to the overall cancellation rate?
+
+    Per-day breakdown includes surge event counts so operators can visually
+    correlate high-surge days with elevated price abandonment — the basis for
+    tuning multiplier caps or transparency features.
+
+    Uses ``Ride.cancelled_at`` as the time key for cancellations.  Rides
+    without ``cancelled_at`` (status != CANCELLED) are excluded.
+    """
+    since = _since(days)
+
+    # 1. Total cancellations in window
+    total_q = await db.execute(
+        select(func.count()).where(
+            Ride.status == RideStatus.CANCELLED,
+            Ride.cancelled_at >= since,
+        )
+    )
+    total_cancellations: int = int(total_q.scalar() or 0)
+
+    # 2. PRICE_TOO_HIGH cancellations in window
+    price_q = await db.execute(
+        select(func.count()).where(
+            Ride.cancellation_category == CancellationCategory.PRICE_TOO_HIGH,
+            Ride.cancelled_at >= since,
+        )
+    )
+    price_cancellations: int = int(price_q.scalar() or 0)
+
+    price_cancellation_rate = (
+        round(price_cancellations / total_cancellations, 4) if total_cancellations > 0 else 0.0
+    )
+
+    # 3. Total surge events in window
+    surge_q = await db.execute(
+        select(func.count()).where(SurgePricingEvent.recorded_at >= since)
+    )
+    total_surge_events: int = int(surge_q.scalar() or 0)
+
+    # 4. Per-day breakdown — daily cancellation counts + surge event counts.
+    #    Two separate queries, merged in Python to avoid a cross-table GROUP BY.
+
+    # 4a. Daily cancellation counts (total and PRICE_TOO_HIGH)
+    daily_cancel_q = await db.execute(
+        select(
+            func.date_trunc("day", Ride.cancelled_at).label("day"),
+            func.count().label("total_cancels"),
+            func.count(Ride.id).filter(
+                Ride.cancellation_category == CancellationCategory.PRICE_TOO_HIGH
+            ).label("price_cancels"),
+        )
+        .where(
+            Ride.status == RideStatus.CANCELLED,
+            Ride.cancelled_at >= since,
+        )
+        .group_by(text("day"))
+        .order_by(text("day"))
+    )
+    cancels_by_day: dict[str, tuple[int, int]] = {}
+    for row in daily_cancel_q:
+        day_str = row.day.strftime("%Y-%m-%d") if row.day else "unknown"
+        cancels_by_day[day_str] = (int(row.total_cancels), int(row.price_cancels))
+
+    # 4b. Daily surge event counts
+    daily_surge_q = await db.execute(
+        select(
+            func.date_trunc("day", SurgePricingEvent.recorded_at).label("day"),
+            func.count().label("surge_cnt"),
+        )
+        .where(SurgePricingEvent.recorded_at >= since)
+        .group_by(text("day"))
+    )
+    surge_by_day: dict[str, int] = {}
+    for row in daily_surge_q:
+        day_str = row.day.strftime("%Y-%m-%d") if row.day else "unknown"
+        surge_by_day[day_str] = int(row.surge_cnt)
+
+    # Merge by day
+    all_days = sorted(set(cancels_by_day.keys()) | set(surge_by_day.keys()))
+    daily_breakdown = []
+    for day_str in all_days:
+        total_c, price_c = cancels_by_day.get(day_str, (0, 0))
+        surge_c = surge_by_day.get(day_str, 0)
+        rate = round(price_c / total_c, 4) if total_c > 0 else 0.0
+        daily_breakdown.append(
+            DailyPriceSensitivity(
+                date=day_str,
+                total_cancellations=total_c,
+                price_cancellations=price_c,
+                surge_events=surge_c,
+                price_cancellation_rate=rate,
+            )
+        )
+
+    return PriceSensitivityReport(
+        period_days=days,
+        total_cancellations=total_cancellations,
+        price_cancellations=price_cancellations,
+        price_cancellation_rate=price_cancellation_rate,
+        total_surge_events=total_surge_events,
+        daily_breakdown=daily_breakdown,
+    )

@@ -9,9 +9,10 @@ Admin endpoints (require admin auth):
   POST   /admin/surge-zones/{id}/activate  — toggle active state
 
 Admin analytics endpoints (require admin auth):
-  GET /admin/surge-analytics/summary        — platform-level surge stats
-  GET /admin/surge-analytics/zones          — per-zone breakdown
-  GET /admin/surge-analytics/demand-heatmap — geohash surge frequency heatmap
+  GET /admin/surge-analytics/summary           — platform-level surge stats
+  GET /admin/surge-analytics/zones             — per-zone breakdown
+  GET /admin/surge-analytics/demand-heatmap    — geohash surge frequency heatmap
+  GET /admin/surge-analytics/price-sensitivity — PRICE_TOO_HIGH cancellation rate vs. surge
 
 Public endpoint (no auth required):
   GET /pricing/surge-zones/active    — currently active zones for map display
@@ -27,8 +28,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import require_admin
 from app.db.database import get_db
 from app.schemas.surge_zone import (
+    DailyPriceSensitivityResponse,
     DemandHeatmapCellResponse,
     DemandHeatmapResponse,
+    PriceSensitivityResponse,
     SurgeSummaryResponse,
     SurgeZoneCreate,
     SurgeZoneListResponse,
@@ -42,6 +45,7 @@ from app.schemas.surge_zone import (
 )
 from app.services.surge_analytics import (
     get_demand_heatmap,
+    get_price_sensitivity_report,
     get_surge_summary,
     get_zone_breakdown,
 )
@@ -305,6 +309,45 @@ async def surge_analytics_demand_heatmap(
             for c in cells
         ],
         total_cells=len(cells),
+    )
+
+
+@admin_analytics_router.get("/price-sensitivity", response_model=PriceSensitivityResponse)
+async def surge_analytics_price_sensitivity(
+    days: int = 30,
+    db: AsyncSession = Depends(get_db),
+):
+    """PRICE_TOO_HIGH cancellation rate vs. surge pricing activity.
+
+    Shows how many riders cancel due to pricing, what fraction that represents
+    of all cancellations, and a per-day breakdown so operators can visually
+    correlate high-surge days with elevated price abandonment.
+
+    Use this to tune surge multiplier caps: if price_cancellation_rate spikes on
+    days with high surge_events, lower the demand or zone multiplier ceilings.
+    """
+    if days < 1 or days > 365:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="days must be between 1 and 365",
+        )
+    report = await get_price_sensitivity_report(db, days=days)
+    return PriceSensitivityResponse(
+        period_days=report.period_days,
+        total_cancellations=report.total_cancellations,
+        price_cancellations=report.price_cancellations,
+        price_cancellation_rate=report.price_cancellation_rate,
+        total_surge_events=report.total_surge_events,
+        daily_breakdown=[
+            DailyPriceSensitivityResponse(
+                date=day.date,
+                total_cancellations=day.total_cancellations,
+                price_cancellations=day.price_cancellations,
+                surge_events=day.surge_events,
+                price_cancellation_rate=day.price_cancellation_rate,
+            )
+            for day in report.daily_breakdown
+        ],
     )
 
 

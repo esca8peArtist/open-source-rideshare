@@ -167,3 +167,20 @@ class DemandHeatmapResponse(BaseModel):
     period_days: int
     cells: list[DemandHeatmapCellResponse]
     total_cells: int
+
+
+class DailyPriceSensitivityResponse(BaseModel):
+    date: str
+    total_cancellations: int
+    price_cancellations: int
+    surge_events: int
+    price_cancellation_rate: float
+
+
+class PriceSensitivityResponse(BaseModel):
+    period_days: int
+    total_cancellations: int
+    price_cancellations: int
+    price_cancellation_rate: float
+    total_surge_events: int
+    daily_breakdown: list[DailyPriceSensitivityResponse]
