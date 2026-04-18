@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 317: `GET /riders/me/spending-summary` COMPLETE (commit `4699fd0`) — today/week/month/lifetime spending buckets, tips given, promo savings, most frequent route. 3,830 tests passing. Branch: feature/rider-emergency-safety, pushed to GitHub. **Next**: New feature branch OR continue rider/driver features (nearby drivers endpoint, driver rating history, pre-booking ETA).
+**Current focus**: Session 317: `GET /drivers/me/ratings` COMPLETE (commit `2289b7c`) — paginated rating history, aggregate avg + breakdown + recent trend, no rider identity exposed. 3,877 tests passing (25 new). Branch: feature/rider-emergency-safety, pushed to GitHub. **Next**: Pre-booking ETA (`GET /rides/eta/estimate`) OR new feature branch.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

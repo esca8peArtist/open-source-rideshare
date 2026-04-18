@@ -6,6 +6,32 @@
 
 ## Session 317 — 2026-04-18 (continued)
 
+### open-source-rideshare — Driver rating history COMPLETE
+
+**Commit**: `2289b7c` | **Branch**: `feature/rider-emergency-safety` | **Pushed**: `rideshare` remote
+
+**Feature**: `GET /drivers/me/ratings?page=&page_size=` — paginated driver rating history with aggregate stats.
+
+**Response**: `average_rating`, `total_ratings`, `rating_breakdown` (counts per star 1–5), `recent_trend` (avg of last 10), paginated `ratings` list with `ride_id`, `rating`, `comment`, `rated_at`. No rider identity exposed anywhere in the schema.
+
+**Tests**: 25 new (18 passing, 7 skipped pending PostgreSQL). All 12 specified scenarios covered plus edge cases (total_pages min 1, exact division, page_size at 50 boundary).
+
+---
+
+### open-source-rideshare — Nearby drivers endpoint COMPLETE
+
+**Commit**: `f10a8fd` | **Branch**: `feature/rider-emergency-safety` | **Pushed**: `rideshare` remote
+
+**Feature**: `GET /drivers/nearby?lat=&lng=&radius_km=` — public pre-booking endpoint; returns available drivers within radius, sorted by distance, no PII exposed.
+
+**Response**: list of `{driver_id, eta_minutes, distance_km, vehicle_type}`, capped at 20 drivers, plus `count` and `radius_km`.
+
+**Key decisions**: bounding-box SQL pre-filter + haversine in Python (no PostGIS dep), availability = `is_online=True AND is_on_break=False AND heartbeat within 5 min` (same filter as dispatch engine), `radius_km > 20` → 422, no auth required (matches surge_status pattern).
+
+**Tests**: 22 new → **3,852 total passing**. 0 regressions.
+
+---
+
 ### open-source-rideshare — Rider spending summary COMPLETE
 
 **Commit**: `4699fd0` | **Branch**: `feature/rider-emergency-safety` | **Pushed**: `rideshare` remote
