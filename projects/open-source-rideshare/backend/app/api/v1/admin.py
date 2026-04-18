@@ -21,7 +21,7 @@ from app.services.service_areas import (
 from app.services.verification import VerificationError, get_verification_status, review_document
 from app.models.audit import AuditLog
 from app.models.driver import DriverProfile
-from app.models.driver_shift import DriverShift
+from app.models.driver_shift import DriverShift, ShiftStatus
 from app.models.feedback import Dispute, DisputeStatus, DisputeType, RideFeedback
 from app.models.ride import Ride, RideStatus
 from app.models.safety import SOSAlert, SOSStatus
@@ -59,8 +59,12 @@ from app.schemas.admin import (
     DriverActivityListResponse,
     DriverMetrics,
     DriverStatusChangeEntry,
+    ActiveShiftEntry,
+    ActiveShiftsResponse,
     DriverSafetyHistoryEntry,
     DriverSafetyHistoryResponse,
+    DriverShiftEntry,
+    DriverShiftHistoryResponse,
     DriverStatusHistoryResponse,
     DriversListResponse,
     FeedbackStats,
@@ -536,6 +540,101 @@ async def admin_get_driver_status_history(
     ]
 
     return DriverStatusHistoryResponse(driver_id=driver_id, total=total, items=items)
+
+
+@router.get("/drivers/shifts/active", response_model=ActiveShiftsResponse)
+async def admin_list_active_shifts(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> ActiveShiftsResponse:
+    """All drivers currently on an active shift, newest-first by start time."""
+    base_q = select(DriverShift).where(DriverShift.status == ShiftStatus.active)
+    total = (await db.execute(select(func.count()).select_from(base_q.subquery()))).scalar() or 0
+
+    result = await db.execute(
+        base_q.order_by(DriverShift.started_at.desc()).offset(skip).limit(limit)
+    )
+    shifts = result.scalars().all()
+
+    user_ids = [s.driver_id for s in shifts]
+    profiles_by_user_id: dict[int, DriverProfile] = {}
+    if user_ids:
+        profiles_result = await db.execute(
+            select(DriverProfile)
+            .where(DriverProfile.user_id.in_(user_ids))
+            .options(joinedload(DriverProfile.user))
+        )
+        profiles_by_user_id = {p.user_id: p for p in profiles_result.scalars().unique().all()}
+
+    items = [
+        ActiveShiftEntry(
+            shift_id=s.id,
+            driver_profile_id=profiles_by_user_id[s.driver_id].id if s.driver_id in profiles_by_user_id else 0,
+            user_id=s.driver_id,
+            driver_name=profiles_by_user_id[s.driver_id].user.name if s.driver_id in profiles_by_user_id else None,
+            started_at=s.started_at,
+            rides_completed=s.rides_completed,
+        )
+        for s in shifts
+    ]
+
+    return ActiveShiftsResponse(total=total, items=items)
+
+
+@router.get("/drivers/{driver_id}/shift-history", response_model=DriverShiftHistoryResponse)
+async def admin_get_driver_shift_history(
+    driver_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status: active, completed, auto_ended."),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> DriverShiftHistoryResponse:
+    """Shift session history for a single driver, newest-first.
+
+    Returns 404 if the driver profile does not exist. Supports optional status
+    filter and skip/limit pagination (max 200/page).
+    """
+    profile_result = await db.execute(
+        select(DriverProfile).where(DriverProfile.id == driver_id)
+    )
+    profile = profile_result.scalar_one_or_none()
+    if profile is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver not found")
+
+    base_q = select(DriverShift).where(DriverShift.driver_id == profile.user_id)
+
+    if status_filter is not None:
+        try:
+            target_status = ShiftStatus(status_filter.lower())
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid status '{status_filter}'. Must be one of: active, completed, auto_ended.",
+            )
+        base_q = base_q.where(DriverShift.status == target_status)
+
+    total = (await db.execute(select(func.count()).select_from(base_q.subquery()))).scalar() or 0
+    result = await db.execute(
+        base_q.order_by(DriverShift.started_at.desc()).offset(skip).limit(limit)
+    )
+    shifts = result.scalars().all()
+
+    items = [
+        DriverShiftEntry(
+            id=s.id,
+            status=s.status.value,
+            started_at=s.started_at,
+            ended_at=s.ended_at,
+            total_minutes=s.total_minutes,
+            rides_completed=s.rides_completed,
+        )
+        for s in shifts
+    ]
+
+    return DriverShiftHistoryResponse(driver_id=driver_id, total=total, items=items)
 
 
 @router.get("/drivers/{driver_id}/safety-history", response_model=DriverSafetyHistoryResponse)

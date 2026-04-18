@@ -593,3 +593,45 @@ class DriverSafetyHistoryResponse(BaseModel):
     driver_id: int
     total: int
     items: list[DriverSafetyHistoryEntry]
+
+
+# ---- Admin Driver Shift History ----
+
+
+class DriverShiftEntry(BaseModel):
+    """One shift session in a driver's shift history."""
+
+    id: int
+    status: str
+    started_at: datetime
+    ended_at: datetime | None
+    total_minutes: float | None
+    rides_completed: int
+
+    model_config = {"from_attributes": True}
+
+
+class DriverShiftHistoryResponse(BaseModel):
+    """Paginated shift history for one driver."""
+
+    driver_id: int
+    total: int
+    items: list[DriverShiftEntry]
+
+
+class ActiveShiftEntry(BaseModel):
+    """One driver currently on an active shift."""
+
+    shift_id: int
+    driver_profile_id: int
+    user_id: int
+    driver_name: str | None
+    started_at: datetime
+    rides_completed: int
+
+
+class ActiveShiftsResponse(BaseModel):
+    """List of drivers currently on active shifts."""
+
+    total: int
+    items: list[ActiveShiftEntry]
