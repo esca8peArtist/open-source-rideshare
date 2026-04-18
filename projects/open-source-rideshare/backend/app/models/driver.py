@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from geoalchemy2 import Geometry
-from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -31,6 +31,15 @@ class DriverProfile(Base):
     )
     current_location: Mapped[bytes | None] = mapped_column(
         Geometry(geometry_type="POINT", srid=4326), nullable=True
+    )
+    # Accessibility capability flags — set by the driver to indicate they can
+    # accommodate riders with hearing impairments (e.g. they know sign language
+    # or prefer text-based communication).
+    hearing_impairment_capable: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    sign_language_capable: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

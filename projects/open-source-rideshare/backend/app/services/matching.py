@@ -39,6 +39,7 @@ class DriverCandidate:
     is_wheelchair_accessible: bool = False
     vehicle_capacity: int = 4
     vehicle_service_category: VehicleServiceCategory = VehicleServiceCategory.STANDARD
+    hearing_impairment_capable: bool = False
 
 
 class MatchingEngine:
@@ -190,6 +191,7 @@ class MatchingEngine:
         vehicle_type_preference: VehicleServiceCategory | None = None,
         dropoff_lat: float | None = None,
         dropoff_lng: float | None = None,
+        rider_hearing_impairment: bool = False,
     ) -> list[DriverCandidate]:
         """Find and rank driver candidates for a ride request.
 
@@ -213,6 +215,10 @@ class MatchingEngine:
             When provided, drivers with an active destination filter are only
             returned if the ride's dropoff falls within their filter radius.
             Drivers without a destination filter are unaffected.
+        rider_hearing_impairment:
+            When True, drivers with hearing_impairment_capable=True are sorted
+            before other drivers.  This is a soft preference — if no capable
+            driver is available, non-capable drivers are still returned.
         """
         initial_radius = settings.driver_search_initial_radius_km
         max_radius = settings.driver_search_radius_km
@@ -330,10 +336,25 @@ class MatchingEngine:
                     is_wheelchair_accessible=is_wav,
                     vehicle_capacity=capacity,
                     vehicle_service_category=service_category,
+                    hearing_impairment_capable=p.hearing_impairment_capable,
                 )
             )
 
-        candidates.sort(key=lambda c: (c.distance_km, -c.rating_avg))
+        # Sort: distance ASC, rating DESC as baseline.
+        # Soft hearing-impairment preference: when the rider has a hearing
+        # impairment, capable drivers are promoted to the front of the list.
+        # Non-capable drivers are still included so that a match is always
+        # attempted when no capable driver is available.
+        if rider_hearing_impairment:
+            candidates.sort(
+                key=lambda c: (
+                    not c.hearing_impairment_capable,  # False (capable) sorts first
+                    c.distance_km,
+                    -c.rating_avg,
+                )
+            )
+        else:
+            candidates.sort(key=lambda c: (c.distance_km, -c.rating_avg))
         return candidates
 
     async def offer_ride_to_drivers(
@@ -402,6 +423,7 @@ class MatchingEngine:
         vehicle_type_preference: VehicleServiceCategory | None = None,
         dropoff_lat: float | None = None,
         dropoff_lng: float | None = None,
+        rider_hearing_impairment: bool = False,
     ) -> DriverCandidate | None:
         candidates = await self.find_candidates(
             pickup_lat,
@@ -412,6 +434,7 @@ class MatchingEngine:
             vehicle_type_preference=vehicle_type_preference,
             dropoff_lat=dropoff_lat,
             dropoff_lng=dropoff_lng,
+            rider_hearing_impairment=rider_hearing_impairment,
         )
         if not candidates:
             logger.info("No drivers found for ride %d", ride.id)
