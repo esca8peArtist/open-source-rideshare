@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 351)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 372)
 
 ---
 
@@ -54,7 +54,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/stockbot/`
-**Current focus**: Session 316: **Paper Trading Dashboard COMPLETE** (commit `ebec447` — `/paper-trading` page: session cards, equity curve, cycle log, auto-refresh 30s). **Projected Returns COMPLETE** (commits `76a4142`, `ff2eefa` — historical signal chart + forward projection chart, options model support added, NameError fix). Works across all model types (stock, rule-based, MTF, options). Paper trading LIVE since April 14. **Next**: Monitor paper trading performance; additional web app features as requested.
+**Current focus**: Session 362: **Ensemble Return Stacker COMPLETE** (commits `2c13e77`, `cd708f5`). EnsembleStackerModel class (Ridge + LightGBM meta-learners, 5-day + 10-day horizons, walk-forward + held-out CV). 4 endpoints: `POST /api/ensemble-stacker/train`, `GET /api/ensemble-stacker/list`, `GET /api/ensemble-stacker/{id}`, `DELETE /api/ensemble-stacker/{id}`. Projected returns endpoint updated for regressor models (raw_return_pct field, is_regressor flag, volatility-adaptive threshold). 10+ AAPL stackers trained in `models/ensemble_stackers/`. Frontend: stacker creation form wired in ModelBuilderPage, projected returns displays actual return % for regressors. **DEPLOY_READY created** — Jetson deploy triggered. **Next**: Monitor stacker performance in paper trading.
 **Blocked on**: —
 **Notes**: Web app is in good shape. Model creation and most optimisation is operational. Paper trading has just started but has had issues — this is the current priority. iOS app is out of scope until paper trading is solid. All features must work across ALL model types (stock, options, rule-based, ensemble, MTF) — do not implement something for one type only.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 352: **Recurring Ride Skip/Unskip COMPLETE** (commit `63ccd08`, 31 tests) — riders can skip a single upcoming occurrence without cancelling the series. `POST /rides/recurring/{id}/skip` validates day-of-week + future date, cancels any already-generated SCHEDULED ride, idempotent. `DELETE /rides/recurring/{id}/skip/{date}` removes a skip. `RecurringRideDetailResponse` now includes `skipped_dates`. Generation logic respects skips. 4,626 tests passing. **Next**: Driver in-app notification preferences UI enhancements, or further recurring ride improvements (end-date support).
+**Current focus**: Session 372: **Service animal support COMPLETE** (commit `ddd2d10`, 38 new tests). `has_service_animal` on rider preferences; `service_animal_friendly` on driver profiles + GET/PUT /drivers/me/accessibility. Matching engine soft preference (same pattern as hearing impairment — friendly drivers sorted first, non-friendly still in pool). WebSocket offer includes `rider_has_service_animal` flag. Also fixed latent bug: rider prefs were loaded after matching so hearing-impairment soft preference was never influencing candidate ranking — now loaded before. 5,149 tests passing. **Next**: additional accessibility/safety feature (e.g. visual impairment support, communication preferences, or accessibility ratings).
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

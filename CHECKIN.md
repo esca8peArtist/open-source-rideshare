@@ -9,7 +9,447 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–352
+**Sessions run**: 313–372
+
+### Accomplished (Session 372 — orchestrator)
+
+#### open-source-rideshare — Service Animal Support (commit `ddd2d10`)
+
+Full-stack service animal support: riders can declare they travel with a service animal; drivers declare service-animal-friendly status via the accessibility API; the matching engine prefers friendly drivers (soft preference — no rider gets stranded if no capable driver is nearby).
+
+**What's new:**
+- `ride_preferences.has_service_animal` — rider flag; GET/PUT via existing preferences endpoint
+- `driver_profiles.service_animal_friendly` — driver capability flag; included in `GET/PUT /drivers/me/accessibility` alongside the existing hearing/sign-language flags
+- Matching engine: `rider_has_service_animal` parameter in `find_candidates()` — friendly drivers sorted first, fallback to full pool if none available; combined sort key when both hearing + service animal flags are set
+- WebSocket `ride_offer` message: now includes `rider_has_service_animal` so the driver app can show an accommodation notice
+- **Bug fix**: rider prefs were loaded *after* matching, so `rider_hearing_impairment` soft preference was never influencing candidate ranking. Moved prefs load before `find_candidates()` — both flags now actually work.
+- Migration `d4e5f6a7b8c9` (revises dispute respondent fields migration)
+
+**38 new tests** in `tests/test_service_animal_support.py`. **5,149 total tests passing** (was 5,111). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 371 — orchestrator)
+
+#### open-source-rideshare — Driver Trip Dispute Visibility (commit `1a01605`)
+
+Closed the last gap in the dispute system: drivers couldn't see disputes filed against them on rides they drove — that view was admin-only. Now any ride participant can list disputes others filed against them.
+
+**`GET /me/disputes/received`** (new endpoint):
+- Returns disputes where the caller was a ride participant (driver or rider) but did NOT file the dispute
+- Paginated with `?limit=` and `?offset=` — same interface as `GET /me/disputes`
+- Route declared before `GET /me/disputes/{dispute_id}` so "received" isn't misinterpreted as a numeric ID
+- Full `DisputeResponse` objects including respondent reply fields
+
+**`get_disputes_against_user()`** (new service function):
+- Joins `Dispute → Ride`, filters `OR(rider_id, driver_id) == user_id AND filed_by != user_id`
+- Same `(items, total)` return shape as existing dispute service functions
+
+**11 new tests** in `tests/test_driver_dispute_visibility.py`. **5,111 total tests passing** (was 5,100). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 370 — orchestrator)
+
+#### open-source-rideshare — Dispute Respondent Reply + Notifications (commit `fae4008`)
+
+Two gaps in the dispute system closed: the other party had no way to submit their side, and no one received any notifications at any point in the dispute lifecycle.
+
+**Respondent reply:**
+- `Dispute.respondent_response` + `Dispute.respondent_responded_at` — two new nullable columns; migration `c3d4e5f6a7b8`
+- `POST /disputes/{dispute_id}/response` — the non-filing ride participant submits their side
+  - Only the driver or rider who did NOT file the dispute can respond
+  - Only allowed while status is `OPEN` or `UNDER_REVIEW`
+  - Idempotent: one response per dispute (409 if already submitted)
+  - 403 if the filer tries to respond to their own dispute, or if an unrelated user attempts
+- `DisputeResponse` schema now returns `respondent_response` and `respondent_responded_at`
+
+**Dispute notifications:**
+- `DISPUTE_FILED` — when rider files a dispute, driver gets push+email (and vice versa)
+- `DISPUTE_RESOLVED` — when admin resolves, the filer is notified push+email with the outcome
+- `DISPUTE_RESPONSE_RECEIVED` — when the respondent submits their reply, the filer gets a push
+
+**29 new tests** in `tests/test_dispute_enhancements.py`. **5,100 total tests passing** (was 5,071). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 369 — orchestrator)
+
+#### open-source-rideshare — Driver Accessibility Capability Flags (commit `0cd7cb9`)
+
+Completes the hearing impairment loop opened in Session 368 (rider flagged, driver notified via WebSocket — but no way for drivers to declare capability).
+
+**How it works:**
+- `DriverProfile.hearing_impairment_capable` + `sign_language_capable` — two new Boolean columns (default false), migration `b2c3d4e5f6a7`
+- `PUT /drivers/me/accessibility` — driver sets their own flags; partial update (send only what you want to change); only flushes on actual value change
+- `GET /drivers/me/accessibility` — driver reads current flags
+- Matching engine: when the rider has `hearing_impairment=True`, capable drivers are sorted to the top of the candidate list (soft preference — non-capable drivers remain in the list as fallback so no rider gets stranded)
+- `sign_language_capable` is stored and API-accessible now; matching preference can be added for it in a future iteration
+
+**33 new tests** covering model fields, schemas, service, endpoints, and matching sort logic. **5,071 total tests passing** (was 5,038). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 368 — orchestrator)
+
+#### open-source-rideshare — Accessibility Features: WAV Auto-Apply + Hearing Impairment (commit `2732b7e`)
+
+Two accessibility features shipped:
+
+**1. WAV preference auto-apply**
+
+Riders who set `accessibility_vehicle_needed=true` in their ride preferences are now guaranteed a WAV on every booking — even if they forget to check the box at request time. Previously the pref was stored but never enforced during matching.
+
+- `POST /rides/request` now loads the rider's preference and ORs it with the per-request `accessibility_required` flag
+- If either is true, `accessibility_required=True` is set on the Ride and passed to the matching engine
+- Matching engine already filtered by `accessibility_required` — the gap was the pref never being applied upstream
+
+**2. Hearing impairment accommodation**
+
+Riders can flag hearing impairment via `PUT /me/ride-preferences` (`{"hearing_impairment": true}`). When matched, the driver's WebSocket ride offer includes `rider_hearing_impairment: true` so the driver app can surface an accommodation notice.
+
+- `RidePreference.hearing_impairment` — new Boolean column, default false
+- Migration `a1b2c3d4e5f6` — backward-safe
+- `PUT /me/ride-preferences` + `GET /me/ride-preferences` updated
+- `send_ride_offer()` WebSocket function now carries `rider_hearing_impairment` in the message payload (default false when no prefs)
+
+**19 new tests** in `test_accessibility_features.py`. **5,038 total tests passing** (was 5,019). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 367 — orchestrator)
+
+#### open-source-rideshare — Rider Pool Opt-Out Preference (commit `8e4e0c6`)
+
+Riders can now permanently opt out of pool/shared-ride matching through their existing ride preferences.
+
+**How it works:**
+- `PUT /me/ride-preferences` now accepts `{"pool_opt_out": true}` — all existing partial-update semantics apply (send only what you want to change)
+- `GET /me/ride-preferences` returns `pool_opt_out` in the response
+- `POST /pools/request` checks the rider's opt-out flag before doing any route calculation or DB writes
+  - `pool_opt_out=true` → **400**: "You have opted out of pool rides. Update your ride preferences to re-enable pool matching."
+  - `pool_opt_out=false` or no preference row → proceeds normally, no change in flow
+
+**Implementation:**
+- `RidePreference.pool_opt_out` — new Boolean column, `server_default=false`
+- Migration `a1b2c3d4e5f6` — backward-safe, existing rows default to false
+- Service `_DEFAULTS` updated — auto-created preference rows get `pool_opt_out=False`
+- `pools.py` imports `get_preferences_for_ride` and runs the check before route computation
+
+**16 new tests** in `test_pool_opt_out.py` covering model, schema (Update + Response), service (default, set true, set false, no-flush on same value), and endpoint (blocked, allowed when false, allowed when no prefs row). **5,019 total tests passing** (was 5,003). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 366 — orchestrator)
+
+#### open-source-rideshare — Carpool Passenger Roster, Pool-Join Notification, Trip Share View Notification (commit `bd9ee7c`)
+
+Three new safety features for the pooling and trip-sharing systems:
+
+**1. `GET /pools/{pool_id}/passengers`** — Rider-facing co-passenger roster
+
+Riders can now see who else is in their shared pool before and during the ride. Returns first name only (no last name, no PII) with an `is_me` flag so the app can label the calling rider's own entry as "You".
+- Cancelled legs excluded; available to any authenticated user who has the pool_id
+- New schemas: `PoolPassengerEntry`, `PoolPassengersResponse`
+
+**2. Pool-join notification**
+
+When a second or third rider joins a forming pool, all existing pool members immediately receive a push notification: *"[First name] has joined your pool ride. Your fare discount has been updated."*
+- Fire-and-forget via `asyncio.ensure_future` in `POST /pools/request`
+- New `NotificationType.POOL_RIDER_JOINED` + template
+
+**3. Trip share view notification**
+
+The first time anyone views a rider's public trip share link, the rider gets a push: *"Someone is following your live trip using your shared link."*
+- Idempotent: `mark_first_view(token)` sets `first_viewed_at` on the in-memory link record; subsequent views return None → no repeat notification
+- `GET /trip-share/{token}` (public, no auth) now takes a `db` dependency and fires the notification asynchronously on first view
+- New `NotificationType.TRIP_SHARE_VIEWED` + template
+
+Both new notification types added to `_RIDER_NOTIFICATION_TYPES` in the preference schema and service (users can opt out via standard preference controls).
+
+**40 new tests** across two new files. 2 existing trip share router tests updated for new `get_db` dependency. **5,003 total tests passing** (was 4,963). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 365 — orchestrator)
+
+#### open-source-rideshare — Admin Safety Overview Dashboard (commit `7904af1`)
+
+New endpoint: `GET /admin/safety/overview?period=today|week|month|year`
+
+Consolidates all safety incident types into a single dashboard response — ops no longer needs to query four separate endpoints to understand overall safety health.
+
+**How it works:**
+- Accepts `period` param (today = 24h, week = 7d, month = 30d, year = 365d)
+- Fires 9 queries: 4 for current period (SOS, speeding, route deviation, no-show), 4 for the equal-length prior period (for trend), 1 for real-time active SOS count
+- Each metric returns `this_period`, `prior_period`, `change` (positive = more incidents = worse)
+- `total_incidents` is the sum across all four types
+- `sos_active_now` is always real-time regardless of period filter
+- New schemas: `SafetyTypeStats`, `SafetyOverview` (in `app/schemas/admin.py`)
+
+**20 new tests** (5 schema, 1 HTTP auth, 14 endpoint logic). **4,963 total tests passing** (was 4,943). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 364 — orchestrator)
+
+#### open-source-rideshare — Admin Route Deviation Incidents Report (commit `a49dd6a`)
+
+New endpoint: `GET /admin/safety/route-deviation-incidents?period=week|month|year|all&page=1&per_page=20`
+
+Surfaces the existing route deviation service (which already detects and flags rides in the DB) to ops — admins can now see all rides where the driver went significantly off the direct pickup→dropoff line.
+
+**How it works:**
+- Queries rides where `route_deviation_flagged_at IS NOT NULL` — the field set by the existing `route_deviation.py` service
+- `period` filter narrows by `route_deviation_flagged_at` timestamp (last 7/30/365 days or all time)
+- Joins rider and driver via SQLAlchemy `joinedload` for name display; graceful None when driver not loaded
+- Results ordered newest-first; paginated (page / per_page up to 100)
+- New schemas: `RouteDeviationIncidentEntry`, `RouteDeviationIncidentListResponse` (in `app/schemas/admin.py`)
+
+**16 new tests** (4 schema, 1 HTTP auth, 11 endpoint logic). **4,943 total tests passing** (was 4,927). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 363 — orchestrator)
+
+#### open-source-rideshare — Admin Speeding Incidents Report (commit `7f4068c`)
+
+New endpoint: `GET /admin/safety/speeding-incidents?period=week|month|year|all&page=1&per_page=20`
+
+Closes the ops visibility gap for the driver speeding alert feature (Session 362) — admins can now view all rides where a driver exceeded 90 mph, with rider/driver names, addresses, ride status, and the timestamp the flag was set.
+
+**How it works:**
+- Queries rides where `speeding_flagged_at IS NOT NULL` — the field set by the speeding alert service
+- `period` filter narrows by `speeding_flagged_at` timestamp (last 7/30/365 days or all time)
+- Joins rider and driver via SQLAlchemy `joinedload` for name display; graceful None when driver not loaded
+- Results ordered newest-first by `speeding_flagged_at`; paginated (`page` / `per_page` up to 100)
+- New schemas: `SpeedingIncidentEntry`, `SpeedingIncidentListResponse` (in `app/schemas/admin.py`)
+
+**16 new tests** (4 schema, 1 HTTP auth, 11 endpoint logic). **4,927 total tests passing** (was 4,911). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 362 — orchestrator)
+
+#### stockbot — Ensemble Return Stacker deployment triggered
+
+Processed INBOX item: verified all ensemble stacker deliverables complete.
+
+- `src/models/ensemble_stacker.py` — EnsembleStackerModel (Ridge + LightGBM, 5/10-day horizons, walk-forward + held-out CV)
+- 4 API endpoints: `POST/GET/GET/DELETE /api/ensemble-stacker/...`
+- Projected returns endpoint updated for regressors (raw_return_pct, is_regressor flag, volatility-adaptive threshold)
+- 10+ AAPL stackers trained and persisted in `models/ensemble_stackers/`
+- Frontend: stacker creation form in ModelBuilderPage; projected returns shows actual return % for regressors
+
+**DEPLOY_READY created** — Jetson deploy will run automatically after this session.
+
+---
+
+#### open-source-rideshare — Driver Speeding Alert (commit `79657f5`)
+
+New safety feature: detects when a driver is travelling above 90 mph during an active ride and notifies the rider once.
+
+**How it works:**
+- Every GPS update from the driver (`PUT /drivers/me/location`) triggers a fire-and-forget speed check alongside the existing route deviation and geofence checks
+- Speed is computed via the haversine formula from consecutive GPS positions; minimum 3-second interval guard prevents noise from near-instantaneous samples
+- If speed exceeds threshold (90 mph default) and the ride hasn't been flagged yet: `speeding_flagged_at` is set on the ride, rider receives push+SMS notification
+- Idempotent: fires exactly once per ride (flag checked before notify)
+
+**New endpoint:** `GET /rides/{ride_id}/speeding-status` — rider or driver can check if speeding was detected and when.
+
+**29 new tests** (speed computation, service branches, idempotency, template, enum registration, dispatcher, endpoint). **4,911 total tests passing** (was 4,882). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 361 — orchestrator)
+
+#### open-source-rideshare — Pre-ride Boarding Verification (commit `7c31b5e`)
+
+New safety feature: PIN-based driver identity check before boarding. Closes the "wrong car" gap — a real-world safety problem that major rideshare apps handle poorly.
+
+**How it works:**
+- When driver arrives, they generate a 4-digit PIN via the app (`POST /rides/{id}/boarding-pin`)
+- PIN is visible in both the driver and rider apps; valid 15 minutes
+- Rider asks the driver to say the PIN aloud before getting in
+- Rider submits the PIN via app (`POST /rides/{id}/boarding-verification`)
+- Match → `confirmed=True`, audit record stored permanently
+- Mismatch or no active PIN → `confirmed=False`, safety alert raised for admin review
+
+**Why it matters:** Creates an immutable audit trail of whether the rider verified driver identity before boarding. Useful in disputes, safety investigations, and accountability — and the verbal PIN exchange stops riders from getting in the wrong car without any interaction.
+
+**Endpoints:**
+- `POST /rides/{id}/boarding-pin` — driver only; fails if wrong status or verification exists
+- `GET /rides/{id}/boarding-pin` — driver or rider; 404 if no PIN generated
+- `POST /rides/{id}/boarding-verification` — rider only; one per ride; 201 even on mismatch
+- `GET /rides/{id}/boarding-verification` — driver or rider; 404 if not submitted
+- `GET /admin/boarding-mismatch-alerts` — admin: unresolved mismatch alerts
+- `POST /admin/boarding-mismatch-alerts/{id}/resolve` — admin: close alert after review
+
+**56 new tests** (service layer, schema, HTTP). **4,882 total tests passing** (was 4,826). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 360 — orchestrator)
+
+#### open-source-rideshare — Driver Upcoming Scheduled Rides (commit `dcbb0f4`)
+
+New driver-facing endpoint: `GET /api/v1/driver/me/upcoming-scheduled`
+
+Drivers can now see their own queue of assigned future SCHEDULED rides. Previously the platform had no way for a driver to check what was coming — they'd only learn about a ride when dispatched in real time.
+
+**Response shape**: list of upcoming rides (id, pickup/dropoff address, scheduled_for, fare, accessibility flag, recurring_ride_id). Sorted soonest first. `recurring_ride_id` is included so drivers know if a ride is part of a recurring commute schedule.
+
+**limit param**: `?limit=N` (1–50, default 20). Enforced via FastAPI Query validation (422 if out of range).
+
+**16 new tests** (schema, endpoint, HTTP-level limit validation, 401/403 auth enforcement). **4,826 total tests passing** (was 4,810). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 359 — orchestrator)
+
+#### open-source-rideshare — Fatigue Check Integrated into Ride Acceptance Flow (commit `3a46359`)
+
+The Driver Fatigue Monitoring system (Session 358) is now wired into the live ride lifecycle — previously it was a standalone status API with no enforcement.
+
+**Changes to `POST /rides/{ride_id}/accept`:**
+- LIMIT_REACHED drivers get `403 Cannot accept ride: <rest message>` before any DB write
+- WARNING drivers still accepted (business rule preserved — warn, don't block)
+- `RIDE_STARTED` event logged to fatigue store on successful accept
+
+**Changes to `POST /rides/{ride_id}/complete`:**
+- `RIDE_ENDED` event logged to fatigue store after commit
+
+**Bug fixed:** Duplicate `ride.driver_id = driver.id` assignment removed (was on both line 856 and 857).
+
+**4 new tests**: 403 on LIMIT_REACHED, WARNING still accepts, RIDE_STARTED log verified, RIDE_ENDED log verified. **4,810 total tests passing** (was 4,806). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 358 — orchestrator)
+
+#### open-source-rideshare — Driver Fatigue Monitoring COMPLETE (commit `0039ab6`)
+
+New safety feature: tracks driver active driving hours in a rolling 24h window and enforces rest limits. Fatigued drivers are a direct rider safety risk and a real regulatory liability for rideshare platforms.
+
+**Business rules:**
+- **NORMAL**: < 8 hours of active driving in last 24h
+- **WARNING**: 8–10 hours (still can accept rides; response includes warning message)
+- **LIMIT_REACHED**: ≥ 10 hours (cannot accept new rides until rest period ends)
+- **Rest reset**: 6 consecutive hours with no active rides returns status to NORMAL
+
+**New model**: `DriverFatigueLog` — raw event log (RIDE_STARTED / RIDE_ENDED per ride_id). Service pairs events by ride_id (not sequentially) to correctly calculate active minutes even across gaps.
+
+**3 new endpoints:**
+- `GET /drivers/me/fatigue-status` — driver sees own rolling hours, status, and rest hours needed
+- `GET /admin/driver-fatigue-alerts` — admin sees all drivers currently at WARNING or LIMIT_REACHED
+- `POST /admin/driver-fatigue/{driver_id}/reset` — admin manual reset (204), for verified rest or data-loss recovery
+
+**56 new tests** (schema, service logic, rolling 24h window, rest period detection, admin aggregation, auth enforcement). **4,806 total tests passing** (was 4,750). 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 357 — orchestrator)
+
+#### open-source-rideshare — Recurring Ride PATCH UX Improvements COMPLETE (commit `25464f7`)
+
+Three improvements to `PATCH /rides/recurring/{id}`:
+
+**1. Label clearing** — `{"label": null}` was silently ignored before (same bug `ends_on` had). Added `label_provided` sentinel (same `model_fields_set` pattern). Now explicitly sending null clears the label.
+
+**2. Selective `last_generated_date` reset** — Previously any update (even just renaming a label) reset generation tracking, triggering unnecessary ride regeneration. Now only resets when schedule-affecting fields change (days_of_week, pickup_time, timezone, or location).
+
+**3. Cancel orphaned future SCHEDULED rides on schedule change** — When days/time/timezone/location changes, existing future SCHEDULED rides on the old schedule are now cancelled. Previously they remained scheduled at the wrong time or location.
+
+**8 new tests** (updated 1 stale test, added 7 new). **4,750 total tests passing** (was 4,742). 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 356 — orchestrator)
+
+#### open-source-rideshare — Notification Preference Category Grouping + Router Validation Fix COMPLETE (commit `69d6532`)
+
+**Bug fixed**: The router's `_VALID_NOTIFICATION_TYPES` was a stale copy from before driver types were added — 15 types vs. the 28 in the schema and service. This meant `PUT /users/me/notification-preferences/{type}/{channel}` and `DELETE /users/me/notification-preferences/{type}/{channel}` would return 422 for any driver-specific type (e.g. `ride_assigned`, `route_deviation`). Fixed by importing from schema instead of duplicating.
+
+**Feature**: `GET /users/me/notification-preferences` now returns a categorized response:
+```json
+{
+  "rider": {"ride_matched": {"push": true, ...}, ...},
+  "driver": {"ride_assigned": {"push": true, ...}, ...}
+}
+```
+Previously returned a flat `{"preferences": {all 28 types flat}}`.
+
+**Changes:**
+- `services/notification_preferences.py`: Split `_ALL_NOTIFICATION_TYPES` into `_RIDER_NOTIFICATION_TYPES` (17) + `_DRIVER_NOTIFICATION_TYPES` (11); `get_user_preferences` now returns `{"rider": {...}, "driver": {...}}`
+- `schemas/notification_preference.py`: Split `_VALID_NOTIFICATION_TYPES` into `_RIDER_NOTIFICATION_TYPES | _DRIVER_NOTIFICATION_TYPES`; `UserPreferencesResponse` fields changed from `preferences` to `rider`/`driver`
+- `api/v1/notification_preferences.py`: Removed stale local type set; imports `_VALID_NOTIFICATION_TYPES` + `_VALID_CHANNELS` from schema
+- `tests/test_notification_preferences.py`: Updated all flat-structure assertions; added `TestNotificationTypeGrouping` (6 tests) + 4 grouping/separation tests
+
+**4,742 tests passing** (was 4,732). +10 tests, 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 355 — orchestrator)
+
+#### open-source-rideshare — Driver Notification Preference Enhancements COMPLETE (commit `e1fedcb`)
+
+Fixed a gap where 10–12 driver-specific notification types were defined in the `NotificationType` enum but were invisible to the preference system — drivers couldn't opt in or out of them.
+
+**Changes:**
+- `services/notification_preferences.py`: Added 11 driver types to `_ALL_NOTIFICATION_TYPES` — `ride_in_progress`, `ride_assigned`, `ride_completed_driver`, `route_deviation`, `driver_no_show`, `driver_performance_warning`, `driver_performance_final_warning`, `driver_auto_suspended`, `ride_scheduled_dispatched`, `admin_broadcast`, `driver_geofence_exit`. Also added `geofence_exit` (was in schema but missing here).
+- `schemas/notification_preference.py`: Added same 11 driver types to `_VALID_NOTIFICATION_TYPES` (schema validators now accept them; previously would 422 on any bulk preference update that included a driver type).
+- Both lists now match the full `NotificationType` enum — no more silent divergence.
+
+**14 new tests** across 4 classes: `TestDriverNotificationTypesInLists` (list membership), `TestDriverTypesSchemaValidation` (schema accepts all driver types × all channels), `TestDriverTypesInPreferencesMap` (map completeness + stored disabled state reflected), `TestDriverTypeSendNotificationPreferenceRespected` (preference respected in `send_notification` for `RIDE_ASSIGNED`, `ROUTE_DEVIATION`, `DRIVER_GEOFENCE_EXIT`). **4,732 tests passing** (was 4,718). 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 354 — orchestrator)
+
+#### open-source-rideshare — Recurring Ride End-Date Support COMPLETE (commit `534ac8e`)
+
+Recurring ride templates can now have an optional `ends_on` date. Once set, the scheduler stops generating rides after that date. Riders can also clear the end date via PATCH to make the series run indefinitely again.
+
+**Changes:**
+- `RecurringRide.ends_on` (Date, nullable). Migration: `a1b2c3d4e5f6`.
+- `POST /rides/recurring` — accepts `ends_on` (must be future date; 422 if today or past)
+- `PATCH /rides/recurring/{id}` — `ends_on` can be set to a future date **or** explicitly `null` to clear it. Uses `model_fields_set` so omitting the field entirely leaves it unchanged.
+- `GET /rides/recurring/{id}` and list — `ends_on` included in response
+- Scheduler: templates whose `ends_on < today` are silently skipped (no rides generated). `_next_occurrence_dates` caps the generation horizon at `ends_on` 23:59:59 local time.
+
+**26 new tests** — 7 classes: model column, Create schema (future/today/past validation), Update schema (fields_set tracking), Response schema, `_next_occurrence_dates` horizon capping, `generate_rides_from_recurring` (skips past end, generates near-future end, passes flag through), `update_recurring_ride` (set/clear), PATCH router (set/not-provided/null-clear). **4,718 tests passing** (was 4,692). 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 353 — orchestrator)
+
+#### open-source-rideshare — Rider Safety Check-In Timer COMPLETE (commit `1bff02a`)
+
+Riders can now set a safety countdown timer (5–120 minutes) before getting in a car with a stranger. If they don't confirm they're safe before the timer expires, their trusted contacts are automatically notified.
+
+**`POST /riders/me/check-in-timer`** — start a timer:
+- 201 on success; body: `{"duration_minutes": 30, "notes": "taking a rideshare home"}`
+- `duration_minutes` validated 5–120 (422 outside range)
+- 409 if rider already has an ACTIVE timer (only one allowed at a time)
+
+**`GET /riders/me/check-in-timer`** — get active timer:
+- 200 with `minutes_remaining` (computed live); 404 if no active timer
+- Lazy expiry: if timer has passed `expires_at`, marks it EXPIRED and sets `expired_notified_at` (production hook for trusted contact notification)
+
+**`POST /riders/me/check-in-timer/confirm`** — confirm safe:
+- 200 with `status: confirmed`; timer dismissed, trusted contacts NOT notified
+- 404 if no active timer (or already expired)
+
+**`DELETE /riders/me/check-in-timer`** — cancel timer:
+- 200 with `status: cancelled`; no notification sent
+
+**`GET /riders/me/check-in-timer/history`** — list all past timers, newest first (pagination: skip/limit)
+
+New model: `RiderCheckInTimer`. Status enum: ACTIVE / CONFIRMED / EXPIRED / CANCELLED. Migration: `z0a1b2c3d4e5`.
+
+**66 new tests** — 8 classes covering all service logic (lazy expiry, single-active enforcement, cross-rider isolation) and all 5 router endpoints. **4,692 tests passing** (was 4,626). 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
 
 ### Accomplished (Session 352 — orchestrator)
 
@@ -714,8 +1154,8 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ### Suggested Priorities (Next Session)
 1. **resistance-research**: **April 20 monitoring brief** — CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing). **Op-ed submission deadline April 22** — file `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. **~April 23-24: ballroom SCOTUS/D.C. Circuit watch window**.
 2. **mfg-farm**: Test print action (still user-gated — all files ready).
-3. **open-source-rideshare**: Next candidates — recurring ride support improvements (PATCH /rides/recurring/{id}, cancel-series endpoint) or driver push notification preferences.
-4. **stockbot**: No specific features queued — check paper trading performance.
+3. **open-source-rideshare**: Accessibility loop complete. Next: trip dispute enhancements, or another safety/UX feature.
+4. **stockbot**: Ensemble stacker deployed to Jetson — monitor stacker performance in paper trading. No new features queued.
 
 ---
 
