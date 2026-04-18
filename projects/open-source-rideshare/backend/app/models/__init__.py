@@ -33,3 +33,4 @@ from app.models.payment_method import RiderPaymentMethod  # noqa: F401
 from app.models.promo import PromoCode, PromoRedemption, ReferralCredit  # noqa: F401
 from app.models.driver_referral import DriverReferral  # noqa: F401
 from app.models.recurring_ride_skip import RecurringRideSkip  # noqa: F401
+from app.models.driver_fatigue import DriverFatigueLog  # noqa: F401
