@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PaginationResponse(BaseModel):
@@ -434,3 +434,19 @@ class UserSearchResponse(BaseModel):
     role_filter: str  # "all", "driver", or "rider"
     results: list[UserSearchResult]
     total: int
+
+
+class BulkDriverIdsRequest(BaseModel):
+    driver_ids: list[int] = Field(..., min_length=1, max_length=100)
+
+
+class BulkDriverSuspendRequest(BaseModel):
+    driver_ids: list[int] = Field(..., min_length=1, max_length=100)
+    reason: str = Field(..., min_length=1, max_length=500)
+
+
+class BulkActionResult(BaseModel):
+    succeeded: list[int]
+    not_found: list[int]
+    total_requested: int
+    total_succeeded: int

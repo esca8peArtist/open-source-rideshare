@@ -40,6 +40,9 @@ from app.schemas.admin import (
     AdminSOSAlertResponse,
     AdminSOSListResponse,
     AdminSOSResolveRequest,
+    BulkActionResult,
+    BulkDriverIdsRequest,
+    BulkDriverSuspendRequest,
     CancellationReasonBreakdown,
     CancellationStats,
     CancellationTimeseriesPoint,
@@ -340,7 +343,7 @@ async def suspend_driver(
 
 
 @router.post("/drivers/{driver_id}/reactivate", status_code=status.HTTP_204_NO_CONTENT)
-async def reactivate_driver(driver_id: int, db: AsyncSession = Depends(get_db)):
+async def reactivate_driver(driver_id: int, admin: User = Depends(require_admin), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(DriverProfile).options(joinedload(DriverProfile.user)).where(DriverProfile.id == driver_id)
     )
@@ -352,6 +355,140 @@ async def reactivate_driver(driver_id: int, db: AsyncSession = Depends(get_db)):
     if profile.user:
         profile.user.is_active = True
     await db.commit()
+
+
+@router.post("/drivers/bulk-approve", response_model=BulkActionResult)
+async def bulk_approve_drivers(
+    body: BulkDriverIdsRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Approve multiple driver profiles in a single request."""
+    result = await db.execute(
+        select(DriverProfile).where(DriverProfile.id.in_(body.driver_ids))
+    )
+    profiles = {p.id: p for p in result.scalars().all()}
+
+    succeeded = []
+    for driver_id in body.driver_ids:
+        profile = profiles.get(driver_id)
+        if profile is None:
+            continue
+        profile.is_approved = True
+        profile.background_check_status = "approved"
+        succeeded.append(driver_id)
+
+    await db.commit()
+
+    requested_set = set(body.driver_ids)
+    succeeded_set = set(succeeded)
+    not_found = sorted(requested_set - succeeded_set)
+
+    from app.services.audit_events import audit_admin_action
+    await audit_admin_action(
+        db, admin_id=admin.id, action="bulk_driver_approved",
+        description=f"Bulk approved {len(succeeded)} driver(s): {succeeded}",
+        target_type="driver_profile", target_id=None,
+        metadata={"succeeded": succeeded, "not_found": not_found},
+    )
+
+    return BulkActionResult(
+        succeeded=succeeded,
+        not_found=not_found,
+        total_requested=len(body.driver_ids),
+        total_succeeded=len(succeeded),
+    )
+
+
+@router.post("/drivers/bulk-suspend", response_model=BulkActionResult)
+async def bulk_suspend_drivers(
+    body: BulkDriverSuspendRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Suspend multiple driver profiles in a single request."""
+    result = await db.execute(
+        select(DriverProfile).options(joinedload(DriverProfile.user)).where(DriverProfile.id.in_(body.driver_ids))
+    )
+    profiles = {p.id: p for p in result.unique().scalars().all()}
+
+    succeeded = []
+    for driver_id in body.driver_ids:
+        profile = profiles.get(driver_id)
+        if profile is None:
+            continue
+        profile.is_approved = False
+        profile.is_online = False
+        profile.background_check_status = "suspended"
+        if profile.user:
+            profile.user.is_active = False
+        succeeded.append(driver_id)
+
+    await db.commit()
+
+    requested_set = set(body.driver_ids)
+    succeeded_set = set(succeeded)
+    not_found = sorted(requested_set - succeeded_set)
+
+    from app.services.audit_events import audit_admin_action
+    await audit_admin_action(
+        db, admin_id=admin.id, action="bulk_driver_suspended",
+        description=f"Bulk suspended {len(succeeded)} driver(s): {succeeded}. Reason: {body.reason}",
+        target_type="driver_profile", target_id=None,
+        metadata={"succeeded": succeeded, "not_found": not_found, "reason": body.reason},
+    )
+
+    return BulkActionResult(
+        succeeded=succeeded,
+        not_found=not_found,
+        total_requested=len(body.driver_ids),
+        total_succeeded=len(succeeded),
+    )
+
+
+@router.post("/drivers/bulk-reactivate", response_model=BulkActionResult)
+async def bulk_reactivate_drivers(
+    body: BulkDriverIdsRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Reactivate multiple suspended driver profiles in a single request."""
+    result = await db.execute(
+        select(DriverProfile).options(joinedload(DriverProfile.user)).where(DriverProfile.id.in_(body.driver_ids))
+    )
+    profiles = {p.id: p for p in result.unique().scalars().all()}
+
+    succeeded = []
+    for driver_id in body.driver_ids:
+        profile = profiles.get(driver_id)
+        if profile is None:
+            continue
+        profile.is_approved = True
+        profile.background_check_status = "approved"
+        if profile.user:
+            profile.user.is_active = True
+        succeeded.append(driver_id)
+
+    await db.commit()
+
+    requested_set = set(body.driver_ids)
+    succeeded_set = set(succeeded)
+    not_found = sorted(requested_set - succeeded_set)
+
+    from app.services.audit_events import audit_admin_action
+    await audit_admin_action(
+        db, admin_id=admin.id, action="bulk_driver_reactivated",
+        description=f"Bulk reactivated {len(succeeded)} driver(s): {succeeded}",
+        target_type="driver_profile", target_id=None,
+        metadata={"succeeded": succeeded, "not_found": not_found},
+    )
+
+    return BulkActionResult(
+        succeeded=succeeded,
+        not_found=not_found,
+        total_requested=len(body.driver_ids),
+        total_succeeded=len(succeeded),
+    )
 
 
 # ---- Payments ----
