@@ -32,6 +32,7 @@ from app.schemas.ride import (
     ScheduleRideRequest,
     ScheduleRideUpdate,
 )
+from app.schemas.driver_fatigue import FatigueStatusLevel
 from app.schemas.eta import DriverETAResponse, DriverLocationResponse, TripETAResponse
 from app.schemas.feedback import (
     DisputeCreate,
@@ -853,12 +854,21 @@ async def accept_ride(
     if ride.status != RideStatus.REQUESTED:
         raise HTTPException(status_code=409, detail="Ride is no longer available")
 
-    ride.driver_id = driver.id
+    from app.services.driver_fatigue import compute_fatigue_status, log_ride_event
+    fatigue = compute_fatigue_status(driver.id)
+    if fatigue.status == FatigueStatusLevel.LIMIT_REACHED:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Cannot accept ride: {fatigue.message}",
+        )
+
     ride.driver_id = driver.id
     ride.status = RideStatus.MATCHED
     ride.matched_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(ride)
+
+    log_ride_event(driver_id=driver.id, ride_id=ride.id, event_type="RIDE_STARTED", driver_name=driver.name)
 
     engine = await get_matching_engine()
     await engine.set_driver_busy(driver.id)
@@ -1056,6 +1066,9 @@ async def complete_ride(
         )
 
     await db.commit()
+
+    from app.services.driver_fatigue import log_ride_event as _log_fatigue
+    _log_fatigue(driver_id=driver.id, ride_id=ride.id, event_type="RIDE_ENDED", driver_name=driver.name)
 
     engine = await get_matching_engine()
     await engine.set_driver_available(driver.id)

@@ -703,3 +703,140 @@ class TestAcceptRide:
         with pytest.raises(HTTPException) as exc_info:
             await accept_ride(ride_id=1, driver=driver, db=db)
         assert exc_info.value.status_code == 409
+
+
+# ---------------------------------------------------------------------------
+# POST /rides/{ride_id}/accept — fatigue guard integration
+# ---------------------------------------------------------------------------
+
+
+class TestAcceptRideFatigueGuard:
+    @pytest.mark.asyncio
+    @patch("app.services.driver_fatigue.compute_fatigue_status")
+    async def test_403_when_limit_reached(self, mock_compute):
+        from app.api.v1.rides import accept_ride
+        from app.schemas.driver_fatigue import FatigueStatus, FatigueStatusLevel
+
+        mock_compute.return_value = FatigueStatus(
+            driver_id=20,
+            status=FatigueStatusLevel.LIMIT_REACHED,
+            active_hours_last_24h=10.5,
+            rides_today=12,
+            rest_hours_needed=3.5,
+            message="You must rest for 3.5 more hours.",
+        )
+
+        driver = _make_user(user_id=20, role=UserRole.DRIVER)
+        ride = _make_ride(rider_id=10, driver_id=None, status=RideStatus.REQUESTED)
+        db = _mock_db(scalar_return=ride)
+
+        with pytest.raises(HTTPException) as exc_info:
+            await accept_ride(ride_id=1, driver=driver, db=db)
+        assert exc_info.value.status_code == 403
+        assert "cannot accept ride" in exc_info.value.detail.lower()
+
+    @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    @patch("app.api.v1.rides.get_matching_engine", new_callable=AsyncMock)
+    @patch("app.services.driver_fatigue.compute_fatigue_status")
+    async def test_warning_still_accepts(self, mock_compute, mock_engine_fn, mock_notify):
+        from app.api.v1.rides import accept_ride
+        from app.schemas.driver_fatigue import FatigueStatus, FatigueStatusLevel
+
+        mock_engine = AsyncMock()
+        mock_engine_fn.return_value = mock_engine
+
+        mock_compute.return_value = FatigueStatus(
+            driver_id=20,
+            status=FatigueStatusLevel.WARNING,
+            active_hours_last_24h=9.0,
+            rides_today=9,
+            rest_hours_needed=None,
+            message="Consider a break — 9.0 active hours in last 24h.",
+        )
+
+        driver = _make_user(user_id=20, role=UserRole.DRIVER)
+        ride = _make_ride(rider_id=10, driver_id=None, status=RideStatus.REQUESTED)
+        db = _mock_db(scalar_return=ride)
+
+        result = await accept_ride(ride_id=1, driver=driver, db=db)
+        assert result.status == "matched"
+
+    @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    @patch("app.api.v1.rides.get_matching_engine", new_callable=AsyncMock)
+    async def test_logs_ride_started_on_accept(self, mock_engine_fn, mock_notify):
+        from app.api.v1.rides import accept_ride
+        from app.services.driver_fatigue import _fatigue_logs, _reset_store
+
+        _reset_store()
+        try:
+            mock_engine = AsyncMock()
+            mock_engine_fn.return_value = mock_engine
+
+            driver = _make_user(user_id=20, role=UserRole.DRIVER)
+            ride = _make_ride(rider_id=10, driver_id=None, status=RideStatus.REQUESTED)
+            db = _mock_db(scalar_return=ride)
+
+            await accept_ride(ride_id=ride.id, driver=driver, db=db)
+
+            events = _fatigue_logs.get(20, [])
+            assert len(events) == 1
+            assert events[0]["event_type"] == "RIDE_STARTED"
+            assert events[0]["ride_id"] == ride.id
+        finally:
+            _reset_store()
+
+
+# ---------------------------------------------------------------------------
+# POST /rides/{ride_id}/complete — fatigue RIDE_ENDED log
+# ---------------------------------------------------------------------------
+
+
+class TestCompleteRideFatigueLog:
+    @pytest.mark.asyncio
+    @patch("app.api.websocket.notify_ride_status", new_callable=AsyncMock)
+    @patch("app.api.v1.rides.get_matching_engine", new_callable=AsyncMock)
+    async def test_logs_ride_ended_on_complete(self, mock_engine_fn, mock_notify):
+        from app.api.v1.rides import complete_ride
+        from app.services.driver_fatigue import _fatigue_logs, _reset_store
+
+        _reset_store()
+        try:
+            mock_engine = AsyncMock()
+            mock_engine_fn.return_value = mock_engine
+
+            driver = _make_user(user_id=20, role=UserRole.DRIVER)
+            ride = _make_ride(driver_id=20, status=RideStatus.IN_PROGRESS, estimated_fare=12.0)
+
+            profile = MagicMock()
+            profile.total_trips = 10
+
+            ride_result = MagicMock()
+            ride_result.scalar_one_or_none.return_value = ride
+
+            count_result = MagicMock()
+            count_result.scalar.return_value = 1
+
+            rider_obj = MagicMock()
+            rider_obj.referred_by = None
+            rider_result = MagicMock()
+            rider_result.scalar_one_or_none.return_value = rider_obj
+
+            profile_result = MagicMock()
+            profile_result.scalar_one_or_none.return_value = profile
+
+            referral_result = MagicMock()
+            referral_result.scalar_one_or_none.return_value = None
+
+            db = AsyncMock()
+            db.execute.side_effect = [ride_result, count_result, rider_result, profile_result, referral_result]
+
+            await complete_ride(ride_id=ride.id, driver=driver, db=db)
+
+            events = _fatigue_logs.get(20, [])
+            assert len(events) == 1
+            assert events[0]["event_type"] == "RIDE_ENDED"
+            assert events[0]["ride_id"] == ride.id
+        finally:
+            _reset_store()
