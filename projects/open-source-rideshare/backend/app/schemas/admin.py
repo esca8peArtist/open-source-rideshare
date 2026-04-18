@@ -800,3 +800,30 @@ class GeofenceViolationListResponse(BaseModel):
     page: int
     per_page: int
     service_areas_active: int
+
+
+# ---- Driver Speeding Incidents ----
+
+
+class SpeedingIncidentEntry(BaseModel):
+    """A ride where the driver was detected exceeding the speed threshold."""
+
+    ride_id: int
+    rider_id: int
+    rider_name: str | None = None
+    driver_id: int | None = None
+    driver_name: str | None = None
+    pickup_address: str
+    dropoff_address: str
+    status: str
+    speeding_flagged_at: datetime
+    requested_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class SpeedingIncidentListResponse(BaseModel):
+    incidents: list[SpeedingIncidentEntry]
+    total: int
+    page: int
+    per_page: int
