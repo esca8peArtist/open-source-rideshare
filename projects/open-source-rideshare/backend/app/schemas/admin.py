@@ -193,6 +193,23 @@ class SOSTimeseriesPoint(BaseModel):
     false_alarms: int
 
 
+class SOSFrequencyEntry(BaseModel):
+    user_id: int
+    user_name: str | None = None
+    user_phone: str | None = None
+    total: int
+    active: int
+    resolved: int
+    false_alarms: int
+    false_alarm_rate: float
+    last_sos_at: datetime
+
+
+class SOSFrequencyResponse(BaseModel):
+    period: str
+    entries: list[SOSFrequencyEntry]
+
+
 # ---- Admin Cancellation Stats ----
 
 

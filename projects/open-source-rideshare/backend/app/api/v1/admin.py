@@ -80,6 +80,8 @@ from app.schemas.admin import (
     RiderSafetyHistoryResponse,
     RidersListResponse,
     RidesListResponse,
+    SOSFrequencyEntry,
+    SOSFrequencyResponse,
     SOSStats,
     SOSTimeseriesPoint,
     SuspendRequest,
@@ -1570,6 +1572,85 @@ async def sos_timeseries(
         )
         for d, v in sorted(by_date.items())
     ]
+
+
+@router.get("/safety/sos/leaderboard", response_model=SOSFrequencyResponse)
+async def sos_leaderboard(
+    period: str = Query("all", pattern="^(week|month|year|all)$"),
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    now = datetime.now(timezone.utc)
+    period_starts = {
+        "week": now - timedelta(days=7),
+        "month": now - timedelta(days=30),
+        "year": now - timedelta(days=365),
+    }
+    start = period_starts.get(period)
+
+    base = select(
+        SOSAlert.user_id,
+        SOSAlert.status,
+        func.count().label("cnt"),
+        func.max(SOSAlert.created_at).label("last_sos_at"),
+    )
+    if start:
+        base = base.where(SOSAlert.created_at >= start)
+    base = base.group_by(SOSAlert.user_id, SOSAlert.status)
+
+    rows = (await db.execute(base)).all()
+
+    # Aggregate per user
+    by_user: dict[int, dict] = {}
+    for row in rows:
+        uid = row.user_id
+        if uid not in by_user:
+            by_user[uid] = {"active": 0, "resolved": 0, "false_alarms": 0, "last_sos_at": row.last_sos_at}
+        if row.status == SOSStatus.ACTIVE:
+            by_user[uid]["active"] += row.cnt
+        elif row.status == SOSStatus.RESOLVED:
+            by_user[uid]["resolved"] += row.cnt
+        elif row.status == SOSStatus.FALSE_ALARM:
+            by_user[uid]["false_alarms"] += row.cnt
+        if row.last_sos_at > by_user[uid]["last_sos_at"]:
+            by_user[uid]["last_sos_at"] = row.last_sos_at
+
+    if not by_user:
+        return SOSFrequencyResponse(period=period, entries=[])
+
+    # Sort by total descending, take top N
+    sorted_uids = sorted(
+        by_user.keys(),
+        key=lambda uid: by_user[uid]["active"] + by_user[uid]["resolved"] + by_user[uid]["false_alarms"],
+        reverse=True,
+    )[:limit]
+
+    # Fetch user info for top users
+    user_rows = (
+        await db.execute(select(User).where(User.id.in_(sorted_uids)))
+    ).scalars().all()
+    user_map = {u.id: u for u in user_rows}
+
+    entries = []
+    for uid in sorted_uids:
+        v = by_user[uid]
+        total = v["active"] + v["resolved"] + v["false_alarms"]
+        u = user_map.get(uid)
+        entries.append(
+            SOSFrequencyEntry(
+                user_id=uid,
+                user_name=u.name if u else None,
+                user_phone=u.phone if u else None,
+                total=total,
+                active=v["active"],
+                resolved=v["resolved"],
+                false_alarms=v["false_alarms"],
+                false_alarm_rate=round(v["false_alarms"] / total * 100, 1) if total else 0.0,
+                last_sos_at=v["last_sos_at"],
+            )
+        )
+
+    return SOSFrequencyResponse(period=period, entries=entries)
 
 
 @router.get("/safety/sos/{alert_id}", response_model=AdminSOSAlertResponse)

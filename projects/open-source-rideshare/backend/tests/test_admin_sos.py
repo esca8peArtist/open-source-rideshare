@@ -13,6 +13,8 @@ from app.schemas.admin import (
     AdminSOSListResponse,
     AdminSOSResolveRequest,
     PaginationResponse,
+    SOSFrequencyEntry,
+    SOSFrequencyResponse,
     SOSStats,
     SOSTimeseriesPoint,
 )
@@ -347,3 +349,133 @@ class TestSOSTimeseriesPoint:
         )
         assert point.active == 0
         assert point.total == 4
+
+
+# ---- SOSFrequencyEntry / SOSFrequencyResponse schema tests ----
+
+
+class TestSOSFrequencyEntry:
+    def _now(self):
+        return datetime.now(timezone.utc)
+
+    def test_high_frequency_rider(self):
+        entry = SOSFrequencyEntry(
+            user_id=42,
+            user_name="Alice",
+            user_phone="+15551234567",
+            total=10,
+            active=1,
+            resolved=7,
+            false_alarms=2,
+            false_alarm_rate=20.0,
+            last_sos_at=self._now(),
+        )
+        assert entry.user_id == 42
+        assert entry.total == 10
+        assert entry.false_alarm_rate == 20.0
+
+    def test_false_alarm_rate_calculation(self):
+        # 3 false alarms out of 6 total = 50%
+        entry = SOSFrequencyEntry(
+            user_id=1,
+            total=6,
+            active=0,
+            resolved=3,
+            false_alarms=3,
+            false_alarm_rate=50.0,
+            last_sos_at=self._now(),
+        )
+        assert entry.false_alarm_rate == 50.0
+
+    def test_zero_false_alarm_rate(self):
+        entry = SOSFrequencyEntry(
+            user_id=2,
+            total=4,
+            active=1,
+            resolved=3,
+            false_alarms=0,
+            false_alarm_rate=0.0,
+            last_sos_at=self._now(),
+        )
+        assert entry.false_alarm_rate == 0.0
+        assert entry.false_alarms == 0
+
+    def test_unknown_user(self):
+        entry = SOSFrequencyEntry(
+            user_id=99,
+            user_name=None,
+            user_phone=None,
+            total=2,
+            active=2,
+            resolved=0,
+            false_alarms=0,
+            false_alarm_rate=0.0,
+            last_sos_at=self._now(),
+        )
+        assert entry.user_name is None
+        assert entry.user_phone is None
+
+    def test_total_equals_sum_of_statuses(self):
+        active, resolved, false_alarms = 2, 5, 1
+        total = active + resolved + false_alarms
+        entry = SOSFrequencyEntry(
+            user_id=3,
+            total=total,
+            active=active,
+            resolved=resolved,
+            false_alarms=false_alarms,
+            false_alarm_rate=round(false_alarms / total * 100, 1),
+            last_sos_at=self._now(),
+        )
+        assert entry.total == entry.active + entry.resolved + entry.false_alarms
+
+
+class TestSOSFrequencyResponse:
+    def _now(self):
+        return datetime.now(timezone.utc)
+
+    def _entry(self, uid, total, false_alarms=0):
+        resolved = total - false_alarms
+        return SOSFrequencyEntry(
+            user_id=uid,
+            total=total,
+            active=0,
+            resolved=resolved,
+            false_alarms=false_alarms,
+            false_alarm_rate=round(false_alarms / total * 100, 1) if total else 0.0,
+            last_sos_at=self._now(),
+        )
+
+    def test_all_period_response(self):
+        resp = SOSFrequencyResponse(
+            period="all",
+            entries=[self._entry(1, 10, 2), self._entry(2, 5, 0)],
+        )
+        assert resp.period == "all"
+        assert len(resp.entries) == 2
+        assert resp.entries[0].total == 10
+
+    def test_empty_leaderboard(self):
+        resp = SOSFrequencyResponse(period="week", entries=[])
+        assert resp.period == "week"
+        assert resp.entries == []
+
+    def test_sorted_by_total_descending(self):
+        entries = [
+            self._entry(uid=1, total=15),
+            self._entry(uid=2, total=8),
+            self._entry(uid=3, total=22),
+        ]
+        entries_sorted = sorted(entries, key=lambda e: e.total, reverse=True)
+        resp = SOSFrequencyResponse(period="month", entries=entries_sorted)
+        assert resp.entries[0].total == 22
+        assert resp.entries[1].total == 15
+        assert resp.entries[2].total == 8
+
+    def test_month_period_label(self):
+        resp = SOSFrequencyResponse(period="month", entries=[self._entry(1, 3)])
+        assert resp.period == "month"
+
+    def test_year_period_label(self):
+        resp = SOSFrequencyResponse(period="year", entries=[])
+        assert resp.period == "year"
