@@ -10,6 +10,7 @@ POST   /admin/disputes/{dispute_id}/resolve — admin: resolve with notes + refu
 """
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -21,10 +22,12 @@ from app.models.user import User
 from app.schemas.feedback import (
     DisputeCreate,
     DisputeListResponse,
+    DisputeRespondentReply,
     DisputeResolve,
     DisputeResponse,
 )
 from app.services.disputes import (
+    add_respondent_reply,
     file_dispute,
     get_dispute,
     get_user_disputes,
@@ -50,6 +53,8 @@ def _dispute_response(d) -> DisputeResponse:
         created_at=d.created_at,
         updated_at=d.updated_at,
         resolved_at=d.resolved_at,
+        respondent_response=d.respondent_response if isinstance(d.respondent_response, str) else None,
+        respondent_responded_at=d.respondent_responded_at if isinstance(d.respondent_responded_at, datetime) else None,
     )
 
 
@@ -160,6 +165,28 @@ async def get_my_dispute(
     dispute = await get_dispute(dispute_id, db)
     if not dispute or dispute.filed_by != user.id:
         raise HTTPException(status_code=404, detail="Dispute not found")
+    return _dispute_response(dispute)
+
+
+@router.post(
+    "/disputes/{dispute_id}/response",
+    response_model=DisputeResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Submit your response to a dispute filed against you",
+)
+async def post_dispute_response(
+    dispute_id: int,
+    body: DisputeRespondentReply,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DisputeResponse:
+    """The non-filing participant of a ride can submit one response while the dispute is open or under review."""
+    try:
+        dispute = await add_respondent_reply(dispute_id, user.id, body.response, db)
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     return _dispute_response(dispute)
 
 

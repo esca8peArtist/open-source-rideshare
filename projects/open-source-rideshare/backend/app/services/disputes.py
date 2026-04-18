@@ -7,6 +7,7 @@ Admin resolves disputes with notes and optional refund amount.
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 
 from sqlalchemy import func, select
@@ -60,6 +61,12 @@ async def file_dispute(
     db.add(dispute)
     await db.commit()
     await db.refresh(dispute)
+
+    other_party_id = ride.driver_id if user_id == ride.rider_id else ride.rider_id
+    if other_party_id is not None:
+        from app.services.notification_events import notify_dispute_filed
+        asyncio.ensure_future(notify_dispute_filed(db, other_party_id, ride_id, dispute_type))
+
     return dispute
 
 
@@ -135,6 +142,51 @@ async def resolve_dispute(
     dispute.resolved_at = datetime.now(timezone.utc)
     await db.commit()
     await db.refresh(dispute)
+
+    from app.services.notification_events import notify_dispute_resolved
+    asyncio.ensure_future(notify_dispute_resolved(db, dispute.filed_by, dispute.ride_id, resolution_status))
+
+    return dispute
+
+
+async def add_respondent_reply(
+    dispute_id: int,
+    user_id: int,
+    response_text: str,
+    db: AsyncSession,
+) -> Dispute:
+    """Submit the respondent's side of the dispute.
+
+    Only the non-filing participant of the ride can respond.
+    Can only respond while dispute is OPEN or UNDER_REVIEW.
+    Only one response allowed (idempotent).
+    """
+    dispute = await get_dispute(dispute_id, db)
+    if not dispute:
+        raise ValueError("Dispute not found")
+
+    if dispute.status not in (DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW):
+        raise ValueError("Dispute is no longer accepting responses")
+
+    result = await db.execute(select(Ride).where(Ride.id == dispute.ride_id))
+    ride = result.scalar_one_or_none()
+
+    other_party_id = ride.rider_id if dispute.filed_by == ride.driver_id else ride.driver_id
+
+    if user_id != other_party_id:
+        raise PermissionError("Only the other ride participant can respond")
+
+    if dispute.respondent_response is not None:
+        raise ValueError("A response has already been submitted")
+
+    dispute.respondent_response = response_text
+    dispute.respondent_responded_at = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(dispute)
+
+    from app.services.notification_events import notify_dispute_response_received
+    asyncio.ensure_future(notify_dispute_response_received(db, dispute.filed_by, dispute.ride_id))
+
     return dispute
 
 

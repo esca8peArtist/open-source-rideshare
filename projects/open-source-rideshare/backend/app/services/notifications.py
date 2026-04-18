@@ -61,6 +61,9 @@ class NotificationType(str, enum.Enum):
     SPEEDING_ALERT = "speeding_alert"
     POOL_RIDER_JOINED = "pool_rider_joined"
     TRIP_SHARE_VIEWED = "trip_share_viewed"
+    DISPUTE_FILED = "dispute_filed"
+    DISPUTE_RESOLVED = "dispute_resolved"
+    DISPUTE_RESPONSE_RECEIVED = "dispute_response_received"
 
 
 @dataclass

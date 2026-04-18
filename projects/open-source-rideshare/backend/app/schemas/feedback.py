@@ -94,6 +94,19 @@ class DisputeResolve(BaseModel):
         return v.strip()
 
 
+class DisputeRespondentReply(BaseModel):
+    response: str
+
+    @field_validator("response")
+    @classmethod
+    def validate_response(cls, v: str) -> str:
+        if len(v.strip()) < 10:
+            raise ValueError("Response must be at least 10 characters")
+        if len(v) > 2000:
+            raise ValueError("Response must be at most 2000 characters")
+        return v.strip()
+
+
 class DisputeResponse(BaseModel):
     id: int
     ride_id: int
@@ -107,6 +120,8 @@ class DisputeResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     resolved_at: datetime | None = None
+    respondent_response: str | None = None
+    respondent_responded_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 

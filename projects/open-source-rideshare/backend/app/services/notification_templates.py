@@ -312,6 +312,30 @@ def trip_share_viewed(**kw) -> TemplateResult:
     )
 
 
+def dispute_filed(dispute_type: str = "a", **kw) -> TemplateResult:
+    return (
+        "Dispute filed on your ride",
+        f"A dispute ({dispute_type}) has been filed on a recent ride you completed. You can submit your response via the app.",
+        _PUSH_EMAIL,
+    )
+
+
+def dispute_resolved(outcome: str = "resolved", **kw) -> TemplateResult:
+    return (
+        "Your dispute has been resolved",
+        f"Your dispute has been {outcome}. Check the app for details and any refund information.",
+        _PUSH_EMAIL,
+    )
+
+
+def dispute_response_received(**kw) -> TemplateResult:
+    return (
+        "Response received on your dispute",
+        "The other party has submitted a response to your dispute. An admin will review both sides.",
+        _PUSH,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -342,6 +366,9 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.SPEEDING_ALERT: speeding_alert,
     NotificationType.POOL_RIDER_JOINED: pool_rider_joined,
     NotificationType.TRIP_SHARE_VIEWED: trip_share_viewed,
+    NotificationType.DISPUTE_FILED: dispute_filed,
+    NotificationType.DISPUTE_RESOLVED: dispute_resolved,
+    NotificationType.DISPUTE_RESPONSE_RECEIVED: dispute_response_received,
 }
 
 

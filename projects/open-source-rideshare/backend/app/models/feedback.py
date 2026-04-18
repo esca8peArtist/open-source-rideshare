@@ -90,6 +90,11 @@ class Dispute(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    respondent_response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    respondent_responded_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
     ride = relationship("Ride", backref="disputes")
     filer = relationship("User", foreign_keys=[filed_by], backref="disputes_filed")
     resolver = relationship(

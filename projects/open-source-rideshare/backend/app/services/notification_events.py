@@ -591,3 +591,79 @@ async def notify_trip_share_viewed(
         logger.exception(
             "Failed to send trip_share_viewed notification to rider %d", rider_id
         )
+
+
+async def notify_dispute_filed(
+    db: AsyncSession,
+    other_party_id: int,
+    ride_id: int,
+    dispute_type: str = "a dispute",
+) -> None:
+    """Notify the other ride participant that a dispute has been filed against them."""
+    try:
+        phone, email = await _get_user_contact(db, other_party_id)
+        await send_ride_notification(
+            user_id=other_party_id,
+            type=NotificationType.DISPUTE_FILED,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            dispute_type=dispute_type,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send dispute_filed notification to user %d for ride %d",
+            other_party_id,
+            ride_id,
+        )
+
+
+async def notify_dispute_resolved(
+    db: AsyncSession,
+    filer_id: int,
+    ride_id: int,
+    outcome: str = "resolved",
+) -> None:
+    """Notify the dispute filer that their dispute has been resolved by an admin."""
+    try:
+        phone, email = await _get_user_contact(db, filer_id)
+        await send_ride_notification(
+            user_id=filer_id,
+            type=NotificationType.DISPUTE_RESOLVED,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            outcome=outcome,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send dispute_resolved notification to user %d for ride %d",
+            filer_id,
+            ride_id,
+        )
+
+
+async def notify_dispute_response_received(
+    db: AsyncSession,
+    filer_id: int,
+    ride_id: int,
+) -> None:
+    """Notify the dispute filer that the other party has submitted a response."""
+    try:
+        phone, email = await _get_user_contact(db, filer_id)
+        await send_ride_notification(
+            user_id=filer_id,
+            type=NotificationType.DISPUTE_RESPONSE_RECEIVED,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send dispute_response_received notification to user %d for ride %d",
+            filer_id,
+            ride_id,
+        )
