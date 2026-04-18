@@ -96,6 +96,9 @@ from app.schemas.admin import (
     TopEarnerDriverEntry,
     TopEarnersResponse,
     TopSpenderRiderEntry,
+    BroadcastRequest,
+    BroadcastResult,
+    BroadcastSegment,
     TripAnomalyEntry,
     TripAnomalyListResponse,
     UserSearchResponse,
@@ -3725,4 +3728,82 @@ async def list_trip_anomalies(
         total=total,
         page=page,
         per_page=per_page,
+    )
+
+
+_VALID_BROADCAST_CHANNELS = {"push", "sms", "email"}
+
+
+@router.post("/notifications/broadcast", response_model=BroadcastResult, status_code=status.HTTP_200_OK)
+async def broadcast_notification(
+    payload: BroadcastRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Send a notification to all users in a segment.
+
+    Segments:
+    - all_riders: all active users with role=rider
+    - all_drivers: all active users with role=driver
+    - all_users: all active non-admin users
+
+    Invalid channels are silently dropped; if none remain, defaults to push.
+    """
+    from app.services.notifications import Notification, NotificationChannel, NotificationType, send_notification
+
+    # Validate / filter channels
+    requested_channels = [c for c in payload.channels if c in _VALID_BROADCAST_CHANNELS]
+    if not requested_channels:
+        requested_channels = ["push"]
+
+    channel_enums = [NotificationChannel(c) for c in requested_channels]
+
+    # Build user query for the target segment
+    role_filter = {
+        BroadcastSegment.ALL_RIDERS: UserRole.RIDER,
+        BroadcastSegment.ALL_DRIVERS: UserRole.DRIVER,
+    }
+
+    if payload.segment == BroadcastSegment.ALL_USERS:
+        user_query = select(User).where(
+            User.is_active.is_(True),
+            User.role != UserRole.ADMIN,
+        )
+    else:
+        user_query = select(User).where(
+            User.is_active.is_(True),
+            User.role == role_filter[payload.segment],
+        )
+
+    result = await db.execute(user_query)
+    users = result.scalars().all()
+
+    sent = 0
+    failed = 0
+    for user in users:
+        notification = Notification(
+            user_id=user.id,
+            type=NotificationType.ADMIN_BROADCAST,
+            title=payload.title,
+            body=payload.body,
+            channels=channel_enums,
+        )
+        ok = await send_notification(
+            notification,
+            db=db,
+            phone=user.phone,
+            email=user.email,
+        )
+        if ok:
+            sent += 1
+        else:
+            failed += 1
+
+    return BroadcastResult(
+        segment=payload.segment.value,
+        title=payload.title,
+        total_targeted=len(users),
+        total_sent=sent,
+        total_failed=failed,
+        channels=requested_channels,
+        sent_at=datetime.now(timezone.utc),
     )

@@ -55,6 +55,7 @@ class NotificationType(str, enum.Enum):
     DRIVER_PERFORMANCE_FINAL_WARNING = "driver_performance_final_warning"
     DRIVER_AUTO_SUSPENDED = "driver_auto_suspended"
     RIDE_SCHEDULED_DISPATCHED = "ride_scheduled_dispatched"
+    ADMIN_BROADCAST = "admin_broadcast"
 
 
 @dataclass

@@ -1,3 +1,4 @@
+import enum
 from datetime import datetime
 
 from pydantic import BaseModel, Field
@@ -736,3 +737,36 @@ class TripAnomalyListResponse(BaseModel):
     total: int
     page: int
     per_page: int
+
+
+# ---- Admin Notification Broadcast ----
+
+
+class BroadcastSegment(str, enum.Enum):
+    ALL_RIDERS = "all_riders"
+    ALL_DRIVERS = "all_drivers"
+    ALL_USERS = "all_users"
+
+
+class BroadcastRequest(BaseModel):
+    """Request body for an admin notification broadcast."""
+
+    segment: BroadcastSegment
+    title: str = Field(..., min_length=1, max_length=200)
+    body: str = Field(..., min_length=1, max_length=1000)
+    channels: list[str] = Field(
+        default=["push"],
+        description="Channels to use: push, sms, email",
+    )
+
+
+class BroadcastResult(BaseModel):
+    """Result of an admin notification broadcast."""
+
+    segment: str
+    title: str
+    total_targeted: int
+    total_sent: int
+    total_failed: int
+    channels: list[str]
+    sent_at: datetime
