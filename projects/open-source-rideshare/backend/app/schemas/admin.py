@@ -854,3 +854,27 @@ class RouteDeviationIncidentListResponse(BaseModel):
     total: int
     page: int
     per_page: int
+
+
+# ---- Safety Overview ----
+
+
+class SafetyTypeStats(BaseModel):
+    """Incident count for the requested period and the equal-length prior period."""
+
+    this_period: int
+    prior_period: int
+    change: int  # this_period - prior_period; positive means more incidents
+
+
+class SafetyOverview(BaseModel):
+    """Aggregated safety summary across all incident types for a given window."""
+
+    period: str  # today | week | month | year
+    sos_alerts: SafetyTypeStats
+    speeding_incidents: SafetyTypeStats
+    route_deviation_incidents: SafetyTypeStats
+    driver_no_show_incidents: SafetyTypeStats
+    total_incidents: SafetyTypeStats
+    sos_active_now: int
+    generated_at: datetime

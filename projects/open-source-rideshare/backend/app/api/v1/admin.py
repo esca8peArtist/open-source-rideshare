@@ -112,6 +112,8 @@ from app.schemas.admin import (
     SpeedingIncidentListResponse,
     RouteDeviationIncidentEntry,
     RouteDeviationIncidentListResponse,
+    SafetyOverview,
+    SafetyTypeStats,
 )
 from app.schemas.service_area import (
     ServiceAreaCreate,
@@ -4091,4 +4093,95 @@ async def list_route_deviation_incidents(
         total=total,
         page=page,
         per_page=per_page,
+    )
+
+
+@router.get("/safety/overview", response_model=SafetyOverview)
+async def safety_overview(
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+    period: str = Query("week", pattern="^(today|week|month|year)$"),
+):
+    """Return a cross-type safety summary for the given window.
+
+    Covers SOS alerts, driver speeding, route deviation, and driver no-shows.
+    Each metric includes a count for the requested period and the equal-length
+    prior period so callers can compute trend direction.
+    """
+    now = datetime.now(timezone.utc)
+    window_map = {
+        "today": timedelta(days=1),
+        "week": timedelta(days=7),
+        "month": timedelta(days=30),
+        "year": timedelta(days=365),
+    }
+    window = window_map[period]
+    period_start = now - window
+    prior_start = now - 2 * window
+    prior_end = period_start
+
+    async def _count_sos(start: datetime, end: datetime | None = None) -> int:
+        q = select(func.count()).select_from(SOSAlert).where(SOSAlert.created_at >= start)
+        if end is not None:
+            q = q.where(SOSAlert.created_at < end)
+        return (await db.execute(q)).scalar() or 0
+
+    async def _count_speeding(start: datetime, end: datetime | None = None) -> int:
+        q = select(func.count()).select_from(Ride).where(
+            Ride.speeding_flagged_at.is_not(None),
+            Ride.speeding_flagged_at >= start,
+        )
+        if end is not None:
+            q = q.where(Ride.speeding_flagged_at < end)
+        return (await db.execute(q)).scalar() or 0
+
+    async def _count_route_dev(start: datetime, end: datetime | None = None) -> int:
+        q = select(func.count()).select_from(Ride).where(
+            Ride.route_deviation_flagged_at.is_not(None),
+            Ride.route_deviation_flagged_at >= start,
+        )
+        if end is not None:
+            q = q.where(Ride.route_deviation_flagged_at < end)
+        return (await db.execute(q)).scalar() or 0
+
+    async def _count_no_show(start: datetime, end: datetime | None = None) -> int:
+        q = select(func.count()).select_from(Ride).where(
+            Ride.driver_no_show_reported_at.is_not(None),
+            Ride.driver_no_show_reported_at >= start,
+        )
+        if end is not None:
+            q = q.where(Ride.driver_no_show_reported_at < end)
+        return (await db.execute(q)).scalar() or 0
+
+    sos_cur = await _count_sos(period_start)
+    speeding_cur = await _count_speeding(period_start)
+    dev_cur = await _count_route_dev(period_start)
+    noshow_cur = await _count_no_show(period_start)
+
+    sos_pri = await _count_sos(prior_start, prior_end)
+    speeding_pri = await _count_speeding(prior_start, prior_end)
+    dev_pri = await _count_route_dev(prior_start, prior_end)
+    noshow_pri = await _count_no_show(prior_start, prior_end)
+
+    sos_active = (
+        await db.execute(
+            select(func.count()).select_from(SOSAlert).where(SOSAlert.status == SOSStatus.ACTIVE)
+        )
+    ).scalar() or 0
+
+    def _stats(cur: int, pri: int) -> SafetyTypeStats:
+        return SafetyTypeStats(this_period=cur, prior_period=pri, change=cur - pri)
+
+    return SafetyOverview(
+        period=period,
+        sos_alerts=_stats(sos_cur, sos_pri),
+        speeding_incidents=_stats(speeding_cur, speeding_pri),
+        route_deviation_incidents=_stats(dev_cur, dev_pri),
+        driver_no_show_incidents=_stats(noshow_cur, noshow_pri),
+        total_incidents=_stats(
+            sos_cur + speeding_cur + dev_cur + noshow_cur,
+            sos_pri + speeding_pri + dev_pri + noshow_pri,
+        ),
+        sos_active_now=sos_active,
+        generated_at=now,
     )
