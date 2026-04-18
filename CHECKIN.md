@@ -11,21 +11,41 @@
 **Period**: 2026-04-18
 **Sessions run**: 313–317
 
-### Accomplished (Session 317)
+### Accomplished (this session — user-initiated)
+
+#### stockbot — Projected Returns: options model support + NameError fix (commits `76a4142`, `ff2eefa`)
+
+The Projected Returns page was already built by an earlier orchestrator session. This session:
+- Fixed `_options_models` NameError in `list_all_models` (`/api/models/all` would crash when called)
+- Extended projected-returns endpoint to accept string model IDs (UUID or int) — options models now supported
+- Frontend switched from `listModels()` to `listAllModels()` so options models appear in the selector dropdown
+- Build clean, TypeScript + Vite. All model types (rule-based, ML, MTF, options) now work.
+
+#### open-source-rideshare — 4 endpoints shipped (branch: feature/rider-emergency-safety, pushed to GitHub)
+
+**`GET /riders/me/spending-summary`** (commit `4699fd0`, 18 tests)
+Rider-side mirror of driver earnings summary. Today/week/month/lifetime spending buckets, tips given, promo savings, most frequent route.
+
+**`GET /drivers/nearby`** (commit `f10a8fd`, 22 tests)
+Public pre-booking endpoint — available drivers within radius, sorted by distance. Bounding-box SQL pre-filter + haversine Python, no PII. Drivers only returned if `is_online=True, is_on_break=False, heartbeat ≤5 min`.
+
+**`GET /drivers/me/ratings`** (commit `2289b7c`, 25 tests)
+Paginated driver rating history. Aggregate avg, star breakdown (1–5), recent trend (last 10), paginated list with comment. Rider identity structurally absent from all response types.
+
+**`GET /rides/eta/estimate`** (commit `ec50ef5`, 14 tests)
+Public pre-booking ETA before rider commits. Pickup wait time (nearest driver / 30 km/h), trip duration (haversine / 30 km/h, min 2 min), confidence level (high/medium/low by driver count). Reuses nearby-drivers service — no duplication.
+
+**3,891 total tests passing** (was 3,812 at start of session). 0 regressions.
+
+---
+
+### Accomplished (Session 317 — orchestrator)
 
 #### open-source-rideshare — Driver mileage report COMPLETE (commit `9c807d6`)
 
 New endpoint: `GET /driver/me/mileage-report?year=2026[&month=4]`
 
-Drivers can now export their total kilometres/miles driven per year or month, with an IRS standard mileage deduction estimate. Useful for Schedule C tax filings (self-employed gig workers can deduct ~$0.70/mile for 2025).
-
-**Response includes**:
-- `total_km`, `total_miles` — aggregate for the period
-- `irs_rate_per_mile`, `irs_deduction_usd` — deduction estimate at current IRS rate
-- `monthly_breakdown` — 12-month array when month param omitted (empty for single-month view)
-- `rides_completed`, `as_of`, `driver_id`
-
-Full-year view: includes 12-month breakdown so drivers can see which months they drove most. Single-month view: fast query scoped to one month. Only completed rides with recorded `distance_km` are counted.
+Drivers can now export their total kilometres/miles driven per year or month, with an IRS standard mileage deduction estimate. Useful for Schedule C tax filings.
 
 24 new tests. **3,812 total passing.** Branch pushed to GitHub.
 

@@ -6,6 +6,20 @@
 
 ## Session 317 — 2026-04-18 (continued)
 
+### open-source-rideshare — Pre-booking ETA estimate COMPLETE
+
+**Commit**: `ec50ef5` | **Branch**: `feature/rider-emergency-safety` | **Pushed**: `rideshare` remote
+
+**Feature**: `GET /rides/eta/estimate?pickup_lat=&pickup_lng=&dropoff_lat=&dropoff_lng=` — public pre-booking ETA before rider commits to a ride request.
+
+**Response**: `pickup_eta_minutes` (nearest driver / 30 km/h, ceil, fallback 15 if no drivers), `trip_duration_minutes` (haversine pickup→dropoff / 30 km/h, min 2), `nearest_driver_distance_km`, `available_driver_count`, `confidence` (high/medium/low by driver count).
+
+Reuses `drivers_nearby` service for haversine, availability filter, and ETA calculation — no duplication.
+
+**Tests**: 14 new → **3,891 total passing**.
+
+---
+
 ### open-source-rideshare — Driver rating history COMPLETE
 
 **Commit**: `2289b7c` | **Branch**: `feature/rider-emergency-safety` | **Pushed**: `rideshare` remote
