@@ -9,26 +9,349 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–336
+**Sessions run**: 313–352
+
+### Accomplished (Session 352 — orchestrator)
+
+#### open-source-rideshare — Recurring Ride Skip/Unskip COMPLETE (commit `63ccd08`)
+
+Riders can now skip a single upcoming occurrence of a recurring ride without cancelling the whole series — e.g. "skip Monday's commute this week only."
+
+**`POST /rides/recurring/{id}/skip`** — skip a future occurrence:
+- 201 on success; validates `skip_date` falls on a scheduled day of the week (422 if not)
+- Must be a future date (422 if today or past)
+- If a `SCHEDULED` ride was already auto-generated for that occurrence, it is cancelled in the same transaction
+- Idempotent: calling twice with the same date returns the existing skip record
+
+**`DELETE /rides/recurring/{id}/skip/{date}`** — un-skip a date:
+- 204 on success; 404 if no skip exists for that date
+
+**`GET /rides/recurring/{id}`** detail response now includes `skipped_dates: list[date]` (future skips only).
+
+**Generation logic**: `generate_rides_from_recurring` now loads skipped dates per template before generating, and skips any occurrence whose local date is in the skip set.
+
+New model: `RecurringRideSkip` (`recurring_ride_skips` table). Unique constraint on `(recurring_ride_id, skip_date)`. Cascade delete from template. Migration: `y9z0a1b2c3d4`.
+
+**31 new tests** — 7 new test classes covering model, schemas, service logic (7 cases: valid skip, wrong day, past date, cancelled template, idempotency, cascade cancel, not found), unskip, list, and both API endpoints. **4,626 tests passing** (was 4,595). 0 regressions. Pushed to `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 351 — orchestrator)
+
+#### open-source-rideshare — Notification Inbox Delete/Dismiss COMPLETE (commit `83a44df`)
+
+Riders and drivers can now dismiss individual notifications or clear their entire inbox. The underlying `NotificationLog` records are soft-deleted (audit trail preserved) — deleted notifications are excluded from all inbox queries.
+
+**`DELETE /notifications/me/{id}`** — dismiss a single notification:
+- 204 on success; 404 if notification doesn't exist or belongs to a different user
+- Sets `NotificationLog.deleted_at = now()`
+
+**`DELETE /notifications/me`** — dismiss entire inbox:
+- 200 `{"status": "ok"}`; idempotent (safe to call multiple times)
+- Bulk sets `deleted_at` on all non-deleted notifications for the calling user
+- Scoped: does not affect other users' notifications
+
+**Queries updated**: `GET /notifications/history` and `GET /notifications/unread-count` now filter `deleted_at IS NULL` — deleted notifications are invisible to the user.
+
+New model field: `NotificationLog.deleted_at` (nullable DateTime). Migration: `x8y9z0a1b2c3`.
+Schema: `NotificationLogResponse.deleted_at` added (nullable, default None).
+
+**12 new integration tests** in `TestDeleteNotificationEndpoints`: single delete 401/404/wrong-owner 404/204, deleted excluded from history, deleted excluded from unread count, bulk 401, bulk ok response, bulk clears history, bulk scoped to user, bulk idempotent. **4,595 tests passing** (unchanged). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 350 — orchestrator)
+
+#### open-source-rideshare — Driver Geofence Exit Alerting COMPLETE (commit `21ef9b8`)
+
+When a driver's GPS update (via `PUT /drivers/me/location`) places them outside all active service area boundaries during an IN_PROGRESS ride, both the rider and the driver are alerted once per ride.
+
+**How it works:**
+- Fire-and-forget `asyncio.ensure_future()` call added to the location update endpoint alongside the existing route deviation check
+- New service `services/geofence_exit.py` — `check_and_notify_geofence_exit(user_id, lat, lng, db)`:
+  1. Find active IN_PROGRESS ride for the driver (returns False if none)
+  2. Check `geofence_exit_alerted_at IS NULL` — idempotency guard (returns False if already alerted)
+  3. Fast-path: returns False if no active service areas configured (boundary not set up yet)
+  4. PostGIS `ST_Contains(ServiceArea.boundary, ST_MakePoint(lng, lat, 4326))` — driver inside any SA?
+  5. If outside all SAs: persist flag + commit, notify rider + driver
+
+**Rider notification** (PUSH+SMS): "Your driver has left the service area. We're monitoring your trip. Tap to view your ride or contact support."
+**Driver notification** (PUSH only): "You have left the service area. Please return to complete the ride."
+
+New model field: `Ride.geofence_exit_alerted_at` (nullable DateTime). Migration: `w7x8y9z0a1b2`.
+New enum values: `NotificationType.GEOFENCE_EXIT`, `NotificationType.DRIVER_GEOFENCE_EXIT`.
+Both registered in `TEMPLATES` registry, `notification_events`, and `_VALID_NOTIFICATION_TYPES` (rider type is preference-controllable).
+
+**27 new tests** in `tests/test_geofence_exit.py`: all 10 service flow branches (no ride, already flagged, ride not found, no SAs, driver inside, driver outside, DB error, commit/no-commit), idempotency, template channels, type registration, rider + driver dispatchers, all 7 helper functions. **4,595 tests passing** (was 4,568). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 349 — orchestrator)
+
+#### open-source-rideshare — Admin Geofence Violations Report COMPLETE (commit `c61b812`)
+
+New endpoint: `GET /admin/geofence/violations?period=week|month|year|all&violation_type=all|pickup_outside|dropoff_outside|both_outside&page=1&per_page=20`
+
+Surfaces rides where pickup or dropoff falls outside all active service areas, using PostGIS `ST_Within` correlated EXISTS subqueries. Three violation types:
+- **pickup_outside** — pickup location outside every active service area
+- **dropoff_outside** — dropoff location outside every active service area
+- **both_outside** — both locations outside every active service area
+
+Fast-path: returns empty immediately when no active service areas exist (skips geospatial queries). Period filter applied to `requested_at`. Violation type filter adds additional `WHERE` clause to constrain the SQL result before counting and paginating. Results ordered newest-first.
+
+New pure helper: `_classify_violation(pickup_covered, dropoff_covered) -> GeofenceViolationType` (module-level, testable directly). New schemas: `GeofenceViolationType` (str enum), `GeofenceViolationEntry`, `GeofenceViolationListResponse` (includes `service_areas_active` count).
+
+**33 new tests** in `tests/test_admin_geofence_violations.py`: `_classify_violation` all four input combinations + enum value checks, schema construction and optional fields, endpoint mocked DB (zero service areas fast-path, per-type classification, mixed types, pagination, period variants, field mapping). **4,568 tests passing** (was 4,535). 0 regressions. Pushed to `rideshare` remote.
+
+**Needs Your Input** — ready to merge into master:
+Branch: `feature/rider-emergency-safety`
+PR: `GET /admin/geofence/violations` admin geofence violations report
+
+---
+
+### Accomplished (Session 348 — orchestrator)
+
+#### open-source-rideshare — Admin Notification Broadcast COMPLETE (commit `2d1a350`)
+
+New endpoint: `POST /admin/notifications/broadcast`
+
+Allows admins to push messages to user segments in one call. Three segments:
+- **all_riders** — all active users with role=rider
+- **all_drivers** — all active users with role=driver
+- **all_users** — all active non-admin users (riders + drivers)
+
+Channels: `push`, `sms`, `email`. Invalid channels are silently dropped; if none remain, falls back to push. Each notification sent via the existing `send_notification()` service (respects device tokens, logs to NotificationLog table). Returns `BroadcastResult`: `segment`, `title`, `total_targeted`, `total_sent`, `total_failed`, `channels`, `sent_at`.
+
+New notification type `ADMIN_BROADCAST` added to `NotificationType` enum. New schemas: `BroadcastSegment` (enum), `BroadcastRequest` (title 1–200 chars, body 1–1000 chars, channels list), `BroadcastResult`.
+
+**21 new tests** in `tests/test_admin_broadcast.py`: schema validation (min/max length, invalid segment, default channels), endpoint logic (per-segment querying, sent/failed counting, channel fallback, notification called with correct user phone/email, timestamp in result), edge cases (empty segment, partial failure, mixed valid/invalid channels). **4,535 tests passing** (was 4,514). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 347 — orchestrator)
+
+#### open-source-rideshare — Admin Trip Anomaly Detection COMPLETE (commit `5aaa979`)
+
+New endpoint: `GET /admin/safety/anomalies?period=week|month|year|all&anomaly_type=all|route_deviation|driver_no_show|safety_cancellation|excessive_fare|long_duration&page=1&per_page=20`
+
+Surfaces rides with detected anomalies in a paginated admin view. Five anomaly types:
+- **route_deviation** — driver deviated >1 km from the pickup→dropoff path (`route_deviation_flagged_at IS NOT NULL`)
+- **driver_no_show** — no-show reported by rider or auto-detected (`driver_no_show_reported_at IS NOT NULL`)
+- **safety_cancellation** — ride cancelled for SAFETY_CONCERN, DRIVER_NO_SHOW, or DRIVER_NOT_ACCEPTABLE category
+- **excessive_fare** — actual_fare >50% above estimated_fare (completed rides only)
+- **long_duration** — ride lasted more than 90 minutes
+
+Each result includes all anomaly_types present on the ride (a single ride can carry multiple flags), and `detected_at` is the earliest anomaly timestamp found. Rides ordered newest-first by `requested_at`. Period filter narrows to last 7/30/365 days. Anomaly type filter narrows the SQL query before paginating so count is accurate.
+
+New schemas: `TripAnomalyEntry`, `TripAnomalyListResponse`.
+New helpers: `_detect_anomaly_types(ride)`, `_anomaly_detected_at(ride)` (module-level, testable directly).
+
+**24 new tests** in `tests/test_admin_anomalies.py`: all 5 anomaly detection conditions, threshold edge cases (at-threshold not flagged, just-above flagged), multi-anomaly detection, earliest-timestamp selection, fallback to requested_at, schema field validation, and pagination invariants. **4,514 tests passing** (was 4,490). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 346 — orchestrator)
+
+#### open-source-rideshare — SOS Active Map + Bulk Rider Management COMPLETE (commit `67a4154`)
+
+Three new admin endpoints for dispatcher operations and bulk account management.
+
+**`GET /admin/safety/sos/active-map`** — dispatcher live-map snapshot:
+- Returns all currently ACTIVE SOS alerts as map pins with lat/lng, user name/phone, ride_id, and `seconds_open` (age of the alert)
+- Ordered oldest-first so highest-priority emergencies float to the top
+- Includes alerts without GPS coords (`latitude/longitude=None`) — dispatchers see everything
+- Designed for 15–30s polling; returns `pins`, `total`, `fetched_at`
+
+**`POST /admin/riders/bulk-suspend`** — suspend 1–100 rider accounts at once:
+- Skips already-suspended riders (not counted in succeeded); reports not_found IDs
+- Requires `reason` field (audit trail); emits `bulk_rider_suspended` audit event
+
+**`POST /admin/riders/bulk-reactivate`** — reactivate 1–100 suspended riders:
+- Skips already-active riders; mirrors existing bulk driver reactivate behavior
+- Both bulk endpoints registered before `riders/{user_id}` to avoid path capture
+
+**20 new tests** (4 SOSMapPin, 4 SOSActiveMapResponse, 5 bulk schema validation, 7 async endpoint mock tests) → **4,490 total passing** (was 4,470). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 345 — orchestrator)
+
+#### open-source-rideshare — Admin Driver Panic Frequency Leaderboard COMPLETE (commit `2931606`)
+
+Ops can now rank drivers by panic alert volume to flag high-frequency triggerers — mirrors the rider SOS leaderboard shipped last session.
+
+**`GET /admin/safety/drivers/panic/leaderboard?period=week|month|year|all&limit=1-100`**:
+- Returns drivers sorted descending by total panic alert count
+- Per-entry: `driver_profile_id`, `driver_name`, `driver_phone`, `total`, `active`, `resolved`, `false_alarms`, `false_alarm_rate` (%), `last_panic_at`
+- Period filter (`all` default) — narrow to recent activity or see all-time
+- New `admin_list_all_driver_panic_alerts(db, period_start)` service function added to `driver_safety.py`
+- DB enrichment: DriverProfile + User joined for top-N drivers (not N+1)
+
+**10 new schema tests** → 4,470 total passing (was 4,460). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 344 — orchestrator)
+
+#### open-source-rideshare — Admin SOS Frequency Leaderboard COMPLETE (commit `9815634`)
+
+Ops can now rank riders by SOS alert volume to flag high-frequency triggerers and potential abusers.
+
+**`GET /admin/safety/sos/leaderboard?period=week|month|year|all&limit=1-100`**:
+- Returns riders sorted descending by total SOS alert count
+- Per-entry: `user_id`, `user_name`, `user_phone`, `total`, `active`, `resolved`, `false_alarms`, `false_alarm_rate` (%), `last_sos_at`
+- Period filter (`all` default) — narrow to recent activity or see all-time
+- Registered before `/{alert_id}` route to avoid path capture
+- Efficient: single group-by query + one IN query for user lookup (not N+1)
+
+**10 new schema tests** → 4,460 total passing (was 4,450). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Sessions 343–342 — orchestrator)
+
+#### open-source-rideshare — Admin SOS Timeseries + Driver Shift History COMPLETE (commits `390d82f`, `3a7e6fb`)
+
+`GET /admin/safety/sos/timeseries?period=week|month|year` — daily SOS alert trend by status. `GET /admin/drivers/shifts/active` + `GET /admin/drivers/{id}/shift-history` — fleet shift visibility and per-driver shift audit. 24 new tests across both sessions.
+
+---
+
+### Accomplished (Session 342 — orchestrator)
+
+#### open-source-rideshare — Admin Driver Shift History COMPLETE (commit `3a7e6fb`)
+
+Ops can now see who's currently on-shift and pull the full shift log for any driver.
+
+**`GET /admin/drivers/shifts/active`** — all drivers currently on an active shift:
+- Paginated (up to 200/page), newest-first by start time
+- Joins DriverShift → DriverProfile → User for driver name; graceful fallback if profile missing
+- Per-entry: `shift_id`, `driver_profile_id`, `user_id`, `driver_name`, `started_at`, `rides_completed`
+
+**`GET /admin/drivers/{driver_id}/shift-history`** — paginated shift history for one driver:
+- Optional `status` filter: `active` / `completed` / `auto_ended`; 422 on invalid value
+- 404 if driver profile not found; `skip`/`limit` pagination (max 200/page), newest-first
+- Per-entry: `id`, `status`, `started_at`, `ended_at`, `total_minutes`, `rides_completed`
+
+**18 new tests** → 4,444 total passing (was 4,426). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 341 — orchestrator)
+
+#### open-source-rideshare — Admin Trip Share Management COMPLETE (commit `09ffeae`)
+
+Ops can now list and revoke all rider trip share links from the admin panel.
+
+**`GET /admin/trip-shares`** — paginated list of all trip share links:
+- Optional `rider_id` filter (narrow to one rider's shares) and `is_active` filter
+- `skip`/`limit` pagination up to 200/page, newest-first
+- Response fields per entry: `rider_id`, `ride_id`, `token`, `share_url`, `is_active`, `expires_at`, `created_at`
+
+**`DELETE /admin/trip-shares/{token}`** — admin revoke any link:
+- Revokes regardless of which rider owns it (rider's `DELETE` endpoint is ownership-scoped; this one is not)
+- 204 on success, 404 if token not found
+- Auth: 403 for non-admin callers
+
+**15 new tests** → 4,426 total passing (was 4,402). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 340 — orchestrator)
+
+#### open-source-rideshare — Admin Per-User Safety History COMPLETE (commit `557a45a`)
+
+Ops can now pull the full safety event history for any individual rider or driver.
+
+**`GET /admin/riders/{rider_id}/safety-history`** — paginated SOS alert history per rider:
+- Queries existing `SOSAlert` DB table (no migration needed)
+- Optional `status` filter: `active` / `resolved` / `false_alarm`
+- 404 if rider user not found; `skip`/`limit` pagination (max 200/page), newest-first
+- Fields: `id`, `ride_id`, `status`, `lat`, `lng`, `message`, `triggered_at`, `resolved_at`, `resolved_by`, `resolution_notes`
+
+**`GET /admin/drivers/{driver_id}/safety-history`** — paginated driver panic alert history:
+- Queries in-memory driver panic store via `list_driver_panic_alerts` service (consistent with existing panic system)
+- Optional `status` filter: `ACTIVE` / `RESOLVED` / `FALSE_ALARM`
+- 404 if driver profile not found; `skip`/`limit` pagination (max 200/page)
+
+**17 new tests** (5 schema, 6 rider, 6 driver) → 4,402 total passing (was 4,385). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 339 — orchestrator)
+
+#### open-source-rideshare — Admin Driver Status History COMPLETE (commit `8a31402`)
+
+Admins can now audit the full approval/suspension history of any driver, and see a real-time feed of recent status changes across the entire fleet.
+
+**`GET /admin/drivers/{driver_id}/status-history`** — paginated log of all status transitions for one driver:
+- Queries existing `AuditLog` records (target_type="driver_profile") — no migration needed
+- Returns: `id`, `timestamp`, `event_type` (raw), `action` (human-friendly: "approved"/"suspended"/"reactivated"), `admin_id`, `reason` (extracted from metadata_json for suspensions), `description`
+- 404 if driver profile not found; `skip`/`limit` pagination (up to 200/page), newest-first
+
+**`GET /admin/drivers/status-changes`** — ops feed of recent changes across all drivers:
+- `days` filter (1–90, default 7): changes in the last N days
+- Same response shape with added `driver_id` per entry
+- `skip`/`limit` pagination; newest-first
+
+**Coverage**: handles all event_type variants (single + bulk: approved, suspended, reactivated)
+
+**19 new tests** → 4,385 total passing (was 4,366). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 338 — orchestrator)
+
+#### open-source-rideshare — Admin Driver Activity Dashboard COMPLETE (commit `6b2e63c`)
+
+Ops team can now see per-driver recent activity in one paginated endpoint.
+
+**`GET /admin/drivers/activity`** — filterable by `is_online` and `is_approved`; paginated up to 200/page.
+
+**Per-entry fields:**
+- `driver_id`, `user_id`, `driver_name`, `is_online`, `is_approved`, `rating_avg`, `total_trips` (lifetime)
+- `trips_7d`, `trips_30d` — completed rides in the last 7 and 30 days
+- `shift_hours_7d`, `shift_hours_30d` — hours on-shift in the last 7 and 30 days
+- `last_trip_at` — timestamp of most recent completed ride
+
+**Implementation**: 5 aggregate SQL queries per page (not N+1) — trips_7d/30d agg on `Ride`, shift_7d/30d agg on `DriverShift`, last-trip max on `Ride` — all scoped to the current page's driver user_ids.
+
+**8 new tests** → 4,366 total passing (was 4,358). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 337 — orchestrator)
+
+#### open-source-rideshare — Driver Referral Program COMPLETE (commit `dd2ceda`)
+
+Drivers can now recruit other drivers via a unique referral code. When the referred driver completes 10 trips, the referring driver earns a $50 bonus (AWARDED status), which flows into their next payout (PAID via `mark_driver_referral_bonuses_paid`).
+
+**5 new endpoints:**
+- `GET  /drivers/me/referral-code` — get (or auto-create) referral code + stats (total referrals, pending bonus, total paid)
+- `POST /drivers/me/referral-code` — idempotent code generation
+- `POST /drivers/me/referral/apply` — apply another driver's referral code (400 on bad code/self-referral; 409 if already applied)
+- `GET  /drivers/me/referral/bonuses` — list all referral bonuses (PENDING/AWARDED/PAID)
+- `GET  /admin/driver-referrals` — admin list, filterable by referrer/referee/status
+
+**New files:**
+- `models/driver_referral.py` — `DriverReferral` model with PENDING→AWARDED→PAID status machine
+- `services/driver_referral.py` — full lifecycle: generate, apply, milestone check, payout hook
+- `schemas/driver_referral.py` — all Pydantic schemas
+- `api/v1/driver_referral.py` — router, registered in `main.py`
+- `migrations/v6w7x8y9z0a1` — `driver_referrals` table + `driver_referral_code` on `driver_profiles`
+
+**Model change:** `DriverProfile.driver_referral_code` (unique, indexed, nullable)
+
+**Hook:** `complete_ride` now calls `check_and_award_driver_referral_bonus` after `total_trips += 1`
+
+**39 new tests** + 3 existing `TestCompleteRide` tests updated (5th DB execute for referral check).
+
+**4,358 tests passing** (was 4,319). 0 regressions. Pushed to rideshare remote.
+
+---
 
 ### Accomplished (Session 336 — orchestrator)
 
 #### open-source-rideshare — Driver Panic Alert System COMPLETE (commit `73a3bec`)
-
-Drivers now have an emergency panic button equivalent to the one riders already had. This closes the last obvious safety gap on the `feature/rider-emergency-safety` branch.
-
-**5 new endpoints:**
-- `POST /drivers/me/panic` — trigger alert on active ride (400 if no in-progress ride, 400 if duplicate active alert)
-- `GET /drivers/me/panic/{alert_id}` — get alert status (404 if wrong driver)
-- `DELETE /drivers/me/panic/{alert_id}` — cancel alert (FALSE_ALARM if <30s, RESOLVED otherwise; 404 on wrong owner, 400 if not ACTIVE)
-- `GET /admin/driver-panic-alerts` — list all ACTIVE driver alerts, oldest-first, paginated
-- `POST /admin/driver-panic-alerts/{alert_id}/resolve` — admin resolves with optional notes
-
-**New files:**
-- `schemas/driver_safety.py` — all schemas/enums
-- `services/driver_safety.py` — in-memory store with full lifecycle ops + `_reset_store()` for tests
-- `api/v1/driver_safety.py` — router, registered in `main.py`
-- `tests/test_driver_safety.py` — 42 tests (schemas, service, router, end-to-end)
 
 **4,319 tests passing** (was 4,277). 0 regressions. Pushed to rideshare remote.
 
@@ -391,7 +714,7 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ### Suggested Priorities (Next Session)
 1. **resistance-research**: **April 20 monitoring brief** — CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing). **Op-ed submission deadline April 22** — file `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. **~April 23-24: ballroom SCOTUS/D.C. Circuit watch window**.
 2. **mfg-farm**: Test print action (still user-gated — all files ready).
-3. **open-source-rideshare**: Next candidates: driver incentive/bonus programs (admin creates trip-count or earnings-goal bonus programs; drivers track progress), or scheduled ride reminder (advance push/SMS N minutes before `scheduled_for`, separate from the dispatch notification).
+3. **open-source-rideshare**: Next candidates — recurring ride support improvements (PATCH /rides/recurring/{id}, cancel-series endpoint) or driver push notification preferences.
 4. **stockbot**: No specific features queued — check paper trading performance.
 
 ---

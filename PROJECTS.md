@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 336)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 351)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 336: **Driver Panic Alert System COMPLETE** (commit `73a3bec`, 42 tests) — drivers can now trigger emergency panic alerts during active rides, matching the rider panic system. 5 new endpoints: `POST/GET/DELETE /drivers/me/panic/{id}`, `GET/POST /admin/driver-panic-alerts`. False-alarm window (30s), admin resolve with notes, oldest-first admin sort. 4,319 tests passing. **Next**: Driver referral program (driver brings in another driver; bonus after referred driver completes X rides), or close remaining gaps on this safety branch.
+**Current focus**: Session 352: **Recurring Ride Skip/Unskip COMPLETE** (commit `63ccd08`, 31 tests) — riders can skip a single upcoming occurrence without cancelling the series. `POST /rides/recurring/{id}/skip` validates day-of-week + future date, cancels any already-generated SCHEDULED ride, idempotent. `DELETE /rides/recurring/{id}/skip/{date}` removes a skip. `RecurringRideDetailResponse` now includes `skipped_dates`. Generation logic respects skips. 4,626 tests passing. **Next**: Driver in-app notification preferences UI enhancements, or further recurring ride improvements (end-date support).
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 
