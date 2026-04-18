@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 # All valid notification types and channels — mirrored from the enums to avoid
 # circular imports.
 _ALL_NOTIFICATION_TYPES: list[str] = [
+    # Rider-facing
     "ride_matched",
     "ride_cancelled",
     "ride_completed",
@@ -46,6 +47,19 @@ _ALL_NOTIFICATION_TYPES: list[str] = [
     "promo_expiring",
     "background_check_approved",
     "background_check_action_required",
+    "geofence_exit",
+    # Driver-facing
+    "ride_in_progress",
+    "ride_assigned",
+    "ride_completed_driver",
+    "route_deviation",
+    "driver_no_show",
+    "driver_performance_warning",
+    "driver_performance_final_warning",
+    "driver_auto_suspended",
+    "ride_scheduled_dispatched",
+    "admin_broadcast",
+    "driver_geofence_exit",
 ]
 
 _ALL_CHANNELS: list[str] = ["push", "sms", "email"]

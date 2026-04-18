@@ -11,6 +11,7 @@ from pydantic import BaseModel, field_validator
 # layer, so we maintain the allowed sets here explicitly.
 _VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
     {
+        # Rider-facing
         "ride_matched",
         "ride_cancelled",
         "ride_completed",
@@ -27,8 +28,19 @@ _VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
         "promo_expiring",
         "background_check_approved",
         "background_check_action_required",
-        "ride_scheduled_dispatched",
         "geofence_exit",
+        # Driver-facing
+        "ride_in_progress",
+        "ride_assigned",
+        "ride_completed_driver",
+        "route_deviation",
+        "driver_no_show",
+        "driver_performance_warning",
+        "driver_performance_final_warning",
+        "driver_auto_suspended",
+        "ride_scheduled_dispatched",
+        "admin_broadcast",
+        "driver_geofence_exit",
     }
 )
 

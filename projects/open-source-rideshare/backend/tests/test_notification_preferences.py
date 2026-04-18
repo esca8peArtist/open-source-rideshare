@@ -970,3 +970,219 @@ class TestNotificationPreferencesEndpoints:
             )
 
         assert resp.status_code == 422
+
+
+# ===========================================================================
+# 11. Driver notification preference enhancements
+# ===========================================================================
+
+# All driver-specific notification types that must now be supported.
+_DRIVER_TYPES: list[str] = [
+    "ride_in_progress",
+    "ride_assigned",
+    "ride_completed_driver",
+    "route_deviation",
+    "driver_no_show",
+    "driver_performance_warning",
+    "driver_performance_final_warning",
+    "driver_auto_suspended",
+    "ride_scheduled_dispatched",
+    "admin_broadcast",
+    "driver_geofence_exit",
+]
+
+
+class TestDriverNotificationTypesInLists:
+    """Driver-specific types must appear in both the service list and the schema set."""
+
+    def test_all_driver_types_in_service_all_types(self):
+        for dt in _DRIVER_TYPES:
+            assert dt in _ALL_NOTIFICATION_TYPES, f"'{dt}' missing from _ALL_NOTIFICATION_TYPES"
+
+    def test_all_driver_types_in_schema_valid_types(self):
+        for dt in _DRIVER_TYPES:
+            assert dt in _VALID_NOTIFICATION_TYPES, f"'{dt}' missing from _VALID_NOTIFICATION_TYPES"
+
+    def test_geofence_exit_in_service_list(self):
+        assert "geofence_exit" in _ALL_NOTIFICATION_TYPES
+
+    def test_geofence_exit_in_schema_set(self):
+        assert "geofence_exit" in _VALID_NOTIFICATION_TYPES
+
+
+class TestDriverTypesSchemaValidation:
+    """SetPreferenceRequest must accept every driver-specific type."""
+
+    def test_all_driver_types_pass_schema_validation(self):
+        for dt in _DRIVER_TYPES:
+            for ch in ("push", "sms", "email"):
+                req = SetPreferenceRequest(notification_type=dt, channel=ch, enabled=False)
+                assert req.notification_type == dt
+
+    def test_ride_assigned_can_be_disabled_via_schema(self):
+        req = SetPreferenceRequest(
+            notification_type="ride_assigned", channel="push", enabled=False
+        )
+        assert req.enabled is False
+
+    def test_driver_performance_warning_can_be_set(self):
+        req = SetPreferenceRequest(
+            notification_type="driver_performance_warning", channel="push", enabled=True
+        )
+        assert req.notification_type == "driver_performance_warning"
+
+    def test_driver_auto_suspended_can_be_set(self):
+        req = SetPreferenceRequest(
+            notification_type="driver_auto_suspended", channel="sms", enabled=True
+        )
+        assert req.notification_type == "driver_auto_suspended"
+
+
+class TestDriverTypesInPreferencesMap:
+    """get_user_preferences must include all driver-specific types in the returned map."""
+
+    @pytest.mark.asyncio
+    async def test_driver_types_present_in_empty_db(self):
+        db = _mock_db()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = []
+        db.execute = AsyncMock(return_value=mock_result)
+
+        prefs = await get_user_preferences(db, user_id=99)
+
+        for dt in _DRIVER_TYPES:
+            assert dt in prefs, f"'{dt}' missing from preferences map"
+            for ch in ("push", "sms", "email"):
+                assert prefs[dt][ch] is True, f"'{dt}/{ch}' should default to True"
+
+    @pytest.mark.asyncio
+    async def test_driver_type_stored_disabled_is_reflected(self):
+        db = _mock_db()
+        stored = _make_pref(notification_type="ride_assigned", channel="push", enabled=False)
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [stored]
+        db.execute = AsyncMock(return_value=mock_result)
+
+        prefs = await get_user_preferences(db, user_id=42)
+
+        assert prefs["ride_assigned"]["push"] is False
+        assert prefs["ride_assigned"]["sms"] is True  # other channels still default on
+
+    @pytest.mark.asyncio
+    async def test_driver_performance_warning_stored_disabled(self):
+        db = _mock_db()
+        stored = _make_pref(
+            notification_type="driver_performance_warning", channel="email", enabled=False
+        )
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [stored]
+        db.execute = AsyncMock(return_value=mock_result)
+
+        prefs = await get_user_preferences(db, user_id=7)
+
+        assert prefs["driver_performance_warning"]["email"] is False
+        assert prefs["driver_performance_warning"]["push"] is True
+
+
+class TestDriverTypeSendNotificationPreferenceRespected:
+    """send_notification must consult and respect preferences for driver-specific types."""
+
+    @pytest.mark.asyncio
+    async def test_disabled_ride_assigned_skips_push(self):
+        clear_sent_notifications()
+
+        notif = Notification(
+            user_id=10,
+            type=NotificationType.RIDE_ASSIGNED,
+            title="New Ride",
+            body="Pickup in 3 min",
+            channels=[NotificationChannel.PUSH],
+        )
+
+        async def mock_is_enabled(db, user_id, notification_type, channel):
+            return False
+
+        with (
+            patch("app.services.notifications.send_push", new_callable=AsyncMock) as mock_push,
+            patch(
+                "app.services.notification_preferences.is_channel_enabled",
+                side_effect=mock_is_enabled,
+            ),
+        ):
+            db = _mock_db()
+            mock_result = MagicMock()
+            mock_result.scalars.return_value.all.return_value = []
+            db.execute = AsyncMock(return_value=mock_result)
+
+            with patch("app.services.notifications._persist_log", new_callable=AsyncMock):
+                await send_notification(notif, db=db)
+
+        mock_push.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_enabled_route_deviation_sends_sms(self):
+        clear_sent_notifications()
+
+        notif = Notification(
+            user_id=11,
+            type=NotificationType.ROUTE_DEVIATION,
+            title="Route Alert",
+            body="Driver is off-route",
+            channels=[NotificationChannel.SMS],
+        )
+
+        async def mock_is_enabled(db, user_id, notification_type, channel):
+            return True
+
+        with (
+            patch("app.services.notifications.send_sms", new_callable=AsyncMock, return_value=True) as mock_sms,
+            patch(
+                "app.services.notification_preferences.is_channel_enabled",
+                side_effect=mock_is_enabled,
+            ),
+        ):
+            db = _mock_db()
+            mock_result = MagicMock()
+            mock_result.scalars.return_value.all.return_value = []
+            db.execute = AsyncMock(return_value=mock_result)
+
+            with patch("app.services.notifications._persist_log", new_callable=AsyncMock):
+                await send_notification(notif, db=db, phone="+15550009999")
+
+        mock_sms.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_driver_geofence_exit_preference_checked(self):
+        """Preference check is called for driver_geofence_exit (not bypassed like sos_alert)."""
+        clear_sent_notifications()
+
+        notif = Notification(
+            user_id=12,
+            type=NotificationType.DRIVER_GEOFENCE_EXIT,
+            title="Geofence Exit",
+            body="You left the operating zone",
+            channels=[NotificationChannel.PUSH],
+        )
+
+        checked_types: list[str] = []
+
+        async def mock_is_enabled(db, user_id, notification_type, channel):
+            checked_types.append(notification_type)
+            return True
+
+        with (
+            patch("app.services.notifications.send_push", new_callable=AsyncMock, return_value=True),
+            patch(
+                "app.services.notification_preferences.is_channel_enabled",
+                side_effect=mock_is_enabled,
+            ),
+        ):
+            db = _mock_db()
+            mock_result = MagicMock()
+            mock_result.scalars.return_value.all.return_value = []
+            db.execute = AsyncMock(return_value=mock_result)
+
+            with patch("app.services.notifications._persist_log", new_callable=AsyncMock):
+                await send_notification(notif, db=db)
+
+        assert "driver_geofence_exit" in checked_types
