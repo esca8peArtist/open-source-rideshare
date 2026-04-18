@@ -477,3 +477,25 @@ class AdminBulkSetPreferenceRequest(BaseModel):
     """Admin request body for bulk-overriding notification preferences."""
 
     updates: list[dict]  # each: {notification_type, channel, enabled}
+
+
+class DriverActivityEntry(BaseModel):
+    driver_id: int
+    user_id: int
+    driver_name: str | None = None
+    is_online: bool
+    is_approved: bool
+    rating_avg: float
+    total_trips: int
+    trips_7d: int
+    trips_30d: int
+    shift_hours_7d: float
+    shift_hours_30d: float
+    last_trip_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class DriverActivityListResponse(BaseModel):
+    drivers: list[DriverActivityEntry]
+    pagination: PaginationResponse

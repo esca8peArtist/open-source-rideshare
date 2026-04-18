@@ -19,6 +19,7 @@ from app.services.service_areas import (
 )
 from app.services.verification import VerificationError, get_verification_status, review_document
 from app.models.driver import DriverProfile
+from app.models.driver_shift import DriverShift
 from app.models.feedback import Dispute, DisputeStatus, DisputeType, RideFeedback
 from app.models.ride import Ride, RideStatus
 from app.models.safety import SOSAlert, SOSStatus
@@ -52,6 +53,8 @@ from app.schemas.admin import (
     CancellationTimeseriesPoint,
     DashboardStats,
     DisputeStats,
+    DriverActivityEntry,
+    DriverActivityListResponse,
     DriverMetrics,
     DriversListResponse,
     FeedbackStats,
@@ -288,6 +291,109 @@ async def list_drivers(
     return DriversListResponse(
         drivers=[_driver_to_response(d) for d in drivers],
         pagination=PaginationResponse(page=page, per_page=per_page, total=total),
+    )
+
+
+@router.get("/drivers/activity", response_model=DriverActivityListResponse)
+async def driver_activity_dashboard(
+    is_online: bool | None = Query(None),
+    is_approved: bool | None = Query(None),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
+    """Per-driver activity summary: recent trips, shift hours, and last-trip timestamp."""
+    now = datetime.now(timezone.utc)
+    cutoff_7d = now - timedelta(days=7)
+    cutoff_30d = now - timedelta(days=30)
+
+    base_filters = []
+    if is_online is not None:
+        base_filters.append(DriverProfile.is_online == is_online)
+    if is_approved is not None:
+        base_filters.append(DriverProfile.is_approved == is_approved)
+
+    total = (await db.execute(
+        select(func.count()).select_from(DriverProfile).where(*base_filters)
+    )).scalar() or 0
+
+    profiles_result = await db.execute(
+        select(DriverProfile)
+        .options(joinedload(DriverProfile.user))
+        .where(*base_filters)
+        .order_by(DriverProfile.id.asc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
+    profiles = profiles_result.unique().scalars().all()
+
+    if not profiles:
+        return DriverActivityListResponse(
+            drivers=[],
+            pagination=PaginationResponse(total=total, page=page, per_page=per_page),
+        )
+
+    driver_user_ids = [p.user_id for p in profiles]
+
+    def _trips_agg(cutoff: datetime):
+        return (
+            select(Ride.driver_id, func.count().label("cnt"))
+            .where(
+                Ride.driver_id.in_(driver_user_ids),
+                Ride.status == RideStatus.COMPLETED,
+                Ride.completed_at >= cutoff,
+            )
+            .group_by(Ride.driver_id)
+        )
+
+    def _shift_agg(cutoff: datetime):
+        return (
+            select(DriverShift.driver_id, func.coalesce(func.sum(DriverShift.total_minutes), 0).label("mins"))
+            .where(
+                DriverShift.driver_id.in_(driver_user_ids),
+                DriverShift.ended_at >= cutoff,
+                DriverShift.total_minutes.isnot(None),
+            )
+            .group_by(DriverShift.driver_id)
+        )
+
+    trips_7d = {r.driver_id: r.cnt for r in (await db.execute(_trips_agg(cutoff_7d))).all()}
+    trips_30d = {r.driver_id: r.cnt for r in (await db.execute(_trips_agg(cutoff_30d))).all()}
+    shift_7d = {r.driver_id: r.mins for r in (await db.execute(_shift_agg(cutoff_7d))).all()}
+    shift_30d = {r.driver_id: r.mins for r in (await db.execute(_shift_agg(cutoff_30d))).all()}
+
+    last_trip_result = (await db.execute(
+        select(Ride.driver_id, func.max(Ride.completed_at).label("last_at"))
+        .where(
+            Ride.driver_id.in_(driver_user_ids),
+            Ride.status == RideStatus.COMPLETED,
+        )
+        .group_by(Ride.driver_id)
+    )).all()
+    last_trip_map = {r.driver_id: r.last_at for r in last_trip_result}
+
+    entries = [
+        DriverActivityEntry(
+            driver_id=p.id,
+            user_id=p.user_id,
+            driver_name=p.user.name if p.user else None,
+            is_online=p.is_online,
+            is_approved=p.is_approved,
+            rating_avg=p.rating_avg,
+            total_trips=p.total_trips,
+            trips_7d=trips_7d.get(p.user_id, 0),
+            trips_30d=trips_30d.get(p.user_id, 0),
+            shift_hours_7d=round((shift_7d.get(p.user_id) or 0) / 60, 2),
+            shift_hours_30d=round((shift_30d.get(p.user_id) or 0) / 60, 2),
+            last_trip_at=last_trip_map.get(p.user_id),
+        )
+        for p in profiles
+    ]
+
+    return DriverActivityListResponse(
+        drivers=entries,
+        pagination=PaginationResponse(total=total, page=page, per_page=per_page),
     )
 
 
