@@ -81,6 +81,7 @@ from app.schemas.admin import (
     RidersListResponse,
     RidesListResponse,
     SOSStats,
+    SOSTimeseriesPoint,
     SuspendRequest,
     TimeMultiplierSchedule,
     TopDriverEntry,
@@ -1517,6 +1518,58 @@ async def sos_stats(db: AsyncSession = Depends(get_db)):
         total_today=total_today,
         avg_resolution_minutes=avg_minutes,
     )
+
+
+@router.get("/safety/sos/timeseries", response_model=list[SOSTimeseriesPoint])
+async def sos_timeseries(
+    period: str = Query("month", pattern="^(week|month|year)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    now = datetime.now(timezone.utc)
+    if period == "week":
+        start = now - timedelta(days=7)
+    elif period == "month":
+        start = now - timedelta(days=30)
+    else:
+        start = now - timedelta(days=365)
+
+    date_col = cast(SOSAlert.created_at, Date)
+    query = (
+        select(
+            date_col.label("date"),
+            SOSAlert.status,
+            func.count().label("cnt"),
+        )
+        .where(SOSAlert.created_at >= start)
+        .group_by(date_col, SOSAlert.status)
+        .order_by(date_col)
+    )
+    result = await db.execute(query)
+    rows = result.all()
+
+    # Aggregate per date
+    by_date: dict[str, dict] = {}
+    for row in rows:
+        d = str(row.date)
+        if d not in by_date:
+            by_date[d] = {"active": 0, "resolved": 0, "false_alarms": 0}
+        if row.status == SOSStatus.ACTIVE:
+            by_date[d]["active"] += row.cnt
+        elif row.status == SOSStatus.RESOLVED:
+            by_date[d]["resolved"] += row.cnt
+        elif row.status == SOSStatus.FALSE_ALARM:
+            by_date[d]["false_alarms"] += row.cnt
+
+    return [
+        SOSTimeseriesPoint(
+            date=d,
+            total=v["active"] + v["resolved"] + v["false_alarms"],
+            active=v["active"],
+            resolved=v["resolved"],
+            false_alarms=v["false_alarms"],
+        )
+        for d, v in sorted(by_date.items())
+    ]
 
 
 @router.get("/safety/sos/{alert_id}", response_model=AdminSOSAlertResponse)

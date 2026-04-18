@@ -14,6 +14,7 @@ from app.schemas.admin import (
     AdminSOSResolveRequest,
     PaginationResponse,
     SOSStats,
+    SOSTimeseriesPoint,
 )
 
 
@@ -276,3 +277,73 @@ class TestSOSResponseMapping:
         assert resp.status == "resolved"
         assert resp.resolved_by == 99
         assert resp.resolution_notes == "Confirmed false alarm"
+
+
+# ---- SOSTimeseriesPoint schema tests ----
+
+
+class TestSOSTimeseriesPoint:
+    def test_all_status_counts(self):
+        point = SOSTimeseriesPoint(
+            date="2026-04-12",
+            total=6,
+            active=1,
+            resolved=4,
+            false_alarms=1,
+        )
+        assert point.date == "2026-04-12"
+        assert point.total == 6
+        assert point.active == 1
+        assert point.resolved == 4
+        assert point.false_alarms == 1
+
+    def test_zero_counts(self):
+        point = SOSTimeseriesPoint(
+            date="2026-04-13",
+            total=0,
+            active=0,
+            resolved=0,
+            false_alarms=0,
+        )
+        assert point.total == 0
+
+    def test_total_matches_sum(self):
+        point = SOSTimeseriesPoint(
+            date="2026-04-14",
+            total=3,
+            active=2,
+            resolved=1,
+            false_alarms=0,
+        )
+        assert point.total == point.active + point.resolved + point.false_alarms
+
+    def test_list_of_points_ordered(self):
+        points = [
+            SOSTimeseriesPoint(date="2026-04-10", total=2, active=2, resolved=0, false_alarms=0),
+            SOSTimeseriesPoint(date="2026-04-11", total=5, active=1, resolved=3, false_alarms=1),
+            SOSTimeseriesPoint(date="2026-04-12", total=1, active=0, resolved=1, false_alarms=0),
+        ]
+        dates = [p.date for p in points]
+        assert dates == sorted(dates)
+
+    def test_active_only_day(self):
+        point = SOSTimeseriesPoint(
+            date="2026-04-15",
+            total=3,
+            active=3,
+            resolved=0,
+            false_alarms=0,
+        )
+        assert point.resolved == 0
+        assert point.false_alarms == 0
+
+    def test_resolved_and_false_alarm_day(self):
+        point = SOSTimeseriesPoint(
+            date="2026-04-16",
+            total=4,
+            active=0,
+            resolved=2,
+            false_alarms=2,
+        )
+        assert point.active == 0
+        assert point.total == 4

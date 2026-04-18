@@ -185,6 +185,14 @@ class SOSStats(BaseModel):
     avg_resolution_minutes: float | None = None
 
 
+class SOSTimeseriesPoint(BaseModel):
+    date: str
+    total: int
+    active: int
+    resolved: int
+    false_alarms: int
+
+
 # ---- Admin Cancellation Stats ----
 
 
