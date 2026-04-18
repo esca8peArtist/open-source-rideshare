@@ -50,6 +50,10 @@ from app.schemas.admin import (
     BulkActionResult,
     BulkDriverIdsRequest,
     BulkDriverSuspendRequest,
+    BulkRiderIdsRequest,
+    BulkRiderSuspendRequest,
+    SOSActiveMapResponse,
+    SOSMapPin,
     CancellationReasonBreakdown,
     CancellationStats,
     CancellationTimeseriesPoint,
@@ -1741,6 +1745,45 @@ async def driver_panic_leaderboard(
     return DriverPanicFrequencyResponse(period=period, entries=entries)
 
 
+@router.get("/safety/sos/active-map", response_model=SOSActiveMapResponse)
+async def sos_active_map(
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> SOSActiveMapResponse:
+    """Snapshot of all active SOS alerts with location data for map display. Admin only.
+
+    Returns every SOS alert currently in ACTIVE status, enriched with rider
+    name/phone and seconds elapsed since the alert opened. Intended for polling
+    by a dispatcher live-map view (e.g. refresh every 15–30 s). Alerts without
+    a known location are included with latitude/longitude=None.
+    """
+    now = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(SOSAlert)
+        .options(joinedload(SOSAlert.user))
+        .where(SOSAlert.status == SOSStatus.ACTIVE)
+        .order_by(SOSAlert.created_at.asc())
+    )
+    alerts = result.unique().scalars().all()
+
+    pins = [
+        SOSMapPin(
+            id=a.id,
+            user_id=a.user_id,
+            user_name=a.user.name if a.user else None,
+            user_phone=a.user.phone if a.user else None,
+            latitude=a.latitude,
+            longitude=a.longitude,
+            message=a.message,
+            ride_id=a.ride_id,
+            seconds_open=max(0, int((now - a.created_at).total_seconds())),
+            created_at=a.created_at,
+        )
+        for a in alerts
+    ]
+    return SOSActiveMapResponse(pins=pins, total=len(pins), fetched_at=now)
+
+
 @router.get("/safety/sos/{alert_id}", response_model=AdminSOSAlertResponse)
 async def get_sos_alert(alert_id: int, db: AsyncSession = Depends(get_db)):
     query = select(SOSAlert).options(
@@ -2929,6 +2972,92 @@ async def list_riders(
     return RidersListResponse(
         riders=riders_data,
         pagination=PaginationResponse(page=page, per_page=per_page, total=total),
+    )
+
+
+@router.post("/riders/bulk-suspend", response_model=BulkActionResult)
+async def bulk_suspend_riders(
+    body: BulkRiderSuspendRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> BulkActionResult:
+    """Suspend multiple rider accounts in a single request. Admin only.
+
+    Skips riders that are already suspended (not counted in succeeded).
+    Returns not_found for any user_id that is not a rider. Supports 1–100 IDs.
+    """
+    result = await db.execute(
+        select(User).where(User.id.in_(body.user_ids), User.role == "rider")
+    )
+    found = {u.id: u for u in result.scalars().all()}
+
+    succeeded: list[int] = []
+    not_found: list[int] = []
+    for uid in body.user_ids:
+        if uid not in found:
+            not_found.append(uid)
+            continue
+        user = found[uid]
+        if user.is_active:
+            user.is_active = False
+            succeeded.append(uid)
+
+    if succeeded:
+        await db.commit()
+        from app.services.audit_events import audit_admin_action
+        await audit_admin_action(
+            db, admin_id=admin.id, action="bulk_rider_suspended",
+            description=f"Bulk suspended {len(succeeded)} rider(s): {succeeded}. Reason: {body.reason}",
+        )
+
+    return BulkActionResult(
+        succeeded=succeeded,
+        not_found=not_found,
+        total_requested=len(body.user_ids),
+        total_succeeded=len(succeeded),
+    )
+
+
+@router.post("/riders/bulk-reactivate", response_model=BulkActionResult)
+async def bulk_reactivate_riders(
+    body: BulkRiderIdsRequest,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> BulkActionResult:
+    """Reactivate multiple suspended rider accounts in a single request. Admin only.
+
+    Skips riders that are already active (not counted in succeeded).
+    Returns not_found for any user_id that is not a rider. Supports 1–100 IDs.
+    """
+    result = await db.execute(
+        select(User).where(User.id.in_(body.user_ids), User.role == "rider")
+    )
+    found = {u.id: u for u in result.scalars().all()}
+
+    succeeded: list[int] = []
+    not_found: list[int] = []
+    for uid in body.user_ids:
+        if uid not in found:
+            not_found.append(uid)
+            continue
+        user = found[uid]
+        if not user.is_active:
+            user.is_active = True
+            succeeded.append(uid)
+
+    if succeeded:
+        await db.commit()
+        from app.services.audit_events import audit_admin_action
+        await audit_admin_action(
+            db, admin_id=admin.id, action="bulk_rider_reactivated",
+            description=f"Bulk reactivated {len(succeeded)} rider(s): {succeeded}",
+        )
+
+    return BulkActionResult(
+        succeeded=succeeded,
+        not_found=not_found,
+        total_requested=len(body.user_ids),
+        total_succeeded=len(succeeded),
     )
 
 

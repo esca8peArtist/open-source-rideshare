@@ -15,8 +15,10 @@ from app.schemas.admin import (
     DriverPanicFrequencyEntry,
     DriverPanicFrequencyResponse,
     PaginationResponse,
+    SOSActiveMapResponse,
     SOSFrequencyEntry,
     SOSFrequencyResponse,
+    SOSMapPin,
     SOSStats,
     SOSTimeseriesPoint,
 )
@@ -611,3 +613,96 @@ class TestDriverPanicFrequencyResponse:
     def test_year_period_label(self):
         resp = DriverPanicFrequencyResponse(period="year", entries=[])
         assert resp.period == "year"
+
+
+# ---------------------------------------------------------------------------
+# SOSMapPin / SOSActiveMapResponse
+# ---------------------------------------------------------------------------
+
+class TestSOSMapPin:
+    def _pin(self, alert_id=1, user_id=1, seconds_open=120, lat=40.7128, lng=-74.0060):
+        return SOSMapPin(
+            id=alert_id,
+            user_id=user_id,
+            user_name="Alice",
+            user_phone="+15550001111",
+            latitude=lat,
+            longitude=lng,
+            message="Help!",
+            ride_id=5,
+            seconds_open=seconds_open,
+            created_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+
+    def test_fields_populated(self):
+        pin = self._pin()
+        assert pin.id == 1
+        assert pin.user_name == "Alice"
+        assert pin.latitude == 40.7128
+        assert pin.longitude == -74.0060
+        assert pin.seconds_open == 120
+        assert pin.ride_id == 5
+
+    def test_no_location(self):
+        pin = SOSMapPin(
+            id=2, user_id=3, seconds_open=60,
+            created_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        assert pin.latitude is None
+        assert pin.longitude is None
+
+    def test_no_user_info(self):
+        pin = SOSMapPin(
+            id=3, user_id=4, seconds_open=300,
+            created_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        assert pin.user_name is None
+        assert pin.user_phone is None
+
+    def test_seconds_open_zero(self):
+        pin = SOSMapPin(
+            id=4, user_id=5, seconds_open=0,
+            created_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        assert pin.seconds_open == 0
+
+
+class TestSOSActiveMapResponse:
+    def _pin(self, alert_id=1):
+        return SOSMapPin(
+            id=alert_id,
+            user_id=alert_id,
+            seconds_open=60,
+            created_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+
+    def test_empty_map(self):
+        resp = SOSActiveMapResponse(
+            pins=[], total=0,
+            fetched_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        assert resp.total == 0
+        assert resp.pins == []
+
+    def test_total_matches_pins(self):
+        pins = [self._pin(1), self._pin(2), self._pin(3)]
+        resp = SOSActiveMapResponse(
+            pins=pins, total=len(pins),
+            fetched_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        assert resp.total == 3
+        assert len(resp.pins) == 3
+
+    def test_fetched_at_is_datetime(self):
+        now = datetime(2026, 4, 18, 15, 30, 0, tzinfo=timezone.utc)
+        resp = SOSActiveMapResponse(pins=[], total=0, fetched_at=now)
+        assert resp.fetched_at == now
+
+    def test_pin_ids_preserved(self):
+        pins = [self._pin(7), self._pin(42)]
+        resp = SOSActiveMapResponse(
+            pins=pins, total=2,
+            fetched_at=datetime(2026, 4, 18, 12, 0, 0, tzinfo=timezone.utc),
+        )
+        assert resp.pins[0].id == 7
+        assert resp.pins[1].id == 42

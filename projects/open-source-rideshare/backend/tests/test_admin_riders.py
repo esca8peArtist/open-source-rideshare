@@ -16,7 +16,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.models.user import User, UserRole
-from app.schemas.admin import AdminRiderResponse, PaginationResponse, RidersListResponse, SuspendRequest
+from app.schemas.admin import (
+    AdminRiderResponse,
+    BulkActionResult,
+    BulkRiderIdsRequest,
+    BulkRiderSuspendRequest,
+    PaginationResponse,
+    RidersListResponse,
+    SuspendRequest,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -465,3 +473,211 @@ class TestListRidersEndpoint:
 
         assert resp.pagination.page == 1
         assert resp.pagination.per_page == 20
+
+
+# ---------------------------------------------------------------------------
+# BulkRiderIdsRequest / BulkRiderSuspendRequest schemas
+# ---------------------------------------------------------------------------
+
+class TestBulkRiderSchemas:
+    def test_bulk_rider_ids_request_valid(self):
+        req = BulkRiderIdsRequest(user_ids=[1, 2, 3])
+        assert req.user_ids == [1, 2, 3]
+
+    def test_bulk_rider_ids_request_min_length(self):
+        import pydantic
+        with pytest.raises(pydantic.ValidationError):
+            BulkRiderIdsRequest(user_ids=[])
+
+    def test_bulk_rider_suspend_request_valid(self):
+        req = BulkRiderSuspendRequest(user_ids=[10, 20], reason="Policy violation")
+        assert req.user_ids == [10, 20]
+        assert req.reason == "Policy violation"
+
+    def test_bulk_rider_suspend_request_empty_ids(self):
+        import pydantic
+        with pytest.raises(pydantic.ValidationError):
+            BulkRiderSuspendRequest(user_ids=[], reason="reason")
+
+    def test_bulk_rider_suspend_request_empty_reason(self):
+        import pydantic
+        with pytest.raises(pydantic.ValidationError):
+            BulkRiderSuspendRequest(user_ids=[1], reason="")
+
+
+# ---------------------------------------------------------------------------
+# bulk_suspend_riders / bulk_reactivate_riders endpoints
+# ---------------------------------------------------------------------------
+
+class TestBulkSuspendRiders:
+    def _make_active_rider(self, uid: int) -> MagicMock:
+        user = MagicMock(spec=User)
+        user.id = uid
+        user.role = UserRole.RIDER
+        user.is_active = True
+        return user
+
+    def _make_suspended_rider(self, uid: int) -> MagicMock:
+        user = MagicMock(spec=User)
+        user.id = uid
+        user.role = UserRole.RIDER
+        user.is_active = False
+        return user
+
+    @pytest.mark.asyncio
+    async def test_suspend_all_active(self):
+        from app.api.v1.admin import bulk_suspend_riders
+
+        riders = [self._make_active_rider(1), self._make_active_rider(2)]
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = riders
+        mock_db.execute = AsyncMock(return_value=result_mock)
+        mock_db.commit = AsyncMock()
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderSuspendRequest(user_ids=[1, 2], reason="Terms violation")
+        with patch("app.services.audit_events.audit_admin_action", new=AsyncMock()):
+            result = await bulk_suspend_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.succeeded == [1, 2]
+        assert result.not_found == []
+        assert result.total_requested == 2
+        assert result.total_succeeded == 2
+
+    @pytest.mark.asyncio
+    async def test_suspend_skips_already_suspended(self):
+        from app.api.v1.admin import bulk_suspend_riders
+
+        riders = [self._make_suspended_rider(5)]
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = riders
+        mock_db.execute = AsyncMock(return_value=result_mock)
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderSuspendRequest(user_ids=[5], reason="Fraud")
+        result = await bulk_suspend_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.succeeded == []
+        assert result.total_succeeded == 0
+
+    @pytest.mark.asyncio
+    async def test_suspend_not_found(self):
+        from app.api.v1.admin import bulk_suspend_riders
+
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = []
+        mock_db.execute = AsyncMock(return_value=result_mock)
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderSuspendRequest(user_ids=[99, 100], reason="Test")
+        result = await bulk_suspend_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.not_found == [99, 100]
+        assert result.succeeded == []
+
+    @pytest.mark.asyncio
+    async def test_suspend_mixed_result(self):
+        from app.api.v1.admin import bulk_suspend_riders
+
+        riders = [self._make_active_rider(1), self._make_suspended_rider(2)]
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = riders
+        mock_db.execute = AsyncMock(return_value=result_mock)
+        mock_db.commit = AsyncMock()
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderSuspendRequest(user_ids=[1, 2, 3], reason="Audit")
+        with patch("app.services.audit_events.audit_admin_action", new=AsyncMock()):
+            result = await bulk_suspend_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.succeeded == [1]
+        assert result.not_found == [3]
+        assert result.total_requested == 3
+        assert result.total_succeeded == 1
+
+
+class TestBulkReactivateRiders:
+    def _make_active_rider(self, uid: int) -> MagicMock:
+        user = MagicMock(spec=User)
+        user.id = uid
+        user.role = UserRole.RIDER
+        user.is_active = True
+        return user
+
+    def _make_suspended_rider(self, uid: int) -> MagicMock:
+        user = MagicMock(spec=User)
+        user.id = uid
+        user.role = UserRole.RIDER
+        user.is_active = False
+        return user
+
+    @pytest.mark.asyncio
+    async def test_reactivate_all_suspended(self):
+        from app.api.v1.admin import bulk_reactivate_riders
+
+        riders = [self._make_suspended_rider(3), self._make_suspended_rider(4)]
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = riders
+        mock_db.execute = AsyncMock(return_value=result_mock)
+        mock_db.commit = AsyncMock()
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderIdsRequest(user_ids=[3, 4])
+        with patch("app.services.audit_events.audit_admin_action", new=AsyncMock()):
+            result = await bulk_reactivate_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.succeeded == [3, 4]
+        assert result.not_found == []
+        assert result.total_succeeded == 2
+
+    @pytest.mark.asyncio
+    async def test_reactivate_skips_already_active(self):
+        from app.api.v1.admin import bulk_reactivate_riders
+
+        riders = [self._make_active_rider(7)]
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = riders
+        mock_db.execute = AsyncMock(return_value=result_mock)
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderIdsRequest(user_ids=[7])
+        result = await bulk_reactivate_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.succeeded == []
+        assert result.total_succeeded == 0
+
+    @pytest.mark.asyncio
+    async def test_reactivate_not_found(self):
+        from app.api.v1.admin import bulk_reactivate_riders
+
+        mock_db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.scalars.return_value.all.return_value = []
+        mock_db.execute = AsyncMock(return_value=result_mock)
+
+        admin_mock = MagicMock(spec=User)
+        admin_mock.id = 99
+
+        body = BulkRiderIdsRequest(user_ids=[50])
+        result = await bulk_reactivate_riders(body=body, admin=admin_mock, db=mock_db)
+
+        assert result.not_found == [50]
+        assert result.succeeded == []

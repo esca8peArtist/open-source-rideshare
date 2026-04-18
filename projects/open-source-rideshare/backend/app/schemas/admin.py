@@ -502,6 +502,34 @@ class BulkActionResult(BaseModel):
     total_succeeded: int
 
 
+class BulkRiderIdsRequest(BaseModel):
+    user_ids: list[int] = Field(..., min_length=1, max_length=100)
+
+
+class BulkRiderSuspendRequest(BaseModel):
+    user_ids: list[int] = Field(..., min_length=1, max_length=100)
+    reason: str = Field(..., min_length=1, max_length=500)
+
+
+class SOSMapPin(BaseModel):
+    id: int
+    user_id: int
+    user_name: str | None = None
+    user_phone: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    message: str | None = None
+    ride_id: int | None = None
+    seconds_open: int
+    created_at: datetime
+
+
+class SOSActiveMapResponse(BaseModel):
+    pins: list[SOSMapPin]
+    total: int
+    fetched_at: datetime
+
+
 class AdminUserPreferencesResponse(BaseModel):
     """Admin view of a single user's full notification preference map."""
 
