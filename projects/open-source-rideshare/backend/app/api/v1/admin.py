@@ -1,8 +1,9 @@
 import json
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, case, cast, Date, extract, func, or_, select
+from sqlalchemy import and_, case, cast, Date, extract, func, literal_column, not_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -25,6 +26,7 @@ from app.models.driver_shift import DriverShift, ShiftStatus
 from app.models.feedback import Dispute, DisputeStatus, DisputeType, RideFeedback
 from app.models.ride import CancellationCategory, Ride, RideStatus
 from app.models.safety import SOSAlert, SOSStatus
+from app.models.service_area import ServiceArea
 from app.models.user import User, UserRole
 from app.models.verification import DriverDocument, VerificationStatus
 from app.models.payment import Payment, PaymentStatus, PaymentType
@@ -103,6 +105,9 @@ from app.schemas.admin import (
     TripAnomalyListResponse,
     UserSearchResponse,
     UserSearchResult,
+    GeofenceViolationEntry,
+    GeofenceViolationListResponse,
+    GeofenceViolationType,
 )
 from app.schemas.service_area import (
     ServiceAreaCreate,
@@ -3806,4 +3811,146 @@ async def broadcast_notification(
         total_failed=failed,
         channels=requested_channels,
         sent_at=datetime.now(timezone.utc),
+    )
+
+
+# ---- Geofence Violations ----
+
+
+def _classify_violation(pickup_covered: bool, dropoff_covered: bool) -> GeofenceViolationType:
+    """Classify a ride's geofence violation based on coverage flags.
+
+    Both uncovered → both_outside.
+    Only pickup uncovered → pickup_outside.
+    Only dropoff uncovered → dropoff_outside.
+    """
+    if not pickup_covered and not dropoff_covered:
+        return GeofenceViolationType.BOTH_OUTSIDE
+    if not pickup_covered:
+        return GeofenceViolationType.PICKUP_OUTSIDE
+    return GeofenceViolationType.DROPOFF_OUTSIDE
+
+
+@router.get("/geofence/violations", response_model=GeofenceViolationListResponse)
+async def list_geofence_violations(
+    db: AsyncSession = Depends(get_db),
+    period: Literal["week", "month", "year", "all"] = Query("month"),
+    violation_type: Literal["all", "pickup_outside", "dropoff_outside", "both_outside"] = Query("all"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+):
+    """Return rides whose pickup or dropoff location falls outside all active service areas.
+
+    Violation types:
+    - pickup_outside: pickup location is outside every active service area
+    - dropoff_outside: dropoff location is outside every active service area
+    - both_outside: both pickup and dropoff are outside every active service area
+    """
+    from geoalchemy2.functions import ST_Within
+
+    # Fast-path: if there are no active service areas, nothing can violate geofence rules
+    sa_count_result = await db.execute(
+        select(func.count()).select_from(ServiceArea).where(ServiceArea.is_active.is_(True))
+    )
+    service_areas_active = sa_count_result.scalar() or 0
+    if service_areas_active == 0:
+        return GeofenceViolationListResponse(
+            violations=[],
+            total=0,
+            page=page,
+            per_page=per_page,
+            service_areas_active=0,
+        )
+
+    # Period filter
+    now = datetime.now(timezone.utc)
+    period_start: datetime | None = None
+    if period == "week":
+        period_start = now - timedelta(days=7)
+    elif period == "month":
+        period_start = now - timedelta(days=30)
+    elif period == "year":
+        period_start = now - timedelta(days=365)
+
+    # Correlated EXISTS subqueries: True when the ride's location IS within at least one active SA
+    pickup_in_sa = (
+        select(literal_column("1"))
+        .select_from(ServiceArea)
+        .where(
+            ServiceArea.is_active.is_(True),
+            ST_Within(Ride.pickup_location, ServiceArea.boundary),
+        )
+        .correlate(Ride)
+        .exists()
+    )
+    dropoff_in_sa = (
+        select(literal_column("1"))
+        .select_from(ServiceArea)
+        .where(
+            ServiceArea.is_active.is_(True),
+            ST_Within(Ride.dropoff_location, ServiceArea.boundary),
+        )
+        .correlate(Ride)
+        .exists()
+    )
+
+    # Base query: rides WHERE at least one location is outside any active SA
+    base_stmt = (
+        select(
+            Ride,
+            pickup_in_sa.label("pickup_covered"),
+            dropoff_in_sa.label("dropoff_covered"),
+        )
+        .where(or_(not_(pickup_in_sa), not_(dropoff_in_sa)))
+    )
+    if period_start is not None:
+        base_stmt = base_stmt.where(Ride.requested_at >= period_start)
+
+    # violation_type filter — translate string to classification and apply as a HAVING-style subfilter.
+    # We use a CASE expression in the WHERE clause to compare per-row classification.
+    if violation_type != "all":
+        # Map the requested type to its (pickup_covered, dropoff_covered) pattern
+        _vtype_filter = {
+            "both_outside": and_(not_(pickup_in_sa), not_(dropoff_in_sa)),
+            "pickup_outside": and_(not_(pickup_in_sa), dropoff_in_sa),
+            "dropoff_outside": and_(pickup_in_sa, not_(dropoff_in_sa)),
+        }
+        base_stmt = base_stmt.where(_vtype_filter[violation_type])
+
+    # Total count
+    count_result = await db.execute(
+        select(func.count()).select_from(base_stmt.subquery())
+    )
+    total = count_result.scalar() or 0
+
+    # Paginated rows
+    offset = (page - 1) * per_page
+    rows_result = await db.execute(
+        base_stmt.order_by(Ride.requested_at.desc()).offset(offset).limit(per_page)
+    )
+    rows = rows_result.all()
+
+    violations = []
+    for row in rows:
+        ride: Ride = row.Ride
+        vtype = _classify_violation(bool(row.pickup_covered), bool(row.dropoff_covered))
+        violations.append(
+            GeofenceViolationEntry(
+                ride_id=ride.id,
+                rider_id=ride.rider_id,
+                driver_id=ride.driver_id,
+                pickup_address=ride.pickup_address,
+                dropoff_address=ride.dropoff_address,
+                violation_type=vtype,
+                status=ride.status.value,
+                requested_at=ride.requested_at,
+            )
+        )
+
+    return GeofenceViolationListResponse(
+        violations=violations,
+        total=total,
+        page=page,
+        per_page=per_page,
+        service_areas_active=service_areas_active,
     )

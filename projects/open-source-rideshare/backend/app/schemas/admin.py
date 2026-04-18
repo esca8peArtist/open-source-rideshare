@@ -770,3 +770,33 @@ class BroadcastResult(BaseModel):
     total_failed: int
     channels: list[str]
     sent_at: datetime
+
+
+# ---- Geofence Violations ----
+
+
+class GeofenceViolationType(str, enum.Enum):
+    PICKUP_OUTSIDE = "pickup_outside"
+    DROPOFF_OUTSIDE = "dropoff_outside"
+    BOTH_OUTSIDE = "both_outside"
+
+
+class GeofenceViolationEntry(BaseModel):
+    ride_id: int
+    rider_id: int
+    driver_id: int | None = None
+    pickup_address: str
+    dropoff_address: str
+    violation_type: GeofenceViolationType
+    status: str
+    requested_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class GeofenceViolationListResponse(BaseModel):
+    violations: list[GeofenceViolationEntry]
+    total: int
+    page: int
+    per_page: int
+    service_areas_active: int
