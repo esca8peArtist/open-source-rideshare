@@ -33,6 +33,7 @@ class PromoCode(Base):
     is_referral: Mapped[bool] = mapped_column(default=False)  # Auto-generated referral code
 
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expiry_notif_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     redemptions = relationship("PromoRedemption", back_populates="promo_code")

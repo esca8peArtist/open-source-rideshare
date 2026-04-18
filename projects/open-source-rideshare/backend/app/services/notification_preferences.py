@@ -43,6 +43,7 @@ _ALL_NOTIFICATION_TYPES: list[str] = [
     "ride_reminder",
     "fare_split_request",
     "promo_applied",
+    "promo_expiring",
     "background_check_approved",
     "background_check_action_required",
 ]

@@ -139,6 +139,16 @@ def fare_split_request(initiator_name: str = "Someone", amount: float | str = ""
     )
 
 
+def promo_expiring(code: str = "", hours_left: int | None = None, **kw) -> TemplateResult:
+    time_part = f" in {hours_left} hour{'s' if hours_left != 1 else ''}" if hours_left else " soon"
+    body = (
+        f"Your promo code '{code}' expires{time_part}! Use it on your next ride before it's gone."
+        if code
+        else f"A promo code on your account expires{time_part}. Use it before it's gone."
+    )
+    return ("Promo code expiring", body, _PUSH_SMS)
+
+
 def promo_applied(code: str = "", discount: str = "", **kw) -> TemplateResult:
     return (
         "Promo code applied",
@@ -267,6 +277,7 @@ TEMPLATES: dict[str, callable] = {
     "ride_reminder": ride_reminder,
     "fare_split_request": fare_split_request,
     "promo_applied": promo_applied,
+    "promo_expiring": promo_expiring,
     NotificationType.RIDE_IN_PROGRESS: ride_in_progress,
     NotificationType.RIDE_ASSIGNED: ride_assigned,
     NotificationType.RIDE_COMPLETED_DRIVER: ride_completed_driver,

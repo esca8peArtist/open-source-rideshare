@@ -43,6 +43,7 @@ class NotificationType(str, enum.Enum):
     RIDE_REMINDER = "ride_reminder"
     FARE_SPLIT_REQUEST = "fare_split_request"
     PROMO_APPLIED = "promo_applied"
+    PROMO_EXPIRING = "promo_expiring"
     BACKGROUND_CHECK_APPROVED = "background_check_approved"
     BACKGROUND_CHECK_ACTION_REQUIRED = "background_check_action_required"
     RIDE_IN_PROGRESS = "ride_in_progress"
@@ -255,7 +256,7 @@ async def filter_channels_by_preferences(
         return []
     if notification_type in payment_types and not prefs.payment_updates:
         return []
-    if notification_type == NotificationType.PROMO_APPLIED and not prefs.promo_updates:
+    if notification_type in {NotificationType.PROMO_APPLIED, NotificationType.PROMO_EXPIRING} and not prefs.promo_updates:
         return []
 
     # Filter individual channels

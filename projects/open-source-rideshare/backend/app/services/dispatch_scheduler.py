@@ -372,6 +372,88 @@ async def send_scheduled_ride_reminders(*, now: datetime | None = None) -> int:
     return sent
 
 
+async def notify_expiring_promos(*, now: datetime | None = None, hours_ahead: int = 48) -> int:
+    """Notify riders with remaining uses on promo codes expiring within hours_ahead hours.
+
+    Targets users who have redeemed a promo at least once but still have uses
+    remaining before it expires. Idempotent: each promo fires at most one batch
+    via PromoCode.expiry_notif_sent_at.
+
+    Returns the number of notifications sent.
+    """
+    from sqlalchemy import func as sql_func
+
+    from app.db.database import async_session
+    from app.models.promo import PromoCode, PromoRedemption
+    from app.models.user import User
+    from app.services.notifications import NotificationType, send_notification_with_preferences
+
+    if now is None:
+        now = datetime.now(timezone.utc)
+
+    cutoff = now + timedelta(hours=hours_ahead)
+    sent = 0
+
+    async with async_session() as db:
+        result = await db.execute(
+            select(PromoCode).where(
+                PromoCode.is_active == True,  # noqa: E712
+                PromoCode.expires_at.isnot(None),
+                PromoCode.expires_at > now,
+                PromoCode.expires_at <= cutoff,
+                PromoCode.expiry_notif_sent_at.is_(None),
+            )
+        )
+        promos = result.scalars().all()
+
+        for promo in promos:
+            # Users who used this promo but still have remaining uses
+            redemption_result = await db.execute(
+                select(PromoRedemption.user_id, sql_func.count(PromoRedemption.id).label("cnt"))
+                .where(PromoRedemption.promo_code_id == promo.id)
+                .group_by(PromoRedemption.user_id)
+                .having(sql_func.count(PromoRedemption.id) < promo.max_uses_per_user)
+            )
+            user_rows = redemption_result.all()
+
+            hours_left = max(1, int((promo.expires_at - now).total_seconds() / 3600))
+
+            for row in user_rows:
+                user_id = row.user_id
+                user_result = await db.execute(select(User).where(User.id == user_id))
+                user = user_result.scalar_one_or_none()
+
+                try:
+                    await send_notification_with_preferences(
+                        user_id=user_id,
+                        notification_type=NotificationType.PROMO_EXPIRING,
+                        db=db,
+                        phone=user.phone if user else None,
+                        email=user.email if user else None,
+                        code=promo.code,
+                        hours_left=hours_left,
+                    )
+                    sent += 1
+                except Exception:
+                    logger.exception(
+                        "Failed to send expiry notification for promo %d to user %d",
+                        promo.id,
+                        user_id,
+                    )
+
+            promo.expiry_notif_sent_at = now
+            await db.commit()
+            logger.info(
+                "Promo expiry notifications sent: promo='%s' (id=%d) expires=%s notified=%d users",
+                promo.code,
+                promo.id,
+                promo.expires_at,
+                len(user_rows),
+            )
+
+    return sent
+
+
 async def _scheduler_loop() -> None:
     """Run the dispatch check on a fixed interval until cancelled."""
     interval = settings.dispatch_check_interval_seconds
@@ -414,6 +496,13 @@ async def _scheduler_loop() -> None:
                 logger.info("No-show cycle complete: %d ride(s) auto-cancelled", no_shows)
         except Exception:
             logger.exception("Driver no-show detection cycle failed")
+
+        try:
+            expiry_sent = await notify_expiring_promos()
+            if expiry_sent:
+                logger.info("Promo expiry cycle complete: %d notification(s) sent", expiry_sent)
+        except Exception:
+            logger.exception("Promo expiry notification cycle failed")
 
         await asyncio.sleep(interval)
 

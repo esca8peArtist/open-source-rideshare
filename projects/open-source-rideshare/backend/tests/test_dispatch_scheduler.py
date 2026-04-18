@@ -11,6 +11,7 @@ from app.services.dispatch_scheduler import (
     _retry_delay,
     _scheduler_loop,
     dispatch_due_rides,
+    notify_expiring_promos,
     retry_unmatched_rides,
     start_scheduler,
     stop_scheduler,
@@ -733,3 +734,198 @@ class TestSchedulerLoop:
                 await _scheduler_loop()
 
         assert retry_count == 3
+
+
+# ---------------------------------------------------------------------------
+# Helpers for notify_expiring_promos tests
+# ---------------------------------------------------------------------------
+
+def _make_promo(promo_id, code, expires_at, max_uses_per_user=2, expiry_notif_sent_at=None):
+    promo = MagicMock()
+    promo.id = promo_id
+    promo.code = code
+    promo.expires_at = expires_at
+    promo.max_uses_per_user = max_uses_per_user
+    promo.expiry_notif_sent_at = expiry_notif_sent_at
+    return promo
+
+
+def _make_user(user_id, phone=None, email=None):
+    user = MagicMock()
+    user.id = user_id
+    user.phone = phone
+    user.email = email
+    return user
+
+
+def _make_row(user_id, cnt):
+    row = MagicMock()
+    row.user_id = user_id
+    row.cnt = cnt
+    return row
+
+
+def _build_expiring_promos_db(promos, redemption_rows_by_promo, users_by_id):
+    """Build a mock db whose execute() returns appropriate results per call order.
+
+    Call sequence per promo:
+      1. Initial promo query
+      2. For each promo: redemption query
+      3. For each user row: user load query
+    """
+    call_iter = iter(_build_execute_sequence(promos, redemption_rows_by_promo, users_by_id))
+
+    async def execute_side_effect(*args, **kwargs):
+        result = next(call_iter)
+        return result
+
+    mock_db = AsyncMock()
+    mock_db.execute = AsyncMock(side_effect=execute_side_effect)
+    mock_db.commit = AsyncMock()
+
+    mock_session_ctx = AsyncMock()
+    mock_session_ctx.__aenter__ = AsyncMock(return_value=mock_db)
+    mock_session_ctx.__aexit__ = AsyncMock(return_value=False)
+    mock_session_factory = MagicMock(return_value=mock_session_ctx)
+    return mock_session_factory, mock_db
+
+
+def _scalar_result(items):
+    mock_scalars = MagicMock()
+    mock_scalars.all.return_value = items
+    result = MagicMock()
+    result.scalars.return_value = mock_scalars
+    return result
+
+
+def _rows_result(rows):
+    result = MagicMock()
+    result.all.return_value = rows
+    return result
+
+
+def _scalar_one_result(item):
+    result = MagicMock()
+    result.scalar_one_or_none.return_value = item
+    return result
+
+
+def _build_execute_sequence(promos, redemption_rows_by_promo, users_by_id):
+    """Yield mock results in the order notify_expiring_promos() will call db.execute."""
+    yield _scalar_result(promos)
+    for promo in promos:
+        rows = redemption_rows_by_promo.get(promo.id, [])
+        yield _rows_result(rows)
+        for row in rows:
+            yield _scalar_one_result(users_by_id.get(row.user_id))
+
+
+class TestNotifyExpiringPromos:
+    """Tests for notify_expiring_promos."""
+
+    @pytest.mark.asyncio
+    async def test_no_expiring_promos(self):
+        """Returns 0 when no promos are expiring within the window."""
+        mock_sf, _ = _build_expiring_promos_db([], {}, {})
+
+        with patch("app.db.database.async_session", mock_sf), \
+             patch("app.services.notifications.send_notification_with_preferences", new_callable=AsyncMock):
+            count = await notify_expiring_promos(now=NOW)
+
+        assert count == 0
+
+    @pytest.mark.asyncio
+    async def test_notifies_user_with_remaining_uses(self):
+        """A user with one redemption and max_uses_per_user=2 gets notified."""
+        promo = _make_promo(1, "SUMMER10", NOW + timedelta(hours=24), max_uses_per_user=2)
+        user = _make_user(99, phone="+15550001111", email="rider@example.com")
+        rows = [_make_row(99, 1)]
+
+        mock_sf, mock_db = _build_expiring_promos_db([promo], {1: rows}, {99: user})
+
+        with patch("app.db.database.async_session", mock_sf), \
+             patch("app.services.notifications.send_notification_with_preferences",
+                   new_callable=AsyncMock, return_value=True) as mock_notify:
+            count = await notify_expiring_promos(now=NOW)
+
+        assert count == 1
+        mock_notify.assert_called_once()
+        call_kwargs = mock_notify.call_args.kwargs
+        assert call_kwargs["user_id"] == 99
+        assert call_kwargs["code"] == "SUMMER10"
+        assert call_kwargs["hours_left"] >= 1
+        assert promo.expiry_notif_sent_at == NOW
+
+    @pytest.mark.asyncio
+    async def test_no_redemptions_sends_no_user_notifications(self):
+        """A promo with zero redemptions sends no notifications but marks promo notified."""
+        promo = _make_promo(1, "NEWCODE", NOW + timedelta(hours=10), max_uses_per_user=1)
+
+        mock_sf, mock_db = _build_expiring_promos_db([promo], {1: []}, {})
+
+        with patch("app.db.database.async_session", mock_sf), \
+             patch("app.services.notifications.send_notification_with_preferences",
+                   new_callable=AsyncMock) as mock_notify:
+            count = await notify_expiring_promos(now=NOW)
+
+        assert count == 0
+        mock_notify.assert_not_called()
+        assert promo.expiry_notif_sent_at == NOW
+
+    @pytest.mark.asyncio
+    async def test_multiple_users_notified(self):
+        """Multiple users with remaining uses on the same promo all get notified."""
+        promo = _make_promo(1, "MULTI", NOW + timedelta(hours=36), max_uses_per_user=3)
+        users = {10: _make_user(10), 20: _make_user(20), 30: _make_user(30)}
+        rows = [_make_row(10, 1), _make_row(20, 2), _make_row(30, 1)]
+
+        mock_sf, _ = _build_expiring_promos_db([promo], {1: rows}, users)
+
+        with patch("app.db.database.async_session", mock_sf), \
+             patch("app.services.notifications.send_notification_with_preferences",
+                   new_callable=AsyncMock, return_value=True):
+            count = await notify_expiring_promos(now=NOW)
+
+        assert count == 3
+
+    @pytest.mark.asyncio
+    async def test_hours_left_floored_at_one(self):
+        """hours_left is at least 1 even when expiry is imminent."""
+        promo = _make_promo(1, "FLASH", NOW + timedelta(minutes=30), max_uses_per_user=2)
+        rows = [_make_row(5, 1)]
+
+        mock_sf, _ = _build_expiring_promos_db([promo], {1: rows}, {5: _make_user(5)})
+
+        with patch("app.db.database.async_session", mock_sf), \
+             patch("app.services.notifications.send_notification_with_preferences",
+                   new_callable=AsyncMock, return_value=True) as mock_notify:
+            await notify_expiring_promos(now=NOW)
+
+        call_kwargs = mock_notify.call_args.kwargs
+        assert call_kwargs["hours_left"] == 1
+
+    @pytest.mark.asyncio
+    async def test_notification_exception_does_not_abort_batch(self):
+        """If one notification fails, the rest still send and the promo is still marked."""
+        promo = _make_promo(1, "BATCH", NOW + timedelta(hours=20), max_uses_per_user=3)
+        users = {1: _make_user(1), 2: _make_user(2)}
+        rows = [_make_row(1, 1), _make_row(2, 1)]
+
+        mock_sf, _ = _build_expiring_promos_db([promo], {1: rows}, users)
+
+        call_count = 0
+
+        async def flaky_notify(**kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise RuntimeError("push provider down")
+            return True
+
+        with patch("app.db.database.async_session", mock_sf), \
+             patch("app.services.notifications.send_notification_with_preferences",
+                   side_effect=flaky_notify):
+            count = await notify_expiring_promos(now=NOW)
+
+        assert count == 1  # second call succeeded
+        assert promo.expiry_notif_sent_at == NOW
