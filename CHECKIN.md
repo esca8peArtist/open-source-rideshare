@@ -9,205 +9,25 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–315
+**Sessions run**: 313–317
 
-### Accomplished (Session 315)
+### Accomplished (Session 317)
 
-#### open-source-rideshare — Driver per-ride earnings breakdown COMPLETE (commit `bc3cf89`)
+#### open-source-rideshare — Driver mileage report COMPLETE (commit `9c807d6`)
 
-New driver-scoped endpoint: `GET /rides/{ride_id}/driver-earnings` — shows how a completed ride's fare decomposes from the driver's perspective.
+New endpoint: `GET /driver/me/mileage-report?year=2026[&month=4]`
 
-**Response shape**:
-- `base_fare` / `distance_earnings` / `time_earnings` — fare components scaled to match `actual_fare` (surge/demand multipliers aren't stored per-ride; scaling keeps the math exact)
-- `subtotal` — pre-platform-deduction amount
-- `platform_fee` — platform's cut (derived from `actual_fare / (1 + pct/100)`)
-- `net_fare` — driver's take from the fare
-- `tip` — rider tip
-- `total_driver_earnings` — net_fare + tip
+Drivers can now export their total kilometres/miles driven per year or month, with an IRS standard mileage deduction estimate. Useful for Schedule C tax filings (self-employed gig workers can deduct ~$0.70/mile for 2025).
 
-Authorization: `require_driver` + ride must be assigned to the authenticated driver. Returns 403 for wrong driver, 404 for missing ride, 409 if ride is not completed or fare is missing.
+**Response includes**:
+- `total_km`, `total_miles` — aggregate for the period
+- `irs_rate_per_mile`, `irs_deduction_usd` — deduction estimate at current IRS rate
+- `monthly_breakdown` — 12-month array when month param omitted (empty for single-month view)
+- `rides_completed`, `as_of`, `driver_id`
 
-18 new tests. **3,764 total passing.** Branch pushed to GitHub.
+Full-year view: includes 12-month breakdown so drivers can see which months they drove most. Single-month view: fast query scoped to one month. Only completed rides with recorded `distance_km` are counted.
 
----
-
-### Accomplished (Session 314)
-
-#### open-source-rideshare — Surge status endpoint COMPLETE (commit `f258f5c`)
-
-New public endpoint: `GET /surge/current?lat={lat}&lng={lng}` — unauthenticated, designed for the rider app to show a surge banner before the rider enters a destination. Lighter than fare-preview: no route computation, no fare math. Checks two signals independently:
-
-- **Zone surge**: DB query against admin-defined zones (geography + time-of-day rules). Returns the highest applicable zone multiplier and zone name.
-- **Demand surge**: Redis real-time supply/demand ratio for the ~5 km geohash area.
-
-Response: `is_surge_active`, `zone_multiplier`, `demand_multiplier`, `combined_multiplier`, `zone_name`, `message` (plain-English explanation). Fallback-safe: DB failure → zone 1.0; Redis failure → demand 1.0. Always returns 200.
-
-17 new tests. **3,746 total passing.** Branch pushed to GitHub.
-
----
-
-### Accomplished (Session 313)
-
-#### resistance-research — April 18 monitoring brief COMPLETE (`monitoring/2026-04-18-results.md`)
-
-**White House ballroom — Branch A materialized** (assessed as least likely in prior brief):
-- Leon issued clarification order April 16, before midnight stay expiry
-- Split decision: above-ground ballroom construction **halted**; below-ground (bunkers, military installations, medical facilities) **permitted**
-- Leon explicitly rejected administration's "tip to tail" security argument: "National security is not a blank check to proceed with otherwise unlawful activity."
-- Leon stayed his own new order ~one week (to ~April 23-24) for appellate review
-- Administration filed D.C. Circuit notice of appeal same day; Trump publicly criticized ruling April 17
-- No SCOTUS filing confirmed as of April 18; contempt scenario (Branch C) did not materialize
-
-**Other threads — no changes from April 17**:
-- Abrego Garcia / Xinis: DOJ brief April 20, hearing April 28 on schedule
-- Section 122 / CIT (Barnett panel): deliberating, no ruling
-- Nashville / Crenshaw: 3+ weeks of silence, no ruling
-
-**Next mandatory monitoring passes**:
-- April 20: CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing)
-- April 23-24: ballroom SCOTUS watch window (Leon stay expires)
-- April 28: Xinis hearing
-
----
-
-### Accomplished (Session 312)
-
-#### open-source-rideshare — Rider live driver tracking + price sensitivity analytics (commits `df86a32`, `cea499d`)
-
-Two new features on `feature/rider-emergency-safety`. Total: **3,729 unit-passing tests**.
-
-**Rider live driver tracking** — `GET /rides/{ride_id}/driver-location`
-Rider polls this to see their assigned driver's exact GPS position on the pre-pickup map. Works during MATCHED, DRIVER_EN_ROUTE, and ARRIVED phases. Returns exact (unfuzzed) coordinates — access is restricted to the ride's own rider so no privacy concern. Includes `distance_to_pickup_m` (haversine) so the app can show "500m away." Null lat/lng returned gracefully if driver hasn't pushed location yet. 13 new tests.
-
-**Price sensitivity analytics** — `GET /admin/surge-analytics/price-sensitivity?days=30`
-Admin endpoint correlating PRICE_TOO_HIGH cancellations with surge pricing activity. Returns:
-- `total_cancellations` / `price_cancellations` / `price_cancellation_rate` for the window
-- `total_surge_events` (from the `SurgePricingEvent` log)
-- `daily_breakdown`: per-day view with both PRICE_TOO_HIGH cancellations and surge event counts side-by-side
-
-Use case: if price_cancellation_rate spikes on high-surge days, that's a signal to lower the demand or zone multiplier caps. 12 new tests.
-
----
-
-### Accomplished (Session 311)
-
-#### open-source-rideshare — Admin surge analytics COMPLETE (commit `ce724d0`)
-
-Operators can now see exactly when and where surge pricing fires, at what multipliers, and under what supply/demand conditions.
-
-**New data layer**: `SurgePricingEvent` table (migration `o9p0q1r2s3t4`). Every fare preview that detects active surge writes a row: lat/lon, geohash, surge zone id/name, zone multiplier, demand multiplier, demand count, supply count, combined multiplier, timestamp. Written fire-and-forget from `get_fare_preview()` — any exception is swallowed, rider is never blocked.
-
-**New admin endpoints** (`GET /admin/surge-analytics/*`):
-- `/summary?days=7`: platform-level — total events, zone/demand/combined counts, avg combined multiplier, peak UTC hour, top zone by volume
-- `/zones?days=30`: per-zone breakdown — event count, avg multiplier, avg demand/supply per zone, ordered by frequency
-- `/demand-heatmap?days=7&limit=50`: geohash cells (~4.9km²) ranked by surge frequency — identifies hotspots where demand pricing most often fires, useful for admin zone calibration
-
-- 35 new tests — **3,704 total unit-passing**
-
----
-
-### Accomplished (Session 310)
-
-#### open-source-rideshare — Fare preview / surge pricing transparency COMPLETE (commit `c1ca027`)
-
-New public endpoint: `GET /pricing/fare-preview` — no authentication required. Riders see the full pricing breakdown before confirming a trip, with both surge signals disclosed separately. 38 new tests — 3,669 total.
-
----
-
-### Accomplished (Sessions 306–309, archived)
-
-#### open-source-rideshare — No-show rate tracking + rider auto-rebooking COMPLETE (commit `f83fa00`)
-
-Two paths for handling driver no-shows:
-
-**Manual report** — `POST /rides/{ride_id}/report-driver-no-show`. Available when ride is in MATCHED, DRIVER_EN_ROUTE, or ARRIVED. One report per ride (409 if already done). Result: cancelled with `DRIVER_NO_SHOW` category, Stripe refund issued on any completed payment, push + SMS to rider, driver returned to available pool.
-
-**Automated detection** — new `detect_driver_no_shows()` in scheduler loop (every 30s). Finds ARRIVED rides where `arrived_at` is older than `driver_no_show_threshold_minutes` (default 15). Same cancel + refund + notify path.
-
-**Bonus**: `arrived_at` timestamp is now set every time a driver marks ARRIVED — was previously untracked. Useful for analytics and required for the automated detector.
-
-- 43 new tests — **3,571 total passing**
-- Config: `OPENRIDE_DRIVER_NO_SHOW_THRESHOLD_MINUTES` (default 15)
-
----
-
-### Accomplished (Session 306)
-
-#### open-source-rideshare — Structured cancellation categories + rider cancel rate tracking COMPLETE (commit `5830c3b`)
-
-Cancellation flow now has three improvements:
-
-**Structured cancellation reasons** — `CancellationCategory` enum (13 values). Riders pick from WRONG_PICKUP, WAIT_TOO_LONG, FOUND_OTHER_RIDE, PLANS_CHANGED, DRIVER_NOT_ACCEPTABLE, PRICE_TOO_HIGH, SAFETY_CONCERN, OTHER. Drivers pick from VEHICLE_ISSUE, RIDER_NO_SHOW, UNABLE_TO_LOCATE, EMERGENCY, DRIVER_OTHER. Free-text `reason` note still accepted alongside. Both stored on the ride row (`cancellation_category`, `cancelled_by`).
-
-**Rider cancel rate tracking** — new `rider_cancellation_stats` table (one row per rider). Tracks `total_rides_requested`, `total_cancellations`, `cancellations_in_grace_period`, `cancellations_with_fee`, `cancellation_rate`. Updated fire-and-forget on every rider cancel — never blocks the response.
-
-**New endpoints**:
-- `GET /riders/me/cancel-stats` — rider views own stats (returns zeroed defaults if no rides yet)
-- `GET /admin/riders/{rider_id}/cancel-stats` — admin views any rider (404 if no row)
-
-**37 new tests** — **3,528 total unit-passing**
-
-### Accomplished (Session 305)
-
-#### open-source-rideshare — Trip sharing link COMPLETE (commit `57e6f6d`)
-Riders can now generate a shareable link (`POST /safety/share`) that lets friends and family track the ride in real-time — no login required to view. The shared view now includes **live driver GPS coordinates** (lat/lng/updated_at) pulled from `DriverProfile.current_location`, so the watcher sees exactly where the driver is as location updates come in.
-
-New functionality over the existing stub:
-- `SharedTripView` extended with `driver_lat`, `driver_lng`, `driver_location_updated_at`
-- `GET /safety/share` — list caller's active (non-expired) share tokens
-- `DELETE /safety/share/{token}` — revoke a token (creator only; 403 for wrong user, 404 if missing)
-- `get_shared_trip_detail` service — ride + live driver coords in one DB round-trip
-- `revoke_trip_share_token` / `list_trip_share_tokens` service functions
-- **18 new tests** — **3,491 total unit-passing**
-
-### Accomplished (Session 304)
-
-#### open-source-rideshare — Driver pickup verification COMPLETE (commit `f4a7a80`)
-Rider can now confirm the driver's photo and vehicle plate match before entering the vehicle. Only available when the driver has marked the ride ARRIVED. A mismatch is logged and flagged for ops review — but the rider retains full autonomy over whether to enter. Subsequent calls overwrite the previous result (last-write-wins) so the rider can correct a mistaken tap.
-
-- `app/models/ride.py` — `pickup_verification_at`, `driver_photo_confirmed`, `plate_confirmed` columns
-- `app/db/migrations/versions/i3j4k5l6m7n8_add_pickup_verification.py` — migration
-- `app/schemas/ride.py` — `PickupVerificationRequest`, `PickupVerificationResponse`
-- `app/services/pickup_verification.py` — `verify_pickup()` service
-- `app/api/v1/rides.py` — `POST /rides/{ride_id}/verify-pickup`
-- **18 new tests** — **3,473 total unit-passing**
-
-### Accomplished (Session 303)
-
-#### open-source-rideshare — TRIP_END trusted contact notification COMPLETE (commit `a1ac332`)
-Closed the last gap in trusted contact lifecycle coverage. `complete_ride` now calls `send_trusted_contact_notifications(TRIP_END)` — fire-and-forget, never blocks ride completion.
-
-- `app/api/v1/rides.py` — TRIP_END wired into `complete_ride` after audit, same pattern as TRIP_START
-- **2 new tests** — **3,455 total unit-passing**
-
-All three trusted contact notification types are now wired: PANIC_ALERT (panic endpoint), TRIP_START (start_ride), TRIP_END (complete_ride).
-
-### Accomplished (Session 302)
-
-#### open-source-rideshare — Route deviation detection COMPLETE (commit `3125230`)
-When a driver submits a location update during an IN_PROGRESS ride, the platform now checks cross-track distance (perpendicular distance from driver's position to the pickup→dropoff line). If deviation exceeds 1 km and the ride hasn't already been flagged, the rider receives a push+SMS alert and the flag is set (idempotent — fires once per ride).
-
-- `route_deviation.py`: cross-track geometry + `check_and_notify_deviation` fire-and-forget
-- `Ride.route_deviation_flagged_at` column + migration
-- `GET /{ride_id}/route-deviation-status` — rider/driver-scoped deviation check endpoint
-- `ROUTE_DEVIATION` NotificationType in ride_types (respects rider preferences)
-- `notify_route_deviation` dispatcher + `route_deviation` template (push+SMS)
-- `beckn-protocol.md`: Beckn/ONDC interoperability research (design notes for community)
-- **30 new tests** — **3,449 total unit-passing**
-
-#### open-source-rideshare — Trusted contact notification wiring COMPLETE (commit `ede14a4`)
-`send_trusted_contact_notifications` existed but was never called. Closed two gaps:
-
-- Panic button (`POST /riders/me/panic`) → now fires `PANIC_ALERT` to contacts with `notify_on_panic=True` — fire-and-forget, failure logged but never blocks the alert
-- Trip start (`POST /rides/{id}/start`) → now fires `TRIP_START` to contacts with `notify_on_trip_start=True` — fire-and-forget, silent failure so ride is never blocked
-
-**4 new tests** — **3,453 total unit-passing**
-
-### Accomplished (Sessions 300–301)
-
-#### open-source-rideshare — Driver live location + ride status notifications COMPLETE
-- Driver location: `PUT/GET /drivers/me/location`, `GET /riders/nearby-drivers`, admin views (42 tests)
-- Ride status notifications: 3 new types (RIDE_IN_PROGRESS, RIDE_ASSIGNED, RIDE_COMPLETED_DRIVER), 3 templates, 3 dispatchers, hooks in start/accept/complete endpoints (45 tests)
+24 new tests. **3,812 total passing.** Branch pushed to GitHub.
 
 ---
 
@@ -223,29 +43,34 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 6. Take 5 photos (brief in `etsy-listing-modrun.md`)
 7. Go live on Etsy — copy is already done in `etsy-listing-modrun.md`
 
-**op-ed submission — action needed by April 22 (5 days away)**
+**op-ed submission — action needed by April 22 (2 days away)**
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — branch review queue**
-`feature/rider-emergency-safety` (21 commits, 3,746 tests) pushed to GitHub. 4 branches total await PR review: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety.
+`feature/rider-emergency-safety` (24 commits, 3,812 tests) pushed to GitHub. 4 branches total await PR review.
 
-**Stockbot — paper trading cycle logs (ongoing)**
-Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
+**stockbot — Paper Trading Dashboard is live**
+Go to `/paper-trading` in the web app to monitor your 4 sessions. Equity curve, per-session P&L, and cycle log all there. Auto-refreshes every 30s.
 
-**April 20 results framework**
-`projects/resistance-research/monitoring/2026-04-20-results-framework.md` is pre-drafted. After April 20 events land (CAPE Phase 1, Abrego Garcia DOJ brief), drop outcomes in INBOX.md — next session fills the framework.
+**April 20 monitoring — fill it in when events land**
+April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results in INBOX.md — next session writes the monitoring brief.
 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
-2. **resistance-research**: Fill April 20 results framework (Apr 20 evening — CAPE Phase 1 + Abrego Garcia DOJ brief results). Tomorrow or Apr 20.
-3. **open-source-rideshare**: New feature branch OR extend current branch with payout schedule estimate / driver deductions view.
-4. **stockbot**: Share cycle logs to unblock model performance assessment.
+1. **resistance-research**: April 20 monitoring brief (April 20 evening — CAPE Phase 1 launch + DOJ Abrego Garcia brief). April 22: op-ed submission deadline.
+2. **mfg-farm**: Test print action.
+3. **open-source-rideshare**: Continue driver features OR start new feature branch.
+4. **stockbot**: Check paper trading performance if cycle logs are visible.
 
 ---
 
 ### History
+
+#### Accomplished (Sessions 313–316)
+- **resistance-research**: April 18 monitoring brief — Branch A (ballroom halted above-ground, permitted below-ground), Leon stay ~April 23-24, D.C. Circuit appeal filed.
+- **stockbot**: Paper Trading Dashboard at `/paper-trading` (commit `ebec447`) — session cards, equity curve, cycle log, 30s auto-refresh. Projected Returns NameError + options model exclusion fixed (commit `ff2eefa`).
+- **open-source-rideshare**: Surge status endpoint (`GET /surge/current`) · driver per-ride earnings breakdown (`GET /rides/{id}/driver-earnings`) · driver earnings summary (`GET /driver/me/earnings-summary` — today/week/month/lifetime + pending payout). 3,788 → 3,812 tests.
 
 #### Accomplished (Sessions 294–300)
 - **open-source-rideshare**: Rider trip history (57 tests, 3,133), driver earnings comparison (52 tests, 3,076), driver earnings history (66 tests, 3,199), rider safety incident history (61 tests, 3,260), driver performance trend analysis (48 tests, 3,308), trip demand heatmap (24 tests, 3,332), driver live location updates (42 tests, 3,374).

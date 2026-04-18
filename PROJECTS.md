@@ -54,7 +54,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/stockbot/`
-**Current focus**: Paper trading LIVE since April 14. 4 sessions: momentum (SPY/QQQ/MSFT), rsi_mean_reversion (AAPL/NVDA), sma_crossover (AMZN/SPY), MTF Options_AAPL_LogRet_FLGBM (AAPL). Portfolio +$855 as of Apr 17. **Architecture fix deployed Apr 17**: position sizing now uses `account.cash` (no margin), portfolio deployment capped at 90% of equity, circuit breaker halts session if equity < 50% of starting capital. **API access**: STOCKBOT_API_KEY is in ~/.claude_env. Jetson API is at 100.120.18.84:8000 — unreachable from Pi directly (Jetson firewall). Use SSH tunnel: `ssh -f -N -L 18000:localhost:8000 xxsb-01` then hit `http://localhost:18000` with the key. **Next**: Monitor first full market week under new position sizing; assess whether strategies are generating alpha or just tracking beta.
+**Current focus**: Session 316: **Paper Trading Dashboard COMPLETE** (commit `ebec447` — `/paper-trading` page: session cards, equity curve, cycle log, auto-refresh 30s). **Projected Returns COMPLETE** (commits `76a4142`, `ff2eefa` — historical signal chart + forward projection chart, options model support added, NameError fix). Works across all model types (stock, rule-based, MTF, options). Paper trading LIVE since April 14. **Next**: Monitor paper trading performance; additional web app features as requested.
 **Blocked on**: —
 **Notes**: Web app is in good shape. Model creation and most optimisation is operational. Paper trading has just started but has had issues — this is the current priority. iOS app is out of scope until paper trading is solid. All features must work across ALL model types (stock, options, rule-based, ensemble, MTF) — do not implement something for one type only.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 315: `GET /rides/{ride_id}/driver-earnings` COMPLETE (commit `bc3cf89`). Driver-scoped per-ride earnings breakdown — base/distance/time components, platform fee, net fare, tip, total. Components scaled to actual_fare for exact arithmetic. 403/404/409 guards. **Total: 3,764 unit-passing tests**. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety (22 commits ahead of master, pushed to GitHub). **Next**: New feature branch OR additional driver earnings features (e.g. total deductions view, payout schedule estimate).
+**Current focus**: Session 317: `GET /driver/me/mileage-report` COMPLETE (commit `9c807d6`) — year + optional month view; total km/miles, IRS deduction estimate ($0.70/mile), 12-month breakdown for full-year view. 3,812 tests passing. Branch: feature/rider-emergency-safety. **Next**: Continue driver features OR start new feature branch.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

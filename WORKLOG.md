@@ -4,6 +4,75 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 317 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 monitoring pass still 2 days out — nothing actionable
+- mfg-farm: blocked on user test print
+- stockbot: paper trading monitoring-only, no dev work queued
+- Selected: open-source-rideshare — driver mileage report (clear gap identified by audit)
+
+### open-source-rideshare — Driver mileage report COMPLETE
+
+**Commit**: `9c807d6`
+
+**Feature**: `GET /driver/me/mileage-report?year=2026[&month=4]`
+
+Drivers can now see total kilometres/miles driven for completed rides in any year or month, plus an IRS standard mileage deduction estimate ($0.70/mile, 2025 rate). Useful for Schedule C tax filings.
+
+**Response shape**:
+- `total_km`, `total_miles` — aggregate distance for the period
+- `irs_rate_per_mile` — current IRS standard mileage rate
+- `irs_deduction_usd` — `total_miles × irs_rate_per_mile` — max deductible amount
+- `monthly_breakdown` — list of 12 `MonthlyMileageBreakdown` objects (full-year view only; empty when month param provided)
+- `rides_completed`, `driver_id`, `year`, `month`, `as_of`
+
+**Design notes**:
+- Only completed rides with non-null `distance_km` included — filter at DB layer
+- Naive datetimes normalised to UTC (same pattern as earnings summary)
+- `month=None` → full-year with 12-month breakdown; `month=N` → single-month, no breakdown
+- December month-end handled correctly (month 12 → Jan 1 of next year)
+
+**New components**:
+- `app/schemas/driver_mileage_report.py` — `DriverMileageReport` + `MonthlyMileageBreakdown`
+- `app/services/driver_mileage_report.py` — pure aggregation; `KM_TO_MILES`, `IRS_MILEAGE_RATE_PER_MILE` constants
+- `app/api/v1/driver_mileage_report.py` — FastAPI router with `year`/`month` Query validation (month ge=1 le=12)
+- `backend/tests/test_driver_mileage_report.py` — 24 tests
+
+**Branch pushed**: `rideshare` remote → `feature/rider-emergency-safety`
+
+**New tests**: 24 → **3,812 total passing**
+
+---
+
+## Session 316 — 2026-04-18
+
+### Orient
+- INBOX: "Projected Returns" feature request (URGENT) — already built by session 315 orchestrator (commit `76a4142`). Verifying and extending.
+- BLOCKED.md: no active blocks
+- stockbot: Projected Returns page existed but had two gaps — fixed both
+
+### stockbot — Projected Returns page: options model support + NameError fix COMPLETE
+
+**Commit**: `ff2eefa`
+
+The Projected Returns page and backend endpoint were already built by a prior orchestrator session (Apr 17, commit `76a4142`). This session verified the implementation and found two gaps:
+
+1. **`_options_models` NameError**: `list_all_models` at line 4480 referenced `_options_models` without importing it — would crash whenever `/api/models/all` was called. Fixed: added `from src.api.options_model_api import _options_models` inside the function.
+
+2. **Options models excluded from projected-returns**: The endpoint accepted `model_id: int` only, but options models use UUID string IDs and a separate in-memory store. Fixed:
+   - Changed endpoint param to `model_id: str`; tries integer registry lookup first, falls back to `_options_models` store
+   - Frontend `listModels()` switched to `/api/models/all` so options models appear in the dropdown
+   - `selectedModelId` type changed from `number` to `string` throughout
+
+**Build**: Clean TypeScript compile + Vite build — no errors.
+
+**Status**: Projected Returns page is complete and working across all model types (rule-based, ML, MTF, options).
+
+---
+
 ## Session 315 — 2026-04-18
 
 ### Orient
@@ -5545,3 +5614,42 @@ open-source-rideshare: Fare preview / surge pricing transparency
 - Both features locally committed on feature/rider-emergency-safety
 - Push blocked (established pattern — SSH key lacks org push access)
 - CHECKIN.md, PROJECTS.md, WORKLOG.md updated
+
+## Session 316 — 2026-04-18
+
+### Orient
+- INBOX: One unprocessed item — stockbot Projected Returns page (2026-04-17). Verified ALREADY DONE (commit 76a4142). Marked processed.
+- BLOCKED: No active blocks.
+- stockbot (#1): Projected Returns confirmed complete. Next: Paper Trading Dashboard page.
+- mfg-farm (#2): Blocked on user test print — skipped.
+- resistance-research (#3): April 20 monitoring pass not actionable until April 20. Op-ed complete, April 22 submission needs user action.
+- open-source-rideshare (#4): Active, additional features available.
+
+### Task selected
+stockbot: Paper Trading Dashboard page
+- No monitoring UI exists for the 4 live paper trading sessions
+- Available endpoints: /api/paper-trading/status, /api/paper-trading/results, /api/paper-trading/cycle-log, /api/trading/equity-curve, /api/model-runs
+- Building PaperTradingPage.tsx with: session status cards, summary metrics, equity curve chart, cycle log table
+
+### stockbot: Paper Trading Dashboard COMPLETE
+- New page: PaperTradingPage.tsx at /paper-trading
+- Session cards: strategy, tickers, status badge, P&L, return%, win rate, Sharpe, trade count, last cycle time
+- Summary metrics bar: total P&L, active session count, win rate, Sharpe
+- Equity curve chart: cumulative realized P&L from closed trades (last 90 days)
+- Cycle log table: last 30 cycles with signal per ticker (color-coded BUY/SELL/HOLD) and trade fills
+- Auto-refreshes every 30s
+- Added `getPaperTradingSessionResults()` to api.ts
+- TypeScript check: clean (tsc --noEmit)
+- Commit: ebec447
+
+### open-source-rideshare: Driver earnings summary COMPLETE (via subagent)
+- New endpoint: GET /driver/me/earnings-summary
+- Schema: EarningsPeriod (gross/platform_fee/net/tips/total_take_home), DriverEarningsSummary (today/week/month/lifetime + pending_payout_usd + next_payout_date)
+- Service: pure _compute_period() + async get_driver_earnings_summary() with UTC time-window bucketing
+- Pending payout: sum of net+tip from rides not yet covered by a COMPLETED DriverPayout
+- Next payout date: derived from DriverBankAccount.payout_frequency (DAILY/WEEKLY/BIWEEKLY)
+- 24 new tests; 3,788 total passing (500 skipped)
+- Commit: d3ef8dc
+
+### Session end
+- Updating CHECKIN.md and PROJECTS.md
