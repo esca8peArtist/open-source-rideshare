@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import admin, admin_financials, analytics, audit, auth, background_checks, chat, check_in_timer, complaints, demand_heatmap, device_tokens, disputes, driver_availability, driver_destination, driver_documents, driver_earnings_comparison, driver_earnings_history, driver_earnings_goal, driver_earnings_summary, driver_fatigue, driver_insurance, driver_location, driver_mileage_report, driver_onboarding, driver_performance, driver_public_profile, driver_rating_submit, driver_ratings, driver_referral, driver_revenue_projection, driver_ride_earnings, driver_safety, driver_shifts, drivers, drivers_nearby, driver_welfare_summary, fare_splits, feedback, incentives, lost_found, notification_preferences, notifications, payments, payouts, platform_config, pools, promos, recurring_rides, ride_preferences, ride_receipt, rider_cancellation_stats, rider_favorite_drivers, rider_payment_methods, rider_public_profile, rider_ratings, rider_safety, rider_safety_history, rider_safety_report, rider_spending_summary, rider_trip_history, rides, safety, saved_locations, tips, trip_share, vehicle_inspection, vehicles, waypoints
+from app.api.v1 import admin, admin_financials, analytics, audit, auth, background_checks, chat, check_in_timer, complaints, demand_heatmap, device_tokens, disputes, driver_availability, driver_destination, driver_documents, driver_earnings_comparison, driver_earnings_history, driver_earnings_goal, driver_earnings_summary, driver_fatigue, driver_insurance, driver_location, driver_mileage_report, driver_onboarding, driver_performance, driver_public_profile, driver_rating_submit, driver_ratings, driver_referral, driver_revenue_projection, driver_ride_earnings, driver_safety, driver_shifts, driver_upcoming_rides, drivers, drivers_nearby, driver_welfare_summary, fare_splits, feedback, incentives, lost_found, notification_preferences, notifications, payments, payouts, platform_config, pools, promos, recurring_rides, ride_preferences, ride_receipt, rider_cancellation_stats, rider_favorite_drivers, rider_payment_methods, rider_public_profile, rider_ratings, rider_safety, rider_safety_history, rider_safety_report, rider_spending_summary, rider_trip_history, rides, safety, saved_locations, tips, trip_share, vehicle_inspection, vehicles, waypoints
 from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, admin_analytics_router as surge_analytics_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api.v1.fare_preview import router as fare_preview_router
@@ -114,6 +114,7 @@ app.include_router(rider_payment_methods.router, prefix="/api/v1")
 app.include_router(trip_share.router, prefix="/api/v1")
 app.include_router(check_in_timer.router, prefix="/api/v1")
 app.include_router(driver_fatigue.router, prefix="/api/v1")
+app.include_router(driver_upcoming_rides.router, prefix="/api/v1")
 app.include_router(driver_rating_submit.router, prefix="/api/v1")
 app.include_router(feedback.router, prefix="/api/v1")
 app.include_router(disputes.router, prefix="/api/v1")
