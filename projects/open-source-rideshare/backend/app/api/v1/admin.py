@@ -110,6 +110,8 @@ from app.schemas.admin import (
     GeofenceViolationType,
     SpeedingIncidentEntry,
     SpeedingIncidentListResponse,
+    RouteDeviationIncidentEntry,
+    RouteDeviationIncidentListResponse,
 )
 from app.schemas.service_area import (
     ServiceAreaCreate,
@@ -4018,6 +4020,73 @@ async def list_speeding_incidents(
     ]
 
     return SpeedingIncidentListResponse(
+        incidents=entries,
+        total=total,
+        page=page,
+        per_page=per_page,
+    )
+
+
+@router.get("/safety/route-deviation-incidents", response_model=RouteDeviationIncidentListResponse)
+async def list_route_deviation_incidents(
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+    period: str = Query("all", pattern="^(week|month|year|all)$"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+):
+    """Return rides where the driver deviated significantly from the direct route.
+
+    Filtered to rides where ``route_deviation_flagged_at`` is not null.
+    The ``period`` filter narrows by ``route_deviation_flagged_at`` timestamp.
+    """
+    now = datetime.now(timezone.utc)
+    period_start: datetime | None = None
+    if period == "week":
+        period_start = now - timedelta(days=7)
+    elif period == "month":
+        period_start = now - timedelta(days=30)
+    elif period == "year":
+        period_start = now - timedelta(days=365)
+
+    base_query = (
+        select(Ride)
+        .options(joinedload(Ride.rider), joinedload(Ride.driver))
+        .where(Ride.route_deviation_flagged_at.is_not(None))
+    )
+    if period_start is not None:
+        base_query = base_query.where(Ride.route_deviation_flagged_at >= period_start)
+
+    count_result = await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )
+    total = count_result.scalar() or 0
+
+    rows_result = await db.execute(
+        base_query
+        .order_by(Ride.route_deviation_flagged_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
+    rides = rows_result.unique().scalars().all()
+
+    entries = [
+        RouteDeviationIncidentEntry(
+            ride_id=ride.id,
+            rider_id=ride.rider_id,
+            rider_name=ride.rider.name if ride.rider else None,
+            driver_id=ride.driver_id,
+            driver_name=ride.driver.name if ride.driver else None,
+            pickup_address=ride.pickup_address,
+            dropoff_address=ride.dropoff_address,
+            status=ride.status.value,
+            route_deviation_flagged_at=ride.route_deviation_flagged_at,
+            requested_at=ride.requested_at,
+        )
+        for ride in rides
+    ]
+
+    return RouteDeviationIncidentListResponse(
         incidents=entries,
         total=total,
         page=page,

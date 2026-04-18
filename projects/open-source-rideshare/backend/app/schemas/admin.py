@@ -827,3 +827,30 @@ class SpeedingIncidentListResponse(BaseModel):
     total: int
     page: int
     per_page: int
+
+
+# ---- Route Deviation Incidents ----
+
+
+class RouteDeviationIncidentEntry(BaseModel):
+    """A ride where the driver was detected deviating significantly from the direct route."""
+
+    ride_id: int
+    rider_id: int
+    rider_name: str | None = None
+    driver_id: int | None = None
+    driver_name: str | None = None
+    pickup_address: str
+    dropoff_address: str
+    status: str
+    route_deviation_flagged_at: datetime
+    requested_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class RouteDeviationIncidentListResponse(BaseModel):
+    incidents: list[RouteDeviationIncidentEntry]
+    total: int
+    page: int
+    per_page: int
