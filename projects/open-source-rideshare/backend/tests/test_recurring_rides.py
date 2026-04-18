@@ -749,6 +749,7 @@ class TestUpdateRecurringRide:
         result = await update_recurring_ride(
             1, 10, db,
             label="Evening class",
+            label_provided=True,
         )
         assert ride.label == "Evening class"
 
@@ -774,14 +775,79 @@ class TestUpdateRecurringRide:
         assert ride.pickup_address == "New Pickup"
 
     @pytest.mark.asyncio
-    async def test_update_resets_generation_tracking(self):
+    async def test_schedule_change_resets_generation_tracking(self):
+        last_gen = datetime.now(timezone.utc)
         ride = _make_recurring_ride(
             status=RecurringRideStatus.ACTIVE,
-            last_generated_date=datetime.now(timezone.utc),
+            last_generated_date=last_gen,
+        )
+        ride_result = MagicMock()
+        ride_result.scalar_one_or_none.return_value = ride
+        future_result = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = []
+        future_result.scalars.return_value = scalars_mock
+        db = _make_simple_db()
+        db.execute = AsyncMock(side_effect=[ride_result, future_result])
+        await update_recurring_ride(1, 10, db, days_of_week=[0, 2, 4])
+        assert ride.last_generated_date is None
+
+    @pytest.mark.asyncio
+    async def test_label_only_update_does_not_reset_generation_tracking(self):
+        last_gen = datetime.now(timezone.utc)
+        ride = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            last_generated_date=last_gen,
         )
         db = _make_scalar_one_db(ride)
-        await update_recurring_ride(1, 10, db, label="Changed")
-        assert ride.last_generated_date is None
+        await update_recurring_ride(1, 10, db, label="New name", label_provided=True)
+        assert ride.last_generated_date == last_gen
+
+    @pytest.mark.asyncio
+    async def test_label_can_be_cleared_to_none(self):
+        ride = _make_recurring_ride(status=RecurringRideStatus.ACTIVE, label="Old name")
+        db = _make_scalar_one_db(ride)
+        await update_recurring_ride(1, 10, db, label=None, label_provided=True)
+        assert ride.label is None
+
+    @pytest.mark.asyncio
+    async def test_label_not_cleared_when_not_provided(self):
+        ride = _make_recurring_ride(status=RecurringRideStatus.ACTIVE, label="Keep me")
+        db = _make_scalar_one_db(ride)
+        await update_recurring_ride(1, 10, db, label=None, label_provided=False)
+        assert ride.label == "Keep me"
+
+    @pytest.mark.asyncio
+    async def test_schedule_change_cancels_future_generated_rides(self):
+        ride = _make_recurring_ride(status=RecurringRideStatus.ACTIVE)
+        future_ride = MagicMock(spec=Ride)
+        future_ride.status = RideStatus.SCHEDULED
+
+        ride_result = MagicMock()
+        ride_result.scalar_one_or_none.return_value = ride
+        future_result = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = [future_ride]
+        future_result.scalars.return_value = scalars_mock
+
+        db = _make_simple_db()
+        db.execute = AsyncMock(side_effect=[ride_result, future_result])
+
+        await update_recurring_ride(1, 10, db, pickup_time=time(9, 0))
+
+        assert future_ride.status == RideStatus.CANCELLED
+
+    @pytest.mark.asyncio
+    async def test_label_only_update_does_not_cancel_generated_rides(self):
+        last_gen = datetime.now(timezone.utc)
+        ride = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            last_generated_date=last_gen,
+        )
+        db = _make_scalar_one_db(ride)
+        await update_recurring_ride(1, 10, db, label="Evening", label_provided=True)
+        # Only one DB execute call (get_recurring_ride) — no future-ride query
+        assert db.execute.call_count == 1
 
 
 # ===========================================================================
@@ -2033,3 +2099,63 @@ class TestPatchEndsOnRouter:
         call_kwargs = mock_update.call_args.kwargs
         assert call_kwargs.get("ends_on_provided") is True
         assert call_kwargs.get("ends_on") is None
+
+
+# ===========================================================================
+# label — Router PATCH Passthrough Tests
+# ===========================================================================
+
+
+class TestPatchLabelRouter:
+    @pytest.mark.asyncio
+    async def test_patch_label_provided_sets_flag_true(self):
+        from app.api.v1.recurring_rides import update
+
+        body = RecurringRideUpdate(label="Evening commute")
+        returned_ride = _make_recurring_ride()
+
+        with patch(
+            "app.api.v1.recurring_rides.update_recurring_ride",
+            new_callable=AsyncMock,
+            return_value=returned_ride,
+        ) as mock_update:
+            await update(1, body, _mock_user(), AsyncMock())
+
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("label_provided") is True
+        assert call_kwargs.get("label") == "Evening commute"
+
+    @pytest.mark.asyncio
+    async def test_patch_label_not_in_body_sets_flag_false(self):
+        from app.api.v1.recurring_rides import update
+
+        body = RecurringRideUpdate(days_of_week=[0, 1, 2, 3, 4])
+        returned_ride = _make_recurring_ride()
+
+        with patch(
+            "app.api.v1.recurring_rides.update_recurring_ride",
+            new_callable=AsyncMock,
+            return_value=returned_ride,
+        ) as mock_update:
+            await update(1, body, _mock_user(), AsyncMock())
+
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("label_provided") is False
+
+    @pytest.mark.asyncio
+    async def test_patch_label_null_clears_label(self):
+        from app.api.v1.recurring_rides import update
+
+        body = RecurringRideUpdate(label=None)
+        returned_ride = _make_recurring_ride()
+
+        with patch(
+            "app.api.v1.recurring_rides.update_recurring_ride",
+            new_callable=AsyncMock,
+            return_value=returned_ride,
+        ) as mock_update:
+            await update(1, body, _mock_user(), AsyncMock())
+
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("label_provided") is True
+        assert call_kwargs.get("label") is None

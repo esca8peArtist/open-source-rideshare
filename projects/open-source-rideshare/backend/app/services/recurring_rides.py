@@ -152,6 +152,7 @@ async def update_recurring_ride(
     tz: str | None = None,
     accessibility_required: bool | None = None,
     label: str | None = None,
+    label_provided: bool = False,
     pickup_saved_location_id: int | None = None,
     dropoff_saved_location_id: int | None = None,
     ends_on: date | None = None,
@@ -163,10 +164,13 @@ async def update_recurring_ride(
     if ride.status == RecurringRideStatus.CANCELLED:
         raise RecurringRideStateError("Cannot update a cancelled recurring ride")
 
+    location_changed = False
     if pickup_lat is not None and pickup_lng is not None:
         ride.pickup_location = ST_MakePoint(pickup_lng, pickup_lat, srid=4326)
+        location_changed = True
     if dropoff_lat is not None and dropoff_lng is not None:
         ride.dropoff_location = ST_MakePoint(dropoff_lng, dropoff_lat, srid=4326)
+        location_changed = True
     if pickup_address is not None:
         ride.pickup_address = pickup_address
     if dropoff_address is not None:
@@ -179,7 +183,8 @@ async def update_recurring_ride(
         ride.timezone = tz
     if accessibility_required is not None:
         ride.accessibility_required = accessibility_required
-    if label is not None:
+    # label_provided=True allows explicitly clearing to None
+    if label_provided:
         ride.label = label
     if pickup_saved_location_id is not None:
         ride.pickup_saved_location_id = pickup_saved_location_id
@@ -189,8 +194,28 @@ async def update_recurring_ride(
     if ends_on_provided:
         ride.ends_on = ends_on
 
-    # Reset generation tracking so new schedule takes effect
-    ride.last_generated_date = None
+    # Reset generation tracking only when the schedule itself changes.
+    # Label, accessibility, and ends_on changes don't affect already-generated rides.
+    schedule_changed = any([
+        days_of_week is not None,
+        pickup_time is not None,
+        tz is not None,
+        location_changed,
+    ])
+    if schedule_changed:
+        ride.last_generated_date = None
+        # Cancel future SCHEDULED rides — they were generated on the old schedule
+        # and would pick up at the wrong time/location.
+        now_utc = datetime.now(timezone.utc)
+        future_rides_result = await db.execute(
+            select(Ride).where(
+                Ride.recurring_ride_id == recurring_ride_id,
+                Ride.status == RideStatus.SCHEDULED,
+                Ride.scheduled_for > now_utc,
+            )
+        )
+        for future_ride in future_rides_result.scalars().all():
+            future_ride.status = RideStatus.CANCELLED
 
     await db.commit()
     await db.refresh(ride)

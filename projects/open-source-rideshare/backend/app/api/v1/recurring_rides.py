@@ -153,6 +153,7 @@ async def update(
             tz=body.timezone,
             accessibility_required=body.accessibility_required,
             label=body.label,
+            label_provided="label" in body.model_fields_set,
             pickup_saved_location_id=body.pickup_saved_location_id,
             dropoff_saved_location_id=body.dropoff_saved_location_id,
             ends_on=body.ends_on,
