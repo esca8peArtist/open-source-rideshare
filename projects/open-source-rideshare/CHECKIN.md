@@ -6,6 +6,159 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/rider-emergency-safety — trip share links
+
+**Branch:** `feature/rider-emergency-safety`
+**Author:** thorn
+**Date:** 2026-04-18
+**Commit:** 9fd42b5
+
+**Summary:**
+Adds the Trip Share Link feature: riders generate a short-lived (24h) public
+token URL during a ride. Anyone with the link can view read-only ride info
+(driver name, vehicle, status, pickup/dropoff, ETA) without logging in — the
+safety equivalent of Uber's "Share My Trip."
+
+**Endpoints added:**
+- `POST   /api/v1/riders/me/rides/{ride_id}/share-link` — create link (201); auto-revokes any existing active link for the same ride, so only one is active at a time
+- `GET    /api/v1/riders/me/rides/{ride_id}/share-link` — fetch active link (200 / 404)
+- `DELETE /api/v1/riders/me/rides/{ride_id}/share-link` — revoke active link (204 / 404)
+- `GET    /api/v1/trip-share/{token}` — public read-only view (200 / 404 / 410); no auth required
+
+**Files added:**
+- `backend/app/schemas/trip_share.py` — `TripShareLinkResponse` and `TripShareView` (public read-only)
+- `backend/app/services/trip_share.py` — in-memory store; `create_trip_share_link` (UUID4 token, 24h expiry, auto-revoke); `get_active_link_for_ride`; `revoke_trip_share_link`; `get_trip_share_view` (returns realistic stub ride data; raises `LookupError` for unknown token, `ValueError("expired")` for revoked/expired)
+- `backend/app/api/v1/trip_share.py` — router with authenticated rider endpoints and unauthenticated public endpoint; maps `LookupError` → 404, `ValueError("expired")` → 410
+- `backend/app/models/trip_share.py` — `TripShareLink` SQLAlchemy model
+- `backend/app/db/migrations/versions/u5v6w7x8y9z0_add_trip_share_links.py` — Alembic migration; `down_revision = t4u5v6w7x8y9`
+- `backend/tests/test_trip_share.py` — 40 tests across schemas, service, router (authenticated and public), and store reset
+
+**Key design decisions:**
+- Only one active link per ride at a time. `create_trip_share_link` revokes any prior active link before inserting a new one, so re-generating a link automatically invalidates the old URL.
+- The public `GET /api/v1/trip-share/{token}` endpoint has no `require_rider` or `get_current_user` dependency — it is genuinely unauthenticated by design (covered by `test_public_endpoint_requires_no_auth`).
+- 410 Gone (not 401/403) for expired or revoked tokens — semantically the resource existed and has since been removed, which is more informative for link recipients.
+- `_reset_store` uses `.clear()` on the module-level dict rather than replacing it, so test imports of `_links` stay bound to the live object across the autouse fixture.
+- Ride data in `get_trip_share_view` is stubbed (consistent with all other in-memory services in this codebase). A follow-up can wire it to the real rides store when that moves in-memory or adds an injectable DB query.
+
+**Test results:** 40 new tests, all passing. Full suite: 4,148 passed, 507 skipped (was 4,108 before this PR).
+
+---
+
+### feature/rider-emergency-safety — rider saved payment methods
+
+**Branch:** `feature/rider-emergency-safety`
+**Author:** thorn
+**Date:** 2026-04-18
+**Commit:** 8a1f1e7
+
+**Summary:**
+Adds a complete saved payment method system for riders. Before booking a ride,
+riders can add and manage payment cards. The flow mirrors Stripe's recommended
+SetupIntent pattern: call setup-intent to get a client_secret, let the frontend
+collect and confirm card details, then POST the resulting payment_method_id back
+to save it.
+
+Feature includes auto-default promotion (first card is always default; deleting
+the default auto-promotes the oldest remaining), 409 guard on duplicate Stripe
+payment_method_id, and graceful stub fallback when Stripe is unconfigured.
+
+**Endpoints added:**
+- `POST /api/v1/riders/me/payment-methods/setup-intent` — create Stripe SetupIntent (200)
+- `POST /api/v1/riders/me/payment-methods` — save confirmed method (201)
+- `GET  /api/v1/riders/me/payment-methods` — list all, newest-first with total (200)
+- `DELETE /api/v1/riders/me/payment-methods/{id}` — remove; auto-promote default (204)
+- `PUT  /api/v1/riders/me/payment-methods/{id}/default` — set as default (200)
+
+**Files added:**
+- `backend/app/models/payment_method.py` — `RiderPaymentMethod` SQLAlchemy model
+- `backend/app/schemas/payment_method.py` — `PaymentMethodCreate` (card_last4 digit
+  validator), `PaymentMethodResponse`, `PaymentMethodListResponse`, `SetupIntentResponse`
+- `backend/app/services/payment_method.py` — in-memory store; `create_setup_intent`
+  degrades to stub; `remove_payment_method` auto-promotes default; `set_default_payment_method`
+  clears all others in one pass
+- `backend/app/api/v1/rider_payment_methods.py` — router; `require_rider` on every endpoint
+- `backend/app/db/migrations/versions/t4u5v6w7x8y9_add_rider_payment_methods.py` — Alembic
+  migration; down_revision = s3t4u5v6w7x8
+- `backend/tests/test_rider_payment_methods.py` — 45 tests across schema, service, and router
+
+**Key design decisions:**
+- In-memory store is consistent with all other newer rider services in this codebase.
+- `require_rider` enforced on all 5 endpoints — drivers use payouts, not payment methods.
+- Auto-default: first method saved is always default; no explicit flag in the create payload
+  (prevents the ambiguity of "which is default if I add two at once").
+- `card_last4` validated as exactly 4 numeric characters in the Pydantic schema.
+- Stripe errors in `create_setup_intent` degrade gracefully to a stub response rather
+  than 502 — the rest of the add-method flow can still proceed with a frontend-provided
+  payment_method_id (e.g., in a dev/test environment).
+
+**Test results:** 45 new tests pass. Full suite: 4,108 passed, 507 skipped.
+
+---
+
+### feature/rider-emergency-safety — admin safety report stats + safe arrival confirmation
+
+**Branch:** `feature/rider-emergency-safety`
+**Author:** thorn
+**Date:** 2026-04-18
+**Commit:** 10ed745
+
+**Summary:**
+Two features that close the loop on the rider safety reporting system.
+
+Feature 1 adds `GET /admin/safety-reports/stats` — a single endpoint that gives
+platform admins an at-a-glance view of the safety report backlog and trends:
+total count, breakdown by status and category, escalation rate, rolling 7-day and
+30-day intake counts, and average resolution time for resolved reports.
+
+Feature 2 adds safe arrival confirmation: after completing a ride, riders can POST
+to `/riders/me/rides/{ride_id}/safe-arrival` to create an audit record. The record
+is immediately retrievable via GET. Business rules enforce that the ride must be
+COMPLETED, must belong to the authenticated rider, and only one confirmation per
+ride is allowed (409 on duplicate).
+
+**Files changed:**
+- `backend/app/schemas/rider_safety_report.py` — new `SafetyReportStats` Pydantic
+  response model with all seven stat fields
+- `backend/app/services/rider_safety_report.py` — new `get_safety_report_stats(db)`
+  function; computes all stats from the in-memory store in O(n)
+- `backend/app/api/v1/rider_safety_report.py` — new `GET /admin/safety-reports/stats`
+  endpoint with `require_admin` dependency
+- `backend/app/schemas/rider_safety.py` — new `SafeArrivalCreate` and
+  `SafeArrivalResponse` schemas
+- `backend/app/services/rider_safety.py` — new `confirm_safe_arrival` and
+  `get_safe_arrival` functions; `_safe_arrivals` in-memory store; `_reset_store`
+  extended to clear it
+- `backend/app/api/v1/rider_safety.py` — new `POST /riders/me/rides/{ride_id}/safe-arrival`
+  (201) and `GET /riders/me/rides/{ride_id}/safe-arrival` (200/404) endpoints
+- `backend/app/models/safety.py` — new `SafeArrival` SQLAlchemy model with ride_id
+  (FK, unique), user_id (FK), confirmed_at (server_default), notes (nullable)
+- `backend/app/db/migrations/versions/s3t4u5v6w7x8_add_safe_arrivals.py` — Alembic
+  migration creating the `safe_arrivals` table; down_revision = r2s3t4u5v6w7
+- `backend/tests/test_rider_safety_report.py` — 20 new stats tests in new
+  `TestGetSafetyReportStats` class (added to existing file)
+- `backend/tests/test_safe_arrival.py` — new file: 47 tests across TestSchemas,
+  TestConfirmSafeArrival, TestGetSafeArrival, TestRouter
+
+**Key design decisions:**
+- `confirm_safe_arrival` does a real DB read to validate ride existence and
+  ownership (same pattern as `post_create_safety_report`). The actual audit record
+  is stored in-memory like every other safety service in this codebase.
+- `LookupError` for 404 scenarios (ride not found or wrong owner), `ValueError`
+  for 400 (wrong status), `RuntimeError` for 409 (duplicate). The router maps
+  each exception type to the correct HTTP status code cleanly.
+- Stats endpoint uses a single O(n) pass over the in-memory store rather than
+  multiple filtered queries — keeps it simple and consistent with the rest of the
+  codebase.
+- `avg_resolution_hours` is `None` (not 0) when no resolved reports exist, so
+  callers can distinguish "no data yet" from "resolved instantly".
+- The `/admin/safety-reports/stats` route is declared before
+  `/admin/safety-reports/{report_id}/review` in the router to prevent FastAPI
+  from matching the literal string "stats" as a report_id path parameter.
+
+**Test results:** 89 new tests pass. Full suite: 4,063 passed, 507 skipped.
+
+---
+
 ### feature/rider-emergency-safety — driver earnings comparison vs platform average
 
 **Branch:** `feature/rider-emergency-safety`
