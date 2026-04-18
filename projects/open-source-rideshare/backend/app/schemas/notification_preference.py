@@ -24,6 +24,7 @@ _VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
         "ride_reminder",
         "fare_split_request",
         "promo_applied",
+        "promo_expiring",
         "background_check_approved",
         "background_check_action_required",
     }

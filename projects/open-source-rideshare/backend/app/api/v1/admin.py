@@ -27,6 +27,7 @@ from app.models.verification import DriverDocument, VerificationStatus
 from app.models.payment import Payment, PaymentStatus, PaymentType
 from app.schemas.feedback import DisputeResolve
 from app.schemas.admin import (
+    AdminBulkSetPreferenceRequest,
     AdminDisputeListResponse,
     AdminDisputeResponse,
     AdminDriverResponse,
@@ -37,9 +38,11 @@ from app.schemas.admin import (
     AdminPaymentResponse,
     AdminRideResponse,
     AdminRiderResponse,
+    AdminSetPreferenceRequest,
     AdminSOSAlertResponse,
     AdminSOSListResponse,
     AdminSOSResolveRequest,
+    AdminUserPreferencesResponse,
     BulkActionResult,
     BulkDriverIdsRequest,
     BulkDriverSuspendRequest,
@@ -2547,3 +2550,160 @@ async def search_users(
         results=results,
         total=total,
     )
+
+
+# ---- Admin Notification Preferences ----
+
+_VALID_NOTIF_TYPES: frozenset[str] = frozenset(
+    {
+        "ride_matched",
+        "ride_cancelled",
+        "ride_completed",
+        "driver_en_route",
+        "driver_arrived",
+        "payment_received",
+        "sos_alert",
+        "rating_received",
+        "account_verification",
+        "payout_completed",
+        "ride_reminder",
+        "fare_split_request",
+        "promo_applied",
+        "promo_expiring",
+        "background_check_approved",
+        "background_check_action_required",
+    }
+)
+_VALID_NOTIF_CHANNELS: frozenset[str] = frozenset({"push", "sms", "email"})
+
+
+def _validate_notif_type_channel(notification_type: str, channel: str) -> None:
+    if notification_type not in _VALID_NOTIF_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Invalid notification_type '{notification_type}'",
+        )
+    if channel not in _VALID_NOTIF_CHANNELS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Invalid channel '{channel}'",
+        )
+
+
+@router.get(
+    "/users/{user_id}/notification-preferences",
+    response_model=AdminUserPreferencesResponse,
+)
+async def admin_get_user_notification_preferences(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+) -> AdminUserPreferencesResponse:
+    """View the full notification preference map for any user. Admin only.
+
+    Returns all (notification_type × channel) combinations with their effective
+    enabled value.  Combinations without an explicit DB record appear as
+    enabled=True (the default opt-in state).
+    """
+    from app.services.notification_preferences import get_user_preferences
+
+    target = await db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    prefs = await get_user_preferences(db, user_id)
+    return AdminUserPreferencesResponse(user_id=user_id, preferences=prefs)
+
+
+@router.put(
+    "/users/{user_id}/notification-preferences/{notification_type}/{channel}",
+    response_model=AdminUserPreferencesResponse,
+)
+async def admin_set_user_notification_preference(
+    user_id: int,
+    notification_type: str,
+    channel: str,
+    body: AdminSetPreferenceRequest,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+) -> AdminUserPreferencesResponse:
+    """Override a single notification preference for any user. Admin only.
+
+    Useful for support: re-enable a preference a user accidentally disabled,
+    or disable a channel for a user experiencing delivery issues.
+    """
+    from app.services.notification_preferences import get_user_preferences, set_preference
+
+    _validate_notif_type_channel(notification_type, channel)
+
+    target = await db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await set_preference(db, user_id, notification_type, channel, body.enabled)
+    await db.commit()
+
+    prefs = await get_user_preferences(db, user_id)
+    return AdminUserPreferencesResponse(user_id=user_id, preferences=prefs)
+
+
+@router.put(
+    "/users/{user_id}/notification-preferences",
+    response_model=AdminUserPreferencesResponse,
+)
+async def admin_bulk_set_user_notification_preferences(
+    user_id: int,
+    body: AdminBulkSetPreferenceRequest,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+) -> AdminUserPreferencesResponse:
+    """Bulk-override notification preferences for any user. Admin only.
+
+    Each entry in ``updates`` must include ``notification_type``, ``channel``,
+    and ``enabled``.  Invalid types or channels return 422.
+    """
+    from app.services.notification_preferences import bulk_set_preferences, get_user_preferences
+
+    target = await db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    for update in body.updates:
+        _validate_notif_type_channel(
+            update.get("notification_type", ""),
+            update.get("channel", ""),
+        )
+
+    await bulk_set_preferences(db, user_id, body.updates)
+    await db.commit()
+
+    prefs = await get_user_preferences(db, user_id)
+    return AdminUserPreferencesResponse(user_id=user_id, preferences=prefs)
+
+
+@router.delete(
+    "/users/{user_id}/notification-preferences/{notification_type}/{channel}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def admin_reset_user_notification_preference(
+    user_id: int,
+    notification_type: str,
+    channel: str,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+) -> None:
+    """Reset a single notification preference to the default (enabled) for any user. Admin only.
+
+    Deletes the explicit preference record.  Returns 204 whether or not a
+    record existed.
+    """
+    from app.services.notification_preferences import reset_preference
+
+    _validate_notif_type_channel(notification_type, channel)
+
+    target = await db.get(User, user_id)
+    if target is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await reset_preference(db, user_id, notification_type, channel)
+    await db.commit()

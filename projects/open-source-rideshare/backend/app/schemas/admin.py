@@ -450,3 +450,22 @@ class BulkActionResult(BaseModel):
     not_found: list[int]
     total_requested: int
     total_succeeded: int
+
+
+class AdminUserPreferencesResponse(BaseModel):
+    """Admin view of a single user's full notification preference map."""
+
+    user_id: int
+    preferences: dict[str, dict[str, bool]]
+
+
+class AdminSetPreferenceRequest(BaseModel):
+    """Admin request body for overriding a single notification preference."""
+
+    enabled: bool
+
+
+class AdminBulkSetPreferenceRequest(BaseModel):
+    """Admin request body for bulk-overriding notification preferences."""
+
+    updates: list[dict]  # each: {notification_type, channel, enabled}
