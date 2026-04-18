@@ -9,7 +9,90 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–332
+**Sessions run**: 313–336
+
+### Accomplished (Session 336 — orchestrator)
+
+#### open-source-rideshare — Driver Panic Alert System COMPLETE (commit `73a3bec`)
+
+Drivers now have an emergency panic button equivalent to the one riders already had. This closes the last obvious safety gap on the `feature/rider-emergency-safety` branch.
+
+**5 new endpoints:**
+- `POST /drivers/me/panic` — trigger alert on active ride (400 if no in-progress ride, 400 if duplicate active alert)
+- `GET /drivers/me/panic/{alert_id}` — get alert status (404 if wrong driver)
+- `DELETE /drivers/me/panic/{alert_id}` — cancel alert (FALSE_ALARM if <30s, RESOLVED otherwise; 404 on wrong owner, 400 if not ACTIVE)
+- `GET /admin/driver-panic-alerts` — list all ACTIVE driver alerts, oldest-first, paginated
+- `POST /admin/driver-panic-alerts/{alert_id}/resolve` — admin resolves with optional notes
+
+**New files:**
+- `schemas/driver_safety.py` — all schemas/enums
+- `services/driver_safety.py` — in-memory store with full lifecycle ops + `_reset_store()` for tests
+- `api/v1/driver_safety.py` — router, registered in `main.py`
+- `tests/test_driver_safety.py` — 42 tests (schemas, service, router, end-to-end)
+
+**4,319 tests passing** (was 4,277). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 335 — orchestrator)
+
+#### open-source-rideshare — Earnings Guarantee COMPLETE (commit `9a6cd01`)
+
+The `earnings_guarantee` incentive program type was previously defined (model, enum, docstring comment) but had zero evaluation logic. Now fully implemented end-to-end.
+
+**New `evaluate_earnings_guarantee(db, driver_id, period_start, period_end, actual_earnings)`** in `services/incentives.py`:
+- Queries all active earnings_guarantee programs whose date range overlaps the payout period
+- For each: computes `top_up = max(0, floor - actual_earnings)`, creates/updates `DriverIncentiveProgress` with `bonus_earned = top_up`, `status = COMPLETED`
+- Idempotent: if progress already COMPLETED/PAID, reads its `bonus_earned` without re-evaluating
+- Returns total top-up amount (sum across all qualifying programs)
+
+**`create_payout()` wired** to auto-calculate guarantee top-up after settlement; folds into `bonus_amount` field. Drivers are made whole automatically without admin intervention.
+
+**`process_payout()` wired** to call `mark_bonuses_paid()` after a successful Stripe transfer — all COMPLETED incentive records (guarantees + quest/peak/streak) are marked PAID.
+
+**8 new unit tests** + **5 existing payout test updates** (mock sequences updated for the extra execute call). **4,277 tests passing** (was 4,269). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 334 — orchestrator)
+
+#### open-source-rideshare — Scheduled Dispatch Notification COMPLETE (commit `450acf2`)
+
+When the background scheduler dispatches a scheduled ride (SCHEDULED→REQUESTED), riders now receive a push+SMS notification — previously there was only a silent WebSocket event.
+
+**New `NotificationType.RIDE_SCHEDULED_DISPATCHED`** — added end-to-end:
+- `notifications.py`: new enum value + added to `ride_types` (respects user's `ride_updates` preference toggle)
+- `notification_templates.py`: `scheduled_dispatched(pickup_address, scheduled_for)` — push+SMS, "We're finding you a driver for your scheduled ride from [address]"
+- `notification_preference.py` schema: `ride_scheduled_dispatched` added to `_VALID_NOTIFICATION_TYPES`
+- `notification_events.py`: `notify_scheduled_dispatched()` fire-and-forget helper (errors caught + logged)
+- `dispatch_scheduler.py`: calls `notify_scheduled_dispatched` right after REQUESTED transition
+
+**7 new tests**: notification is called with correct args on dispatch, not called for rides outside window, full dispatch proceeds if notification layer fails. Plus 4 unit tests for type enum, template rendering, and `send_ride_notification`. **4,269 tests passing** (was 4,262). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 333 — orchestrator)
+
+#### open-source-rideshare — Scheduled Ride Improvements COMPLETE (commit `6552c75`)
+
+Riders can now modify a scheduled ride after booking (before dispatch), and admins can view all scheduled rides in one place.
+
+**`PATCH /rides/scheduled/{id}`** — partial update of a SCHEDULED ride:
+- `scheduled_for`: re-validates timing (must be ≥30min ahead, ≤72h), checks for overlap with the rider's other scheduled rides (excluding the current ride). Returns 422 on bad time, 409 on overlap.
+- `pickup` + `pickup_address`: updates pickup coordinates and address; triggers route recalculation and fare update.
+- `dropoff` + `dropoff_address`: same as pickup. If only one side changes, the other side uses existing DB coordinates.
+- 404 on unknown ride, 403 on wrong owner, 409 on non-SCHEDULED status.
+
+**`GET /admin/rides/scheduled`** — admin dashboard for scheduled rides:
+- Filters: `rider_id`, `from_date`, `to_date`, `include_past` (default=false returns upcoming only).
+- Paginated (`page`, `per_page` up to 200), ordered by `scheduled_for` ascending.
+- Returns `AdminScheduledRidesListResponse` with `total`, `page`, `per_page`, and full ride details including `scheduled_for`.
+
+**Schema additions**: `ScheduleRideUpdate` schema; `scheduled_for` field on `AdminRideResponse`; `AdminScheduledRidesListResponse`.
+
+**11 new tests** (8 PATCH + 3 admin). **4,262 tests passing** (was 4,251). 0 regressions. Pushed to rideshare remote.
+
+---
 
 ### Accomplished (Session 332 — orchestrator)
 
@@ -308,7 +391,7 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ### Suggested Priorities (Next Session)
 1. **resistance-research**: **April 20 monitoring brief** — CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing). **Op-ed submission deadline April 22** — file `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. **~April 23-24: ballroom SCOTUS/D.C. Circuit watch window**.
 2. **mfg-farm**: Test print action (still user-gated — all files ready).
-3. **open-source-rideshare**: Next candidates: promo expiry notifications (notify rider when a promo they have is about to expire), notification preferences admin view, or ride cost breakdown in receipt (show referral credit line item).
+3. **open-source-rideshare**: Next candidates: driver incentive/bonus programs (admin creates trip-count or earnings-goal bonus programs; drivers track progress), or scheduled ride reminder (advance push/SMS N minutes before `scheduled_for`, separate from the dispatch notification).
 4. **stockbot**: No specific features queued — check paper trading performance.
 
 ---

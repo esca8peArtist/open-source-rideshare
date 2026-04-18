@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 332)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 336)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 332: **Admin Notification Preferences COMPLETE** (commit `490f490`, 26 tests) — 4 new admin endpoints (GET/PUT/DELETE) for viewing and overriding any user's notification preferences; supports both single and bulk updates. Also fixed `promo_expiring` missing from schema validators. **Next**: Ride scheduling improvements, or driver welfare dashboard enhancements.
+**Current focus**: Session 336: **Driver Panic Alert System COMPLETE** (commit `73a3bec`, 42 tests) — drivers can now trigger emergency panic alerts during active rides, matching the rider panic system. 5 new endpoints: `POST/GET/DELETE /drivers/me/panic/{id}`, `GET/POST /admin/driver-panic-alerts`. False-alarm window (30s), admin resolve with notes, oldest-first admin sort. 4,319 tests passing. **Next**: Driver referral program (driver brings in another driver; bonus after referred driver completes X rides), or close remaining gaps on this safety branch.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

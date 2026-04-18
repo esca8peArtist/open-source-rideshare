@@ -4,6 +4,90 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 336 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: next pass April 20 not yet actionable
+- Selected: open-source-rideshare — driver emergency safety (natural next feature on feature/rider-emergency-safety branch)
+
+### open-source-rideshare — Driver Panic Alert System COMPLETE (commit `73a3bec`)
+- **Gap closed**: rider panic system existed (5 endpoints in rider_safety.py); drivers had no equivalent emergency mechanism
+- **New `schemas/driver_safety.py`**: `DriverPanicAlertStatus`, `TriggerDriverPanicRequest`, `DriverPanicAlertResponse`, `AdminResolveDriverPanicRequest`, `DriverPanicAlertListResponse`
+- **New `services/driver_safety.py`**: in-memory store, full panic lifecycle — trigger/get/cancel/admin-list/admin-resolve/list-by-driver
+- **New `api/v1/driver_safety.py`**: 5 endpoints — `POST/GET/DELETE /drivers/me/panic/{id}` + `GET/POST /admin/driver-panic-alerts`
+- **`main.py`**: `driver_safety` added to import line and `app.include_router` registered alongside `rider_safety`
+- **42 new tests**: schemas, service (trigger/get/cancel/admin-list/admin-resolve/list-driver), router (handler-direct pattern), end-to-end flow
+- **4,319 tests passing** (was 4,277). 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 335 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — earnings guarantee implementation
+
+### open-source-rideshare — Earnings Guarantee COMPLETE (commit `9a6cd01`)
+- **Gap closed**: `earnings_guarantee` program type was defined in model + enum with a comment "evaluated at payout time" but had no logic anywhere
+- **`evaluate_earnings_guarantee(db, driver_id, period_start, period_end, actual_earnings)`** in `services/incentives.py`:
+  - Queries active guarantee programs whose date range overlaps the payout period
+  - For each: creates/updates `DriverIncentiveProgress` with `bonus_earned = max(0, floor - actual)`, `status = COMPLETED`
+  - Idempotent: if progress already COMPLETED/PAID, returns its `bonus_earned` without modification
+  - Returns total top-up (sum across all qualifying programs)
+- **`create_payout()` updated** in `services/payouts.py`: auto-calls `evaluate_earnings_guarantee` after settlement calculation; guarantee top-up folds into `bonus_amount` field
+- **`process_payout()` updated**: after successful Stripe transfer, calls `mark_bonuses_paid` for all COMPLETED incentive records (guarantees + other bonuses) for the driver
+- **8 new unit tests** (below floor, at floor, above floor, progress record creation, idempotency, multiple programs sum, expired program skipped, no programs returns zero)
+- **5 existing payout tests updated** to include the extra guarantee-programs mock execute result
+- **4,277 tests passing** (was 4,269). 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 334 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not actionable until April 20
+- Selected: open-source-rideshare — scheduled ride dispatch notification
+
+### open-source-rideshare — Scheduled Dispatch Notification COMPLETE (commit `450acf2`)
+- **Gap closed**: SCHEDULED→REQUESTED dispatch previously only sent a silent WebSocket event; riders got no push/SMS
+- **New `NotificationType.RIDE_SCHEDULED_DISPATCHED`** added to enum + ride_types preference category
+- **Template**: `scheduled_dispatched(pickup_address, scheduled_for)` → push+SMS, "We're finding you a driver" copy
+- **`notify_scheduled_dispatched()`** in `notification_events.py` — fire-and-forget, errors are swallowed/logged
+- **`dispatch_scheduler.py`**: calls `notify_scheduled_dispatched` after `ride.status = REQUESTED` commit
+- **`_VALID_NOTIFICATION_TYPES`** in preferences schema updated to include `ride_scheduled_dispatched`
+- **7 new tests**: 3 dispatch scheduler (called/not-called/failure-resiliency) + 4 notification unit tests (type, template, send)
+- **4,269 tests passing** (was 4,262). 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 333 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — scheduled ride improvements
+
+### open-source-rideshare — Scheduled Ride PATCH + Admin View COMPLETE (commit `6552c75`)
+- **PATCH /rides/scheduled/{id}**: riders can update a scheduled ride before dispatch
+  - `scheduled_for`: re-validates with `validate_schedule_time`, checks overlap excluding self (409 on conflict)
+  - `pickup` + `pickup_address`: updates pickup location, recalculates route + fare
+  - `dropoff` + `dropoff_address`: updates dropoff location, recalculates route + fare
+  - 404 if not found, 403 if wrong owner, 409 if not SCHEDULED status
+- **GET /admin/rides/scheduled**: admin view of all SCHEDULED rides
+  - Filters: `rider_id`, `from_date`, `to_date`, `include_past` (default: upcoming only)
+  - Paginated with `page`/`per_page` (max 200), ordered by `scheduled_for` ascending
+- **Schema additions**: `ScheduleRideUpdate` to `schemas/ride.py`; `scheduled_for` field added to `AdminRideResponse`; `AdminScheduledRidesListResponse` added to `schemas/admin.py`
+- **11 new tests** (8 PATCH + 3 admin). **4,262 total passing** (was 4,251). 0 regressions. Pushed to rideshare remote.
+
+---
+
 ## Session 332 — 2026-04-18
 
 ### Orient
