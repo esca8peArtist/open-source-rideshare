@@ -499,3 +499,46 @@ class DriverActivityEntry(BaseModel):
 class DriverActivityListResponse(BaseModel):
     drivers: list[DriverActivityEntry]
     pagination: PaginationResponse
+
+
+# ---- Admin Driver Status History ----
+
+
+class DriverStatusChangeEntry(BaseModel):
+    """One status-change event in a single driver's history."""
+
+    id: int
+    timestamp: datetime
+    event_type: str  # raw value: "driver_approved", "driver_suspended", etc.
+    action: str  # human-friendly: "approved", "suspended", "reactivated"
+    admin_id: int | None
+    reason: str | None  # extracted from metadata_json for suspensions
+    description: str
+
+
+class DriverStatusHistoryResponse(BaseModel):
+    """Paginated status-change history for one driver."""
+
+    driver_id: int
+    total: int
+    items: list[DriverStatusChangeEntry]
+
+
+class RecentDriverStatusChangeEntry(BaseModel):
+    """One status-change event across all drivers (recent feed)."""
+
+    id: int
+    timestamp: datetime
+    event_type: str
+    action: str
+    driver_id: int  # target_id (driver_profile.id)
+    admin_id: int | None
+    reason: str | None
+    description: str
+
+
+class RecentDriverStatusChangesResponse(BaseModel):
+    """Paginated feed of recent driver status changes across all drivers."""
+
+    total: int
+    items: list[RecentDriverStatusChangeEntry]

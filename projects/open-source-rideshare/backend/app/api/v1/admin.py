@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -18,6 +19,7 @@ from app.services.service_areas import (
     update_service_area,
 )
 from app.services.verification import VerificationError, get_verification_status, review_document
+from app.models.audit import AuditLog
 from app.models.driver import DriverProfile
 from app.models.driver_shift import DriverShift
 from app.models.feedback import Dispute, DisputeStatus, DisputeType, RideFeedback
@@ -56,11 +58,15 @@ from app.schemas.admin import (
     DriverActivityEntry,
     DriverActivityListResponse,
     DriverMetrics,
+    DriverStatusChangeEntry,
+    DriverStatusHistoryResponse,
     DriversListResponse,
     FeedbackStats,
     PaginationResponse,
     PaymentsListResponse,
     PlatformSettings,
+    RecentDriverStatusChangeEntry,
+    RecentDriverStatusChangesResponse,
     RevenueDataPoint,
     RideActivityDataPoint,
     RideMetrics,
@@ -395,6 +401,137 @@ async def driver_activity_dashboard(
         drivers=entries,
         pagination=PaginationResponse(total=total, page=page, per_page=per_page),
     )
+
+
+_STATUS_EVENT_TYPES = [
+    "driver_approved",
+    "driver_suspended",
+    "bulk_driver_approved",
+    "bulk_driver_suspended",
+    "bulk_driver_reactivated",
+]
+
+_ACTION_MAP = {
+    "driver_approved": "approved",
+    "driver_suspended": "suspended",
+    "bulk_driver_approved": "approved",
+    "bulk_driver_suspended": "suspended",
+    "bulk_driver_reactivated": "reactivated",
+}
+
+
+def _parse_audit_reason(log: AuditLog) -> str | None:
+    """Extract the suspension reason from metadata_json, if present."""
+    if not log.metadata_json:
+        return None
+    try:
+        data = json.loads(log.metadata_json)
+        return data.get("reason")
+    except (json.JSONDecodeError, AttributeError):
+        return None
+
+
+@router.get("/drivers/status-changes", response_model=RecentDriverStatusChangesResponse)
+async def admin_get_recent_driver_status_changes(
+    days: int = Query(7, ge=1, le=90),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Recent driver status changes (approve/suspend/reactivate) across all drivers.
+
+    Returns events from the audit log ordered newest-first. Use ``days`` to
+    control the lookback window (1–90 days).
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+
+    base_query = (
+        select(AuditLog)
+        .where(
+            AuditLog.target_type == "driver_profile",
+            AuditLog.event_type.in_(_STATUS_EVENT_TYPES),
+            AuditLog.timestamp >= cutoff,
+        )
+    )
+
+    total = (await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )).scalar() or 0
+
+    result = await db.execute(
+        base_query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit)
+    )
+    logs = result.scalars().all()
+
+    items = [
+        RecentDriverStatusChangeEntry(
+            id=log.id,
+            timestamp=log.timestamp,
+            event_type=log.event_type,
+            action=_ACTION_MAP.get(log.event_type, log.event_type),
+            driver_id=log.target_id,
+            admin_id=log.actor_id,
+            reason=_parse_audit_reason(log),
+            description=log.description,
+        )
+        for log in logs
+    ]
+
+    return RecentDriverStatusChangesResponse(total=total, items=items)
+
+
+@router.get("/drivers/{driver_id}/status-history", response_model=DriverStatusHistoryResponse)
+async def admin_get_driver_status_history(
+    driver_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Status-change history (approve/suspend/reactivate) for a single driver.
+
+    Returns audit log entries for the given driver ordered newest-first. Returns
+    404 if no driver profile with the given id exists.
+    """
+    profile_result = await db.execute(
+        select(DriverProfile).where(DriverProfile.id == driver_id)
+    )
+    if profile_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver not found")
+
+    base_query = (
+        select(AuditLog)
+        .where(
+            AuditLog.target_type == "driver_profile",
+            AuditLog.target_id == driver_id,
+            AuditLog.event_type.in_(_STATUS_EVENT_TYPES),
+        )
+    )
+
+    total = (await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )).scalar() or 0
+
+    result = await db.execute(
+        base_query.order_by(AuditLog.timestamp.desc()).offset(skip).limit(limit)
+    )
+    logs = result.scalars().all()
+
+    items = [
+        DriverStatusChangeEntry(
+            id=log.id,
+            timestamp=log.timestamp,
+            event_type=log.event_type,
+            action=_ACTION_MAP.get(log.event_type, log.event_type),
+            admin_id=log.actor_id,
+            reason=_parse_audit_reason(log),
+            description=log.description,
+        )
+        for log in logs
+    ]
+
+    return DriverStatusHistoryResponse(driver_id=driver_id, total=total, items=items)
 
 
 @router.get("/drivers/{driver_id}", response_model=AdminDriverResponse)
