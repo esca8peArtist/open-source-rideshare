@@ -504,8 +504,9 @@ class TestCompleteRide:
         driver = _make_user(user_id=20, role=UserRole.DRIVER)
         ride = _make_ride(driver_id=20, status=RideStatus.IN_PROGRESS, estimated_fare=15.50)
 
-        # complete_ride does four db.execute calls:
-        # 1. ride lookup, 2. completed ride count, 3. rider lookup, 4. driver profile
+        # complete_ride does five db.execute calls:
+        # 1. ride lookup, 2. completed ride count, 3. rider lookup, 4. driver profile,
+        # 5. driver referral bonus check
         profile = MagicMock()
         profile.total_trips = 50
 
@@ -523,8 +524,11 @@ class TestCompleteRide:
         profile_result = MagicMock()
         profile_result.scalar_one_or_none.return_value = profile
 
+        referral_result = MagicMock()
+        referral_result.scalar_one_or_none.return_value = None  # no referral
+
         db = AsyncMock()
-        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result]
+        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result, referral_result]
 
         result = await complete_ride(ride_id=1, driver=driver, db=db)
         assert result == {"status": "completed", "fare": 15.50}
@@ -564,8 +568,11 @@ class TestCompleteRide:
         profile_result = MagicMock()
         profile_result.scalar_one_or_none.return_value = profile
 
+        referral_result = MagicMock()
+        referral_result.scalar_one_or_none.return_value = None
+
         db = AsyncMock()
-        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result]
+        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result, referral_result]
 
         with patch(
             "app.services.rider_safety.send_trusted_contact_notifications",
@@ -610,8 +617,11 @@ class TestCompleteRide:
         profile_result = MagicMock()
         profile_result.scalar_one_or_none.return_value = profile
 
+        referral_result = MagicMock()
+        referral_result.scalar_one_or_none.return_value = None
+
         db = AsyncMock()
-        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result]
+        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result, referral_result]
 
         with patch(
             "app.services.rider_safety.send_trusted_contact_notifications",

@@ -25,6 +25,7 @@ class DriverProfile(Base):
     total_trips: Mapped[int] = mapped_column(default=0)
     is_online: Mapped[bool] = mapped_column(default=False)
     is_approved: Mapped[bool] = mapped_column(default=False)
+    driver_referral_code: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True, index=True)
     active_vehicle_id: Mapped[int | None] = mapped_column(
         ForeignKey("vehicles.id", use_alter=True), nullable=True
     )

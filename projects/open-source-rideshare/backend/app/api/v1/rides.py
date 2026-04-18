@@ -1041,6 +1041,9 @@ async def complete_ride(
     profile = profile_result.scalar_one_or_none()
     if profile:
         profile.total_trips += 1
+        # Check if driver referral milestone is hit
+        from app.services.driver_referral import check_and_award_driver_referral_bonus
+        await check_and_award_driver_referral_bonus(driver.id, profile.total_trips, db)
 
     # Award referral credit to referrer on referred rider's first completed ride
     if is_first_completed and rider and rider.referred_by:
