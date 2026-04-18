@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 319)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 321)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 313: **April 18 monitoring brief COMPLETE** (`monitoring/2026-04-18-results.md`). White House ballroom Branch A confirmed — Leon acted April 16, split order (above-ground halted, below-ground permitted), stayed own order ~1 week to April 23-24, admin appealed to D.C. Circuit. No SCOTUS filing confirmed. Abrego Garcia: DOJ brief due April 20, Xinis hearing April 28 on schedule. Section 122 / CIT: deliberating. Nashville/Crenshaw: silent. **Op-ed draft COMPLETE** (`publications/op-ed-healthcare-june2026-deadline.md`, ~918 words) — "Six Weeks to Save Five Million People's Health Insurance" targeting Vox/Atlantic, April 22 submission. **Next**: April 20 monitoring pass — CAPE Phase 1 launch, DOJ Abrego Garcia brief, ballroom SCOTUS watch window (~April 23-24 stay expiry).
+**Current focus**: Session 320 (late pass): **April 18 evening update COMPLETE** (`monitoring/2026-04-18-results.md`, addendum appended). Evening search confirmed no new developments after morning brief — no SCOTUS application filed in ballroom case, no D.C. Circuit action, no CIT ruling, no Crenshaw ruling, no new Xinis activity. All threads unchanged. Ballroom SCOTUS watch window remains open through ~April 23-24. **Three critical deadlines converging**: (1) ~April 23-24 — Leon stay expires; if no SCOTUS or D.C. Circuit stay by then, above-ground halt reinstates and contempt clock restarts. (2) April 20 — DOJ brief due before Xinis; content is the next read-on-filing trigger. (3) Crenshaw/Nashville — any day; ruling imminent per April 11 reporting. **Next mandatory pass**: April 20 (CAPE Phase 1 launch + DOJ Abrego Garcia brief), then ~April 23-24 (Leon stay expiry / SCOTUS watch), then April 28 (Xinis hearing).
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 320: **Post-Ride Safety Reports** COMPLETE (commit `8c334f4`, 47 tests) — POST/GET `/riders/me/safety-reports`, GET `/riders/me/safety-reports/{id}`, GET/POST `/admin/safety-reports` + `/admin/safety-reports/{id}/review`. 6 categories, PENDING→REVIEWED/ESCALATED/CLOSED lifecycle, one report per rider per ride. 4,021 tests passing. Branch: feature/rider-emergency-safety, pushed to GitHub. **Next**: Continue rider safety features OR open new branch.
+**Current focus**: Session 321: **Admin Safety Report Stats + Safe Arrival Confirmation** COMPLETE (commit `10ed745`, 89 tests) — GET `/admin/safety-reports/stats` (total/by_status/by_category/escalation_rate/last-7d/last-30d/avg_resolution_hours); POST/GET `/riders/me/rides/{ride_id}/safe-arrival` (SafeArrival model, migration s3t4u5v6w7x8). 4,063 tests passing. Branch: feature/rider-emergency-safety, pushed to GitHub. **Next**: Continue rider safety features OR open new branch.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

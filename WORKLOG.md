@@ -5792,3 +5792,37 @@ stockbot: Paper Trading Dashboard page
 
 ### Session end
 - Updating CHECKIN.md and PROJECTS.md
+
+## Session 321 — 2026-04-18
+
+### Orient
+- INBOX: No new items. All previously processed.
+- BLOCKED: No active blocks.
+- Priority selected: open-source-rideshare (#4 active, feature/rider-emergency-safety branch) + resistance-research (#3 — timely evening monitoring pass)
+
+### resistance-research: April 18 evening monitoring pass
+- Confirmed: no material new developments since morning brief
+- Ballroom/Leon: no SCOTUS filing confirmed, seven-day stay still running (~April 23-24 expiry)
+- Abrego Garcia/Xinis: no pre-April-20 docket activity; April 20 brief deadline unchanged
+- Nashville/Crenshaw: silence continues, seven-plus weeks post-submission
+- Section 122/CIT: still deliberating, eight days post-argument
+- Addendum appended to `monitoring/2026-04-18-results.md`
+- PROJECTS.md updated by monitoring agent
+
+### open-source-rideshare: Admin safety report stats + safe arrival confirmation (commit 10ed745)
+- Feature 1: GET /admin/safety-reports/stats — aggregate stats on rider safety reports
+  - Returns: total, by_status, by_category, escalation_rate, last-7/30-day counts, avg_resolution_hours
+  - Service: get_safety_report_stats() in services/rider_safety_report.py
+  - Schema: SafetyReportStats in schemas/rider_safety_report.py
+  - 20 new tests in test_rider_safety_report.py
+- Feature 2: POST + GET /riders/me/rides/{ride_id}/safe-arrival
+  - Model: SafeArrival (safe_arrivals table) in models/safety.py
+  - Migration: s3t4u5v6w7x8_add_safe_arrivals.py (down_revision: r2s3t4u5v6w7)
+  - Service: confirm_safe_arrival + get_safe_arrival in services/rider_safety.py
+  - Schemas: SafeArrivalCreate, SafeArrivalResponse in schemas/rider_safety.py
+  - 47 new tests in tests/test_safe_arrival.py (new file)
+- Total new tests: 89 — 4,063 passing, 507 skipped, 0 regressions
+- Pushed to GitHub: feature/rider-emergency-safety
+
+### Session end
+- Updating CHECKIN.md and PROJECTS.md

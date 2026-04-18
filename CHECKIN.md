@@ -9,7 +9,33 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–320
+**Sessions run**: 313–321
+
+### Accomplished (Session 321 — orchestrator)
+
+#### resistance-research — April 18 evening monitoring pass
+Confirmed no material new developments since morning brief. Searched SCOTUS docket, D.C. Circuit ballroom appeal, Nashville/Crenshaw, CIT/Section 122, Abrego Garcia pre-brief activity. All threads unchanged. Addendum appended to `monitoring/2026-04-18-results.md`.
+
+Key status: Ballroom seven-day stay window still open through ~April 23-24 (no SCOTUS filing confirmed). April 20 DOJ brief remains next load-bearing event. Crenshaw silence now 7+ weeks.
+
+#### open-source-rideshare — Admin Safety Report Stats + Safe Arrival Confirmation COMPLETE (commit `10ed745`)
+
+**Feature 1: `GET /admin/safety-reports/stats`** — admin aggregate view of safety report backlog.
+- Returns: total reports, counts by status (PENDING/REVIEWED/ESCALATED/CLOSED), counts by category, escalation rate (float), reports last 7 days, reports last 30 days, avg resolution hours (nullable)
+- Service: `get_safety_report_stats()` in services/rider_safety_report.py
+- Schema: `SafetyReportStats` in schemas/rider_safety_report.py
+- 20 new tests added to test_rider_safety_report.py
+
+**Feature 2: `POST/GET /riders/me/rides/{ride_id}/safe-arrival`** — rider confirms safe arrival after completed ride.
+- POST → 201: creates SafeArrival record; validates ride is COMPLETED (400) and belongs to rider (404); 409 on duplicate
+- GET → 200/404: check if safe arrival confirmed for this ride
+- Model: `SafeArrival` (safe_arrivals table) in models/safety.py with migration `s3t4u5v6w7x8`
+- Schemas: `SafeArrivalCreate`, `SafeArrivalResponse`
+- 47 new tests in tests/test_safe_arrival.py (new file)
+
+**4,063 total tests passing** (was 4,021). 89 new tests. 0 regressions. Branch pushed to GitHub.
+
+---
 
 ### Accomplished (Session 320 — orchestrator)
 
@@ -96,10 +122,10 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **resistance-research**: April 20 monitoring brief (CAPE Phase 1 launch + DOJ Abrego Garcia brief) — actionable now. **Op-ed submission deadline April 22.** File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`.
-2. **mfg-farm**: Test print action (still user-gated).
-3. **open-source-rideshare**: Continue features on `feature/rider-emergency-safety` OR open a new feature branch.
-4. **stockbot**: Check paper trading performance if cycle logs visible.
+1. **resistance-research**: **April 20 monitoring brief** — CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing). **Op-ed submission deadline April 22** — file `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. **~April 23-24: ballroom SCOTUS/D.C. Circuit watch window**.
+2. **mfg-farm**: Test print action (still user-gated — all files ready).
+3. **open-source-rideshare**: Continue features on `feature/rider-emergency-safety` OR open new branch.
+4. **stockbot**: No specific features queued — check paper trading performance.
 
 ---
 
