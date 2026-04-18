@@ -6,7 +6,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.models.ride_preference import TemperaturePreference
+from app.models.ride_preference import CommunicationPreference, TemperaturePreference
 
 
 class RidePreferenceUpdate(BaseModel):
@@ -25,6 +25,7 @@ class RidePreferenceUpdate(BaseModel):
     has_service_animal: bool | None = None
     visual_impairment: bool | None = None
     pool_opt_out: bool | None = None
+    communication_preference: CommunicationPreference | None = None
     notes: str | None = Field(None, max_length=200)
 
 
@@ -42,6 +43,7 @@ class RidePreferenceResponse(BaseModel):
     has_service_animal: bool
     visual_impairment: bool
     pool_opt_out: bool
+    communication_preference: CommunicationPreference
     notes: str | None
     updated_at: datetime
 

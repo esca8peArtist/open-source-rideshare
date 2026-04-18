@@ -10,7 +10,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.ride_preference import RidePreference, TemperaturePreference
+from app.models.ride_preference import CommunicationPreference, RidePreference, TemperaturePreference
 from app.schemas.ride_preference import RidePreferenceUpdate
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ _DEFAULTS = {
     "accessibility_vehicle_needed": False,
     "hearing_impairment": False,
     "pool_opt_out": False,
+    "communication_preference": CommunicationPreference.NO_PREFERENCE,
     "notes": None,
 }
 

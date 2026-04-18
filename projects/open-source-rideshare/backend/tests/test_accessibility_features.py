@@ -50,6 +50,9 @@ def _make_prefs(
     p.accessibility_vehicle_needed = accessibility_vehicle_needed
     p.hearing_impairment = hearing_impairment
     p.pool_opt_out = pool_opt_out
+    p.has_service_animal = False
+    p.visual_impairment = False
+    p.communication_preference = "no_preference"
     p.notes = None
     p.updated_at = datetime.now(timezone.utc)
     return p

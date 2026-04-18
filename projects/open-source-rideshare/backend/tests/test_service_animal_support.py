@@ -94,6 +94,7 @@ def _make_ride_preference(
     p.hearing_impairment = hearing_impairment
     p.has_service_animal = has_service_animal
     p.pool_opt_out = False
+    p.communication_preference = "no_preference"
     p.notes = None
     p.updated_at = datetime.now(timezone.utc)
     return p

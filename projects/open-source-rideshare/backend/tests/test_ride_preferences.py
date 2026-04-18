@@ -51,6 +51,11 @@ def _make_prefs(
     p.pet_friendly = pet_friendly
     p.extra_luggage = extra_luggage
     p.accessibility_vehicle_needed = accessibility_vehicle_needed
+    p.hearing_impairment = False
+    p.has_service_animal = False
+    p.visual_impairment = False
+    p.pool_opt_out = False
+    p.communication_preference = "no_preference"
     p.notes = notes
     p.updated_at = datetime.now(timezone.utc)
     return p

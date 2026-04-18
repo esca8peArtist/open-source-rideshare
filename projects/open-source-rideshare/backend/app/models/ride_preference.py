@@ -33,6 +33,13 @@ class TemperaturePreference(str, enum.Enum):
     COOL = "cool"
 
 
+class CommunicationPreference(str, enum.Enum):
+    NO_PREFERENCE = "no_preference"
+    TEXT = "text"
+    APP = "app"
+    VERBAL = "verbal"
+
+
 class RidePreference(Base):
     """Per-rider preferences shown to matched drivers."""
 
@@ -62,6 +69,11 @@ class RidePreference(Base):
     has_service_animal: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     visual_impairment: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     pool_opt_out: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    communication_preference: Mapped[CommunicationPreference] = mapped_column(
+        Enum(CommunicationPreference),
+        default=CommunicationPreference.NO_PREFERENCE,
+        nullable=False,
+    )
     notes: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
