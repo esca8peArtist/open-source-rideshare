@@ -80,7 +80,10 @@ async def get_notification_history(
     unread_only: bool = Query(False),
 ):
     """Get the current user's notification history."""
-    query = select(NotificationLog).where(NotificationLog.user_id == user.id)
+    query = select(NotificationLog).where(
+        NotificationLog.user_id == user.id,
+        NotificationLog.deleted_at.is_(None),
+    )
 
     if notification_type:
         query = query.where(NotificationLog.notification_type == notification_type)
@@ -91,10 +94,11 @@ async def get_notification_history(
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
 
-    # Unread count
+    # Unread count (also excludes deleted)
     unread_query = select(func.count()).where(
         NotificationLog.user_id == user.id,
         NotificationLog.is_read == False,  # noqa: E712
+        NotificationLog.deleted_at.is_(None),
     )
     unread_count = (await db.execute(unread_query)).scalar() or 0
 
@@ -120,6 +124,7 @@ async def get_unread_count(
         select(func.count()).where(
             NotificationLog.user_id == user.id,
             NotificationLog.is_read == False,  # noqa: E712
+            NotificationLog.deleted_at.is_(None),
         )
     )
     count = result.scalar() or 0
@@ -163,6 +168,49 @@ async def mark_all_notifications_read(
             NotificationLog.is_read == False,  # noqa: E712
         )
         .values(is_read=True, read_at=now)
+    )
+    await db.flush()
+    return {"status": "ok"}
+
+
+# ---- Delete / Dismiss ----
+
+
+@router.delete("/me/{notification_id}", status_code=204)
+async def delete_notification(
+    notification_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Soft-delete a single notification from the user's inbox."""
+    result = await db.execute(
+        select(NotificationLog).where(
+            NotificationLog.id == notification_id,
+            NotificationLog.user_id == user.id,
+        )
+    )
+    notif = result.scalar_one_or_none()
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+
+    notif.deleted_at = datetime.now(timezone.utc)
+    await db.flush()
+
+
+@router.delete("/me", status_code=200)
+async def delete_all_notifications(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Soft-delete all notifications in the user's inbox."""
+    now = datetime.now(timezone.utc)
+    await db.execute(
+        update(NotificationLog)
+        .where(
+            NotificationLog.user_id == user.id,
+            NotificationLog.deleted_at.is_(None),
+        )
+        .values(deleted_at=now)
     )
     await db.flush()
     return {"status": "ok"}

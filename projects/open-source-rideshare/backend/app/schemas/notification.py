@@ -40,6 +40,7 @@ class NotificationLogResponse(BaseModel):
     is_read: bool
     created_at: datetime
     read_at: datetime | None
+    deleted_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 

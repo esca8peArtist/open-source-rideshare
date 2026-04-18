@@ -574,6 +574,127 @@ class TestNotificationHistoryEndpoints:
 
 
 @pytest.mark.anyio
+class TestDeleteNotificationEndpoints:
+    async def test_delete_single_no_auth_returns_401(self, client):
+        resp = await client.delete(f"{BASE}/me/1")
+        assert resp.status_code == 401
+
+    async def test_delete_single_not_found_returns_404(self, client, rider, rider_token):
+        resp = await client.delete(
+            f"{BASE}/me/999999",
+            headers=auth_header(rider_token),
+        )
+        assert resp.status_code == 404
+
+    async def test_delete_single_other_users_notification_returns_404(
+        self, client, rider, rider_token, driver_user, db
+    ):
+        log = _add_log(db, user_id=driver_user.id)
+        await db.flush()
+
+        resp = await client.delete(
+            f"{BASE}/me/{log.id}",
+            headers=auth_header(rider_token),
+        )
+        assert resp.status_code == 404
+
+    async def test_delete_single_returns_204(self, client, rider, rider_token, db):
+        log = _add_log(db, user_id=rider.id)
+        await db.flush()
+
+        resp = await client.delete(
+            f"{BASE}/me/{log.id}",
+            headers=auth_header(rider_token),
+        )
+        assert resp.status_code == 204
+
+    async def test_deleted_notification_excluded_from_history(
+        self, client, rider, rider_token, db
+    ):
+        kept = _add_log(db, user_id=rider.id, notification_type="ride_matched")
+        deleted = _add_log(db, user_id=rider.id, notification_type="payment_received")
+        await db.flush()
+
+        await client.delete(f"{BASE}/me/{deleted.id}", headers=auth_header(rider_token))
+
+        resp = await client.get(f"{BASE}/history", headers=auth_header(rider_token))
+        assert resp.status_code == 200
+        ids = [n["id"] for n in resp.json()["notifications"]]
+        assert kept.id in ids
+        assert deleted.id not in ids
+
+    async def test_deleted_notification_excluded_from_unread_count(
+        self, client, rider, rider_token, db
+    ):
+        log = _add_log(db, user_id=rider.id, is_read=False)
+        await db.flush()
+
+        count_before = (
+            await client.get(f"{BASE}/unread-count", headers=auth_header(rider_token))
+        ).json()["total_unread"]
+
+        await client.delete(f"{BASE}/me/{log.id}", headers=auth_header(rider_token))
+
+        count_after = (
+            await client.get(f"{BASE}/unread-count", headers=auth_header(rider_token))
+        ).json()["total_unread"]
+
+        assert count_after == count_before - 1
+
+    async def test_delete_all_no_auth_returns_401(self, client):
+        resp = await client.delete(f"{BASE}/me")
+        assert resp.status_code == 401
+
+    async def test_delete_all_returns_ok(self, client, rider, rider_token, db):
+        for _ in range(3):
+            _add_log(db, user_id=rider.id)
+        await db.flush()
+
+        resp = await client.delete(f"{BASE}/me", headers=auth_header(rider_token))
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "ok"}
+
+    async def test_delete_all_clears_history(self, client, rider, rider_token, db):
+        for _ in range(3):
+            _add_log(db, user_id=rider.id)
+        await db.flush()
+
+        await client.delete(f"{BASE}/me", headers=auth_header(rider_token))
+
+        resp = await client.get(f"{BASE}/history", headers=auth_header(rider_token))
+        assert resp.status_code == 200
+        assert resp.json()["total"] == 0
+        assert resp.json()["notifications"] == []
+
+    async def test_delete_all_does_not_affect_other_users(
+        self, client, rider, rider_token, driver_user, db
+    ):
+        _add_log(db, user_id=rider.id)
+        driver_log = _add_log(db, user_id=driver_user.id)
+        await db.flush()
+
+        await client.delete(f"{BASE}/me", headers=auth_header(rider_token))
+
+        # driver_log should still have deleted_at=None (not deleted)
+        from sqlalchemy import select as _select
+        result = await db.execute(
+            _select(NotificationLog).where(NotificationLog.id == driver_log.id)
+        )
+        remaining = result.scalar_one_or_none()
+        assert remaining is not None
+        assert remaining.deleted_at is None
+
+    async def test_delete_all_idempotent(self, client, rider, rider_token, db):
+        _add_log(db, user_id=rider.id)
+        await db.flush()
+
+        resp1 = await client.delete(f"{BASE}/me", headers=auth_header(rider_token))
+        resp2 = await client.delete(f"{BASE}/me", headers=auth_header(rider_token))
+        assert resp1.status_code == 200
+        assert resp2.status_code == 200
+
+
+@pytest.mark.anyio
 class TestAdminNotificationLogsEndpoint:
     async def test_no_auth_returns_401(self, client):
         resp = await client.get(f"{ADMIN_BASE}/notification-logs")
