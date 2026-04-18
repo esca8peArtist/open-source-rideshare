@@ -49,6 +49,7 @@ from app.services.matching import get_matching_engine, get_redis
 from app.services.pricing import calculate_fare, calculate_fare_breakdown
 from app.services.demand_pricing import get_demand_info, record_demand
 from app.services.promos import redeem_promo, validate_promo
+from app.services.ride_preferences import get_preferences_for_ride
 from app.services.routing import RoutingError, get_multi_stop_route, get_route
 from app.services.saved_locations import get_saved_location
 from app.services.scheduling import check_overlap, validate_schedule_time
@@ -253,6 +254,13 @@ async def request_ride(
     fare_after_promo = round(fare - promo_discount, 2)
     credit_applied = round(min(credit_balance, fare_after_promo), 2)
 
+    # Enforce accessibility preference: if rider has set accessibility_vehicle_needed,
+    # treat it as a hard requirement regardless of the per-request flag.
+    rider_prefs = await get_preferences_for_ride(db, user.id)
+    accessibility_required = req.accessibility_required or (
+        rider_prefs is not None and rider_prefs.accessibility_vehicle_needed
+    )
+
     ride = Ride(
         rider_id=user.id,
         status=RideStatus.REQUESTED,
@@ -266,7 +274,7 @@ async def request_ride(
         promo_code_id=promo_code_id,
         promo_discount=promo_discount,
         referral_credit_discount=credit_applied,
-        accessibility_required=req.accessibility_required,
+        accessibility_required=accessibility_required,
         vehicle_type_preference=req.vehicle_type_preference,
     )
     db.add(ride)
@@ -309,7 +317,7 @@ async def request_ride(
         ride.pickup_address,
         ride.dropoff_address,
         ride.estimated_fare,
-        req.accessibility_required,
+        accessibility_required,
         req.vehicle_type_preference,
     )
 
@@ -363,9 +371,15 @@ async def _match_ride_background(
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
             return
 
+        # Load rider's hearing impairment flag so the driver app can show an
+        # accommodation notice (knock instead of call, use text, etc.)
+        rider_prefs = await get_preferences_for_ride(db, rider_user_id)
+        hearing_impairment = rider_prefs.hearing_impairment if rider_prefs else False
+
         await send_ride_offer(
             matched.user_id, ride_id, pickup_address,
             dropoff_address, estimated_fare, matched.distance_km,
+            rider_hearing_impairment=hearing_impairment,
         )
 
         ride.driver_id = matched.user_id
