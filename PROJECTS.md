@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 315)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 319)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 317: `GET /rides/eta/estimate` COMPLETE (commit `ec50ef5`) — public pre-booking ETA, pickup wait + trip duration + confidence level, reuses nearby-drivers availability logic. 3,891 tests passing. Branch: feature/rider-emergency-safety, pushed to GitHub. **4 open branches** awaiting user review before master merge. **Next**: New feature branch OR user review of open branches.
+**Current focus**: Session 320: **Post-Ride Safety Reports** COMPLETE (commit `8c334f4`, 47 tests) — POST/GET `/riders/me/safety-reports`, GET `/riders/me/safety-reports/{id}`, GET/POST `/admin/safety-reports` + `/admin/safety-reports/{id}/review`. 6 categories, PENDING→REVIEWED/ESCALATED/CLOSED lifecycle, one report per rider per ride. 4,021 tests passing. Branch: feature/rider-emergency-safety, pushed to GitHub. **Next**: Continue rider safety features OR open new branch.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

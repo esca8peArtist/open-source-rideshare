@@ -4,6 +4,84 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 320 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 monitoring not yet actionable (events still 2 days out)
+- mfg-farm: blocked on user test print
+- stockbot: paper trading live, monitoring only, no queued features
+- Selected: open-source-rideshare — rider emergency safety branch, surveyed existing safety features, identified post-ride incident reporting as clearest gap
+
+### open-source-rideshare — Post-Ride Safety Reports COMPLETE (commit 8c334f4)
+- `POST /riders/me/safety-reports` — file a report after a completed ride (ride must be COMPLETED and belong to rider; 409 on duplicate)
+- `GET /riders/me/safety-reports` — list own reports paginated, newest-first
+- `GET /riders/me/safety-reports/{id}` — get specific report (404 on ownership mismatch)
+- `GET /admin/safety-reports` — admin list with optional status + category filters, paginated
+- `POST /admin/safety-reports/{id}/review` — admin sets REVIEWED/ESCALATED/CLOSED with optional notes; 400 if already reviewed; 404 if not found
+- 6 categories: dangerous_driving, harassment, vehicle_issue, wrong_route, threatening_behavior, other
+- Status lifecycle: PENDING → REVIEWED / ESCALATED / CLOSED; cannot revert to pending
+- One report per rider per ride enforced
+- 47 new tests → 4,021 total passing. Pushed to GitHub (rideshare remote).
+
+## Session 319 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 monitoring not yet actionable (events 2 days out)
+- mfg-farm: blocked on user test print
+- stockbot: paper trading live, monitoring only
+- Selected: open-source-rideshare — two orphaned model/API gaps to close
+
+### open-source-rideshare — Driver Shift Management COMPLETE (commit 720aefc)
+- `POST /driver/me/shifts/start` — start a shift; 409 if already active
+- `POST /driver/me/shifts/end` — end the active shift; computes total_minutes; 404 if none
+- `GET /driver/me/shifts/active` — current shift (404 if none)
+- `GET /driver/me/shifts` — paginated history newest-first (?page, ?page_size)
+- Migration r2s3t4u5v6w7 creates driver_shifts table
+- DriverShift model existed but had no API surface — gap now closed
+- 15 new tests
+
+### open-source-rideshare — Ride Receipt COMPLETE (commit 720aefc)
+- `GET /rides/{id}/receipt` — receipt for any COMPLETED ride
+- Accessible by the ride's rider or driver; 403 for non-participants; 404 if not completed
+- Returns: fare breakdown (estimated, actual, promo_discount, tip, subtotal, total_charged), payment record fields, driver first name, vehicle make/model/color/year/plate
+- Falls back to estimated_fare when actual_fare not set
+- 12 new tests → 3,974 total passing. Pushed to GitHub.
+
+---
+
+## Session 318 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 monitoring pass not yet actionable (2 days out)
+- mfg-farm: blocked on user test print
+- stockbot: paper trading live, monitoring-only
+- Selected: open-source-rideshare — identified two orphaned model/service features to complete
+
+### open-source-rideshare — Driver Earnings Goal COMPLETE (commit aa71f47)
+- `GET /driver/me/earnings-goal` — 404 when none set, returns goal when set
+- `PUT /driver/me/earnings-goal` — upsert (create or replace); one goal per driver
+- `DELETE /driver/me/earnings-goal` — remove goal, 404 if absent
+- Schema: daily or weekly period type, target capped at $10,000
+- Migration p0q1r2s3t4u5 creates driver_earnings_goals table
+- Completes the welfare summary feature loop — the model was already used by welfare summary service but had no API surface
+- 17 new tests → 3,933 total passing. Pushed to GitHub.
+
+### open-source-rideshare — Rider Favourite Drivers COMPLETE (commit 5152537)
+- `GET /riders/me/favorite-drivers` — list all favourites newest-first with vehicle + rating details
+- `POST /riders/me/favorite-drivers/{driver_id}` — add (404 unknown driver, 409 duplicate, 422 cap of 20)
+- `DELETE /riders/me/favorite-drivers/{driver_id}` — remove (404 if not in list)
+- Cap of 20 per rider prevents abuse
+- Migration q1r2s3t4u5v6 creates rider_favorite_drivers junction table
+- 14 new tests → 3,947 total passing. Pushed to GitHub.
+
+---
+
 ## Session 317 — 2026-04-18 (continued)
 
 ### open-source-rideshare — Pre-booking ETA estimate COMPLETE

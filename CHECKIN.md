@@ -9,45 +9,63 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–317
+**Sessions run**: 313–320
 
-### Accomplished (this session — user-initiated)
+### Accomplished (Session 320 — orchestrator)
 
-#### stockbot — Projected Returns: options model support + NameError fix (commits `76a4142`, `ff2eefa`)
+#### open-source-rideshare — Post-Ride Safety Reports COMPLETE (commit `8c334f4`)
 
-The Projected Returns page was already built by an earlier orchestrator session. This session:
-- Fixed `_options_models` NameError in `list_all_models` (`/api/models/all` would crash when called)
-- Extended projected-returns endpoint to accept string model IDs (UUID or int) — options models now supported
-- Frontend switched from `listModels()` to `listAllModels()` so options models appear in the selector dropdown
-- Build clean, TypeScript + Vite. All model types (rule-based, ML, MTF, options) now work.
+New endpoints:
+- `POST /riders/me/safety-reports` — file a safety report after a completed ride
+- `GET /riders/me/safety-reports` — list own reports, newest-first, paginated
+- `GET /riders/me/safety-reports/{id}` — get specific report (404 on ownership mismatch)
+- `GET /admin/safety-reports` — admin list with optional status + category filters
+- `POST /admin/safety-reports/{id}/review` — admin sets REVIEWED/ESCALATED/CLOSED
 
-#### open-source-rideshare — 4 endpoints shipped (branch: feature/rider-emergency-safety, pushed to GitHub)
+Riders can formally report safety concerns about drivers after a completed ride — distinct from the in-ride panic button and from general complaints. 6 categories: dangerous driving, harassment, vehicle issue, wrong route, threatening behavior, other. Reports start PENDING and move to REVIEWED/ESCALATED/CLOSED through admin review. One report per rider per ride enforced (409 on duplicate). Admin cannot re-review an already-reviewed report.
 
-**`GET /riders/me/spending-summary`** (commit `4699fd0`, 18 tests)
-Rider-side mirror of driver earnings summary. Today/week/month/lifetime spending buckets, tips given, promo savings, most frequent route.
-
-**`GET /drivers/nearby`** (commit `f10a8fd`, 22 tests)
-Public pre-booking endpoint — available drivers within radius, sorted by distance. Bounding-box SQL pre-filter + haversine Python, no PII. Drivers only returned if `is_online=True, is_on_break=False, heartbeat ≤5 min`.
-
-**`GET /drivers/me/ratings`** (commit `2289b7c`, 25 tests)
-Paginated driver rating history. Aggregate avg, star breakdown (1–5), recent trend (last 10), paginated list with comment. Rider identity structurally absent from all response types.
-
-**`GET /rides/eta/estimate`** (commit `ec50ef5`, 14 tests)
-Public pre-booking ETA before rider commits. Pickup wait time (nearest driver / 30 km/h), trip duration (haversine / 30 km/h, min 2 min), confidence level (high/medium/low by driver count). Reuses nearby-drivers service — no duplication.
-
-**3,891 total tests passing** (was 3,812 at start of session). 0 regressions.
+47 new tests. **4,021 total tests passing** (was 3,974). 0 regressions. Branch pushed to GitHub.
 
 ---
 
-### Accomplished (Session 317 — orchestrator)
+### Accomplished (Session 319 — orchestrator)
 
-#### open-source-rideshare — Driver mileage report COMPLETE (commit `9c807d6`)
+#### open-source-rideshare — Driver Shift Management COMPLETE (commit `720aefc`)
 
-New endpoint: `GET /driver/me/mileage-report?year=2026[&month=4]`
+New endpoints: `POST/GET /driver/me/shifts/start|end|active`, `GET /driver/me/shifts`
 
-Drivers can now export their total kilometres/miles driven per year or month, with an IRS standard mileage deduction estimate. Useful for Schedule C tax filings.
+Drivers can now clock in and out of shifts. Starting a shift creates an active record; ending it computes `total_minutes` from the elapsed wall time. `GET /driver/me/shifts/active` returns the current shift (404 if not on-shift). `GET /driver/me/shifts` returns paginated history newest-first. Conflict guard: 409 if a second start is attempted while one is already active.
 
-24 new tests. **3,812 total passing.** Branch pushed to GitHub.
+15 new tests. Migration `r2s3t4u5v6w7` creates the `driver_shifts` table.
+
+#### open-source-rideshare — Ride Receipt COMPLETE (commit `720aefc`)
+
+New endpoint: `GET /rides/{id}/receipt`
+
+Riders and drivers can retrieve a structured receipt for any completed ride. Fare breakdown (estimated, actual, promo discount, tip, subtotal, total charged), payment record fields, and driver details. Access restricted to ride participants. Falls back to `estimated_fare` if `actual_fare` not yet set.
+
+12 new tests.
+
+**3,974 total tests passing** (was 3,947). 0 regressions. Branch pushed to GitHub.
+
+---
+
+### Accomplished (prior sessions — user-initiated and orchestrator)
+
+#### open-source-rideshare — Driver Earnings Goal + Rider Favourite Drivers (Session 318, commits `aa71f47`, `5152537`)
+- `GET/PUT/DELETE /driver/me/earnings-goal` — daily/weekly goal, upsert, welfare summary loop closed
+- `GET/POST/DELETE /riders/me/favorite-drivers` — cap 20, 404/409/422 guards
+- 31 new tests → 3,947 total
+
+#### stockbot — Projected Returns: options model support + NameError fix (commits `76a4142`, `ff2eefa`)
+- Fixed `_options_models` NameError; options models now appear in projected-returns selector
+
+#### open-source-rideshare — 5 endpoints shipped (sessions 317)
+- `GET /riders/me/spending-summary` (18 tests) — today/week/month/lifetime spend buckets
+- `GET /drivers/nearby` (22 tests) — public pre-booking, no PII
+- `GET /drivers/me/ratings` (25 tests) — paginated rating history with star breakdown
+- `GET /rides/eta/estimate` (14 tests) — public pre-booking ETA + confidence
+- `GET /driver/me/mileage-report` (24 tests) — IRS mileage deduction export
 
 ---
 
@@ -67,7 +85,7 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — branch review queue**
-`feature/rider-emergency-safety` (24 commits, 3,812 tests) pushed to GitHub. 4 branches total await PR review.
+`feature/rider-emergency-safety` (25+ commits, 4,021 tests) pushed to GitHub. Branch covers: panic button, trusted contacts, safety history, safety reports, shift management, ride receipts, and more.
 
 **stockbot — Paper Trading Dashboard is live**
 Go to `/paper-trading` in the web app to monitor your 4 sessions. Equity curve, per-session P&L, and cycle log all there. Auto-refreshes every 30s.
@@ -78,10 +96,10 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ---
 
 ### Suggested Priorities (Next Session)
-1. **resistance-research**: April 20 monitoring brief (April 20 evening — CAPE Phase 1 launch + DOJ Abrego Garcia brief). April 22: op-ed submission deadline.
-2. **mfg-farm**: Test print action.
-3. **open-source-rideshare**: Continue driver features OR start new feature branch.
-4. **stockbot**: Check paper trading performance if cycle logs are visible.
+1. **resistance-research**: April 20 monitoring brief (CAPE Phase 1 launch + DOJ Abrego Garcia brief) — actionable now. **Op-ed submission deadline April 22.** File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`.
+2. **mfg-farm**: Test print action (still user-gated).
+3. **open-source-rideshare**: Continue features on `feature/rider-emergency-safety` OR open a new feature branch.
+4. **stockbot**: Check paper trading performance if cycle logs visible.
 
 ---
 
