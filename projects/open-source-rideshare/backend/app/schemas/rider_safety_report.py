@@ -99,3 +99,39 @@ class AdminReviewReportRequest(BaseModel):
         max_length=2000,
         description="Admin notes on the review outcome.",
     )
+
+
+class SafetyReportStats(BaseModel):
+    """Aggregate statistics for admin safety report dashboard."""
+
+    total_reports: int = Field(..., description="All-time total number of safety reports.")
+    by_status: dict[str, int] = Field(
+        ...,
+        description="Count of reports per status (pending, reviewed, escalated, closed).",
+    )
+    by_category: dict[str, int] = Field(
+        ...,
+        description="Count of reports per category.",
+    )
+    escalation_rate: float = Field(
+        ...,
+        description=(
+            "Fraction of total reports that have been escalated.  "
+            "0.0 when there are no reports."
+        ),
+    )
+    reports_last_7_days: int = Field(
+        ...,
+        description="Number of reports filed in the last 7 calendar days.",
+    )
+    reports_last_30_days: int = Field(
+        ...,
+        description="Number of reports filed in the last 30 calendar days.",
+    )
+    avg_resolution_hours: Optional[float] = Field(
+        None,
+        description=(
+            "Average hours between filed_at and reviewed_at for resolved reports "
+            "(REVIEWED, ESCALATED, CLOSED).  Null when no resolved reports exist."
+        ),
+    )

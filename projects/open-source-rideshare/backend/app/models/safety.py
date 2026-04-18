@@ -58,3 +58,24 @@ class EmergencyContact(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id])
+
+
+class SafeArrival(Base):
+    """Rider-confirmed safe arrival record after a completed ride.
+
+    One record is allowed per ride.  The record serves as an audit trail and
+    (conceptually) triggers notifications to trusted contacts.
+    """
+
+    __tablename__ = "safe_arrivals"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ride_id: Mapped[int] = mapped_column(ForeignKey("rides.id"), unique=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    confirmed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    ride = relationship("Ride", foreign_keys=[ride_id])
+    user = relationship("User", foreign_keys=[user_id])

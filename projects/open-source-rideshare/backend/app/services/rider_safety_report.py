@@ -14,12 +14,13 @@ Public API:
     list_rider_reports(db, rider_id, skip, limit) -> tuple[int, list[dict]]
     admin_list_reports(db, status_filter, category_filter, skip, limit) -> tuple[int, list[dict]]
     admin_review_report(db, report_id, admin_id, review_status, admin_notes) -> dict
+    get_safety_report_stats(db) -> dict
 """
 from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -254,3 +255,73 @@ async def admin_review_report(
         admin_id, report_id, review_status.value,
     )
     return dict(report)
+
+
+async def get_safety_report_stats(db: AsyncSession) -> dict:
+    """Return aggregate statistics across all safety reports.
+
+    Computes counts broken down by status and category, the escalation rate,
+    rolling counts for the last 7 and 30 days, and average resolution time
+    (hours from filed_at to reviewed_at) for resolved reports.
+
+    Args:
+        db: Async DB session (unused — in-memory implementation).
+
+    Returns:
+        Dict matching the SafetyReportStats schema.
+    """
+    reports = list(_safety_reports.values())
+    total = len(reports)
+
+    # Counts by status
+    by_status: dict[str, int] = {s.value: 0 for s in SafetyReportStatus}
+    for r in reports:
+        by_status[r["status"].value] += 1
+
+    # Counts by category
+    by_category: dict[str, int] = {c.value: 0 for c in SafetyReportCategory}
+    for r in reports:
+        by_category[r["category"].value] += 1
+
+    # Escalation rate
+    escalation_rate = (
+        by_status[SafetyReportStatus.ESCALATED.value] / total if total > 0 else 0.0
+    )
+
+    # Rolling window counts
+    now = _utc_now()
+    cutoff_7 = now - timedelta(days=7)
+    cutoff_30 = now - timedelta(days=30)
+    reports_last_7_days = sum(
+        1 for r in reports if r["filed_at"] >= cutoff_7
+    )
+    reports_last_30_days = sum(
+        1 for r in reports if r["filed_at"] >= cutoff_30
+    )
+
+    # Average resolution hours (REVIEWED, ESCALATED, CLOSED)
+    resolved_statuses = {
+        SafetyReportStatus.REVIEWED,
+        SafetyReportStatus.ESCALATED,
+        SafetyReportStatus.CLOSED,
+    }
+    resolution_hours = [
+        (r["reviewed_at"] - r["filed_at"]).total_seconds() / 3600.0
+        for r in reports
+        if r["status"] in resolved_statuses and r["reviewed_at"] is not None
+    ]
+    avg_resolution_hours: Optional[float] = (
+        sum(resolution_hours) / len(resolution_hours)
+        if resolution_hours
+        else None
+    )
+
+    return {
+        "total_reports": total,
+        "by_status": by_status,
+        "by_category": by_category,
+        "escalation_rate": escalation_rate,
+        "reports_last_7_days": reports_last_7_days,
+        "reports_last_30_days": reports_last_30_days,
+        "avg_resolution_hours": avg_resolution_hours,
+    }

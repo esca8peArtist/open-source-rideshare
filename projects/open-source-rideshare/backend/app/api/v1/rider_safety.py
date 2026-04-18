@@ -1,16 +1,19 @@
 """Rider emergency safety endpoints.
 
-POST   /riders/me/panic                                     — trigger panic alert
-GET    /riders/me/panic/{alert_id}                          — get alert status
-DELETE /riders/me/panic/{alert_id}                          — cancel alert
-GET    /admin/panic-alerts                                  — admin: list all ACTIVE alerts
-POST   /admin/panic-alerts/{alert_id}/resolve               — admin: resolve alert
+POST   /riders/me/panic                                          — trigger panic alert
+GET    /riders/me/panic/{alert_id}                               — get alert status
+DELETE /riders/me/panic/{alert_id}                               — cancel alert
+GET    /admin/panic-alerts                                       — admin: list all ACTIVE alerts
+POST   /admin/panic-alerts/{alert_id}/resolve                    — admin: resolve alert
 
-POST   /riders/me/trusted-contacts                          — add trusted contact (max 3)
-GET    /riders/me/trusted-contacts                          — list all contacts
-PUT    /riders/me/trusted-contacts/{contact_id}             — update contact
-DELETE /riders/me/trusted-contacts/{contact_id}             — deactivate contact
-GET    /riders/me/trusted-contacts/{contact_id}/notification-log  — recent notifications
+POST   /riders/me/trusted-contacts                               — add trusted contact (max 3)
+GET    /riders/me/trusted-contacts                               — list all contacts
+PUT    /riders/me/trusted-contacts/{contact_id}                  — update contact
+DELETE /riders/me/trusted-contacts/{contact_id}                  — deactivate contact
+GET    /riders/me/trusted-contacts/{contact_id}/notification-log — recent notifications
+
+POST   /riders/me/rides/{ride_id}/safe-arrival                   — confirm safe arrival
+GET    /riders/me/rides/{ride_id}/safe-arrival                   — get safe arrival confirmation
 
 All business rules are enforced in the service layer.  This module handles
 HTTP mapping only: 404 on ownership mismatches (do not leak existence),
@@ -31,6 +34,8 @@ from app.schemas.rider_safety import (
     AdminResolvePanicRequest,
     PanicAlertListResponse,
     PanicAlertResponse,
+    SafeArrivalCreate,
+    SafeArrivalResponse,
     TriggerPanicRequest,
     TrustedContactCreate,
     TrustedContactNotificationLogResponse,
@@ -43,9 +48,11 @@ from app.services.rider_safety import (
     admin_list_active_panic_alerts,
     admin_resolve_panic_alert,
     cancel_panic_alert,
+    confirm_safe_arrival,
     deactivate_trusted_contact,
     get_notification_log,
     get_panic_alert,
+    get_safe_arrival,
     get_trusted_contact,
     list_trusted_contacts,
     send_trusted_contact_notifications,
@@ -383,3 +390,71 @@ async def get_contact_notification_log(
         contact_id=contact_id,
         items=[TrustedContactNotificationResponse(**n) for n in notifications],
     )
+
+
+# ---------------------------------------------------------------------------
+# Safe arrival — rider endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/riders/me/rides/{ride_id}/safe-arrival",
+    response_model=SafeArrivalResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Confirm safe arrival",
+    description=(
+        "Confirm safe arrival after a completed ride.  Creates an audit record "
+        "and (conceptually) notifies trusted contacts.  The ride must be in "
+        "COMPLETED status and must belong to the authenticated rider.  Only one "
+        "confirmation per ride is permitted."
+    ),
+)
+async def post_confirm_safe_arrival(
+    ride_id: int,
+    body: SafeArrivalCreate,
+    rider: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> SafeArrivalResponse:
+    """Confirm safe arrival for the given completed ride."""
+    try:
+        record = await confirm_safe_arrival(
+            db=db,
+            ride_id=ride_id,
+            user_id=rider.id,
+            notes=body.notes,
+        )
+    except LookupError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ride not found.",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+    return SafeArrivalResponse(**record)
+
+
+@router.get(
+    "/riders/me/rides/{ride_id}/safe-arrival",
+    response_model=SafeArrivalResponse,
+    summary="Get safe arrival confirmation",
+    description=(
+        "Retrieve the safe arrival confirmation for a ride belonging to the "
+        "authenticated rider.  Returns 404 if no confirmation has been filed yet."
+    ),
+)
+async def get_safe_arrival_endpoint(
+    ride_id: int,
+    rider: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> SafeArrivalResponse:
+    """Retrieve the safe arrival record for the given ride."""
+    record = await get_safe_arrival(db=db, ride_id=ride_id, user_id=rider.id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Safe arrival confirmation not found.",
+        )
+    return SafeArrivalResponse(**record)

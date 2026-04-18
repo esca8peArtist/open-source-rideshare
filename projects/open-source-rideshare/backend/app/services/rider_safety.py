@@ -36,6 +36,9 @@ Public API:
     deactivate_trusted_contact(db, rider_id, contact_id) -> dict
     get_notification_log(db, rider_id, contact_id, limit) -> list[dict]
     send_trusted_contact_notifications(db, ride_id, rider_id, notification_type) -> list[dict]
+
+    confirm_safe_arrival(db, ride_id, user_id, notes) -> dict
+    get_safe_arrival(db, ride_id, user_id) -> dict | None
 """
 from __future__ import annotations
 
@@ -61,6 +64,7 @@ logger = logging.getLogger(__name__)
 _panic_alerts: dict[str, dict] = {}
 _trusted_contacts: dict[str, dict] = {}
 _trusted_contact_notifications: dict[str, dict] = {}
+_safe_arrivals: dict[int, dict] = {}  # keyed by ride_id for O(1) duplicate check
 
 # Maximum active trusted contacts per rider
 MAX_TRUSTED_CONTACTS = 3
@@ -87,6 +91,7 @@ def _reset_store() -> None:
     _panic_alerts.clear()
     _trusted_contacts.clear()
     _trusted_contact_notifications.clear()
+    _safe_arrivals.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -588,3 +593,95 @@ async def send_trusted_contact_notifications(
         )
 
     return created
+
+
+# ---------------------------------------------------------------------------
+# Safe arrival operations
+# ---------------------------------------------------------------------------
+
+# Auto-incrementing ID counter for safe arrivals (in-memory only)
+_safe_arrival_id_counter: list[int] = [0]
+
+
+async def confirm_safe_arrival(
+    db: AsyncSession,
+    ride_id: int,
+    user_id: int,
+    notes: Optional[str] = None,
+) -> dict:
+    """Confirm safe arrival for a completed ride.
+
+    Validates that the ride exists and belongs to the user, that the ride is
+    in COMPLETED status, and that no duplicate confirmation exists.
+
+    Args:
+        db:      Async database session (used to look up the ride).
+        ride_id: ID of the completed ride.
+        user_id: ID of the authenticated rider.
+        notes:   Optional rider note about their arrival.
+
+    Returns:
+        Newly created safe arrival dict.
+
+    Raises:
+        LookupError: If the ride does not exist or does not belong to the user.
+        ValueError:  If the ride is not COMPLETED.
+        RuntimeError: If a safe arrival already exists for this ride.
+    """
+    from sqlalchemy import select
+    from app.models.ride import Ride, RideStatus
+
+    result = await db.execute(
+        select(Ride).where(Ride.id == ride_id)
+    )
+    ride = result.scalar_one_or_none()
+
+    if ride is None or ride.rider_id != user_id:
+        raise LookupError(f"Ride {ride_id} not found.")
+
+    if ride.status != RideStatus.COMPLETED:
+        raise ValueError("ride must be completed before confirming safe arrival")
+
+    if ride_id in _safe_arrivals:
+        raise RuntimeError("safe arrival already confirmed for this ride")
+
+    _safe_arrival_id_counter[0] += 1
+    record_id = _safe_arrival_id_counter[0]
+    now = _utc_now()
+    record = {
+        "id": record_id,
+        "ride_id": ride_id,
+        "user_id": user_id,
+        "confirmed_at": now,
+        "notes": notes,
+    }
+    _safe_arrivals[ride_id] = record
+    logger.info(
+        "Safe arrival confirmed — rider=%s ride=%s id=%s",
+        user_id, ride_id, record_id,
+    )
+    return dict(record)
+
+
+async def get_safe_arrival(
+    db: AsyncSession,
+    ride_id: int,
+    user_id: int,
+) -> Optional[dict]:
+    """Retrieve the safe arrival confirmation for a ride owned by the user.
+
+    Returns None if no confirmation exists or if the ride belongs to a
+    different user.  Callers should raise HTTP 404 in either case.
+
+    Args:
+        db:      Async database session (unused in this implementation).
+        ride_id: ID of the ride.
+        user_id: ID of the authenticated rider.
+
+    Returns:
+        Safe arrival dict if found and owned by user_id, else None.
+    """
+    record = _safe_arrivals.get(ride_id)
+    if record is None or record["user_id"] != user_id:
+        return None
+    return dict(record)

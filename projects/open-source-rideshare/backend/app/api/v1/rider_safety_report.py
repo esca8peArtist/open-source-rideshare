@@ -4,6 +4,7 @@ POST   /riders/me/safety-reports                        — file a safety report
 GET    /riders/me/safety-reports                        — list own reports (paginated)
 GET    /riders/me/safety-reports/{report_id}            — get specific report
 GET    /admin/safety-reports                            — admin: list all reports
+GET    /admin/safety-reports/stats                      — admin: aggregate statistics
 POST   /admin/safety-reports/{report_id}/review         — admin: review a report
 
 Riders can file at most one safety report per ride.  Reports are routed to
@@ -27,6 +28,7 @@ from app.schemas.rider_safety_report import (
     SafetyReportCreate,
     SafetyReportListResponse,
     SafetyReportResponse,
+    SafetyReportStats,
     SafetyReportStatus,
 )
 from app.services.rider_safety_report import (
@@ -34,6 +36,7 @@ from app.services.rider_safety_report import (
     admin_review_report,
     create_report,
     get_report,
+    get_safety_report_stats,
     list_rider_reports,
 )
 
@@ -184,6 +187,25 @@ async def admin_get_safety_reports(
         total=total,
         items=[SafetyReportResponse(**r) for r in items],
     )
+
+
+@router.get(
+    "/admin/safety-reports/stats",
+    response_model=SafetyReportStats,
+    summary="Admin: safety report aggregate statistics",
+    description=(
+        "Return aggregate statistics across all safety reports: total count, "
+        "counts by status and category, escalation rate, rolling 7-day and 30-day "
+        "counts, and average resolution time for resolved reports."
+    ),
+)
+async def admin_get_safety_report_stats(
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> SafetyReportStats:
+    """Return aggregate safety report statistics (admin only)."""
+    stats = await get_safety_report_stats(db=db)
+    return SafetyReportStats(**stats)
 
 
 @router.post(

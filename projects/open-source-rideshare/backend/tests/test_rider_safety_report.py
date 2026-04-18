@@ -92,12 +92,14 @@ from app.schemas.rider_safety_report import (
     SafetyReportResponse,
     SafetyReportStatus,
 )
+from app.schemas.rider_safety_report import SafetyReportStats
 from app.services.rider_safety_report import (
     _reset_store,
     admin_list_reports,
     admin_review_report,
     create_report,
     get_report,
+    get_safety_report_stats,
     list_rider_reports,
 )
 
@@ -748,3 +750,176 @@ class TestEndToEnd:
         # Rider can still retrieve their report and see the updated status
         rider_view = await get_report(db=mock_db, rider_id=10, report_id=report["id"])
         assert rider_view["status"] == SafetyReportStatus.ESCALATED
+
+
+# ---------------------------------------------------------------------------
+# Service: get_safety_report_stats
+# ---------------------------------------------------------------------------
+
+
+class TestGetSafetyReportStats:
+    """Tests for the admin aggregate statistics endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_empty_database_all_zeros(self, mock_db):
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["total_reports"] == 0
+        assert stats["reports_last_7_days"] == 0
+        assert stats["reports_last_30_days"] == 0
+
+    @pytest.mark.asyncio
+    async def test_empty_database_escalation_rate_is_zero(self, mock_db):
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["escalation_rate"] == 0.0
+
+    @pytest.mark.asyncio
+    async def test_empty_database_avg_resolution_hours_is_null(self, mock_db):
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["avg_resolution_hours"] is None
+
+    @pytest.mark.asyncio
+    async def test_empty_database_all_status_counts_zero(self, mock_db):
+        stats = await get_safety_report_stats(db=mock_db)
+        for s in SafetyReportStatus:
+            assert stats["by_status"][s.value] == 0
+
+    @pytest.mark.asyncio
+    async def test_empty_database_all_category_counts_zero(self, mock_db):
+        stats = await get_safety_report_stats(db=mock_db)
+        for c in SafetyReportCategory:
+            assert stats["by_category"][c.value] == 0
+
+    @pytest.mark.asyncio
+    async def test_total_reports_count(self, mock_db):
+        for i in range(3):
+            await _make_report(mock_db, rider_id=i + 1, ride_id=i + 1)
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["total_reports"] == 3
+
+    @pytest.mark.asyncio
+    async def test_by_status_counts_pending(self, mock_db):
+        await _make_report(mock_db, rider_id=1, ride_id=1)
+        await _make_report(mock_db, rider_id=2, ride_id=2)
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["by_status"]["pending"] == 2
+        assert stats["by_status"]["reviewed"] == 0
+
+    @pytest.mark.asyncio
+    async def test_by_status_counts_after_review(self, mock_db):
+        r = await _make_report(mock_db, rider_id=1, ride_id=1)
+        await _make_report(mock_db, rider_id=2, ride_id=2)
+        await admin_review_report(
+            db=mock_db,
+            report_id=r["id"],
+            admin_id=99,
+            review_status=SafetyReportStatus.REVIEWED,
+        )
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["by_status"]["pending"] == 1
+        assert stats["by_status"]["reviewed"] == 1
+
+    @pytest.mark.asyncio
+    async def test_by_category_counts(self, mock_db):
+        await _make_report(mock_db, rider_id=1, ride_id=1, category=SafetyReportCategory.HARASSMENT)
+        await _make_report(mock_db, rider_id=2, ride_id=2, category=SafetyReportCategory.HARASSMENT)
+        await _make_report(mock_db, rider_id=3, ride_id=3, category=SafetyReportCategory.VEHICLE_ISSUE)
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["by_category"]["harassment"] == 2
+        assert stats["by_category"]["vehicle_issue"] == 1
+        assert stats["by_category"]["dangerous_driving"] == 0
+
+    @pytest.mark.asyncio
+    async def test_escalation_rate_calculation(self, mock_db):
+        # 2 reports; escalate 1 → rate = 0.5
+        r = await _make_report(mock_db, rider_id=1, ride_id=1)
+        await _make_report(mock_db, rider_id=2, ride_id=2)
+        await admin_review_report(
+            db=mock_db,
+            report_id=r["id"],
+            admin_id=99,
+            review_status=SafetyReportStatus.ESCALATED,
+        )
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["escalation_rate"] == pytest.approx(0.5)
+
+    @pytest.mark.asyncio
+    async def test_escalation_rate_all_escalated(self, mock_db):
+        for i in range(3):
+            r = await _make_report(mock_db, rider_id=i + 1, ride_id=i + 1)
+            await admin_review_report(
+                db=mock_db,
+                report_id=r["id"],
+                admin_id=99,
+                review_status=SafetyReportStatus.ESCALATED,
+            )
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["escalation_rate"] == pytest.approx(1.0)
+
+    @pytest.mark.asyncio
+    async def test_reports_last_7_days_includes_recent(self, mock_db):
+        # Reports just created are within 7 days
+        await _make_report(mock_db, rider_id=1, ride_id=1)
+        await _make_report(mock_db, rider_id=2, ride_id=2)
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["reports_last_7_days"] == 2
+
+    @pytest.mark.asyncio
+    async def test_reports_last_7_days_excludes_old(self, mock_db):
+        """Backdating a report to 10 days ago keeps it outside the 7-day window
+        but still inside the 30-day window."""
+        from app.services import rider_safety_report as svc
+        from datetime import timedelta
+
+        r = await _make_report(mock_db, rider_id=1, ride_id=1)
+        # Backdate the stored record to 10 days ago — outside 7d, inside 30d
+        svc._safety_reports[r["id"]]["filed_at"] = (
+            svc._utc_now() - timedelta(days=10)
+        )
+        await _make_report(mock_db, rider_id=2, ride_id=2)  # recent report
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["reports_last_7_days"] == 1   # only the recent one
+        assert stats["reports_last_30_days"] == 2  # both fall within 30 days
+
+    @pytest.mark.asyncio
+    async def test_avg_resolution_hours_is_set_after_review(self, mock_db):
+        r = await _make_report(mock_db, rider_id=1, ride_id=1)
+        await admin_review_report(
+            db=mock_db,
+            report_id=r["id"],
+            admin_id=99,
+            review_status=SafetyReportStatus.REVIEWED,
+        )
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["avg_resolution_hours"] is not None
+        assert stats["avg_resolution_hours"] >= 0.0
+
+    @pytest.mark.asyncio
+    async def test_avg_resolution_hours_null_when_all_pending(self, mock_db):
+        await _make_report(mock_db, rider_id=1, ride_id=1)
+        stats = await get_safety_report_stats(db=mock_db)
+        assert stats["avg_resolution_hours"] is None
+
+    @pytest.mark.asyncio
+    async def test_stats_schema_validates(self, mock_db):
+        """SafetyReportStats Pydantic model can be constructed from the service output."""
+        stats_dict = await get_safety_report_stats(db=mock_db)
+        model = SafetyReportStats(**stats_dict)
+        assert model.total_reports == 0
+        assert isinstance(model.by_status, dict)
+        assert isinstance(model.by_category, dict)
+
+    @pytest.mark.asyncio
+    async def test_router_stats_returns_schema(self):
+        """Admin stats endpoint returns a SafetyReportStats response."""
+        from unittest.mock import AsyncMock as AM, MagicMock as MM
+        from app.api.v1.rider_safety_report import admin_get_safety_report_stats
+
+        mock_admin = MM()
+        mock_admin.id = 99
+        mock_db = AM()
+
+        result = await admin_get_safety_report_stats(admin=mock_admin, db=mock_db)
+        assert isinstance(result, SafetyReportStats)
+        assert result.total_reports == 0
+        assert result.escalation_rate == 0.0
+        assert result.avg_resolution_hours is None

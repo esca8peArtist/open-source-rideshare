@@ -177,3 +177,31 @@ class TrustedContactNotificationLogResponse(BaseModel):
 
     contact_id: str
     items: list[TrustedContactNotificationResponse]
+
+
+# ---------------------------------------------------------------------------
+# Safe arrival schemas
+# ---------------------------------------------------------------------------
+
+
+class SafeArrivalCreate(BaseModel):
+    """Request body for confirming safe arrival after a completed ride."""
+
+    notes: Optional[str] = Field(
+        None,
+        description="Optional note from the rider about their arrival.",
+    )
+
+
+class SafeArrivalResponse(BaseModel):
+    """Safe arrival confirmation record."""
+
+    id: int = Field(..., description="Unique record identifier.")
+    ride_id: int = Field(..., description="ID of the completed ride.")
+    user_id: int = Field(..., description="ID of the rider who confirmed arrival.")
+    confirmed_at: datetime = Field(
+        ..., description="UTC timestamp when arrival was confirmed."
+    )
+    notes: Optional[str] = Field(None, description="Optional rider note.")
+
+    model_config = {"from_attributes": True}
