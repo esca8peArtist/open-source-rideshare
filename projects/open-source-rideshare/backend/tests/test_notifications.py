@@ -139,3 +139,41 @@ class TestClearNotifications:
         assert len(get_sent_notifications()) == 1
         clear_sent_notifications()
         assert len(get_sent_notifications()) == 0
+
+
+class TestScheduledDispatchedNotification:
+    def test_type_exists(self):
+        assert NotificationType("ride_scheduled_dispatched") == NotificationType.RIDE_SCHEDULED_DISPATCHED
+
+    def test_template_renders_with_address(self):
+        from app.services.notification_templates import render
+        title, body, channels = render(
+            NotificationType.RIDE_SCHEDULED_DISPATCHED,
+            pickup_address="123 Main St",
+            scheduled_for="2026-04-18 10:00:00",
+        )
+        assert "dispatched" in title.lower() or "dispatch" in body.lower()
+        assert "123 Main St" in body
+        assert NotificationChannel.PUSH in channels
+        assert NotificationChannel.SMS in channels
+
+    def test_template_renders_without_address(self):
+        from app.services.notification_templates import render
+        title, body, _ = render(NotificationType.RIDE_SCHEDULED_DISPATCHED)
+        assert title != ""
+        assert body != ""
+
+    @pytest.mark.asyncio
+    async def test_send_ride_notification_dispatched(self):
+        """send_ride_notification works for RIDE_SCHEDULED_DISPATCHED."""
+        result = await send_ride_notification(
+            user_id=5,
+            type=NotificationType.RIDE_SCHEDULED_DISPATCHED,
+            ride_id=99,
+            pickup_address="999 Oak Ave",
+        )
+        assert result is True
+        log = get_sent_notifications()
+        assert len(log) == 1
+        assert log[0].type == NotificationType.RIDE_SCHEDULED_DISPATCHED
+        assert "999 Oak Ave" in log[0].body

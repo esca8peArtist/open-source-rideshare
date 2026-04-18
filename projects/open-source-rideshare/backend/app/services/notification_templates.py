@@ -247,6 +247,16 @@ def driver_performance_final_warning(
     )
 
 
+def scheduled_dispatched(pickup_address: str = "", scheduled_for: str = "", **kw) -> TemplateResult:
+    pickup_part = f" from {pickup_address}" if pickup_address else ""
+    time_part = f" (originally scheduled for {scheduled_for})" if scheduled_for else ""
+    return (
+        "Your ride is being dispatched",
+        f"We're finding a driver for your scheduled ride{pickup_part}{time_part}.",
+        _PUSH_SMS,
+    )
+
+
 def driver_auto_suspended(
     alert_type: str = "", warning_count: int = 3, **kw
 ) -> TemplateResult:
@@ -286,6 +296,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.DRIVER_PERFORMANCE_WARNING: driver_performance_warning,
     NotificationType.DRIVER_PERFORMANCE_FINAL_WARNING: driver_performance_final_warning,
     NotificationType.DRIVER_AUTO_SUSPENDED: driver_auto_suspended,
+    NotificationType.RIDE_SCHEDULED_DISPATCHED: scheduled_dispatched,
 }
 
 

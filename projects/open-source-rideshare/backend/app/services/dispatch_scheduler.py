@@ -78,6 +78,14 @@ async def dispatch_due_rides(*, now: datetime | None = None) -> int:
 
             # Notify rider that their scheduled ride is now active
             await notify_ride_status(ride.rider_id, ride.id, "dispatched")
+            from app.services.notification_events import notify_scheduled_dispatched
+            await notify_scheduled_dispatched(
+                db,
+                rider_id=ride.rider_id,
+                ride_id=ride.id,
+                pickup_address=ride.pickup_address or "",
+                scheduled_for=str(ride.scheduled_for) if ride.scheduled_for else "",
+            )
 
             # Trigger matching
             try:

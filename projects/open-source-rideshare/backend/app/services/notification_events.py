@@ -431,6 +431,30 @@ async def notify_driver_performance_final_warning(
         )
 
 
+async def notify_scheduled_dispatched(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+    pickup_address: str = "",
+    scheduled_for: str = "",
+) -> None:
+    """Notify rider that their scheduled ride has entered the dispatch window."""
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.RIDE_SCHEDULED_DISPATCHED,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            pickup_address=pickup_address,
+            scheduled_for=scheduled_for,
+        )
+    except Exception:
+        logger.exception("Failed to send scheduled_dispatched notification for ride %d", ride_id)
+
+
 async def notify_driver_auto_suspended(
     db: AsyncSession,
     driver_id: int,

@@ -54,6 +54,7 @@ class NotificationType(str, enum.Enum):
     DRIVER_PERFORMANCE_WARNING = "driver_performance_warning"
     DRIVER_PERFORMANCE_FINAL_WARNING = "driver_performance_final_warning"
     DRIVER_AUTO_SUSPENDED = "driver_auto_suspended"
+    RIDE_SCHEDULED_DISPATCHED = "ride_scheduled_dispatched"
 
 
 @dataclass
@@ -246,6 +247,7 @@ async def filter_channels_by_preferences(
         NotificationType.DRIVER_ARRIVED, NotificationType.RIDE_REMINDER,
         NotificationType.RIDE_IN_PROGRESS, NotificationType.RIDE_ASSIGNED,
         NotificationType.RIDE_COMPLETED_DRIVER, NotificationType.ROUTE_DEVIATION,
+        NotificationType.RIDE_SCHEDULED_DISPATCHED,
     }
     payment_types = {
         NotificationType.PAYMENT_RECEIVED, NotificationType.PAYOUT_COMPLETED,

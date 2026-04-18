@@ -2,7 +2,7 @@
 
 import asyncio
 from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -256,6 +256,70 @@ class TestDispatchDueRides:
         assert count == 1
         assert ride.status == RideStatus.REQUESTED
         mock_notify.assert_any_call(100, 1, "no_drivers")
+
+
+class TestScheduledDispatchNotification:
+    """Tests that the push/SMS notification fires when a scheduled ride is dispatched."""
+
+    @pytest.mark.asyncio
+    async def test_notification_sent_on_dispatch(self):
+        """notify_scheduled_dispatched is called with correct args when a ride is dispatched."""
+        ride = _make_ride(1, 100, NOW + timedelta(minutes=10))
+        mock_sf, _ = _mock_db_with_rides([ride])
+        p1, p2, p3, p4 = _patches(mock_sf)
+
+        with p1, p2, p3, p4, \
+             patch(
+                 "app.services.notification_events.notify_scheduled_dispatched",
+                 new_callable=AsyncMock,
+             ) as mock_notif:
+            count = await dispatch_due_rides(now=NOW)
+
+        assert count == 1
+        mock_notif.assert_called_once_with(
+            ANY,
+            rider_id=100,
+            ride_id=1,
+            pickup_address="123 Main St",
+            scheduled_for=ANY,
+        )
+
+    @pytest.mark.asyncio
+    async def test_notification_not_sent_for_ride_outside_window(self):
+        """No dispatch notification is sent when the ride is not yet due."""
+        ride = _make_ride(1, 100, NOW + timedelta(hours=2))
+        mock_sf, _ = _mock_db_with_rides([ride])
+        p1, p2, p3, p4 = _patches(mock_sf)
+
+        with p1, p2, p3, p4, \
+             patch(
+                 "app.services.notification_events.notify_scheduled_dispatched",
+                 new_callable=AsyncMock,
+             ) as mock_notif:
+            count = await dispatch_due_rides(now=NOW)
+
+        assert count == 0
+        mock_notif.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_dispatch_proceeds_if_notification_raises(self):
+        """A notification exception must not abort the dispatch or matching flow."""
+        ride = _make_ride(1, 100, NOW + timedelta(minutes=5))
+        mock_sf, _ = _mock_db_with_rides([ride])
+        p1, p2, p3, p4 = _patches(mock_sf)
+
+        # The real notify_scheduled_dispatched swallows its own errors via try/except.
+        # Simulate a failure at the send_ride_notification layer instead.
+        with p1, p2, p3, p4, \
+             patch(
+                 "app.services.notifications.send_notification",
+                 new_callable=AsyncMock,
+                 side_effect=RuntimeError("provider down"),
+             ):
+            count = await dispatch_due_rides(now=NOW)
+
+        assert count == 1
+        assert ride.status == RideStatus.REQUESTED
 
 
 class TestRetryUnmatchedRides:
