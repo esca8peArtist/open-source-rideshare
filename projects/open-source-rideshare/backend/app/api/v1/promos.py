@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, require_admin
 from app.db.database import get_db
-from app.models.promo import PromoCode, PromoRedemption, PromoType
+from app.models.promo import PromoCode, PromoRedemption, PromoType, generate_referral_code
 from app.models.user import User
 from app.schemas.promo import (
     ApplyPromoRequest,
@@ -84,6 +84,128 @@ async def list_promo_codes(
     result = await db.execute(query)
     promos = result.scalars().all()
     return [_promo_to_response(p) for p in promos]
+
+
+# NOTE: /admin/stats must be declared BEFORE /admin/{promo_id} so FastAPI does not
+# try to parse the literal string "stats" as an integer promo_id.
+@router.get(
+    "/admin/stats",
+    response_model=PromoStats,
+    dependencies=[Depends(require_admin)],
+)
+async def promo_stats(
+    period: str = Query("month", pattern="^(week|month|year|all)$"),
+    db: AsyncSession = Depends(get_db),
+) -> PromoStats:
+    """Promo code usage analytics. Admin only.
+
+    Returns redemption counts, total discount value, top codes by usage
+    and by discount given, and referral vs non-referral breakdown.
+    """
+    now = datetime.now(timezone.utc)
+    if period == "week":
+        start: datetime | None = now - timedelta(days=7)
+    elif period == "month":
+        start = now - timedelta(days=30)
+    elif period == "year":
+        start = now - timedelta(days=365)
+    else:
+        start = None  # "all" — no date filter
+
+    # Summary stats
+    total_q = select(
+        func.count(PromoRedemption.id).label("total"),
+        func.coalesce(func.sum(PromoRedemption.discount_amount), 0.0).label("discount_total"),
+        func.count(func.distinct(PromoRedemption.user_id)).label("unique_users"),
+    )
+    if start:
+        total_q = total_q.where(PromoRedemption.redeemed_at >= start)
+    summary = (await db.execute(total_q)).one()
+
+    # Active promo count (point-in-time, not period-filtered)
+    active_count = (
+        await db.execute(
+            select(func.count(PromoCode.id)).where(PromoCode.is_active.is_(True))
+        )
+    ).scalar() or 0
+
+    # Referral vs non-referral breakdown
+    ref_q = (
+        select(
+            PromoCode.is_referral,
+            func.count(PromoRedemption.id).label("cnt"),
+        )
+        .join(PromoCode, PromoRedemption.promo_code_id == PromoCode.id)
+        .group_by(PromoCode.is_referral)
+    )
+    if start:
+        ref_q = ref_q.where(PromoRedemption.redeemed_at >= start)
+    ref_rows = (await db.execute(ref_q)).all()
+    referral_redemptions = sum(r.cnt for r in ref_rows if r.is_referral)
+    non_referral_redemptions = sum(r.cnt for r in ref_rows if not r.is_referral)
+
+    # Top 10 by usage count
+    top_usage_q = (
+        select(
+            PromoCode.id.label("promo_code_id"),
+            PromoCode.code,
+            PromoCode.description,
+            PromoCode.promo_type,
+            PromoCode.is_referral,
+            func.count(PromoRedemption.id).label("redemptions"),
+            func.coalesce(func.sum(PromoRedemption.discount_amount), 0.0).label("total_discount_given"),
+        )
+        .join(PromoCode, PromoRedemption.promo_code_id == PromoCode.id)
+        .group_by(PromoCode.id, PromoCode.code, PromoCode.description, PromoCode.promo_type, PromoCode.is_referral)
+        .order_by(func.count(PromoRedemption.id).desc())
+        .limit(10)
+    )
+    if start:
+        top_usage_q = top_usage_q.where(PromoRedemption.redeemed_at >= start)
+    top_usage_rows = (await db.execute(top_usage_q)).all()
+
+    # Top 10 by total discount given
+    top_discount_q = (
+        select(
+            PromoCode.id.label("promo_code_id"),
+            PromoCode.code,
+            PromoCode.description,
+            PromoCode.promo_type,
+            PromoCode.is_referral,
+            func.count(PromoRedemption.id).label("redemptions"),
+            func.coalesce(func.sum(PromoRedemption.discount_amount), 0.0).label("total_discount_given"),
+        )
+        .join(PromoCode, PromoRedemption.promo_code_id == PromoCode.id)
+        .group_by(PromoCode.id, PromoCode.code, PromoCode.description, PromoCode.promo_type, PromoCode.is_referral)
+        .order_by(func.sum(PromoRedemption.discount_amount).desc())
+        .limit(10)
+    )
+    if start:
+        top_discount_q = top_discount_q.where(PromoRedemption.redeemed_at >= start)
+    top_discount_rows = (await db.execute(top_discount_q)).all()
+
+    def _row_to_top_entry(row) -> PromoTopEntry:
+        return PromoTopEntry(
+            promo_code_id=row.promo_code_id,
+            code=row.code,
+            description=row.description,
+            promo_type=row.promo_type.value if hasattr(row.promo_type, "value") else str(row.promo_type),
+            is_referral=row.is_referral,
+            redemptions=int(row.redemptions),
+            total_discount_given=round(float(row.total_discount_given), 2),
+        )
+
+    return PromoStats(
+        period=period,
+        total_redemptions=int(summary.total),
+        total_discount_given=round(float(summary.discount_total), 2),
+        unique_riders_used=int(summary.unique_users),
+        active_promo_count=int(active_count),
+        referral_redemptions=int(referral_redemptions),
+        non_referral_redemptions=int(non_referral_redemptions),
+        top_promos_by_usage=[_row_to_top_entry(r) for r in top_usage_rows],
+        top_promos_by_discount=[_row_to_top_entry(r) for r in top_discount_rows],
+    )
 
 
 @router.get(
@@ -247,128 +369,44 @@ async def get_my_referral_code(
     }
 
 
-@router.get(
-    "/admin/stats",
-    response_model=PromoStats,
-    dependencies=[Depends(require_admin)],
-)
-async def promo_stats(
-    period: str = Query("month", pattern="^(week|month|year|all)$"),
+@router.post("/my-referral", status_code=status.HTTP_200_OK)
+async def generate_my_referral_code(
+    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> PromoStats:
-    """Promo code usage analytics. Admin only.
+):
+    """Generate or return the current user's referral code.
 
-    Returns redemption counts, total discount value, top codes by usage
-    and by discount given, and referral vs non-referral breakdown.
+    Idempotent — returns the existing code unchanged if one already exists.
+    New codes give the recipient $5 off their first ride.
     """
-    now = datetime.now(timezone.utc)
-    if period == "week":
-        start: datetime | None = now - timedelta(days=7)
-    elif period == "month":
-        start = now - timedelta(days=30)
-    elif period == "year":
-        start = now - timedelta(days=365)
-    else:
-        start = None  # "all" — no date filter
+    from app.services.promos import create_referral_promo, get_referral_promo_for_user
 
-    redemption_q = select(PromoRedemption)
-    if start:
-        redemption_q = redemption_q.where(PromoRedemption.redeemed_at >= start)
+    promo = await get_referral_promo_for_user(user.id, db)
+    if promo:
+        return {
+            "has_referral_code": True,
+            "referral_code": promo.code,
+            "total_referrals": promo.total_uses,
+            "is_active": promo.is_active,
+        }
 
-    # Summary stats
-    total_q = select(
-        func.count(PromoRedemption.id).label("total"),
-        func.coalesce(func.sum(PromoRedemption.discount_amount), 0.0).label("discount_total"),
-        func.count(func.distinct(PromoRedemption.user_id)).label("unique_users"),
-    )
-    if start:
-        total_q = total_q.where(PromoRedemption.redeemed_at >= start)
-    summary = (await db.execute(total_q)).one()
+    # Retry up to 5 times to find a code not already in use
+    code = generate_referral_code()
+    for _ in range(4):
+        collision = await db.execute(select(PromoCode).where(PromoCode.code == code))
+        if not collision.scalar_one_or_none():
+            break
+        code = generate_referral_code()
 
-    # Active promo count (point-in-time, not period-filtered)
-    active_count = (
-        await db.execute(
-            select(func.count(PromoCode.id)).where(PromoCode.is_active.is_(True))
-        )
-    ).scalar() or 0
+    promo = await create_referral_promo(user.id, code, db)
+    await db.commit()
 
-    # Referral vs non-referral breakdown
-    ref_q = (
-        select(
-            PromoCode.is_referral,
-            func.count(PromoRedemption.id).label("cnt"),
-        )
-        .join(PromoCode, PromoRedemption.promo_code_id == PromoCode.id)
-        .group_by(PromoCode.is_referral)
-    )
-    if start:
-        ref_q = ref_q.where(PromoRedemption.redeemed_at >= start)
-    ref_rows = (await db.execute(ref_q)).all()
-    referral_redemptions = sum(r.cnt for r in ref_rows if r.is_referral)
-    non_referral_redemptions = sum(r.cnt for r in ref_rows if not r.is_referral)
-
-    # Top 10 by usage count
-    top_usage_q = (
-        select(
-            PromoCode.id.label("promo_code_id"),
-            PromoCode.code,
-            PromoCode.description,
-            PromoCode.promo_type,
-            PromoCode.is_referral,
-            func.count(PromoRedemption.id).label("redemptions"),
-            func.coalesce(func.sum(PromoRedemption.discount_amount), 0.0).label("total_discount_given"),
-        )
-        .join(PromoCode, PromoRedemption.promo_code_id == PromoCode.id)
-        .group_by(PromoCode.id, PromoCode.code, PromoCode.description, PromoCode.promo_type, PromoCode.is_referral)
-        .order_by(func.count(PromoRedemption.id).desc())
-        .limit(10)
-    )
-    if start:
-        top_usage_q = top_usage_q.where(PromoRedemption.redeemed_at >= start)
-    top_usage_rows = (await db.execute(top_usage_q)).all()
-
-    # Top 10 by total discount given
-    top_discount_q = (
-        select(
-            PromoCode.id.label("promo_code_id"),
-            PromoCode.code,
-            PromoCode.description,
-            PromoCode.promo_type,
-            PromoCode.is_referral,
-            func.count(PromoRedemption.id).label("redemptions"),
-            func.coalesce(func.sum(PromoRedemption.discount_amount), 0.0).label("total_discount_given"),
-        )
-        .join(PromoCode, PromoRedemption.promo_code_id == PromoCode.id)
-        .group_by(PromoCode.id, PromoCode.code, PromoCode.description, PromoCode.promo_type, PromoCode.is_referral)
-        .order_by(func.sum(PromoRedemption.discount_amount).desc())
-        .limit(10)
-    )
-    if start:
-        top_discount_q = top_discount_q.where(PromoRedemption.redeemed_at >= start)
-    top_discount_rows = (await db.execute(top_discount_q)).all()
-
-    def _row_to_top_entry(row) -> PromoTopEntry:
-        return PromoTopEntry(
-            promo_code_id=row.promo_code_id,
-            code=row.code,
-            description=row.description,
-            promo_type=row.promo_type.value if hasattr(row.promo_type, "value") else str(row.promo_type),
-            is_referral=row.is_referral,
-            redemptions=int(row.redemptions),
-            total_discount_given=round(float(row.total_discount_given), 2),
-        )
-
-    return PromoStats(
-        period=period,
-        total_redemptions=int(summary.total),
-        total_discount_given=round(float(summary.discount_total), 2),
-        unique_riders_used=int(summary.unique_users),
-        active_promo_count=int(active_count),
-        referral_redemptions=int(referral_redemptions),
-        non_referral_redemptions=int(non_referral_redemptions),
-        top_promos_by_usage=[_row_to_top_entry(r) for r in top_usage_rows],
-        top_promos_by_discount=[_row_to_top_entry(r) for r in top_discount_rows],
-    )
+    return {
+        "has_referral_code": True,
+        "referral_code": promo.code,
+        "total_referrals": promo.total_uses,
+        "is_active": promo.is_active,
+    }
 
 
 def _promo_to_response(promo: PromoCode) -> PromoCodeResponse:

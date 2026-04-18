@@ -452,6 +452,64 @@ class TestReferralEndpoint:
 
 
 @pytest.mark.anyio
+class TestGenerateReferralEndpoint:
+    async def test_generate_creates_new_code(self, client: AsyncClient, rider_token):
+        resp = await client.post(
+            "/api/v1/promos/my-referral",
+            headers=auth_header(rider_token),
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["has_referral_code"] is True
+        assert data["referral_code"] is not None
+        assert len(data["referral_code"]) == 8
+        assert data["total_referrals"] == 0
+        assert data["is_active"] is True
+
+    async def test_generate_idempotent(self, client: AsyncClient, rider_token):
+        resp1 = await client.post(
+            "/api/v1/promos/my-referral",
+            headers=auth_header(rider_token),
+        )
+        resp2 = await client.post(
+            "/api/v1/promos/my-referral",
+            headers=auth_header(rider_token),
+        )
+        assert resp1.status_code == 200
+        assert resp2.status_code == 200
+        assert resp1.json()["referral_code"] == resp2.json()["referral_code"]
+
+    async def test_generate_existing_code_returned(self, client: AsyncClient, rider_token, db, rider):
+        await create_referral_promo(rider.id, "PREEXIST", db)
+        await db.flush()
+
+        resp = await client.post(
+            "/api/v1/promos/my-referral",
+            headers=auth_header(rider_token),
+        )
+        assert resp.status_code == 200
+        assert resp.json()["referral_code"] == "PREEXIST"
+
+    async def test_generate_requires_auth(self, client: AsyncClient):
+        resp = await client.post("/api/v1/promos/my-referral")
+        assert resp.status_code == 401
+
+
+@pytest.mark.anyio
+class TestAdminStatsRouting:
+    async def test_stats_not_shadowed_by_promo_id_route(self, client: AsyncClient, admin_token):
+        """GET /admin/stats must return 200, not 422 from promo_id int conversion."""
+        resp = await client.get(
+            "/api/v1/promos/admin/stats",
+            headers=auth_header(admin_token),
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "total_redemptions" in data
+        assert "period" in data
+
+
+@pytest.mark.anyio
 class TestRideRequestWithPromo:
     async def test_ride_request_with_valid_promo(self, client: AsyncClient, rider_token, db):
         promo = PromoCode(
