@@ -58,6 +58,8 @@ from app.schemas.admin import (
     DriverActivityEntry,
     DriverActivityListResponse,
     DriverMetrics,
+    DriverPanicFrequencyEntry,
+    DriverPanicFrequencyResponse,
     DriverStatusChangeEntry,
     ActiveShiftEntry,
     ActiveShiftsResponse,
@@ -1651,6 +1653,92 @@ async def sos_leaderboard(
         )
 
     return SOSFrequencyResponse(period=period, entries=entries)
+
+
+@router.get("/safety/drivers/panic/leaderboard", response_model=DriverPanicFrequencyResponse)
+async def driver_panic_leaderboard(
+    period: str = Query("all", pattern="^(week|month|year|all)$"),
+    limit: int = Query(20, ge=1, le=100),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Rank drivers by panic alert volume. Admin only.
+
+    Useful for identifying drivers who trigger panic alerts frequently — whether
+    due to genuine safety incidents or potential system abuse.
+
+    Period filters: week (7d), month (30d), year (365d), all (default).
+    Returns up to `limit` drivers (1–100, default 20) sorted by total descending.
+    """
+    from app.services.driver_safety import admin_list_all_driver_panic_alerts
+    from app.schemas.driver_safety import DriverPanicAlertStatus
+
+    now = datetime.now(timezone.utc)
+    period_starts = {
+        "week": now - timedelta(days=7),
+        "month": now - timedelta(days=30),
+        "year": now - timedelta(days=365),
+    }
+    period_start = period_starts.get(period)
+
+    all_alerts = await admin_list_all_driver_panic_alerts(db=db, period_start=period_start)
+
+    if not all_alerts:
+        return DriverPanicFrequencyResponse(period=period, entries=[])
+
+    # Aggregate by driver_id (this is the User.id of the driver, not profile id)
+    by_driver: dict[int, dict] = {}
+    for alert in all_alerts:
+        did = alert["driver_id"]
+        if did not in by_driver:
+            by_driver[did] = {"active": 0, "resolved": 0, "false_alarms": 0, "last_panic_at": alert["triggered_at"]}
+        if alert["status"] == DriverPanicAlertStatus.ACTIVE:
+            by_driver[did]["active"] += 1
+        elif alert["status"] == DriverPanicAlertStatus.RESOLVED:
+            by_driver[did]["resolved"] += 1
+        elif alert["status"] == DriverPanicAlertStatus.FALSE_ALARM:
+            by_driver[did]["false_alarms"] += 1
+        if alert["triggered_at"] > by_driver[did]["last_panic_at"]:
+            by_driver[did]["last_panic_at"] = alert["triggered_at"]
+
+    sorted_dids = sorted(
+        by_driver.keys(),
+        key=lambda did: by_driver[did]["active"] + by_driver[did]["resolved"] + by_driver[did]["false_alarms"],
+        reverse=True,
+    )[:limit]
+
+    # Enrich with driver profile info — look up DriverProfile by user_id then fetch User
+    profile_rows = (
+        await db.execute(
+            select(DriverProfile).options(joinedload(DriverProfile.user))
+            .where(DriverProfile.user_id.in_(sorted_dids))
+        )
+    ).unique().scalars().all()
+    profile_map = {p.user_id: p for p in profile_rows}
+
+    entries = []
+    for did in sorted_dids:
+        v = by_driver[did]
+        total = v["active"] + v["resolved"] + v["false_alarms"]
+        profile = profile_map.get(did)
+        driver_profile_id = profile.id if profile else did
+        driver_name = profile.user.name if profile and profile.user else None
+        driver_phone = profile.user.phone if profile and profile.user else None
+        entries.append(
+            DriverPanicFrequencyEntry(
+                driver_profile_id=driver_profile_id,
+                driver_name=driver_name,
+                driver_phone=driver_phone,
+                total=total,
+                active=v["active"],
+                resolved=v["resolved"],
+                false_alarms=v["false_alarms"],
+                false_alarm_rate=round(v["false_alarms"] / total * 100, 1) if total else 0.0,
+                last_panic_at=v["last_panic_at"],
+            )
+        )
+
+    return DriverPanicFrequencyResponse(period=period, entries=entries)
 
 
 @router.get("/safety/sos/{alert_id}", response_model=AdminSOSAlertResponse)

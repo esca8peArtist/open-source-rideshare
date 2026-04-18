@@ -238,3 +238,22 @@ async def list_driver_panic_alerts(
     alerts = [a for a in _driver_panic_alerts.values() if a["driver_id"] == driver_id]
     alerts.sort(key=lambda a: a["triggered_at"], reverse=True)
     return [dict(a) for a in alerts]
+
+
+async def admin_list_all_driver_panic_alerts(
+    db: AsyncSession,
+    period_start: Optional[datetime] = None,
+) -> list[dict]:
+    """Return all driver panic alerts across all drivers, optionally filtered by period.
+
+    Args:
+        db:           Async database session (unused — in-memory store).
+        period_start: If provided, only alerts triggered at or after this time are returned.
+
+    Returns:
+        List of alert dicts (copies).
+    """
+    alerts = list(_driver_panic_alerts.values())
+    if period_start is not None:
+        alerts = [a for a in alerts if a["triggered_at"] >= period_start]
+    return [dict(a) for a in alerts]

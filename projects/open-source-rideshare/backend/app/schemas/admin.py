@@ -210,6 +210,23 @@ class SOSFrequencyResponse(BaseModel):
     entries: list[SOSFrequencyEntry]
 
 
+class DriverPanicFrequencyEntry(BaseModel):
+    driver_profile_id: int
+    driver_name: str | None = None
+    driver_phone: str | None = None
+    total: int
+    active: int
+    resolved: int
+    false_alarms: int
+    false_alarm_rate: float
+    last_panic_at: datetime
+
+
+class DriverPanicFrequencyResponse(BaseModel):
+    period: str
+    entries: list[DriverPanicFrequencyEntry]
+
+
 # ---- Admin Cancellation Stats ----
 
 

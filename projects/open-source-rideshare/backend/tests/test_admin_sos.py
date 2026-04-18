@@ -12,6 +12,8 @@ from app.schemas.admin import (
     AdminSOSAlertResponse,
     AdminSOSListResponse,
     AdminSOSResolveRequest,
+    DriverPanicFrequencyEntry,
+    DriverPanicFrequencyResponse,
     PaginationResponse,
     SOSFrequencyEntry,
     SOSFrequencyResponse,
@@ -478,4 +480,134 @@ class TestSOSFrequencyResponse:
 
     def test_year_period_label(self):
         resp = SOSFrequencyResponse(period="year", entries=[])
+        assert resp.period == "year"
+
+
+# ---- DriverPanicFrequencyEntry / DriverPanicFrequencyResponse schema tests ----
+
+
+class TestDriverPanicFrequencyEntry:
+    def _now(self):
+        return datetime.now(timezone.utc)
+
+    def test_high_frequency_driver(self):
+        entry = DriverPanicFrequencyEntry(
+            driver_profile_id=7,
+            driver_name="Bob Driver",
+            driver_phone="+15559876543",
+            total=8,
+            active=1,
+            resolved=5,
+            false_alarms=2,
+            false_alarm_rate=25.0,
+            last_panic_at=self._now(),
+        )
+        assert entry.driver_profile_id == 7
+        assert entry.total == 8
+        assert entry.false_alarm_rate == 25.0
+
+    def test_false_alarm_rate_calculation(self):
+        # 2 false alarms out of 4 total = 50%
+        entry = DriverPanicFrequencyEntry(
+            driver_profile_id=1,
+            total=4,
+            active=0,
+            resolved=2,
+            false_alarms=2,
+            false_alarm_rate=50.0,
+            last_panic_at=self._now(),
+        )
+        assert entry.false_alarm_rate == 50.0
+
+    def test_zero_false_alarm_rate(self):
+        entry = DriverPanicFrequencyEntry(
+            driver_profile_id=2,
+            total=3,
+            active=1,
+            resolved=2,
+            false_alarms=0,
+            false_alarm_rate=0.0,
+            last_panic_at=self._now(),
+        )
+        assert entry.false_alarm_rate == 0.0
+        assert entry.false_alarms == 0
+
+    def test_unknown_driver_name_and_phone(self):
+        entry = DriverPanicFrequencyEntry(
+            driver_profile_id=99,
+            driver_name=None,
+            driver_phone=None,
+            total=1,
+            active=1,
+            resolved=0,
+            false_alarms=0,
+            false_alarm_rate=0.0,
+            last_panic_at=self._now(),
+        )
+        assert entry.driver_name is None
+        assert entry.driver_phone is None
+
+    def test_total_equals_sum_of_statuses(self):
+        active, resolved, false_alarms = 3, 4, 1
+        total = active + resolved + false_alarms
+        entry = DriverPanicFrequencyEntry(
+            driver_profile_id=5,
+            total=total,
+            active=active,
+            resolved=resolved,
+            false_alarms=false_alarms,
+            false_alarm_rate=round(false_alarms / total * 100, 1),
+            last_panic_at=self._now(),
+        )
+        assert entry.total == entry.active + entry.resolved + entry.false_alarms
+
+
+class TestDriverPanicFrequencyResponse:
+    def _now(self):
+        return datetime.now(timezone.utc)
+
+    def _entry(self, profile_id, total, false_alarms=0):
+        resolved = total - false_alarms
+        return DriverPanicFrequencyEntry(
+            driver_profile_id=profile_id,
+            total=total,
+            active=0,
+            resolved=resolved,
+            false_alarms=false_alarms,
+            false_alarm_rate=round(false_alarms / total * 100, 1) if total else 0.0,
+            last_panic_at=self._now(),
+        )
+
+    def test_all_period_response(self):
+        resp = DriverPanicFrequencyResponse(
+            period="all",
+            entries=[self._entry(1, 12, 3), self._entry(2, 4, 0)],
+        )
+        assert resp.period == "all"
+        assert len(resp.entries) == 2
+        assert resp.entries[0].total == 12
+
+    def test_empty_leaderboard(self):
+        resp = DriverPanicFrequencyResponse(period="week", entries=[])
+        assert resp.period == "week"
+        assert resp.entries == []
+
+    def test_sorted_by_total_descending(self):
+        entries = [
+            self._entry(profile_id=1, total=10),
+            self._entry(profile_id=2, total=6),
+            self._entry(profile_id=3, total=18),
+        ]
+        entries_sorted = sorted(entries, key=lambda e: e.total, reverse=True)
+        resp = DriverPanicFrequencyResponse(period="month", entries=entries_sorted)
+        assert resp.entries[0].total == 18
+        assert resp.entries[1].total == 10
+        assert resp.entries[2].total == 6
+
+    def test_month_period_label(self):
+        resp = DriverPanicFrequencyResponse(period="month", entries=[self._entry(1, 2)])
+        assert resp.period == "month"
+
+    def test_year_period_label(self):
+        resp = DriverPanicFrequencyResponse(period="year", entries=[])
         assert resp.period == "year"
