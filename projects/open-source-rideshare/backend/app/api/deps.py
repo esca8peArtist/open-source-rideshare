@@ -36,6 +36,12 @@ async def require_driver(user: User = Depends(get_current_user)) -> User:
     return user
 
 
+async def require_rider(user: User = Depends(get_current_user)) -> User:
+    if user.role.value != "rider":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Rider access required")
+    return user
+
+
 async def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role.value != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
