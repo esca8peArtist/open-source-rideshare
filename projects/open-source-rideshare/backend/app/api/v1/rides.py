@@ -353,10 +353,18 @@ async def _match_ride_background(
         if not ride or ride.status != RideStatus.REQUESTED:
             return
 
+        # Load rider accessibility prefs before matching so soft preferences
+        # influence candidate sorting.
+        rider_prefs = await get_preferences_for_ride(db, rider_user_id)
+        hearing_impairment = rider_prefs.hearing_impairment if rider_prefs else False
+        has_service_animal = rider_prefs.has_service_animal if rider_prefs else False
+
         candidates = await engine.find_candidates(
             pickup_lat, pickup_lng, db,
             accessibility_required=accessibility_required,
             vehicle_type_preference=vehicle_type_preference,
+            rider_hearing_impairment=hearing_impairment,
+            rider_has_service_animal=has_service_animal,
         )
         if not candidates:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
@@ -371,15 +379,11 @@ async def _match_ride_background(
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
             return
 
-        # Load rider's hearing impairment flag so the driver app can show an
-        # accommodation notice (knock instead of call, use text, etc.)
-        rider_prefs = await get_preferences_for_ride(db, rider_user_id)
-        hearing_impairment = rider_prefs.hearing_impairment if rider_prefs else False
-
         await send_ride_offer(
             matched.user_id, ride_id, pickup_address,
             dropoff_address, estimated_fare, matched.distance_km,
             rider_hearing_impairment=hearing_impairment,
+            rider_has_service_animal=has_service_animal,
         )
 
         ride.driver_id = matched.user_id

@@ -15,6 +15,7 @@ class DriverAccessibilityUpdate(BaseModel):
 
     hearing_impairment_capable: bool | None = None
     sign_language_capable: bool | None = None
+    service_animal_friendly: bool | None = None
 
 
 class DriverAccessibilityResponse(BaseModel):
@@ -22,6 +23,7 @@ class DriverAccessibilityResponse(BaseModel):
 
     hearing_impairment_capable: bool
     sign_language_capable: bool
+    service_animal_friendly: bool
     updated_at: datetime
 
     model_config = {"from_attributes": True}

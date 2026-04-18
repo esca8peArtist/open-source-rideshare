@@ -40,6 +40,7 @@ class DriverCandidate:
     vehicle_capacity: int = 4
     vehicle_service_category: VehicleServiceCategory = VehicleServiceCategory.STANDARD
     hearing_impairment_capable: bool = False
+    service_animal_friendly: bool = False
 
 
 class MatchingEngine:
@@ -192,6 +193,7 @@ class MatchingEngine:
         dropoff_lat: float | None = None,
         dropoff_lng: float | None = None,
         rider_hearing_impairment: bool = False,
+        rider_has_service_animal: bool = False,
     ) -> list[DriverCandidate]:
         """Find and rank driver candidates for a ride request.
 
@@ -219,6 +221,10 @@ class MatchingEngine:
             When True, drivers with hearing_impairment_capable=True are sorted
             before other drivers.  This is a soft preference — if no capable
             driver is available, non-capable drivers are still returned.
+        rider_has_service_animal:
+            When True, drivers with service_animal_friendly=True are sorted
+            before other drivers.  Soft preference — non-friendly drivers are
+            still included as fallback so no rider gets stranded.
         """
         initial_radius = settings.driver_search_initial_radius_km
         max_radius = settings.driver_search_radius_km
@@ -337,18 +343,35 @@ class MatchingEngine:
                     vehicle_capacity=capacity,
                     vehicle_service_category=service_category,
                     hearing_impairment_capable=p.hearing_impairment_capable,
+                    service_animal_friendly=p.service_animal_friendly,
                 )
             )
 
         # Sort: distance ASC, rating DESC as baseline.
-        # Soft hearing-impairment preference: when the rider has a hearing
-        # impairment, capable drivers are promoted to the front of the list.
-        # Non-capable drivers are still included so that a match is always
-        # attempted when no capable driver is available.
-        if rider_hearing_impairment:
+        # Soft accessibility preferences: capable drivers are promoted to the
+        # front when the rider signals a need.  Non-capable drivers remain in
+        # the list as fallback so a match is always attempted.
+        if rider_hearing_impairment and rider_has_service_animal:
+            candidates.sort(
+                key=lambda c: (
+                    not c.hearing_impairment_capable,
+                    not c.service_animal_friendly,
+                    c.distance_km,
+                    -c.rating_avg,
+                )
+            )
+        elif rider_hearing_impairment:
             candidates.sort(
                 key=lambda c: (
                     not c.hearing_impairment_capable,  # False (capable) sorts first
+                    c.distance_km,
+                    -c.rating_avg,
+                )
+            )
+        elif rider_has_service_animal:
+            candidates.sort(
+                key=lambda c: (
+                    not c.service_animal_friendly,  # False (friendly) sorts first
                     c.distance_km,
                     -c.rating_avg,
                 )

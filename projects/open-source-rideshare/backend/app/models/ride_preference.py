@@ -59,6 +59,7 @@ class RidePreference(Base):
         Boolean, default=False, nullable=False
     )
     hearing_impairment: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    has_service_animal: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     pool_opt_out: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     notes: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
