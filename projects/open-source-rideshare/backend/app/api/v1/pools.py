@@ -34,6 +34,7 @@ from app.services.pool_matching import (
 )
 from app.services.notification_events import notify_pool_rider_joined
 from app.services.pricing import calculate_fare
+from app.services.ride_preferences import get_preferences_for_ride
 from app.services.routing import RoutingError, get_route
 
 router = APIRouter(prefix="/pools", tags=["pools"])
@@ -82,6 +83,14 @@ async def request_pool_ride(
     Tries to match with an existing forming pool. If none found,
     creates a new pool and waits for other riders.
     """
+    # Check whether the rider has opted out of pool matching
+    rider_prefs = await get_preferences_for_ride(db, user.id)
+    if rider_prefs is not None and rider_prefs.pool_opt_out:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You have opted out of pool rides. Update your ride preferences to re-enable pool matching.",
+        )
+
     # Calculate route for this rider
     try:
         route = await get_route(

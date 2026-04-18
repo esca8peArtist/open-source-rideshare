@@ -23,6 +23,7 @@ _DEFAULTS = {
     "pet_friendly": False,
     "extra_luggage": False,
     "accessibility_vehicle_needed": False,
+    "pool_opt_out": False,
     "notes": None,
 }
 
