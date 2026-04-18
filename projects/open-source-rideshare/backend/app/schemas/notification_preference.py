@@ -28,6 +28,9 @@ _RIDER_NOTIFICATION_TYPES: frozenset[str] = frozenset(
         "background_check_approved",
         "background_check_action_required",
         "geofence_exit",
+        "pool_rider_joined",
+        "trip_share_viewed",
+        "speeding_alert",
     }
 )
 

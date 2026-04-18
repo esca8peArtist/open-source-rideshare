@@ -51,6 +51,7 @@ def create_trip_share_link(rider_id: int, ride_id: int) -> dict:
         "is_active": True,
         "expires_at": expires_at,
         "created_at": now,
+        "first_viewed_at": None,
     }
     _links[_next_id] = record
     _next_id += 1
@@ -112,6 +113,21 @@ def get_link_by_token(token: str) -> dict:
         if record["token"] == token:
             return record
     raise LookupError("Share link not found")
+
+
+def mark_first_view(token: str) -> int | None:
+    """Record the first time a share link is viewed.
+
+    Returns the rider_id if this is the first view (so the caller can notify
+    the rider), or None if the link was already viewed before.
+    """
+    for record in _links.values():
+        if record["token"] == token and record.get("is_active"):
+            if record["first_viewed_at"] is None:
+                record["first_viewed_at"] = datetime.now(tz=timezone.utc)
+                return record["rider_id"]
+            return None
+    return None
 
 
 def admin_revoke_by_token(token: str) -> None:

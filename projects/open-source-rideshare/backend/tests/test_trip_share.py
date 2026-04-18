@@ -340,12 +340,20 @@ def rider_user():
 
 @pytest.fixture()
 def client(rider_user):
+    from unittest.mock import AsyncMock, MagicMock
     from fastapi.testclient import TestClient
     from app.main import app
     from app.api.deps import require_rider, get_current_user
+    from app.db.database import get_db
+
+    async def mock_db():
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=MagicMock())
+        yield db
 
     app.dependency_overrides[require_rider] = lambda: rider_user
     app.dependency_overrides[get_current_user] = lambda: rider_user
+    app.dependency_overrides[get_db] = mock_db
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
@@ -436,23 +444,34 @@ class TestTripShareRouter:
         assert resp.status_code == 410
 
     def test_public_endpoint_requires_no_auth(self):
-        """Public endpoint should be accessible without any auth override."""
+        """Public endpoint should be accessible without any JWT auth override."""
+        from unittest.mock import AsyncMock, MagicMock
         from fastapi.testclient import TestClient
         from app.main import app
 
         # Create a link via the authed client first
         rider = _make_user(user_id=10, role="rider")
         from app.api.deps import require_rider, get_current_user
+        from app.db.database import get_db
+
+        async def mock_db():
+            db = AsyncMock()
+            db.execute = AsyncMock(return_value=MagicMock())
+            yield db
+
         app.dependency_overrides[require_rider] = lambda: rider
         app.dependency_overrides[get_current_user] = lambda: rider
+        app.dependency_overrides[get_db] = mock_db
         with TestClient(app) as authed:
             post_resp = authed.post("/api/v1/riders/me/rides/42/share-link")
         app.dependency_overrides.clear()
 
         token = post_resp.json()["token"]
-        # Now hit the public endpoint with a fresh client, no auth overrides
+        # Now hit the public endpoint with only the DB mock — no user auth overrides
+        app.dependency_overrides[get_db] = mock_db
         with TestClient(app) as public:
             resp = public.get(f"/api/v1/trip-share/{token}")
+        app.dependency_overrides.clear()
         assert resp.status_code == 200
 
 

@@ -59,6 +59,8 @@ class NotificationType(str, enum.Enum):
     GEOFENCE_EXIT = "geofence_exit"
     DRIVER_GEOFENCE_EXIT = "driver_geofence_exit"
     SPEEDING_ALERT = "speeding_alert"
+    POOL_RIDER_JOINED = "pool_rider_joined"
+    TRIP_SHARE_VIEWED = "trip_share_viewed"
 
 
 @dataclass

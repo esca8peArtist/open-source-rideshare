@@ -88,6 +88,19 @@ class PoolLegStatusUpdate(BaseModel):
     leg_id: int
 
 
+class PoolPassengerEntry(BaseModel):
+    """Safety-safe summary of one co-rider in a pool."""
+    rider_first_name: str
+    is_me: bool
+
+
+class PoolPassengersResponse(BaseModel):
+    """Co-rider roster for a pool — shown to riders for safety awareness."""
+    pool_id: int
+    total_riders: int
+    passengers: list[PoolPassengerEntry]
+
+
 class PoolSearchResult(BaseModel):
     """A candidate pool that a new rider could join."""
     pool_id: int

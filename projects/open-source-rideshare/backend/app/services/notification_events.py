@@ -536,3 +536,58 @@ async def notify_driver_geofence_exit(
         logger.exception(
             "Failed to send driver_geofence_exit notification for ride %d", ride_id
         )
+
+
+async def notify_pool_rider_joined(
+    db: AsyncSession,
+    existing_rider_ids: list[int],
+    new_rider_name: str,
+    ride_id: int | None = None,
+) -> None:
+    """Notify all existing pool members that a new rider has joined.
+
+    Sends a push notification to each rider already in the pool (excluding the
+    new rider). Fire-and-forget — failures are logged but never raise.
+    """
+    for rider_id in existing_rider_ids:
+        try:
+            phone, email = await _get_user_contact(db, rider_id)
+            await send_ride_notification(
+                user_id=rider_id,
+                type=NotificationType.POOL_RIDER_JOINED,
+                ride_id=ride_id,
+                db=db,
+                phone=phone,
+                email=email,
+                new_rider_name=new_rider_name,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to send pool_rider_joined notification to user %d", rider_id
+            )
+
+
+async def notify_trip_share_viewed(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+) -> None:
+    """Notify the rider who shared a trip link that someone viewed it.
+
+    Only fires on the first view (idempotency enforced by the trip share
+    service's mark_first_view). Fire-and-forget.
+    """
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.TRIP_SHARE_VIEWED,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send trip_share_viewed notification to rider %d", rider_id
+        )

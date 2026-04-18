@@ -21,6 +21,8 @@ from app.schemas.pool import (
     PoolEstimateResponse,
     PoolLegResponse,
     PoolLegStatusUpdate,
+    PoolPassengerEntry,
+    PoolPassengersResponse,
     PoolResponse,
     PoolRideRequest,
     PoolRideResponse,
@@ -30,6 +32,7 @@ from app.services.pool_matching import (
     PoolMatchingService,
     calculate_pool_fare,
 )
+from app.services.notification_events import notify_pool_rider_joined
 from app.services.pricing import calculate_fare
 from app.services.routing import RoutingError, get_route
 
@@ -134,6 +137,14 @@ async def request_pool_ride(
             raise HTTPException(status_code=500, detail="Pool not found")
 
         active_legs = [l for l in pool.legs if l.status != LegStatus.CANCELLED]
+
+        # Collect existing rider IDs before adding the new one
+        existing_rider_ids: list[int] = []
+        for existing_leg in active_legs:
+            existing_ride = await db.get(Ride, existing_leg.ride_id)
+            if existing_ride:
+                existing_rider_ids.append(existing_ride.rider_id)
+
         pickup_order = len(active_legs) + 1
         dropoff_order = pickup_order  # Simplified: same order as pickup
 
@@ -145,6 +156,16 @@ async def request_pool_ride(
         )
         discount = leg.fare_discount_percent
         riders_in_pool = len(active_legs) + 1
+
+        # Notify existing riders that someone new joined — fire-and-forget
+        new_rider_first_name = user.name.split()[0] if user.name else "A new rider"
+        import asyncio
+        asyncio.ensure_future(notify_pool_rider_joined(
+            db=db,
+            existing_rider_ids=existing_rider_ids,
+            new_rider_name=new_rider_first_name,
+            ride_id=ride.id,
+        ))
     else:
         # Create a new pool
         pool = await pool_service.create_pool()
@@ -223,6 +244,54 @@ async def get_pool(
         matched_at=pool.matched_at,
         started_at=pool.started_at,
         completed_at=pool.completed_at,
+    )
+
+
+@router.get("/{pool_id}/passengers", response_model=PoolPassengersResponse)
+async def get_pool_passengers(
+    pool_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the co-rider roster for a pool.
+
+    Shows first names only (no PII). The `is_me` flag lets the client label
+    the calling rider's own entry as "You". Any authenticated rider can call
+    this endpoint — the pool_id is only known to riders who were given it via
+    the pool-request response.
+    """
+    result = await db.execute(
+        select(RidePool)
+        .options(joinedload(RidePool.legs).joinedload(PoolLeg.ride))
+        .where(RidePool.id == pool_id)
+    )
+    pool = result.unique().scalar_one_or_none()
+    if not pool:
+        raise HTTPException(status_code=404, detail="Pool not found")
+
+    passengers: list[PoolPassengerEntry] = []
+    active_legs = [leg for leg in pool.legs if leg.status != LegStatus.CANCELLED]
+
+    for leg in active_legs:
+        ride = leg.ride
+        if not ride:
+            continue
+        rider_result = await db.execute(
+            select(User).where(User.id == ride.rider_id)
+        )
+        rider = rider_result.scalar_one_or_none()
+        if not rider:
+            continue
+        first_name = rider.name.split()[0] if rider.name else "Rider"
+        passengers.append(PoolPassengerEntry(
+            rider_first_name=first_name,
+            is_me=(rider.id == user.id),
+        ))
+
+    return PoolPassengersResponse(
+        pool_id=pool_id,
+        total_riders=len(passengers),
+        passengers=passengers,
     )
 
 

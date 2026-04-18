@@ -1,14 +1,20 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_admin, require_rider
+from app.db.database import get_db
 from app.models.user import User
 from app.schemas.trip_share import AdminTripShareEntry, AdminTripShareListResponse, TripShareLinkResponse, TripShareView
+from app.services.notification_events import notify_trip_share_viewed
 from app.services.trip_share import (
     admin_revoke_by_token,
     create_trip_share_link,
     get_active_link_for_ride,
     get_trip_share_view,
     list_trip_share_links,
+    mark_first_view,
     revoke_trip_share_link,
 )
 
@@ -71,11 +77,12 @@ async def delete_share_link(ride_id: int, user: User = Depends(require_rider)):
     "/trip-share/{token}",
     response_model=TripShareView,
 )
-async def view_trip_share(token: str):
+async def view_trip_share(token: str, db: AsyncSession = Depends(get_db)):
     """Public read-only view of a shared ride. No authentication required.
 
     Returns 404 if the token is not found, 410 if it has been revoked or
-    has expired.
+    has expired. On the first view, the rider who shared the link receives
+    a push notification.
     """
     try:
         view = get_trip_share_view(token)
@@ -86,6 +93,16 @@ async def view_trip_share(token: str):
             status_code=status.HTTP_410_GONE,
             detail="Share link has expired or been revoked",
         )
+
+    # Notify the rider on first view only — fire-and-forget
+    rider_id = mark_first_view(token)
+    if rider_id is not None:
+        asyncio.ensure_future(notify_trip_share_viewed(
+            db=db,
+            rider_id=rider_id,
+            ride_id=view["ride_id"],
+        ))
+
     return TripShareView(**view)
 
 

@@ -47,6 +47,9 @@ _RIDER_NOTIFICATION_TYPES: list[str] = [
     "background_check_approved",
     "background_check_action_required",
     "geofence_exit",
+    "pool_rider_joined",
+    "trip_share_viewed",
+    "speeding_alert",
 ]
 
 _DRIVER_NOTIFICATION_TYPES: list[str] = [

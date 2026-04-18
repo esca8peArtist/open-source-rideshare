@@ -296,6 +296,22 @@ def speeding_alert(**kw) -> TemplateResult:
     )
 
 
+def pool_rider_joined(new_rider_name: str = "A new rider", **kw) -> TemplateResult:
+    return (
+        "New rider joined your pool",
+        f"{new_rider_name} has joined your pool ride. Your fare discount has been updated.",
+        _PUSH,
+    )
+
+
+def trip_share_viewed(**kw) -> TemplateResult:
+    return (
+        "Someone viewed your trip",
+        "Someone is following your live trip using your shared link.",
+        _PUSH,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -324,6 +340,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.GEOFENCE_EXIT: geofence_exit,
     NotificationType.DRIVER_GEOFENCE_EXIT: driver_geofence_exit,
     NotificationType.SPEEDING_ALERT: speeding_alert,
+    NotificationType.POOL_RIDER_JOINED: pool_rider_joined,
+    NotificationType.TRIP_SHARE_VIEWED: trip_share_viewed,
 }
 
 
