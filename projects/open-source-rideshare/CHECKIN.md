@@ -6,6 +6,50 @@ This file tracks branches that need review before merging to `master`.
 
 ## Needs Your Input
 
+### feature/rider-emergency-safety — driver hearing impairment capability flags
+
+**Branch:** `feature/rider-emergency-safety`
+**Author:** thorn
+**Date:** 2026-04-18
+**Commit:** 0cd7cb9
+
+**Summary:**
+Adds driver-side accessibility capability flags so drivers can declare they are
+able to accommodate riders with hearing impairments. The matching engine uses
+this as a soft preference: when the rider has `hearing_impairment=True`,
+hearing-impairment-capable drivers are ranked first. If no capable driver is
+available, matching continues normally against all drivers.
+
+**Migration:** `b2c3d4e5f6a7` (down_revision `a1b2c3d4e5f6`)
+- Adds `hearing_impairment_capable BOOLEAN NOT NULL DEFAULT false` to `driver_profiles`
+- Adds `sign_language_capable BOOLEAN NOT NULL DEFAULT false` to `driver_profiles`
+
+**Endpoints added:**
+- `GET  /api/v1/drivers/me/accessibility` — read current capability flags (driver auth)
+- `PUT  /api/v1/drivers/me/accessibility` — partial update; send only the fields to change
+
+**Files added:**
+- `backend/app/db/migrations/versions/b2c3d4e5f6a7_add_driver_accessibility_capability_flags.py`
+- `backend/app/schemas/driver_accessibility.py` — `DriverAccessibilityUpdate` (both fields optional) and `DriverAccessibilityResponse` (both fields required)
+- `backend/app/services/driver_accessibility.py` — `get_accessibility` and `update_accessibility`; raises `ValueError` when driver profile not found
+- `backend/app/api/v1/driver_accessibility.py` — router; maps `ValueError` → 404
+- `backend/tests/test_driver_accessibility.py` — 33 tests
+
+**Files modified:**
+- `backend/app/models/driver.py` — two new Boolean columns on `DriverProfile`
+- `backend/app/services/matching.py` — `DriverCandidate` gets `hearing_impairment_capable` field; `find_candidates` and `match_ride` accept `rider_hearing_impairment` parameter; sort key updated for soft preference
+- `backend/app/main.py` — `driver_accessibility` router imported and registered
+
+**Key design decisions:**
+- Soft preference (not hard filter): if `rider_hearing_impairment=True` but no capable driver exists, the engine falls back to the standard distance/rating sort. This ensures no match is lost solely because of the preference, which matters for rider safety.
+- Sort key for hearing-impairment preference: `(not hearing_impairment_capable, distance_km, -rating_avg)`. Among capable drivers, the existing distance/rating ranking is preserved. Non-capable drivers always appear after all capable ones.
+- `sign_language_capable` is added alongside `hearing_impairment_capable` as a natural companion flag (a driver may know sign language without broadly flagging as hearing-impairment capable, or vice versa). It is not yet used in the matching sort but is exposed through the API for future matching iterations and for display in rider/driver apps.
+- WebSocket `send_ride_offer` already carries `rider_hearing_impairment` from commit `2732b7e`; confirmed wired correctly, no changes needed.
+
+**Test results:** 33 new tests, all passing. Full suite: 5071 passed, 477 skipped, 0 failures (was 5038 before this PR).
+
+---
+
 ### feature/rider-emergency-safety — trip share links
 
 **Branch:** `feature/rider-emergency-safety`
