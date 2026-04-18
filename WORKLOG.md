@@ -4,6 +4,68 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 313 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on user test print
+- open-source-rideshare: both suggested next tasks (DRIVER_EN_ROUTE notification, ETA endpoint) already implemented in prior sessions; receipt feature also already complete; 3,729 tests passing
+- Selected: resistance-research — April 17 ballroom outcome unconfirmed in project files; April 20 events 2 days out
+
+### resistance-research — April 18 monitoring brief COMPLETE
+
+**File**: `monitoring/2026-04-18-results.md`
+
+**Key confirmed outcome**: White House ballroom Branch A materialized (not Branch C as assessed most likely). Leon acted April 16:
+- Above-ground ballroom construction **halted** — administration's "tip to tail" security argument explicitly rejected: "National security is not a blank check to proceed with otherwise unlawful activity."
+- Below-ground (bunkers, military installations, medical facilities): permitted
+- Leon stayed his own new order one week (~April 23-24) to allow admin time for further review
+- Admin filed D.C. Circuit notice of appeal same day; Trump criticized ruling publicly April 17
+- No SCOTUS filing confirmed as of April 18; contempt scenario (Branch C) did not materialize
+
+**Other threads (no changes from April 17)**:
+- Abrego Garcia / Xinis: no new activity; DOJ brief April 20, hearing April 28 on schedule
+- Section 122 / CIT: deliberating, no ruling
+- Nashville / Crenshaw: silence continues (3+ weeks)
+
+**Next mandatory monitoring pass**: April 20 — CAPE Phase 1 launch, DOJ brief in Abrego Garcia, any SCOTUS application for ballroom within ~April 23-24 stay window
+
+---
+
+## Session 311 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 results framework ready; April 20 is in 2 days — nothing to fill yet
+- Selected: open-source-rideshare — admin surge analytics (natural follow-on to Session 310 fare preview)
+
+### open-source-rideshare — Admin surge analytics COMPLETE
+
+**Commit**: `ce724d0`
+
+**Feature**: Surge pricing event log + admin analytics endpoints.
+
+**Event log** (`SurgePricingEvent` model + migration `o9p0q1r2s3t4`):
+- Records every fare preview where combined surge was active (zone-only, demand-only, or combined)
+- Fields: lat/lon, geohash, zone_id/name, zone_multiplier, demand_multiplier, demand_count, supply_count, combined_multiplier, recorded_at
+- Written fire-and-forget from `get_fare_preview()` — any exception is swallowed; never blocks the rider
+
+**New admin endpoints** (`GET /admin/surge-analytics/*`):
+- `/summary?days=7` — platform-level: total events, per-type counts (zone/demand/combined), avg combined multiplier, peak UTC hour, top zone by volume
+- `/zones?days=30` — per-zone breakdown: event count, avg multiplier, avg demand/supply — ordered by event count descending
+- `/demand-heatmap?days=7&limit=50` — geohash cells ranked by surge frequency — identifies geographic hotspots for admin zone calibration
+
+**Architecture**: `surge_analytics.py` service with pure read functions (`get_surge_summary`, `get_zone_breakdown`, `get_demand_heatmap`) + `record_surge_event` write function. New `admin_analytics_router` registered in main.py.
+
+**New tests**: 35 → **3,704 total unit-passing**
+
+---
+
 ## Session 309 — 2026-04-18
 
 ### Orient
@@ -5371,3 +5433,39 @@ open-source-rideshare: Fare preview / surge pricing transparency
 ### Session end
 - Next for open-source-rideshare: driver live location updates OR surge analytics admin endpoint
 - Updating CHECKIN.md and PROJECTS.md
+
+## Session 312 — 2026-04-18
+
+### Orient
+- INBOX: Empty — nothing to process.
+- BLOCKED: No active blocks.
+- stockbot (#1): No dev work available (monitoring paper trading week).
+- mfg-farm (#2): Blocked on user test print.
+- resistance-research (#3): April 20 results framework fills April 20 evening.
+- open-source-rideshare (#4): Two features queued — driver live location polling + price sensitivity analytics.
+
+### Task 1: Rider live driver tracking
+- New endpoint: GET /rides/{ride_id}/driver-location
+- Authenticated rider only — verifies rider_id matches ride.rider_id (403 if not)
+- Returns exact (unfuzzed) driver lat/lng + haversine distance_to_pickup_m
+- Works during MATCHED, DRIVER_EN_ROUTE, ARRIVED — null coords for all other statuses
+- Service: get_assigned_driver_location in services/driver_location.py
+- Schema: AssignedDriverLocationResponse in schemas/driver_location.py
+- API: added to api/v1/driver_location.py
+- 13 new tests; 3,717 total passing
+- Commit: df86a32
+
+### Task 2: Price sensitivity analytics
+- New endpoint: GET /admin/surge-analytics/price-sensitivity?days=30
+- Returns: total/price cancellations, rate, total surge events, daily breakdown
+- Daily breakdown merges two tables (rides + surge_pricing_events) by date in Python
+- Service: get_price_sensitivity_report in services/surge_analytics.py
+- Schema: PriceSensitivityResponse + DailyPriceSensitivityResponse in schemas/surge_zone.py
+- API: new endpoint on admin_analytics_router in api/v1/surge_zones.py
+- 12 new tests; 3,729 total passing
+- Commit: cea499d
+
+### Session end
+- Both features locally committed on feature/rider-emergency-safety
+- Push blocked (established pattern — SSH key lacks org push access)
+- CHECKIN.md, PROJECTS.md, WORKLOG.md updated

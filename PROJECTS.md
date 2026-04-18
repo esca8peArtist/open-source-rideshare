@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 310)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 313)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 290: **Op-ed draft COMPLETE** (`publications/op-ed-healthcare-june2026-deadline.md`, ~918 words, commit `45fd8ba`). "Six Weeks to Save Five Million People's Health Insurance" — targets Vox/Atlantic, submission April 22, asks CMS for broad work-requirement exemptions by June 1 deadline. Healthcare deep-dive also complete (commit `e839b21`). **Domain-deepening library**: 22+ domains; all deepened. **April 20 monitoring**: Results framework pre-drafted at `monitoring/2026-04-20-results-framework.md` — fill in April 20 evening when events land. **Next**: Fill April 20 results framework (Apr 20 evening) OR mfg-farm competitive analysis.
+**Current focus**: Session 313: **April 18 monitoring brief COMPLETE** (`monitoring/2026-04-18-results.md`). White House ballroom Branch A confirmed — Leon acted April 16, split order (above-ground halted, below-ground permitted), stayed own order ~1 week to April 23-24, admin appealed to D.C. Circuit. No SCOTUS filing confirmed. Abrego Garcia: DOJ brief due April 20, Xinis hearing April 28 on schedule. Section 122 / CIT: deliberating. Nashville/Crenshaw: silent. **Op-ed draft COMPLETE** (`publications/op-ed-healthcare-june2026-deadline.md`, ~918 words) — "Six Weeks to Save Five Million People's Health Insurance" targeting Vox/Atlantic, April 22 submission. **Next**: April 20 monitoring pass — CAPE Phase 1 launch, DOJ Abrego Garcia brief, ballroom SCOTUS watch window (~April 23-24 stay expiry).
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 310: **Fare preview / surge pricing transparency COMPLETE** (commit `c1ca027`). `GET /pricing/fare-preview` — public, no auth. Shows riders full pricing breakdown before confirming: admin surge zones (geographic, time-of-day) and real-time demand pricing (supply/demand ratio) disclosed separately with counts and percentages. OSRM with Haversine fallback; graceful Redis/DB degradation. `FarePreviewService`, `FarePreviewResponse` schema, 38 new tests. Total: **3,669 unit-passing tests**. Push blocked — SSH key lacks org push access. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety. **Next**: Driver live location updates (real-time tracking) OR admin surge analytics endpoint.
+**Current focus**: Session 313: Confirmed DRIVER_EN_ROUTE notification, ETA endpoints (`/rides/{ride_id}/eta`, `/rides/{ride_id}/trip-eta`), and receipt endpoint (`GET /rides/{ride_id}/receipt`) all already implemented in prior sessions. **Total: 3,729 unit-passing tests**. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety (20 commits ahead of master). **Next**: Surge-active status endpoint `GET /surge/current?lat={lat}&lng={lng}` (lightweight rider check without full fare preview), OR driver earnings breakdown per ride from driver's perspective, OR transition to a new feature branch.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

@@ -9,30 +9,77 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 310
+**Sessions run**: 313
+
+### Accomplished (Session 313)
+
+#### resistance-research — April 18 monitoring brief COMPLETE (`monitoring/2026-04-18-results.md`)
+
+The April 17 ballroom deadline outcome was unconfirmed in project files. Researched and confirmed:
+
+**White House ballroom — Branch A materialized** (assessed as least likely in prior brief):
+- Leon issued clarification order April 16, before midnight stay expiry
+- Split decision: above-ground ballroom construction **halted**; below-ground (bunkers, military installations, medical facilities) **permitted**
+- Leon explicitly rejected administration's "tip to tail" security argument: "National security is not a blank check to proceed with otherwise unlawful activity."
+- Leon stayed his own new order ~one week (to ~April 23-24) for appellate review
+- Administration filed D.C. Circuit notice of appeal same day; Trump publicly criticized ruling April 17
+- No SCOTUS filing confirmed as of April 18; contempt scenario (Branch C) did not materialize
+
+**Other threads — no changes from April 17**:
+- Abrego Garcia / Xinis: DOJ brief April 20, hearing April 28 on schedule
+- Section 122 / CIT (Barnett panel): deliberating, no ruling
+- Nashville / Crenshaw: 3+ weeks of silence, no ruling
+
+**open-source-rideshare — audit**: Confirmed that DRIVER_EN_ROUTE notification, ETA endpoints, and ride receipt are all already fully implemented. Platform is at 3,729 unit-passing tests with 50 endpoint modules. New next candidates: surge-active status check, driver per-ride earnings breakdown.
+
+**Next mandatory monitoring passes**:
+- April 20: CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing)
+- April 23-24: ballroom SCOTUS watch window (Leon stay expires)
+- April 28: Xinis hearing
+
+---
+
+### Accomplished (Session 312)
+
+#### open-source-rideshare — Rider live driver tracking + price sensitivity analytics (commits `df86a32`, `cea499d`)
+
+Two new features on `feature/rider-emergency-safety`. Total: **3,729 unit-passing tests**.
+
+**Rider live driver tracking** — `GET /rides/{ride_id}/driver-location`
+Rider polls this to see their assigned driver's exact GPS position on the pre-pickup map. Works during MATCHED, DRIVER_EN_ROUTE, and ARRIVED phases. Returns exact (unfuzzed) coordinates — access is restricted to the ride's own rider so no privacy concern. Includes `distance_to_pickup_m` (haversine) so the app can show "500m away." Null lat/lng returned gracefully if driver hasn't pushed location yet. 13 new tests.
+
+**Price sensitivity analytics** — `GET /admin/surge-analytics/price-sensitivity?days=30`
+Admin endpoint correlating PRICE_TOO_HIGH cancellations with surge pricing activity. Returns:
+- `total_cancellations` / `price_cancellations` / `price_cancellation_rate` for the window
+- `total_surge_events` (from the `SurgePricingEvent` log)
+- `daily_breakdown`: per-day view with both PRICE_TOO_HIGH cancellations and surge event counts side-by-side
+
+Use case: if price_cancellation_rate spikes on high-surge days, that's a signal to lower the demand or zone multiplier caps. 12 new tests.
+
+---
+
+### Accomplished (Session 311)
+
+#### open-source-rideshare — Admin surge analytics COMPLETE (commit `ce724d0`)
+
+Operators can now see exactly when and where surge pricing fires, at what multipliers, and under what supply/demand conditions.
+
+**New data layer**: `SurgePricingEvent` table (migration `o9p0q1r2s3t4`). Every fare preview that detects active surge writes a row: lat/lon, geohash, surge zone id/name, zone multiplier, demand multiplier, demand count, supply count, combined multiplier, timestamp. Written fire-and-forget from `get_fare_preview()` — any exception is swallowed, rider is never blocked.
+
+**New admin endpoints** (`GET /admin/surge-analytics/*`):
+- `/summary?days=7`: platform-level — total events, zone/demand/combined counts, avg combined multiplier, peak UTC hour, top zone by volume
+- `/zones?days=30`: per-zone breakdown — event count, avg multiplier, avg demand/supply per zone, ordered by frequency
+- `/demand-heatmap?days=7&limit=50`: geohash cells (~4.9km²) ranked by surge frequency — identifies hotspots where demand pricing most often fires, useful for admin zone calibration
+
+- 35 new tests — **3,704 total unit-passing**
+
+---
 
 ### Accomplished (Session 310)
 
 #### open-source-rideshare — Fare preview / surge pricing transparency COMPLETE (commit `c1ca027`)
 
-New public endpoint: `GET /pricing/fare-preview` — no authentication required. Riders see the full pricing breakdown before confirming a trip, with both surge signals disclosed separately.
-
-**What's shown**:
-- `surge_zone`: Admin-defined geographic zones (airports, stadiums) — zone name + percentage
-- `demand_pricing`: Real-time supply/demand ratio — demand count, driver count, percentage, cap
-- `time_of_day_multiplier`: Operator-scheduled adjustments (if any)
-- `combined_multiplier`: Product of all signals
-- `pricing_summary`: Plain-English explanation ("Fares are 38% higher. Reasons: Downtown Core zone (+20%); high demand (+15%): 8 requests, 1 available driver.")
-- `is_surge_active`: Boolean flag for quick UI checks
-
-**Architecture**:
-- `fare_preview.py` service: OSRM route lookup with Haversine fallback; graceful Redis/DB degradation (defaults to 1.0× if unavailable)
-- Pure helpers `_haversine_km`, `_estimate_duration_min`, `build_pricing_summary` — independently unit-testable
-- `FarePreviewResponse` schema with nested `SurgeZoneInfo`, `DemandPricingInfo`, `FareComponentsResponse`
-
-**Why this matters**: Existing `/rides/estimate` requires auth and doesn't check admin surge zones. This is the rider-facing version that works pre-login and shows both surge types — the core cooperative transparency promise.
-
-- 38 new tests — **3,669 total unit-passing**
+New public endpoint: `GET /pricing/fare-preview` — no authentication required. Riders see the full pricing breakdown before confirming a trip, with both surge signals disclosed separately. 38 new tests — 3,669 total.
 
 ---
 
@@ -161,8 +208,8 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
-2. **resistance-research**: Fill April 20 results framework (Apr 20 evening — CAPE Phase 1 + Abrego Garcia DOJ brief results).
-3. **open-source-rideshare**: Next feature — driver live location polling (rider sees driver moving on map pre-pickup) OR admin surge analytics (when/where surge fired, correlation with ride volume).
+2. **resistance-research**: Fill April 20 results framework (Apr 20 evening — CAPE Phase 1 + Abrego Garcia DOJ brief results). Today is Apr 18, so this is ready in 2 days.
+3. **open-source-rideshare**: Next feature — ride status push notifications to rider during driver en-route phase (DRIVER_EN_ROUTE status change triggers push+SMS "Your driver is on the way") OR ETA polling endpoint for rider to get driver ETA in seconds.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
