@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.feedback import Dispute, DisputeStatus, DisputeType
@@ -198,6 +198,35 @@ async def get_user_disputes(
 ) -> tuple[list[Dispute], int]:
     """Get disputes filed by a specific user."""
     query = select(Dispute).where(Dispute.filed_by == user_id)
+
+    count_query = select(func.count()).select_from(query.subquery())
+    count_result = await db.execute(count_query)
+    total = count_result.scalar() or 0
+
+    query = query.order_by(Dispute.created_at.desc()).offset(offset).limit(limit)
+    result = await db.execute(query)
+    return list(result.scalars().all()), total
+
+
+async def get_disputes_against_user(
+    user_id: int,
+    db: AsyncSession,
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[Dispute], int]:
+    """Get disputes filed *against* a user — they participated in the ride but didn't file.
+
+    Joins Dispute → Ride and filters for rides where the user was rider or driver,
+    excluding disputes where they are the filer.
+    """
+    query = (
+        select(Dispute)
+        .join(Ride, Ride.id == Dispute.ride_id)
+        .where(
+            or_(Ride.rider_id == user_id, Ride.driver_id == user_id),
+            Dispute.filed_by != user_id,
+        )
+    )
 
     count_query = select(func.count()).select_from(query.subquery())
     count_result = await db.execute(count_query)

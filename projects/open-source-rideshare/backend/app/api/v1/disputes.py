@@ -3,6 +3,7 @@
 POST   /rides/{ride_id}/disputes            — file a dispute (rider or driver)
 GET    /rides/{ride_id}/disputes            — list disputes for a ride
 GET    /me/disputes                         — list my disputes (paginated)
+GET    /me/disputes/received                — disputes filed against me on my rides
 GET    /me/disputes/{dispute_id}            — get a specific dispute
 GET    /admin/disputes                      — admin: list all disputes
 PATCH  /admin/disputes/{dispute_id}/review  — admin: move to under_review
@@ -30,6 +31,7 @@ from app.services.disputes import (
     add_respondent_reply,
     file_dispute,
     get_dispute,
+    get_disputes_against_user,
     get_user_disputes,
     list_disputes,
     resolve_dispute,
@@ -148,6 +150,26 @@ async def get_my_disputes(
 ) -> DisputeListResponse:
     """Paginated list of disputes the caller has filed."""
     items, total = await get_user_disputes(user_id=user.id, db=db, limit=limit, offset=offset)
+    return DisputeListResponse(disputes=[_dispute_response(d) for d in items], total=total)
+
+
+@router.get(
+    "/me/disputes/received",
+    response_model=DisputeListResponse,
+    summary="List disputes filed against me",
+)
+async def get_disputes_received(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> DisputeListResponse:
+    """Paginated list of disputes other participants filed on rides where the caller was involved.
+
+    Drivers use this to see disputes filed against them on trips they drove.
+    Riders see disputes a driver filed on a ride they took.
+    """
+    items, total = await get_disputes_against_user(user_id=user.id, db=db, limit=limit, offset=offset)
     return DisputeListResponse(disputes=[_dispute_response(d) for d in items], total=total)
 
 
