@@ -609,3 +609,121 @@ class TestRevokeShareTokenEndpoint:
         with pytest.raises(HTTPException) as exc:
             await revoke_share_token(token="other-token", user=user, db=db)
         assert exc.value.status_code == 403
+
+
+# ---- PATCH /safety/contacts/{contact_id} ----
+
+class TestPatchContactEndpoint:
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.update_emergency_contact", new_callable=AsyncMock)
+    async def test_patch_name_only(self, mock_update):
+        from app.schemas.safety import EmergencyContactUpdate
+        from app.api.v1.safety import patch_contact
+
+        updated = _make_contact(name="Mama")
+        mock_update.return_value = updated
+
+        db = _mock_db()
+        user = _make_user()
+        req = EmergencyContactUpdate(name="Mama")
+
+        result = await patch_contact(contact_id=1, req=req, user=user, db=db)
+
+        assert result.name == "Mama"
+        assert result.phone == "+15551234567"
+        mock_update.assert_awaited_once_with(
+            contact_id=1, user_id=user.id, db=db,
+            name="Mama", phone=None, relationship_label=None,
+        )
+        db.commit.assert_awaited_once()
+        db.refresh.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.update_emergency_contact", new_callable=AsyncMock)
+    async def test_patch_phone_only(self, mock_update):
+        from app.schemas.safety import EmergencyContactUpdate
+        from app.api.v1.safety import patch_contact
+
+        updated = _make_contact(phone="+15550000001")
+        mock_update.return_value = updated
+
+        db = _mock_db()
+        user = _make_user()
+        req = EmergencyContactUpdate(phone="+15550000001")
+
+        result = await patch_contact(contact_id=1, req=req, user=user, db=db)
+
+        assert result.phone == "+15550000001"
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.update_emergency_contact", new_callable=AsyncMock)
+    async def test_patch_multiple_fields(self, mock_update):
+        from app.schemas.safety import EmergencyContactUpdate
+        from app.api.v1.safety import patch_contact
+
+        updated = _make_contact(name="Sister", phone="+15550000002", rel="Sibling")
+        mock_update.return_value = updated
+
+        db = _mock_db()
+        user = _make_user()
+        req = EmergencyContactUpdate(name="Sister", phone="+15550000002", relationship_label="Sibling")
+
+        result = await patch_contact(contact_id=1, req=req, user=user, db=db)
+
+        assert result.name == "Sister"
+        assert result.phone == "+15550000002"
+        assert result.relationship_label == "Sibling"
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.update_emergency_contact", new_callable=AsyncMock)
+    async def test_patch_contact_not_found(self, mock_update):
+        from app.schemas.safety import EmergencyContactUpdate
+        from app.api.v1.safety import patch_contact
+
+        mock_update.side_effect = ValueError("Contact not found")
+
+        db = _mock_db()
+        user = _make_user()
+        req = EmergencyContactUpdate(name="Ghost")
+
+        with pytest.raises(HTTPException) as exc:
+            await patch_contact(contact_id=999, req=req, user=user, db=db)
+        assert exc.value.status_code == 404
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.update_emergency_contact", new_callable=AsyncMock)
+    async def test_patch_contact_belongs_to_other_rider(self, mock_update):
+        """Service raises ValueError when contact_id exists but belongs to another user."""
+        from app.schemas.safety import EmergencyContactUpdate
+        from app.api.v1.safety import patch_contact
+
+        mock_update.side_effect = ValueError("Contact not found")
+
+        db = _mock_db()
+        user = _make_user(id=99)
+        req = EmergencyContactUpdate(name="Hacker")
+
+        with pytest.raises(HTTPException) as exc:
+            await patch_contact(contact_id=1, req=req, user=user, db=db)
+        assert exc.value.status_code == 404
+
+    @pytest.mark.asyncio
+    @patch("app.api.v1.safety.update_emergency_contact", new_callable=AsyncMock)
+    async def test_patch_relationship_label(self, mock_update):
+        from app.schemas.safety import EmergencyContactUpdate
+        from app.api.v1.safety import patch_contact
+
+        updated = _make_contact(rel="Spouse")
+        mock_update.return_value = updated
+
+        db = _mock_db()
+        user = _make_user()
+        req = EmergencyContactUpdate(relationship_label="Spouse")
+
+        result = await patch_contact(contact_id=1, req=req, user=user, db=db)
+
+        assert result.relationship_label == "Spouse"
+        mock_update.assert_awaited_once_with(
+            contact_id=1, user_id=user.id, db=db,
+            name=None, phone=None, relationship_label="Spouse",
+        )

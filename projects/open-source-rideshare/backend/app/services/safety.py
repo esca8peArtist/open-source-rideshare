@@ -248,6 +248,41 @@ async def list_emergency_contacts(user_id: int, db: AsyncSession) -> list[Emerge
     return list(result.scalars().all())
 
 
+async def update_emergency_contact(
+    contact_id: int,
+    user_id: int,
+    db: AsyncSession,
+    name: str | None = None,
+    phone: str | None = None,
+    relationship_label: str | None = None,
+) -> EmergencyContact:
+    """Update an emergency contact.
+
+    Only the owning user's contacts may be updated.  Raises ValueError if the
+    contact does not exist or belongs to a different user.  Only non-None
+    arguments are applied so callers can do a true partial update.
+    """
+    result = await db.execute(
+        select(EmergencyContact).where(
+            EmergencyContact.id == contact_id,
+            EmergencyContact.user_id == user_id,
+        )
+    )
+    contact = result.scalar_one_or_none()
+    if not contact:
+        raise ValueError("Contact not found")
+
+    if name is not None:
+        contact.name = name
+    if phone is not None:
+        contact.phone = phone
+    if relationship_label is not None:
+        contact.relationship_label = relationship_label
+
+    await db.flush()
+    return contact
+
+
 async def delete_emergency_contact(contact_id: int, user_id: int, db: AsyncSession) -> bool:
     """Delete an emergency contact. Returns True if deleted, False if not found."""
     result = await db.execute(

@@ -69,6 +69,17 @@ class EmergencyContactCreate(BaseModel):
     relationship_label: str | None = None
 
 
+class EmergencyContactUpdate(BaseModel):
+    """Partial update schema for an emergency contact.
+
+    All fields are optional — only provided fields are applied.
+    """
+
+    name: str | None = None
+    phone: str | None = None
+    relationship_label: str | None = None
+
+
 class EmergencyContactResponse(BaseModel):
     id: int
     name: str

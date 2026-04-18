@@ -9,6 +9,7 @@ from app.models.user import User
 from app.schemas.safety import (
     EmergencyContactCreate,
     EmergencyContactResponse,
+    EmergencyContactUpdate,
     SharedTripView,
     SOSAlertResponse,
     SOSResolveRequest,
@@ -28,6 +29,7 @@ from app.services.safety import (
     resolve_sos,
     revoke_trip_share_token,
     trigger_sos,
+    update_emergency_contact,
 )
 
 router = APIRouter(prefix="/safety", tags=["safety"])
@@ -264,6 +266,41 @@ async def create_contact(
         db=db,
         relationship_label=req.relationship_label,
     )
+    await db.commit()
+    await db.refresh(contact)
+    return EmergencyContactResponse(
+        id=contact.id,
+        name=contact.name,
+        phone=contact.phone,
+        relationship_label=contact.relationship_label,
+        created_at=contact.created_at,
+    )
+
+
+@router.patch("/contacts/{contact_id}", response_model=EmergencyContactResponse)
+async def patch_contact(
+    contact_id: int,
+    req: EmergencyContactUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Partially update an emergency contact.
+
+    Only the contact's owner may update it.  Supply only the fields you want to
+    change — omitted fields are left unchanged.
+    """
+    try:
+        contact = await update_emergency_contact(
+            contact_id=contact_id,
+            user_id=user.id,
+            db=db,
+            name=req.name,
+            phone=req.phone,
+            relationship_label=req.relationship_label,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
     await db.commit()
     await db.refresh(contact)
     return EmergencyContactResponse(
