@@ -705,3 +705,34 @@ class ActiveShiftsResponse(BaseModel):
 
     total: int
     items: list[ActiveShiftEntry]
+
+
+# ---- Trip Anomaly Detection ----
+
+
+class TripAnomalyEntry(BaseModel):
+    """A ride that has one or more detected anomaly flags."""
+
+    ride_id: int
+    rider_id: int
+    rider_name: str | None = None
+    driver_id: int | None = None
+    driver_name: str | None = None
+    pickup_address: str
+    dropoff_address: str
+    status: str
+    estimated_fare: float
+    actual_fare: float | None = None
+    duration_min: float | None = None
+    anomaly_types: list[str]
+    detected_at: datetime
+    requested_at: datetime
+
+
+class TripAnomalyListResponse(BaseModel):
+    """Paginated list of rides with anomaly flags."""
+
+    anomalies: list[TripAnomalyEntry]
+    total: int
+    page: int
+    per_page: int

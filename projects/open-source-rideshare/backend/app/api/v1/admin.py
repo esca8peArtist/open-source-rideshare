@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import case, cast, Date, extract, func, or_, select
+from sqlalchemy import and_, case, cast, Date, extract, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -23,7 +23,7 @@ from app.models.audit import AuditLog
 from app.models.driver import DriverProfile
 from app.models.driver_shift import DriverShift, ShiftStatus
 from app.models.feedback import Dispute, DisputeStatus, DisputeType, RideFeedback
-from app.models.ride import Ride, RideStatus
+from app.models.ride import CancellationCategory, Ride, RideStatus
 from app.models.safety import SOSAlert, SOSStatus
 from app.models.user import User, UserRole
 from app.models.verification import DriverDocument, VerificationStatus
@@ -96,6 +96,8 @@ from app.schemas.admin import (
     TopEarnerDriverEntry,
     TopEarnersResponse,
     TopSpenderRiderEntry,
+    TripAnomalyEntry,
+    TripAnomalyListResponse,
     UserSearchResponse,
     UserSearchResult,
 )
@@ -3579,6 +3581,147 @@ async def list_scheduled_rides_admin(
 
     return AdminScheduledRidesListResponse(
         rides=[_ride_to_response(r) for r in rides],
+        total=total,
+        page=page,
+        per_page=per_page,
+    )
+
+
+# ---- Trip Anomaly Detection ----
+
+_SAFETY_CANCELLATIONS = (
+    CancellationCategory.SAFETY_CONCERN,
+    CancellationCategory.DRIVER_NO_SHOW,
+    CancellationCategory.DRIVER_NOT_ACCEPTABLE,
+)
+
+# A completed ride whose actual fare is more than 50% above the estimate
+_EXCESSIVE_FARE_MULTIPLIER = 1.5
+# Rides lasting longer than this (minutes) are flagged as anomalously long
+_LONG_DURATION_THRESHOLD_MIN = 90
+
+
+def _detect_anomaly_types(ride: Ride) -> list[str]:
+    types = []
+    if ride.route_deviation_flagged_at:
+        types.append("route_deviation")
+    if ride.driver_no_show_reported_at:
+        types.append("driver_no_show")
+    if ride.cancellation_category in _SAFETY_CANCELLATIONS:
+        types.append("safety_cancellation")
+    if ride.actual_fare is not None and ride.actual_fare > ride.estimated_fare * _EXCESSIVE_FARE_MULTIPLIER:
+        types.append("excessive_fare")
+    if ride.duration_min is not None and ride.duration_min > _LONG_DURATION_THRESHOLD_MIN:
+        types.append("long_duration")
+    return types
+
+
+def _anomaly_detected_at(ride: Ride) -> datetime:
+    candidates = [
+        ride.route_deviation_flagged_at,
+        ride.driver_no_show_reported_at,
+        ride.cancelled_at if ride.cancellation_category in _SAFETY_CANCELLATIONS else None,
+        ride.completed_at if (
+            ride.actual_fare is not None and ride.actual_fare > ride.estimated_fare * _EXCESSIVE_FARE_MULTIPLIER
+        ) else None,
+        ride.completed_at if (ride.duration_min is not None and ride.duration_min > _LONG_DURATION_THRESHOLD_MIN) else None,
+    ]
+    timestamps = [t for t in candidates if t is not None]
+    return min(timestamps) if timestamps else ride.requested_at
+
+
+@router.get("/safety/anomalies", response_model=TripAnomalyListResponse)
+async def list_trip_anomalies(
+    db: AsyncSession = Depends(get_db),
+    period: str = Query("all", pattern="^(week|month|year|all)$"),
+    anomaly_type: str = Query("all", pattern="^(route_deviation|driver_no_show|safety_cancellation|excessive_fare|long_duration|all)$"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
+):
+    """Return rides with detected anomalies.
+
+    Anomaly types:
+    - route_deviation: driver deviated >1 km from pickup→dropoff path
+    - driver_no_show: driver no-show was reported or auto-detected
+    - safety_cancellation: ride cancelled for safety, driver no-show, or unacceptable driver
+    - excessive_fare: actual fare >50% above the estimated fare
+    - long_duration: ride lasted longer than 90 minutes
+    """
+    now = datetime.now(timezone.utc)
+    period_start: datetime | None = None
+    if period == "week":
+        period_start = now - timedelta(days=7)
+    elif period == "month":
+        period_start = now - timedelta(days=30)
+    elif period == "year":
+        period_start = now - timedelta(days=365)
+
+    type_conditions: dict[str, object] = {
+        "route_deviation": Ride.route_deviation_flagged_at.is_not(None),
+        "driver_no_show": Ride.driver_no_show_reported_at.is_not(None),
+        "safety_cancellation": Ride.cancellation_category.in_(list(_SAFETY_CANCELLATIONS)),
+        "excessive_fare": and_(
+            Ride.actual_fare.is_not(None),
+            Ride.actual_fare > Ride.estimated_fare * _EXCESSIVE_FARE_MULTIPLIER,
+        ),
+        "long_duration": and_(
+            Ride.duration_min.is_not(None),
+            Ride.duration_min > _LONG_DURATION_THRESHOLD_MIN,
+        ),
+    }
+
+    if anomaly_type == "all":
+        anomaly_filter = or_(*type_conditions.values())
+    else:
+        anomaly_filter = type_conditions[anomaly_type]
+
+    base_query = (
+        select(Ride)
+        .options(joinedload(Ride.rider), joinedload(Ride.driver))
+        .where(anomaly_filter)
+    )
+    if period_start is not None:
+        base_query = base_query.where(Ride.requested_at >= period_start)
+
+    count_result = await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )
+    total = count_result.scalar() or 0
+
+    rows_result = await db.execute(
+        base_query
+        .order_by(Ride.requested_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
+    rides = rows_result.unique().scalars().all()
+
+    entries = []
+    for ride in rides:
+        detected_types = _detect_anomaly_types(ride)
+        if not detected_types:
+            continue
+        entries.append(
+            TripAnomalyEntry(
+                ride_id=ride.id,
+                rider_id=ride.rider_id,
+                rider_name=ride.rider.name if ride.rider else None,
+                driver_id=ride.driver_id,
+                driver_name=ride.driver.name if ride.driver else None,
+                pickup_address=ride.pickup_address,
+                dropoff_address=ride.dropoff_address,
+                status=ride.status.value,
+                estimated_fare=ride.estimated_fare,
+                actual_fare=ride.actual_fare,
+                duration_min=ride.duration_min,
+                anomaly_types=detected_types,
+                detected_at=_anomaly_detected_at(ride),
+                requested_at=ride.requested_at,
+            )
+        )
+
+    return TripAnomalyListResponse(
+        anomalies=entries,
         total=total,
         page=page,
         per_page=per_page,
