@@ -59,6 +59,8 @@ from app.schemas.admin import (
     DriverActivityListResponse,
     DriverMetrics,
     DriverStatusChangeEntry,
+    DriverSafetyHistoryEntry,
+    DriverSafetyHistoryResponse,
     DriverStatusHistoryResponse,
     DriversListResponse,
     FeedbackStats,
@@ -70,6 +72,8 @@ from app.schemas.admin import (
     RevenueDataPoint,
     RideActivityDataPoint,
     RideMetrics,
+    RiderSafetyHistoryEntry,
+    RiderSafetyHistoryResponse,
     RidersListResponse,
     RidesListResponse,
     SOSStats,
@@ -532,6 +536,64 @@ async def admin_get_driver_status_history(
     ]
 
     return DriverStatusHistoryResponse(driver_id=driver_id, total=total, items=items)
+
+
+@router.get("/drivers/{driver_id}/safety-history", response_model=DriverSafetyHistoryResponse)
+async def admin_get_driver_safety_history(
+    driver_id: int,
+    skip: int = Query(0, ge=0, description="Pagination offset."),
+    limit: int = Query(50, ge=1, le=200, description="Maximum results per page."),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status: ACTIVE, RESOLVED, FALSE_ALARM."),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> DriverSafetyHistoryResponse:
+    """Panic alert history for a single driver. Admin only.
+
+    Returns all driver panic alerts for the given driver profile, newest-first.
+    Supports optional filtering by status (ACTIVE/RESOLVED/FALSE_ALARM) and
+    pagination via skip/limit. Returns 404 if the driver profile does not exist.
+    """
+    from app.schemas.driver_safety import DriverPanicAlertStatus
+    from app.services.driver_safety import list_driver_panic_alerts
+
+    profile_result = await db.execute(
+        select(DriverProfile).where(DriverProfile.id == driver_id)
+    )
+    if profile_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Driver not found")
+
+    all_alerts = await list_driver_panic_alerts(db=db, driver_id=driver_id)
+
+    if status_filter is not None:
+        try:
+            target_status = DriverPanicAlertStatus(status_filter.upper())
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid status filter '{status_filter}'. Must be one of: ACTIVE, RESOLVED, FALSE_ALARM.",
+            )
+        all_alerts = [a for a in all_alerts if a["status"] == target_status]
+
+    total = len(all_alerts)
+    page_alerts = all_alerts[skip: skip + limit]
+
+    items = [
+        DriverSafetyHistoryEntry(
+            id=a["id"],
+            ride_id=a["ride_id"],
+            rider_id=a["rider_id"],
+            status=a["status"].value,
+            location_lat=a["location_lat"],
+            location_lng=a["location_lng"],
+            triggered_at=a["triggered_at"],
+            resolved_at=a["resolved_at"],
+            resolved_by=a["resolved_by"],
+            resolution_notes=a["resolution_notes"],
+        )
+        for a in page_alerts
+    ]
+
+    return DriverSafetyHistoryResponse(driver_id=driver_id, total=total, items=items)
 
 
 @router.get("/drivers/{driver_id}", response_model=AdminDriverResponse)
@@ -2629,6 +2691,66 @@ async def reactivate_rider(
         description=f"Rider user #{user_id} reactivated",
         target_type="user", target_id=user_id,
     )
+
+
+@router.get("/riders/{rider_id}/safety-history", response_model=RiderSafetyHistoryResponse)
+async def admin_get_rider_safety_history(
+    rider_id: int,
+    skip: int = Query(0, ge=0, description="Pagination offset."),
+    limit: int = Query(50, ge=1, le=200, description="Maximum results per page."),
+    status_filter: str | None = Query(None, alias="status", description="Filter by status: active, resolved, false_alarm."),
+    _admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+) -> RiderSafetyHistoryResponse:
+    """SOS alert history for a single rider. Admin only.
+
+    Returns all SOS alerts triggered by the given rider, newest-first.
+    Supports optional filtering by status (active/resolved/false_alarm) and
+    pagination via skip/limit. Returns 404 if the rider does not exist.
+    """
+    user_result = await db.execute(
+        select(User).where(User.id == rider_id, User.role == "rider")
+    )
+    if user_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rider not found")
+
+    base_query = select(SOSAlert).where(SOSAlert.user_id == rider_id)
+
+    if status_filter is not None:
+        try:
+            base_query = base_query.where(SOSAlert.status == SOSStatus(status_filter))
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid status filter '{status_filter}'. Must be one of: active, resolved, false_alarm.",
+            )
+
+    total = (await db.execute(
+        select(func.count()).select_from(base_query.subquery())
+    )).scalar() or 0
+
+    result = await db.execute(
+        base_query.order_by(SOSAlert.created_at.desc()).offset(skip).limit(limit)
+    )
+    alerts = result.scalars().all()
+
+    items = [
+        RiderSafetyHistoryEntry(
+            id=a.id,
+            ride_id=a.ride_id,
+            status=a.status.value,
+            lat=a.latitude,
+            lng=a.longitude,
+            message=a.message,
+            triggered_at=a.created_at,
+            resolved_at=a.resolved_at,
+            resolved_by=a.resolved_by,
+            resolution_notes=a.resolution_notes,
+        )
+        for a in alerts
+    ]
+
+    return RiderSafetyHistoryResponse(rider_id=rider_id, total=total, items=items)
 
 
 # ---- Top Earners / Spenders Leaderboard ----

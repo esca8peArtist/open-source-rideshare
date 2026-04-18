@@ -542,3 +542,54 @@ class RecentDriverStatusChangesResponse(BaseModel):
 
     total: int
     items: list[RecentDriverStatusChangeEntry]
+
+
+# ---- Admin Per-User Safety History ----
+
+
+class RiderSafetyHistoryEntry(BaseModel):
+    """One SOS alert event in a rider's safety history."""
+
+    id: int
+    ride_id: int | None
+    status: str
+    lat: float | None
+    lng: float | None
+    message: str | None
+    triggered_at: datetime
+    resolved_at: datetime | None
+    resolved_by: int | None
+    resolution_notes: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class RiderSafetyHistoryResponse(BaseModel):
+    """Paginated SOS alert history for one rider."""
+
+    rider_id: int
+    total: int
+    items: list[RiderSafetyHistoryEntry]
+
+
+class DriverSafetyHistoryEntry(BaseModel):
+    """One panic alert event in a driver's safety history."""
+
+    id: str
+    ride_id: int
+    rider_id: int
+    status: str
+    location_lat: float | None
+    location_lng: float | None
+    triggered_at: datetime
+    resolved_at: datetime | None
+    resolved_by: int | None
+    resolution_notes: str | None
+
+
+class DriverSafetyHistoryResponse(BaseModel):
+    """Paginated panic alert history for one driver."""
+
+    driver_id: int
+    total: int
+    items: list[DriverSafetyHistoryEntry]
