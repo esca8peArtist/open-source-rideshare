@@ -76,8 +76,9 @@ async def get_ride_receipt(
 
     actual_fare = ride.actual_fare or ride.estimated_fare
     promo_discount = ride.promo_discount or 0.0
+    referral_credit_discount = ride.referral_credit_discount or 0.0
     tip_amount = ride.tip_amount or 0.0
-    subtotal = max(actual_fare - promo_discount, 0.0)
+    subtotal = max(actual_fare - promo_discount - referral_credit_discount, 0.0)
     total_charged = subtotal + tip_amount
 
     return RideReceiptResponse(
@@ -91,6 +92,7 @@ async def get_ride_receipt(
         estimated_fare=ride.estimated_fare,
         actual_fare=actual_fare,
         promo_discount=promo_discount,
+        referral_credit_discount=referral_credit_discount,
         tip_amount=tip_amount,
         subtotal=subtotal,
         total_charged=total_charged,

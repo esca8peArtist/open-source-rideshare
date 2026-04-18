@@ -42,6 +42,7 @@ def _fake_ride(
     actual_fare: float | None = 18.50,
     estimated_fare: float = 17.00,
     promo_discount: float = 2.00,
+    referral_credit_discount: float = 0.0,
     tip_amount: float = 3.00,
     distance_km: float | None = 12.4,
     duration_min: float | None = 22.0,
@@ -60,6 +61,7 @@ def _fake_ride(
     r.estimated_fare = estimated_fare
     r.actual_fare = actual_fare
     r.promo_discount = promo_discount
+    r.referral_credit_discount = referral_credit_discount
     r.tip_amount = tip_amount
     r.promo_code_id = None
     return r
@@ -121,6 +123,7 @@ class TestRideReceiptSchema:
             estimated_fare=17.00,
             actual_fare=18.50,
             promo_discount=2.00,
+            referral_credit_discount=0.0,
             tip_amount=3.00,
             subtotal=16.50,
             total_charged=19.50,
@@ -138,6 +141,7 @@ class TestRideReceiptSchema:
         assert data["ride_id"] == RIDE_ID
         assert data["total_charged"] == 19.50
         assert data["driver_name"] == "Jordan"
+        assert data["referral_credit_discount"] == 0.0
 
     def test_serialises_with_nulls(self):
         receipt = RideReceiptResponse(
@@ -151,6 +155,7 @@ class TestRideReceiptSchema:
             estimated_fare=10.00,
             actual_fare=10.00,
             promo_discount=0.0,
+            referral_credit_discount=0.0,
             tip_amount=0.0,
             subtotal=10.00,
             total_charged=10.00,
@@ -167,6 +172,36 @@ class TestRideReceiptSchema:
         data = receipt.model_dump()
         assert data["platform_fee"] is None
         assert data["driver_name"] is None
+
+    def test_referral_credit_discount_in_schema(self):
+        receipt = RideReceiptResponse(
+            ride_id=RIDE_ID,
+            requested_at=_NOW,
+            completed_at=_NOW,
+            pickup_address="A",
+            dropoff_address="B",
+            distance_km=None,
+            duration_min=None,
+            estimated_fare=20.00,
+            actual_fare=20.00,
+            promo_discount=0.0,
+            referral_credit_discount=5.00,
+            tip_amount=0.0,
+            subtotal=15.00,
+            total_charged=15.00,
+            platform_fee=None,
+            driver_payout=None,
+            payment_status=None,
+            driver_name=None,
+            vehicle_make=None,
+            vehicle_model=None,
+            vehicle_color=None,
+            vehicle_year=None,
+            license_plate=None,
+        )
+        data = receipt.model_dump()
+        assert data["referral_credit_discount"] == 5.00
+        assert data["subtotal"] == 15.00
 
 
 # ---------------------------------------------------------------------------
@@ -336,6 +371,69 @@ class TestRideReceiptEndpoint:
         receipt = await get_ride_receipt(ride_id=RIDE_ID, current_user=rider, db=db)
         assert receipt.actual_fare == 15.00
         assert receipt.total_charged == 15.00
+
+    @pytest.mark.asyncio
+    async def test_referral_credit_reduces_subtotal(self):
+        from app.api.v1.ride_receipt import get_ride_receipt
+
+        # fare=20, promo=2, referral_credit=5 → subtotal=13, total=13 (no tip)
+        ride = _fake_ride(actual_fare=20.00, promo_discount=2.00, referral_credit_discount=5.00, tip_amount=0.0)
+        rider = _fake_user(id=RIDER_ID)
+
+        db = AsyncMock()
+        results = [
+            MagicMock(**{"scalar_one_or_none.return_value": ride}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+        ]
+        db.execute = AsyncMock(side_effect=results)
+
+        receipt = await get_ride_receipt(ride_id=RIDE_ID, current_user=rider, db=db)
+        assert receipt.referral_credit_discount == pytest.approx(5.00)
+        assert receipt.subtotal == pytest.approx(13.00)
+        assert receipt.total_charged == pytest.approx(13.00)
+
+    @pytest.mark.asyncio
+    async def test_referral_credit_does_not_push_subtotal_negative(self):
+        from app.api.v1.ride_receipt import get_ride_receipt
+
+        # referral_credit > fare — subtotal should floor at 0
+        ride = _fake_ride(actual_fare=8.00, promo_discount=0.0, referral_credit_discount=10.00, tip_amount=2.00)
+        rider = _fake_user(id=RIDER_ID)
+
+        db = AsyncMock()
+        results = [
+            MagicMock(**{"scalar_one_or_none.return_value": ride}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+        ]
+        db.execute = AsyncMock(side_effect=results)
+
+        receipt = await get_ride_receipt(ride_id=RIDE_ID, current_user=rider, db=db)
+        assert receipt.subtotal == pytest.approx(0.0)
+        assert receipt.total_charged == pytest.approx(2.00)  # only tip remains
+
+    @pytest.mark.asyncio
+    async def test_referral_credit_zero_when_not_used(self):
+        from app.api.v1.ride_receipt import get_ride_receipt
+
+        ride = _fake_ride(actual_fare=15.00, promo_discount=0.0, referral_credit_discount=0.0, tip_amount=0.0)
+        rider = _fake_user(id=RIDER_ID)
+
+        db = AsyncMock()
+        results = [
+            MagicMock(**{"scalar_one_or_none.return_value": ride}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+            MagicMock(**{"scalar_one_or_none.return_value": None}),
+        ]
+        db.execute = AsyncMock(side_effect=results)
+
+        receipt = await get_ride_receipt(ride_id=RIDE_ID, current_user=rider, db=db)
+        assert receipt.referral_credit_discount == 0.0
+        assert receipt.subtotal == pytest.approx(15.00)
 
     def test_requires_auth(self):
         from fastapi.testclient import TestClient

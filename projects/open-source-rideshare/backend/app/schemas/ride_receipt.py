@@ -14,6 +14,7 @@ class RideReceiptResponse(BaseModel):
     estimated_fare: float
     actual_fare: float
     promo_discount: float
+    referral_credit_discount: float
     tip_amount: float
     subtotal: float
     total_charged: float
