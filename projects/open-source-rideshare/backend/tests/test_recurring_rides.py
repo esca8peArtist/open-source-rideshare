@@ -10,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.models.recurring_ride import RecurringRide, RecurringRideStatus
+from app.models.recurring_ride_skip import RecurringRideSkip
 from app.models.ride import Ride, RideStatus
 from app.schemas.recurring_ride import (
     GeneratedRideSummary,
@@ -17,6 +18,8 @@ from app.schemas.recurring_ride import (
     RecurringRideDetailResponse,
     RecurringRideListResponse,
     RecurringRideResponse,
+    RecurringRideSkipCreate,
+    RecurringRideSkipResponse,
     RecurringRideUpdate,
 )
 from app.services.recurring_rides import (
@@ -24,6 +27,7 @@ from app.services.recurring_rides import (
     MAX_RECURRING_RIDES_PER_USER,
     RecurringRideLimitError,
     RecurringRideNotFoundError,
+    RecurringRideSkipError,
     RecurringRideStateError,
     _next_occurrence_dates,
     cancel_recurring_ride,
@@ -32,8 +36,11 @@ from app.services.recurring_rides import (
     get_recurring_ride,
     get_upcoming_generated_rides,
     list_recurring_rides,
+    list_skipped_dates,
     pause_recurring_ride,
     resume_recurring_ride,
+    skip_occurrence,
+    unskip_occurrence,
     update_recurring_ride,
 )
 
@@ -875,6 +882,37 @@ class TestGetUpcomingGeneratedRides:
 
 
 class TestGenerateRidesFromRecurring:
+    def _make_generate_db(self, template, skipped_dates=None, existing_times=None):
+        """Build a mock DB for generate_rides_from_recurring (3 execute calls per template)."""
+        if skipped_dates is None:
+            skipped_dates = []
+        if existing_times is None:
+            existing_times = []
+
+        db = _make_simple_db()
+        call_count = {"n": 0}
+
+        async def execute_side_effect(stmt):
+            call_count["n"] += 1
+            result = MagicMock()
+            if call_count["n"] == 1:
+                # Active templates query
+                scalars_mock = MagicMock()
+                scalars_mock.all.return_value = [template]
+                result.scalars.return_value = scalars_mock
+            elif call_count["n"] == 2:
+                # Skipped dates query — scalars().all()
+                scalars_mock = MagicMock()
+                scalars_mock.all.return_value = skipped_dates
+                result.scalars.return_value = scalars_mock
+            else:
+                # Existing scheduled ride times — result.all()
+                result.all.return_value = [(t,) for t in existing_times]
+            return result
+
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        return db
+
     @pytest.mark.asyncio
     async def test_generates_rides_for_active_template(self):
         template = _make_recurring_ride(
@@ -885,28 +923,9 @@ class TestGenerateRidesFromRecurring:
             last_generated_date=None,
         )
 
-        # First execute returns active templates, second returns existing scheduled rides
-        db = _make_simple_db()
-        call_count = {"n": 0}
-
-        async def execute_side_effect(stmt):
-            call_count["n"] += 1
-            result = MagicMock()
-            if call_count["n"] == 1:
-                # Active templates
-                scalars_mock = MagicMock()
-                scalars_mock.all.return_value = [template]
-                result.scalars.return_value = scalars_mock
-            else:
-                # Existing scheduled ride times
-                result.all.return_value = []
-            return result
-
-        db.execute = AsyncMock(side_effect=execute_side_effect)
-
+        db = self._make_generate_db(template)
         now = datetime(2026, 4, 13, 6, 0, tzinfo=timezone.utc)  # Monday 6am
         with patch("app.services.recurring_rides._next_occurrence_dates") as mock_dates:
-            # Return one occurrence
             occurrence = datetime(2026, 4, 13, 8, 0, tzinfo=timezone.utc)
             mock_dates.return_value = [occurrence]
             with patch("app.services.recurring_rides.check_overlap") as mock_overlap:
@@ -935,21 +954,7 @@ class TestGenerateRidesFromRecurring:
             last_generated_date=None,
         )
 
-        db = _make_simple_db()
-        call_count = {"n": 0}
-
-        async def execute_side_effect(stmt):
-            call_count["n"] += 1
-            result = MagicMock()
-            if call_count["n"] == 1:
-                scalars_mock = MagicMock()
-                scalars_mock.all.return_value = [template]
-                result.scalars.return_value = scalars_mock
-            else:
-                result.all.return_value = []
-            return result
-
-        db.execute = AsyncMock(side_effect=execute_side_effect)
+        db = self._make_generate_db(template)
 
         with patch("app.services.recurring_rides._next_occurrence_dates") as mock_dates:
             occurrence = datetime(2026, 4, 13, 8, 0, tzinfo=timezone.utc)
@@ -971,21 +976,7 @@ class TestGenerateRidesFromRecurring:
             last_generated_date=None,
         )
 
-        db = _make_simple_db()
-        call_count = {"n": 0}
-
-        async def execute_side_effect(stmt):
-            call_count["n"] += 1
-            result = MagicMock()
-            if call_count["n"] == 1:
-                scalars_mock = MagicMock()
-                scalars_mock.all.return_value = [template]
-                result.scalars.return_value = scalars_mock
-            else:
-                result.all.return_value = []
-            return result
-
-        db.execute = AsyncMock(side_effect=execute_side_effect)
+        db = self._make_generate_db(template)
 
         occurrence = datetime(2026, 4, 13, 8, 0, tzinfo=timezone.utc)
         with patch("app.services.recurring_rides._next_occurrence_dates") as mock_dates:
@@ -995,6 +986,27 @@ class TestGenerateRidesFromRecurring:
                 await generate_rides_from_recurring(db)
 
         assert template.last_generated_date is not None
+
+    @pytest.mark.asyncio
+    async def test_skips_occurrence_on_skipped_date(self):
+        template = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            timezone="UTC",
+            last_generated_date=None,
+        )
+        occurrence = datetime(2026, 4, 13, 8, 0, tzinfo=timezone.utc)
+        skipped = [date(2026, 4, 13)]  # skip that specific date
+
+        db = self._make_generate_db(template, skipped_dates=skipped)
+
+        with patch("app.services.recurring_rides._next_occurrence_dates") as mock_dates:
+            mock_dates.return_value = [occurrence]
+            count = await generate_rides_from_recurring(db)
+
+        assert count == 0
+        db.add.assert_not_called()
 
 
 # ===========================================================================
@@ -1113,9 +1125,15 @@ class TestGetDetailEndpoint:
                 new_callable=AsyncMock,
                 return_value=[],
             ):
-                result = await get_detail(1, _mock_user(), AsyncMock())
+                with patch(
+                    "app.api.v1.recurring_rides.list_skipped_dates",
+                    new_callable=AsyncMock,
+                    return_value=[],
+                ):
+                    result = await get_detail(1, _mock_user(), AsyncMock())
         assert result.id == 1
         assert result.upcoming_rides == []
+        assert result.skipped_dates == []
 
     @pytest.mark.asyncio
     async def test_get_detail_not_found(self):
@@ -1250,3 +1268,410 @@ class TestUpdateEndpoint:
             with pytest.raises(HTTPException) as exc_info:
                 await update(1, body, _mock_user(), AsyncMock())
             assert exc_info.value.status_code == 409
+
+
+# ===========================================================================
+# RecurringRideSkip Model Tests
+# ===========================================================================
+
+
+class TestRecurringRideSkipModel:
+    def test_table_name(self):
+        assert RecurringRideSkip.__tablename__ == "recurring_ride_skips"
+
+    def test_has_recurring_ride_id_column(self):
+        cols = {c.name for c in RecurringRideSkip.__table__.columns}
+        assert "recurring_ride_id" in cols
+
+    def test_has_skip_date_column(self):
+        cols = {c.name for c in RecurringRideSkip.__table__.columns}
+        assert "skip_date" in cols
+
+    def test_has_created_at_column(self):
+        cols = {c.name for c in RecurringRideSkip.__table__.columns}
+        assert "created_at" in cols
+
+    def test_recurring_ride_id_indexed(self):
+        col = RecurringRideSkip.__table__.columns["recurring_ride_id"]
+        assert col.index is True
+
+    def test_recurring_ride_id_has_fk(self):
+        col = RecurringRideSkip.__table__.columns["recurring_ride_id"]
+        fk_targets = [fk.target_fullname for fk in col.foreign_keys]
+        assert "recurring_rides.id" in fk_targets
+
+    def test_unique_constraint_exists(self):
+        constraint_names = {
+            c.name for c in RecurringRideSkip.__table__.constraints
+            if hasattr(c, "name") and c.name
+        }
+        assert "uq_recurring_ride_skip" in constraint_names
+
+
+# ===========================================================================
+# Schema Tests — RecurringRideSkip
+# ===========================================================================
+
+
+class TestRecurringRideSkipSchema:
+    def test_skip_create_valid(self):
+        s = RecurringRideSkipCreate(skip_date=date(2026, 4, 21))
+        assert s.skip_date == date(2026, 4, 21)
+
+    def test_skip_response_fields(self):
+        fields = set(RecurringRideSkipResponse.model_fields.keys())
+        assert {"id", "recurring_ride_id", "skip_date", "created_at"} == fields
+
+    def test_skip_response_from_attributes(self):
+        assert RecurringRideSkipResponse.model_config.get("from_attributes") is True
+
+    def test_detail_response_has_skipped_dates(self):
+        assert "skipped_dates" in RecurringRideDetailResponse.model_fields
+
+    def test_detail_response_skipped_dates_default_empty(self):
+        now = datetime.now(timezone.utc)
+        resp = RecurringRideDetailResponse(
+            id=1, rider_id=10, pickup_address="A", dropoff_address="B",
+            days_of_week=[0], pickup_time=time(8, 0), timezone="UTC",
+            accessibility_required=False, status="active", label=None,
+            last_generated_date=None, created_at=now, updated_at=now,
+        )
+        assert resp.skipped_dates == []
+
+
+# ===========================================================================
+# Service Tests — skip_occurrence
+# ===========================================================================
+
+
+def _make_skip_db(ride, existing_skip=None, generated_ride=None):
+    """Build a mock DB for skip_occurrence (3 execute calls)."""
+    db = _make_simple_db()
+    call_count = {"n": 0}
+
+    async def execute_side_effect(stmt):
+        call_count["n"] += 1
+        result = MagicMock()
+        if call_count["n"] == 1:
+            # get_recurring_ride: scalar_one_or_none
+            result.scalar_one_or_none.return_value = ride
+        elif call_count["n"] == 2:
+            # existing skip check: scalar_one_or_none
+            result.scalar_one_or_none.return_value = existing_skip
+        else:
+            # generated ride cancel check: scalar_one_or_none
+            result.scalar_one_or_none.return_value = generated_ride
+        return result
+
+    db.execute = AsyncMock(side_effect=execute_side_effect)
+    return db
+
+
+class TestSkipOccurrence:
+    @pytest.mark.asyncio
+    async def test_skip_valid_future_day(self):
+        # Monday recurring ride; skip next Monday
+        ride = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0],  # Monday
+            pickup_time=time(8, 0),
+            timezone="UTC",
+        )
+        # Find a future Monday
+        today = date.today()
+        days_ahead = (7 - today.weekday()) % 7 or 7  # days until next Monday
+        future_monday = today + timedelta(days=days_ahead)
+
+        db = _make_skip_db(ride)
+        skip = await skip_occurrence(1, 10, future_monday, db)
+        db.add.assert_called_once()
+        db.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_skip_wrong_day_of_week_raises(self):
+        ride = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0],  # Monday only
+            pickup_time=time(8, 0),
+            timezone="UTC",
+        )
+        # Pick a future Tuesday
+        today = date.today()
+        days_ahead = (1 - today.weekday()) % 7 or 7
+        future_tuesday = today + timedelta(days=days_ahead)
+
+        db = _make_skip_db(ride)
+        with pytest.raises(RecurringRideSkipError, match="not a scheduled day"):
+            await skip_occurrence(1, 10, future_tuesday, db)
+
+    @pytest.mark.asyncio
+    async def test_skip_past_date_raises(self):
+        ride = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            timezone="UTC",
+        )
+        db = _make_skip_db(ride)
+        past_date = date.today() - timedelta(days=1)
+        with pytest.raises(RecurringRideSkipError, match="future"):
+            await skip_occurrence(1, 10, past_date, db)
+
+    @pytest.mark.asyncio
+    async def test_skip_cancelled_ride_raises(self):
+        ride = _make_recurring_ride(status=RecurringRideStatus.CANCELLED, days_of_week=[0])
+        db = _make_skip_db(ride)
+        today = date.today()
+        days_ahead = (7 - today.weekday()) % 7 or 7
+        future_monday = today + timedelta(days=days_ahead)
+        with pytest.raises(RecurringRideStateError, match="cancelled"):
+            await skip_occurrence(1, 10, future_monday, db)
+
+    @pytest.mark.asyncio
+    async def test_skip_idempotent_returns_existing(self):
+        ride = _make_recurring_ride(status=RecurringRideStatus.ACTIVE, days_of_week=[0])
+        existing_skip = MagicMock(spec=RecurringRideSkip)
+        existing_skip.id = 99
+
+        db = _make_skip_db(ride, existing_skip=existing_skip)
+        today = date.today()
+        days_ahead = (7 - today.weekday()) % 7 or 7
+        future_monday = today + timedelta(days=days_ahead)
+
+        result = await skip_occurrence(1, 10, future_monday, db)
+        assert result == existing_skip
+        db.add.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_skip_cancels_generated_ride(self):
+        ride = _make_recurring_ride(status=RecurringRideStatus.ACTIVE, days_of_week=[0])
+        generated_ride = MagicMock(spec=Ride)
+        generated_ride.status = RideStatus.SCHEDULED
+
+        db = _make_skip_db(ride, generated_ride=generated_ride)
+        today = date.today()
+        days_ahead = (7 - today.weekday()) % 7 or 7
+        future_monday = today + timedelta(days=days_ahead)
+
+        await skip_occurrence(1, 10, future_monday, db)
+        assert generated_ride.status == RideStatus.CANCELLED
+
+    @pytest.mark.asyncio
+    async def test_skip_not_found_raises(self):
+        db = _make_skip_db(None)
+        with pytest.raises(RecurringRideNotFoundError):
+            await skip_occurrence(1, 999, date.today() + timedelta(days=7), db)
+
+
+# ===========================================================================
+# Service Tests — unskip_occurrence
+# ===========================================================================
+
+
+class TestUnskipOccurrence:
+    @pytest.mark.asyncio
+    async def test_unskip_existing(self):
+        ride = _make_recurring_ride()
+        skip_record = MagicMock(spec=RecurringRideSkip)
+
+        db = _make_simple_db()
+        call_count = {"n": 0}
+
+        async def execute_side_effect(stmt):
+            call_count["n"] += 1
+            result = MagicMock()
+            if call_count["n"] == 1:
+                result.scalar_one_or_none.return_value = ride
+            else:
+                result.scalar_one_or_none.return_value = skip_record
+            return result
+
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        await unskip_occurrence(1, 10, date(2026, 4, 20), db)
+        db.delete.assert_called_once_with(skip_record)
+        db.commit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_unskip_not_found_raises(self):
+        ride = _make_recurring_ride()
+
+        db = _make_simple_db()
+        call_count = {"n": 0}
+
+        async def execute_side_effect(stmt):
+            call_count["n"] += 1
+            result = MagicMock()
+            if call_count["n"] == 1:
+                result.scalar_one_or_none.return_value = ride
+            else:
+                result.scalar_one_or_none.return_value = None  # no skip found
+            return result
+
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        with pytest.raises(RecurringRideSkipError, match="No skip found"):
+            await unskip_occurrence(1, 10, date(2026, 4, 20), db)
+
+
+# ===========================================================================
+# Service Tests — list_skipped_dates
+# ===========================================================================
+
+
+class TestListSkippedDates:
+    @pytest.mark.asyncio
+    async def test_returns_skip_dates(self):
+        ride = _make_recurring_ride()
+        skip_dates = [date(2026, 4, 21), date(2026, 4, 28)]
+
+        db = _make_simple_db()
+        call_count = {"n": 0}
+
+        async def execute_side_effect(stmt):
+            call_count["n"] += 1
+            result = MagicMock()
+            if call_count["n"] == 1:
+                result.scalar_one_or_none.return_value = ride
+            else:
+                scalars_mock = MagicMock()
+                scalars_mock.all.return_value = skip_dates
+                result.scalars.return_value = scalars_mock
+            return result
+
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        result = await list_skipped_dates(1, 10, db)
+        assert result == skip_dates
+
+    @pytest.mark.asyncio
+    async def test_returns_empty_when_none(self):
+        ride = _make_recurring_ride()
+
+        db = _make_simple_db()
+        call_count = {"n": 0}
+
+        async def execute_side_effect(stmt):
+            call_count["n"] += 1
+            result = MagicMock()
+            if call_count["n"] == 1:
+                result.scalar_one_or_none.return_value = ride
+            else:
+                scalars_mock = MagicMock()
+                scalars_mock.all.return_value = []
+                result.scalars.return_value = scalars_mock
+            return result
+
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        result = await list_skipped_dates(1, 10, db)
+        assert result == []
+
+
+# ===========================================================================
+# API Endpoint Tests — skip / unskip
+# ===========================================================================
+
+
+class TestSkipEndpoint:
+    @pytest.mark.asyncio
+    async def test_skip_returns_201(self):
+        from app.api.v1.recurring_rides import skip
+
+        body = RecurringRideSkipCreate(skip_date=date(2026, 4, 21))
+        skip_record = MagicMock(spec=RecurringRideSkip)
+        skip_record.id = 1
+        skip_record.recurring_ride_id = 1
+        skip_record.skip_date = date(2026, 4, 21)
+        skip_record.created_at = datetime.now(timezone.utc)
+
+        with patch(
+            "app.api.v1.recurring_rides.skip_occurrence",
+            new_callable=AsyncMock,
+            return_value=skip_record,
+        ):
+            result = await skip(1, body, _mock_user(), AsyncMock())
+        assert result == skip_record
+
+    @pytest.mark.asyncio
+    async def test_skip_not_found_returns_404(self):
+        from app.api.v1.recurring_rides import skip
+        from fastapi import HTTPException
+
+        body = RecurringRideSkipCreate(skip_date=date(2026, 4, 21))
+        with patch(
+            "app.api.v1.recurring_rides.skip_occurrence",
+            new_callable=AsyncMock,
+            side_effect=RecurringRideNotFoundError("not found"),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await skip(999, body, _mock_user(), AsyncMock())
+            assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_skip_wrong_state_returns_409(self):
+        from app.api.v1.recurring_rides import skip
+        from fastapi import HTTPException
+
+        body = RecurringRideSkipCreate(skip_date=date(2026, 4, 21))
+        with patch(
+            "app.api.v1.recurring_rides.skip_occurrence",
+            new_callable=AsyncMock,
+            side_effect=RecurringRideStateError("cancelled"),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await skip(1, body, _mock_user(), AsyncMock())
+            assert exc_info.value.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_skip_invalid_date_returns_422(self):
+        from app.api.v1.recurring_rides import skip
+        from fastapi import HTTPException
+
+        body = RecurringRideSkipCreate(skip_date=date(2026, 4, 21))
+        with patch(
+            "app.api.v1.recurring_rides.skip_occurrence",
+            new_callable=AsyncMock,
+            side_effect=RecurringRideSkipError("not a scheduled day"),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await skip(1, body, _mock_user(), AsyncMock())
+            assert exc_info.value.status_code == 422
+
+
+class TestUnskipEndpoint:
+    @pytest.mark.asyncio
+    async def test_unskip_returns_204(self):
+        from app.api.v1.recurring_rides import unskip
+
+        with patch(
+            "app.api.v1.recurring_rides.unskip_occurrence",
+            new_callable=AsyncMock,
+            return_value=None,
+        ):
+            result = await unskip(1, date(2026, 4, 21), _mock_user(), AsyncMock())
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_unskip_not_found_returns_404(self):
+        from app.api.v1.recurring_rides import unskip
+        from fastapi import HTTPException
+
+        with patch(
+            "app.api.v1.recurring_rides.unskip_occurrence",
+            new_callable=AsyncMock,
+            side_effect=RecurringRideNotFoundError("not found"),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await unskip(999, date(2026, 4, 21), _mock_user(), AsyncMock())
+            assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_unskip_no_skip_found_returns_404(self):
+        from app.api.v1.recurring_rides import unskip
+        from fastapi import HTTPException
+
+        with patch(
+            "app.api.v1.recurring_rides.unskip_occurrence",
+            new_callable=AsyncMock,
+            side_effect=RecurringRideSkipError("No skip found"),
+        ):
+            with pytest.raises(HTTPException) as exc_info:
+                await unskip(1, date(2026, 4, 21), _mock_user(), AsyncMock())
+            assert exc_info.value.status_code == 404

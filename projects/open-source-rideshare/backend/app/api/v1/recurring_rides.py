@@ -5,6 +5,8 @@ Allows riders to create, manage, and cancel recurring ride schedules
 rides from active templates.
 """
 
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,19 +20,25 @@ from app.schemas.recurring_ride import (
     RecurringRideDetailResponse,
     RecurringRideListResponse,
     RecurringRideResponse,
+    RecurringRideSkipCreate,
+    RecurringRideSkipResponse,
     RecurringRideUpdate,
 )
 from app.services.recurring_rides import (
     RecurringRideLimitError,
     RecurringRideNotFoundError,
+    RecurringRideSkipError,
     RecurringRideStateError,
     cancel_recurring_ride,
     create_recurring_ride,
     get_recurring_ride,
     get_upcoming_generated_rides,
     list_recurring_rides,
+    list_skipped_dates,
     pause_recurring_ride,
     resume_recurring_ride,
+    skip_occurrence,
+    unskip_occurrence,
     update_recurring_ride,
 )
 
@@ -99,6 +107,7 @@ async def get_detail(
         )
         for r in upcoming
     ]
+    skipped = await list_skipped_dates(recurring_ride_id, user.id, db)
 
     return RecurringRideDetailResponse(
         id=ride.id,
@@ -115,6 +124,7 @@ async def get_detail(
         created_at=ride.created_at,
         updated_at=ride.updated_at,
         upcoming_rides=upcoming_summaries,
+        skipped_dates=skipped,
     )
 
 
@@ -198,3 +208,43 @@ async def cancel(
     except RecurringRideStateError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     return ride
+
+
+@router.post("/{recurring_ride_id}/skip", response_model=RecurringRideSkipResponse, status_code=status.HTTP_201_CREATED)
+async def skip(
+    recurring_ride_id: int,
+    body: RecurringRideSkipCreate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Skip a single upcoming occurrence of a recurring ride.
+
+    The skip_date must fall on a scheduled day of the week and must be in
+    the future. If a SCHEDULED ride has already been generated for that
+    occurrence it will be cancelled automatically.
+    """
+    try:
+        skip_record = await skip_occurrence(recurring_ride_id, user.id, body.skip_date, db)
+    except RecurringRideNotFoundError:
+        raise HTTPException(status_code=404, detail="Recurring ride not found")
+    except RecurringRideStateError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except RecurringRideSkipError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+    return skip_record
+
+
+@router.delete("/{recurring_ride_id}/skip/{skip_date}", status_code=status.HTTP_204_NO_CONTENT)
+async def unskip(
+    recurring_ride_id: int,
+    skip_date: date,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove a previously recorded skip, allowing the occurrence to be generated again."""
+    try:
+        await unskip_occurrence(recurring_ride_id, user.id, skip_date, db)
+    except RecurringRideNotFoundError:
+        raise HTTPException(status_code=404, detail="Recurring ride not found")
+    except RecurringRideSkipError as e:
+        raise HTTPException(status_code=404, detail=str(e))

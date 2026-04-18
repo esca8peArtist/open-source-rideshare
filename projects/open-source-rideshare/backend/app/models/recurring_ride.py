@@ -74,3 +74,4 @@ class RecurringRide(Base):
 
     # Relationships
     rider = relationship("User", foreign_keys=[rider_id], backref="recurring_rides")
+    skips = relationship("RecurringRideSkip", back_populates="recurring_ride", cascade="all, delete-orphan")

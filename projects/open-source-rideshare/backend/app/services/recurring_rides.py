@@ -8,12 +8,14 @@ from __future__ import annotations
 
 import logging
 from datetime import date, datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from geoalchemy2.functions import ST_MakePoint
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.recurring_ride import RecurringRide, RecurringRideStatus
+from app.models.recurring_ride_skip import RecurringRideSkip
 from app.models.ride import Ride, RideStatus
 from app.services.scheduling import check_overlap
 
@@ -39,6 +41,10 @@ class RecurringRideLimitError(RecurringRideError):
 
 
 class RecurringRideStateError(RecurringRideError):
+    pass
+
+
+class RecurringRideSkipError(RecurringRideError):
     pass
 
 
@@ -233,6 +239,115 @@ async def cancel_recurring_ride(
     return ride
 
 
+async def skip_occurrence(
+    recurring_ride_id: int,
+    rider_id: int,
+    skip_date: date,
+    db: AsyncSession,
+) -> RecurringRideSkip:
+    """Skip a single occurrence of a recurring ride.
+
+    Validates that the date falls on a scheduled day of the week. If a
+    SCHEDULED ride already exists for that occurrence it is cancelled.
+    """
+    ride = await get_recurring_ride(recurring_ride_id, rider_id, db)
+    if ride.status == RecurringRideStatus.CANCELLED:
+        raise RecurringRideStateError("Cannot skip an occurrence of a cancelled recurring ride")
+
+    if skip_date.weekday() not in ride.days_of_week:
+        raise RecurringRideSkipError(
+            f"{skip_date} is a {skip_date.strftime('%A')} which is not a scheduled day for this recurring ride"
+        )
+
+    if skip_date <= date.today():
+        raise RecurringRideSkipError("Can only skip future occurrences")
+
+    # Idempotency: return existing skip if already present
+    existing = await db.execute(
+        select(RecurringRideSkip).where(
+            RecurringRideSkip.recurring_ride_id == recurring_ride_id,
+            RecurringRideSkip.skip_date == skip_date,
+        )
+    )
+    existing_skip = existing.scalar_one_or_none()
+    if existing_skip is not None:
+        return existing_skip
+
+    skip = RecurringRideSkip(recurring_ride_id=recurring_ride_id, skip_date=skip_date)
+    db.add(skip)
+
+    # Cancel any already-generated SCHEDULED ride for this occurrence
+    try:
+        tz = ZoneInfo(ride.timezone)
+    except ZoneInfoNotFoundError:
+        tz = timezone.utc  # type: ignore[assignment]
+
+    occurrence_start = datetime.combine(skip_date, ride.pickup_time, tzinfo=tz).astimezone(timezone.utc)
+    # Allow a 5-minute window to match the generated ride's scheduled_for
+    window_start = occurrence_start - timedelta(minutes=5)
+    window_end = occurrence_start + timedelta(minutes=5)
+
+    generated_result = await db.execute(
+        select(Ride).where(
+            Ride.recurring_ride_id == recurring_ride_id,
+            Ride.status == RideStatus.SCHEDULED,
+            Ride.scheduled_for >= window_start,
+            Ride.scheduled_for <= window_end,
+        )
+    )
+    generated_ride = generated_result.scalar_one_or_none()
+    if generated_ride is not None:
+        generated_ride.status = RideStatus.CANCELLED
+
+    await db.commit()
+    await db.refresh(skip)
+    return skip
+
+
+async def unskip_occurrence(
+    recurring_ride_id: int,
+    rider_id: int,
+    skip_date: date,
+    db: AsyncSession,
+) -> None:
+    """Remove a previously recorded skip, allowing the occurrence to be generated again."""
+    await get_recurring_ride(recurring_ride_id, rider_id, db)  # ownership check
+
+    result = await db.execute(
+        select(RecurringRideSkip).where(
+            RecurringRideSkip.recurring_ride_id == recurring_ride_id,
+            RecurringRideSkip.skip_date == skip_date,
+        )
+    )
+    skip = result.scalar_one_or_none()
+    if skip is None:
+        raise RecurringRideSkipError("No skip found for that date")
+
+    await db.delete(skip)
+    await db.commit()
+
+
+async def list_skipped_dates(
+    recurring_ride_id: int,
+    rider_id: int,
+    db: AsyncSession,
+    *,
+    future_only: bool = True,
+) -> list[date]:
+    """Return skip dates for a recurring ride, optionally filtered to future dates."""
+    await get_recurring_ride(recurring_ride_id, rider_id, db)  # ownership check
+
+    query = select(RecurringRideSkip.skip_date).where(
+        RecurringRideSkip.recurring_ride_id == recurring_ride_id
+    )
+    if future_only:
+        query = query.where(RecurringRideSkip.skip_date > date.today())
+    query = query.order_by(RecurringRideSkip.skip_date)
+
+    result = await db.execute(query)
+    return list(result.scalars().all())
+
+
 async def get_upcoming_generated_rides(
     recurring_ride_id: int,
     db: AsyncSession,
@@ -271,9 +386,8 @@ def _next_occurrence_dates(
         List of UTC datetimes for upcoming ride occurrences.
     """
     try:
-        from zoneinfo import ZoneInfo
         tz = ZoneInfo(tz_name)
-    except (ImportError, KeyError):
+    except (ZoneInfoNotFoundError, KeyError):
         tz = timezone.utc
 
     horizon_end = datetime.now(timezone.utc) + timedelta(hours=horizon_hours)
@@ -341,6 +455,14 @@ async def generate_rides_from_recurring(
         if not occurrences:
             continue
 
+        # Load skipped dates for this template
+        skip_result = await db.execute(
+            select(RecurringRideSkip.skip_date).where(
+                RecurringRideSkip.recurring_ride_id == template.id
+            )
+        )
+        skipped_dates = set(skip_result.scalars().all())
+
         # Get existing scheduled rides for this rider to check overlaps
         existing_result = await db.execute(
             select(Ride.scheduled_for).where(
@@ -354,6 +476,20 @@ async def generate_rides_from_recurring(
         latest_date = template.last_generated_date
 
         for occurrence_utc in occurrences:
+            # Skip if this occurrence has been explicitly skipped by the rider
+            try:
+                tz = ZoneInfo(template.timezone)
+            except ZoneInfoNotFoundError:
+                tz = timezone.utc  # type: ignore[assignment]
+            local_date = occurrence_utc.astimezone(tz).date()
+            if local_date in skipped_dates:
+                logger.debug(
+                    "Skipping recurring ride %d occurrence at %s — rider skipped this date",
+                    template.id,
+                    occurrence_utc,
+                )
+                continue
+
             # Skip if overlap with existing scheduled ride
             overlap = check_overlap(occurrence_utc, existing_times)
             if not overlap.valid:

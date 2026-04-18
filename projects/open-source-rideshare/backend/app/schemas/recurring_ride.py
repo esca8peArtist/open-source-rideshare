@@ -1,6 +1,6 @@
 """Pydantic schemas for recurring rides."""
 
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, field_validator
 
@@ -99,5 +99,19 @@ class GeneratedRideSummary(BaseModel):
     scheduled_for: datetime
 
 
+class RecurringRideSkipCreate(BaseModel):
+    skip_date: date
+
+
+class RecurringRideSkipResponse(BaseModel):
+    id: int
+    recurring_ride_id: int
+    skip_date: date
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class RecurringRideDetailResponse(RecurringRideResponse):
     upcoming_rides: list[GeneratedRideSummary] = []
+    skipped_dates: list[date] = []
