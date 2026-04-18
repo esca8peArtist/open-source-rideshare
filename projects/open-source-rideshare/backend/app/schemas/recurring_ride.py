@@ -2,7 +2,7 @@
 
 from datetime import date, datetime, time
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from app.schemas.ride import LocationPoint
 
@@ -19,6 +19,7 @@ class RecurringRideCreate(BaseModel):
     timezone: str = "UTC"
     accessibility_required: bool = False
     label: str | None = None
+    ends_on: date | None = None  # Last date to generate rides; None = runs indefinitely
 
     @field_validator("days_of_week")
     @classmethod
@@ -41,6 +42,13 @@ class RecurringRideCreate(BaseModel):
             raise ValueError("Invalid timezone")
         return v
 
+    @field_validator("ends_on")
+    @classmethod
+    def validate_ends_on(cls, v: date | None) -> date | None:
+        if v is not None and v <= date.today():
+            raise ValueError("ends_on must be a future date")
+        return v
+
 
 class RecurringRideUpdate(BaseModel):
     pickup: LocationPoint | None = None
@@ -54,6 +62,7 @@ class RecurringRideUpdate(BaseModel):
     timezone: str | None = None
     accessibility_required: bool | None = None
     label: str | None = None
+    ends_on: date | None = None  # Set to clear (runs indefinitely) or provide new date
 
     @field_validator("days_of_week")
     @classmethod
@@ -69,6 +78,13 @@ class RecurringRideUpdate(BaseModel):
                 raise ValueError(f"Invalid day of week: {day} (must be 0-6)")
         return sorted(set(v))
 
+    @field_validator("ends_on")
+    @classmethod
+    def validate_ends_on(cls, v: date | None) -> date | None:
+        if v is not None and v <= date.today():
+            raise ValueError("ends_on must be a future date")
+        return v
+
 
 class RecurringRideResponse(BaseModel):
     id: int
@@ -81,6 +97,7 @@ class RecurringRideResponse(BaseModel):
     accessibility_required: bool
     status: str
     label: str | None = None
+    ends_on: date | None = None
     last_generated_date: datetime | None = None
     created_at: datetime
     updated_at: datetime

@@ -6,10 +6,10 @@ recurring templates ahead of time.
 """
 
 import enum
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from geoalchemy2 import Geometry
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY, INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -58,6 +58,9 @@ class RecurringRide(Base):
 
     # Label for rider convenience (e.g. "Morning commute", "Gym pickup")
     label: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Optional end date: no rides will be generated after this date
+    ends_on: Mapped[date | None] = mapped_column(Date(), nullable=True)
 
     # Tracking: the date up to which rides have been generated
     # (prevents duplicate generation)

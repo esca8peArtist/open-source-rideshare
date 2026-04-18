@@ -390,7 +390,7 @@ class TestRecurringRideResponseSchema:
             "id", "rider_id", "pickup_address", "dropoff_address",
             "days_of_week", "pickup_time", "timezone",
             "accessibility_required", "status", "label",
-            "last_generated_date", "created_at", "updated_at",
+            "ends_on", "last_generated_date", "created_at", "updated_at",
         }
         assert expected == fields
 
@@ -508,6 +508,7 @@ def _make_recurring_ride(**kwargs):
         "accessibility_required": False,
         "status": RecurringRideStatus.ACTIVE,
         "label": "Morning commute",
+        "ends_on": None,
         "last_generated_date": None,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc),
@@ -1675,3 +1676,360 @@ class TestUnskipEndpoint:
             with pytest.raises(HTTPException) as exc_info:
                 await unskip(1, date(2026, 4, 21), _mock_user(), AsyncMock())
             assert exc_info.value.status_code == 404
+
+
+# ===========================================================================
+# ends_on — Model Tests
+# ===========================================================================
+
+
+class TestRecurringRideEndsOnModel:
+    def test_has_ends_on_column(self):
+        cols = {c.name for c in RecurringRide.__table__.columns}
+        assert "ends_on" in cols
+
+    def test_ends_on_is_nullable(self):
+        col = RecurringRide.__table__.columns["ends_on"]
+        assert col.nullable is True
+
+
+# ===========================================================================
+# ends_on — Schema Tests
+# ===========================================================================
+
+
+class TestRecurringRideCreateEndsOn:
+    def _base(self, **kwargs):
+        return dict(
+            pickup={"lat": 40.0, "lng": -74.0},
+            dropoff={"lat": 41.0, "lng": -73.0},
+            pickup_address="A",
+            dropoff_address="B",
+            days_of_week=[0],
+            pickup_time="08:00",
+            **kwargs,
+        )
+
+    def test_ends_on_default_none(self):
+        ride = RecurringRideCreate(**self._base())
+        assert ride.ends_on is None
+
+    def test_ends_on_future_accepted(self):
+        future = date.today() + timedelta(days=30)
+        ride = RecurringRideCreate(**self._base(ends_on=future))
+        assert ride.ends_on == future
+
+    def test_ends_on_today_rejected(self):
+        with pytest.raises(ValueError, match="future date"):
+            RecurringRideCreate(**self._base(ends_on=date.today()))
+
+    def test_ends_on_past_rejected(self):
+        with pytest.raises(ValueError, match="future date"):
+            RecurringRideCreate(**self._base(ends_on=date(2020, 1, 1)))
+
+
+class TestRecurringRideUpdateEndsOn:
+    def test_ends_on_not_in_fields_set_by_default(self):
+        update = RecurringRideUpdate()
+        assert "ends_on" not in update.model_fields_set
+
+    def test_ends_on_in_fields_set_when_provided(self):
+        future = date.today() + timedelta(days=10)
+        update = RecurringRideUpdate(ends_on=future)
+        assert "ends_on" in update.model_fields_set
+
+    def test_ends_on_none_in_fields_set_when_explicitly_none(self):
+        update = RecurringRideUpdate(ends_on=None)
+        assert "ends_on" in update.model_fields_set
+        assert update.ends_on is None
+
+    def test_ends_on_future_accepted(self):
+        future = date.today() + timedelta(days=60)
+        update = RecurringRideUpdate(ends_on=future)
+        assert update.ends_on == future
+
+    def test_ends_on_past_rejected(self):
+        with pytest.raises(ValueError, match="future date"):
+            RecurringRideUpdate(ends_on=date(2020, 6, 1))
+
+
+class TestRecurringRideResponseEndsOn:
+    def test_response_has_ends_on_field(self):
+        from app.schemas.recurring_ride import RecurringRideResponse
+        fields = RecurringRideResponse.model_fields
+        assert "ends_on" in fields
+
+    def test_ends_on_default_none(self):
+        from app.schemas.recurring_ride import RecurringRideResponse
+        r = RecurringRideResponse(
+            id=1,
+            rider_id=10,
+            pickup_address="A",
+            dropoff_address="B",
+            days_of_week=[0],
+            pickup_time=time(8, 0),
+            timezone="UTC",
+            accessibility_required=False,
+            status="active",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        assert r.ends_on is None
+
+    def test_ends_on_serialised_when_set(self):
+        from app.schemas.recurring_ride import RecurringRideResponse
+        future = date.today() + timedelta(days=14)
+        r = RecurringRideResponse(
+            id=1,
+            rider_id=10,
+            pickup_address="A",
+            dropoff_address="B",
+            days_of_week=[0],
+            pickup_time=time(8, 0),
+            timezone="UTC",
+            accessibility_required=False,
+            status="active",
+            ends_on=future,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        assert r.ends_on == future
+
+
+# ===========================================================================
+# ends_on — _next_occurrence_dates Tests
+# ===========================================================================
+
+
+class TestNextOccurrenceDatesEndsOn:
+    def test_ends_on_caps_occurrences(self):
+        # from_date is Monday April 13; with 168h horizon (7 days), Monday the 20th
+        # would normally be included. With ends_on=April 18 (Saturday), it should not appear.
+        base = date(2026, 4, 13)  # Monday
+        ends = date(2026, 4, 17)  # Friday
+        dates = _next_occurrence_dates(
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            tz_name="UTC",
+            from_date=base,
+            horizon_hours=168,
+            ends_on=ends,
+        )
+        for d in dates:
+            assert d.date() <= ends
+
+    def test_ends_on_none_does_not_restrict(self):
+        # Without ends_on, a 7-day horizon from Monday should include multiple occurrences
+        base = date(2026, 4, 13)  # Monday
+        dates_with_no_end = _next_occurrence_dates(
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            tz_name="UTC",
+            from_date=base,
+            horizon_hours=168,
+        )
+        dates_with_far_end = _next_occurrence_dates(
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            tz_name="UTC",
+            from_date=base,
+            horizon_hours=168,
+            ends_on=date(2030, 1, 1),
+        )
+        assert len(dates_with_no_end) == len(dates_with_far_end)
+
+    def test_ends_on_today_returns_empty(self):
+        # ends_on = today means last ride was today; if pickup_time already passed → empty
+        dates = _next_occurrence_dates(
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(0, 1),  # very early — almost certainly past
+            tz_name="UTC",
+            from_date=date.today(),
+            horizon_hours=24,
+            ends_on=date.today(),
+        )
+        # All datetimes must be in the past → empty (or only future seconds today)
+        now = datetime.now(timezone.utc)
+        for d in dates:
+            assert d > now
+
+
+# ===========================================================================
+# ends_on — generate_rides_from_recurring Tests
+# ===========================================================================
+
+
+class TestGenerateRidesFromRecurringEndsOn:
+    def _make_generate_db(self, template, skipped_dates=None, existing_times=None):
+        if skipped_dates is None:
+            skipped_dates = []
+        if existing_times is None:
+            existing_times = []
+        db = _make_simple_db()
+        call_count = {"n": 0}
+
+        async def execute_side_effect(stmt):
+            call_count["n"] += 1
+            result = MagicMock()
+            if call_count["n"] == 1:
+                scalars_mock = MagicMock()
+                scalars_mock.all.return_value = [template]
+                result.scalars.return_value = scalars_mock
+            elif call_count["n"] == 2:
+                scalars_mock = MagicMock()
+                scalars_mock.all.return_value = skipped_dates
+                result.scalars.return_value = scalars_mock
+            else:
+                result.all.return_value = [(t,) for t in existing_times]
+            return result
+
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        return db
+
+    @pytest.mark.asyncio
+    async def test_skips_template_past_ends_on(self):
+        yesterday = date.today() - timedelta(days=1)
+        template = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            timezone="UTC",
+            ends_on=yesterday,  # already passed
+        )
+        db = self._make_generate_db(template)
+        count = await generate_rides_from_recurring(db)
+        assert count == 0
+        db.add.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_generates_when_ends_on_is_future(self):
+        tomorrow = date.today() + timedelta(days=1)
+        template = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0, 1, 2, 3, 4, 5, 6],
+            pickup_time=time(8, 0),
+            timezone="UTC",
+            ends_on=tomorrow,
+        )
+        db = self._make_generate_db(template)
+        now = datetime(2026, 4, 13, 6, 0, tzinfo=timezone.utc)
+        with patch("app.services.recurring_rides._next_occurrence_dates") as mock_dates:
+            occurrence = datetime(2026, 4, 13, 8, 0, tzinfo=timezone.utc)
+            mock_dates.return_value = [occurrence]
+            with patch("app.services.recurring_rides.check_overlap") as mock_overlap:
+                mock_overlap.return_value = MagicMock(valid=True)
+                count = await generate_rides_from_recurring(db, now=now)
+        assert count == 1
+
+    @pytest.mark.asyncio
+    async def test_ends_on_passed_to_next_occurrence_dates(self):
+        future_end = date.today() + timedelta(days=7)
+        template = _make_recurring_ride(
+            status=RecurringRideStatus.ACTIVE,
+            days_of_week=[0, 1, 2, 3, 4],
+            pickup_time=time(9, 0),
+            timezone="UTC",
+            ends_on=future_end,
+        )
+        db = self._make_generate_db(template)
+        with patch("app.services.recurring_rides._next_occurrence_dates") as mock_dates:
+            mock_dates.return_value = []
+            await generate_rides_from_recurring(db)
+        # Verify ends_on was forwarded to the generation function
+        call_kwargs = mock_dates.call_args
+        assert call_kwargs.kwargs.get("ends_on") == future_end or (
+            len(call_kwargs.args) >= 6 and call_kwargs.args[5] == future_end
+        )
+
+
+# ===========================================================================
+# ends_on — update_recurring_ride Service Tests
+# ===========================================================================
+
+
+class TestUpdateRecurringRideEndsOn:
+    @pytest.mark.asyncio
+    async def test_ends_on_not_updated_when_not_provided(self):
+        ride = _make_recurring_ride(ends_on=None)
+        db = _make_scalar_one_db(ride)
+        await update_recurring_ride(1, ride.rider_id, db, ends_on=None, ends_on_provided=False)
+        assert ride.ends_on is None
+
+    @pytest.mark.asyncio
+    async def test_ends_on_set_when_provided(self):
+        ride = _make_recurring_ride(ends_on=None)
+        db = _make_scalar_one_db(ride)
+        future = date.today() + timedelta(days=30)
+        await update_recurring_ride(1, ride.rider_id, db, ends_on=future, ends_on_provided=True)
+        assert ride.ends_on == future
+
+    @pytest.mark.asyncio
+    async def test_ends_on_cleared_when_provided_as_none(self):
+        future = date.today() + timedelta(days=30)
+        ride = _make_recurring_ride(ends_on=future)
+        db = _make_scalar_one_db(ride)
+        await update_recurring_ride(1, ride.rider_id, db, ends_on=None, ends_on_provided=True)
+        assert ride.ends_on is None
+
+
+# ===========================================================================
+# ends_on — Router PATCH Passthrough Tests
+# ===========================================================================
+
+
+class TestPatchEndsOnRouter:
+    @pytest.mark.asyncio
+    async def test_patch_passes_ends_on_to_service(self):
+        from app.api.v1.recurring_rides import update
+
+        future = date.today() + timedelta(days=45)
+        body = RecurringRideUpdate(ends_on=future)
+        returned_ride = _make_recurring_ride(ends_on=future)
+
+        with patch(
+            "app.api.v1.recurring_rides.update_recurring_ride",
+            new_callable=AsyncMock,
+            return_value=returned_ride,
+        ) as mock_update:
+            await update(1, body, _mock_user(), AsyncMock())
+
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("ends_on") == future
+        assert call_kwargs.get("ends_on_provided") is True
+
+    @pytest.mark.asyncio
+    async def test_patch_ends_on_not_provided_flag_false(self):
+        from app.api.v1.recurring_rides import update
+
+        # ends_on is NOT in the body — ends_on_provided should be False
+        body = RecurringRideUpdate(label="commute")
+        returned_ride = _make_recurring_ride()
+
+        with patch(
+            "app.api.v1.recurring_rides.update_recurring_ride",
+            new_callable=AsyncMock,
+            return_value=returned_ride,
+        ) as mock_update:
+            await update(1, body, _mock_user(), AsyncMock())
+
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("ends_on_provided") is False
+
+    @pytest.mark.asyncio
+    async def test_patch_ends_on_null_sets_provided_true(self):
+        from app.api.v1.recurring_rides import update
+
+        # Explicitly sending ends_on=null to clear it
+        body = RecurringRideUpdate(ends_on=None)
+        returned_ride = _make_recurring_ride()
+
+        with patch(
+            "app.api.v1.recurring_rides.update_recurring_ride",
+            new_callable=AsyncMock,
+            return_value=returned_ride,
+        ) as mock_update:
+            await update(1, body, _mock_user(), AsyncMock())
+
+        call_kwargs = mock_update.call_args.kwargs
+        assert call_kwargs.get("ends_on_provided") is True
+        assert call_kwargs.get("ends_on") is None

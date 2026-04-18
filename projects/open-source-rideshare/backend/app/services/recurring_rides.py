@@ -65,6 +65,7 @@ async def create_recurring_ride(
     label: str | None = None,
     pickup_saved_location_id: int | None = None,
     dropoff_saved_location_id: int | None = None,
+    ends_on: date | None = None,
 ) -> RecurringRide:
     """Create a new recurring ride template for a rider."""
     # Check limit
@@ -93,6 +94,7 @@ async def create_recurring_ride(
         label=label,
         pickup_saved_location_id=pickup_saved_location_id,
         dropoff_saved_location_id=dropoff_saved_location_id,
+        ends_on=ends_on,
         status=RecurringRideStatus.ACTIVE,
     )
     db.add(ride)
@@ -152,6 +154,8 @@ async def update_recurring_ride(
     label: str | None = None,
     pickup_saved_location_id: int | None = None,
     dropoff_saved_location_id: int | None = None,
+    ends_on: date | None = None,
+    ends_on_provided: bool = False,
 ) -> RecurringRide:
     """Update an existing recurring ride template."""
     ride = await get_recurring_ride(recurring_ride_id, rider_id, db)
@@ -181,6 +185,9 @@ async def update_recurring_ride(
         ride.pickup_saved_location_id = pickup_saved_location_id
     if dropoff_saved_location_id is not None:
         ride.dropoff_saved_location_id = dropoff_saved_location_id
+    # ends_on_provided=True allows explicitly clearing to None
+    if ends_on_provided:
+        ride.ends_on = ends_on
 
     # Reset generation tracking so new schedule takes effect
     ride.last_generated_date = None
@@ -368,6 +375,7 @@ def _next_occurrence_dates(
     tz_name: str,
     from_date: date,
     horizon_hours: int = GENERATION_HORIZON_HOURS,
+    ends_on: date | None = None,
 ) -> list[datetime]:
     """Calculate the next occurrence datetimes within the generation horizon.
 
@@ -381,6 +389,7 @@ def _next_occurrence_dates(
         tz_name: IANA timezone name (used as documentation; UTC assumed for generation).
         from_date: Generate starting from this date (inclusive).
         horizon_hours: How many hours ahead to generate.
+        ends_on: Optional last date (inclusive) to generate rides.
 
     Returns:
         List of UTC datetimes for upcoming ride occurrences.
@@ -391,12 +400,20 @@ def _next_occurrence_dates(
         tz = timezone.utc
 
     horizon_end = datetime.now(timezone.utc) + timedelta(hours=horizon_hours)
+    # Cap horizon at ends_on (midnight local = start of that day in UTC)
+    if ends_on is not None:
+        ends_on_utc = datetime.combine(ends_on, time(23, 59, 59), tzinfo=tz).astimezone(timezone.utc)
+        if ends_on_utc < horizon_end:
+            horizon_end = ends_on_utc
+
     occurrences: list[datetime] = []
 
     # Check each day in the horizon window
     current = from_date
     max_days = (horizon_hours // 24) + 2  # +2 for timezone edge cases
     for _ in range(max_days):
+        if ends_on is not None and current > ends_on:
+            break
         if current.weekday() in days_of_week:
             # Combine date + time in rider's timezone
             local_dt = datetime.combine(current, pickup_time, tzinfo=tz)
@@ -437,6 +454,10 @@ async def generate_rides_from_recurring(
     generated = 0
 
     for template in templates:
+        # Skip template if its end date has passed
+        if template.ends_on is not None and template.ends_on < now.date():
+            continue
+
         # Determine start date for generation
         if template.last_generated_date:
             # Start from day after last generated
@@ -450,6 +471,7 @@ async def generate_rides_from_recurring(
             template.timezone,
             from_date,
             horizon_hours,
+            ends_on=template.ends_on,
         )
 
         if not occurrences:

@@ -69,6 +69,7 @@ async def create(
             label=body.label,
             pickup_saved_location_id=body.pickup_saved_location_id,
             dropoff_saved_location_id=body.dropoff_saved_location_id,
+            ends_on=body.ends_on,
         )
     except RecurringRideLimitError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
@@ -154,6 +155,8 @@ async def update(
             label=body.label,
             pickup_saved_location_id=body.pickup_saved_location_id,
             dropoff_saved_location_id=body.dropoff_saved_location_id,
+            ends_on=body.ends_on,
+            ends_on_provided="ends_on" in body.model_fields_set,
         )
     except RecurringRideNotFoundError:
         raise HTTPException(status_code=404, detail="Recurring ride not found")
