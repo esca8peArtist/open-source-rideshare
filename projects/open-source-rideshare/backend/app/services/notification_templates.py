@@ -272,6 +272,22 @@ def driver_auto_suspended(
     )
 
 
+def geofence_exit(**kw) -> TemplateResult:
+    return (
+        "Driver has left the service area",
+        "Your driver has moved outside our service area. We're monitoring your trip. Tap to view your ride or contact support.",
+        _PUSH_SMS,
+    )
+
+
+def driver_geofence_exit(**kw) -> TemplateResult:
+    return (
+        "You have left the service area",
+        "You have moved outside the service area for your current trip. Please return to complete the ride.",
+        _PUSH,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -297,6 +313,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.DRIVER_PERFORMANCE_FINAL_WARNING: driver_performance_final_warning,
     NotificationType.DRIVER_AUTO_SUSPENDED: driver_auto_suspended,
     NotificationType.RIDE_SCHEDULED_DISPATCHED: scheduled_dispatched,
+    NotificationType.GEOFENCE_EXIT: geofence_exit,
+    NotificationType.DRIVER_GEOFENCE_EXIT: driver_geofence_exit,
 }
 
 

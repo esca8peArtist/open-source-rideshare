@@ -128,6 +128,16 @@ async def update_my_location(
     except Exception:
         logger.warning("Could not schedule route deviation check for driver user %d", user.id)
 
+    # Best-effort geofence exit check — must not block the response.
+    try:
+        import asyncio
+        from app.services.geofence_exit import check_and_notify_geofence_exit
+        asyncio.ensure_future(
+            check_and_notify_geofence_exit(user_id=user.id, lat=req.lat, lng=req.lng, db=db)
+        )
+    except Exception:
+        logger.warning("Could not schedule geofence exit check for driver user %d", user.id)
+
     return DriverLocationResponse(
         lat=req.lat,
         lng=req.lng,

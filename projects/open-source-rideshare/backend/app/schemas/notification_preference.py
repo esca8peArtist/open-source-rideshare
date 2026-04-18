@@ -28,6 +28,7 @@ _VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
         "background_check_approved",
         "background_check_action_required",
         "ride_scheduled_dispatched",
+        "geofence_exit",
     }
 )
 

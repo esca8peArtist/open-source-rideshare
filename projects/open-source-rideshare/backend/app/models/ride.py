@@ -99,6 +99,9 @@ class Ride(Base):
     # Route deviation — set once when a significant deviation is first detected
     route_deviation_flagged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Geofence exit — set once when driver leaves all active service areas during IN_PROGRESS
+    geofence_exit_alerted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # Pickup verification — rider confirms driver identity and vehicle plate before entering
     pickup_verification_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     driver_photo_confirmed: Mapped[bool | None] = mapped_column(nullable=True)

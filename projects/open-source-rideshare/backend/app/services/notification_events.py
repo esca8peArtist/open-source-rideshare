@@ -474,3 +474,45 @@ async def notify_driver_auto_suspended(
         logger.exception(
             "Failed to send auto_suspended notification to driver %d", driver_id
         )
+
+
+async def notify_geofence_exit(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+) -> None:
+    """Notify rider that their driver has left the service area."""
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.GEOFENCE_EXIT,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+        )
+    except Exception:
+        logger.exception("Failed to send geofence_exit notification for ride %d", ride_id)
+
+
+async def notify_driver_geofence_exit(
+    db: AsyncSession,
+    driver_user_id: int,
+    ride_id: int,
+) -> None:
+    """Notify driver that they have left the service area during an active ride."""
+    try:
+        phone, email = await _get_user_contact(db, driver_user_id)
+        await send_ride_notification(
+            user_id=driver_user_id,
+            type=NotificationType.DRIVER_GEOFENCE_EXIT,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send driver_geofence_exit notification for ride %d", ride_id
+        )

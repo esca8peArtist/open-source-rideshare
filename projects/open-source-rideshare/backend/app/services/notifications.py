@@ -56,6 +56,8 @@ class NotificationType(str, enum.Enum):
     DRIVER_AUTO_SUSPENDED = "driver_auto_suspended"
     RIDE_SCHEDULED_DISPATCHED = "ride_scheduled_dispatched"
     ADMIN_BROADCAST = "admin_broadcast"
+    GEOFENCE_EXIT = "geofence_exit"
+    DRIVER_GEOFENCE_EXIT = "driver_geofence_exit"
 
 
 @dataclass
