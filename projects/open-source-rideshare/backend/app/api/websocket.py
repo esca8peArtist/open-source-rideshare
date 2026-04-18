@@ -560,7 +560,8 @@ async def send_ride_offer(driver_user_id: int, ride_id: int, pickup_address: str
                           dropoff_address: str, estimated_fare: float,
                           distance_km: float,
                           rider_hearing_impairment: bool = False,
-                          rider_has_service_animal: bool = False) -> bool:
+                          rider_has_service_animal: bool = False,
+                          rider_visual_impairment: bool = False) -> bool:
     message = {
         "type": "ride_offer",
         "ride_id": ride_id,
@@ -571,5 +572,6 @@ async def send_ride_offer(driver_user_id: int, ride_id: int, pickup_address: str
         "timeout_seconds": settings.ride_offer_timeout_seconds,
         "rider_hearing_impairment": rider_hearing_impairment,
         "rider_has_service_animal": rider_has_service_animal,
+        "rider_visual_impairment": rider_visual_impairment,
     }
     return await manager.send_to_driver(driver_user_id, message)

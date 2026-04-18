@@ -41,6 +41,7 @@ class DriverCandidate:
     vehicle_service_category: VehicleServiceCategory = VehicleServiceCategory.STANDARD
     hearing_impairment_capable: bool = False
     service_animal_friendly: bool = False
+    visual_assistance_capable: bool = False
 
 
 class MatchingEngine:
@@ -194,6 +195,7 @@ class MatchingEngine:
         dropoff_lng: float | None = None,
         rider_hearing_impairment: bool = False,
         rider_has_service_animal: bool = False,
+        rider_visual_impairment: bool = False,
     ) -> list[DriverCandidate]:
         """Find and rank driver candidates for a ride request.
 
@@ -224,6 +226,10 @@ class MatchingEngine:
         rider_has_service_animal:
             When True, drivers with service_animal_friendly=True are sorted
             before other drivers.  Soft preference — non-friendly drivers are
+            still included as fallback so no rider gets stranded.
+        rider_visual_impairment:
+            When True, drivers with visual_assistance_capable=True are sorted
+            before other drivers.  Soft preference — non-capable drivers are
             still included as fallback so no rider gets stranded.
         """
         initial_radius = settings.driver_search_initial_radius_km
@@ -344,34 +350,23 @@ class MatchingEngine:
                     vehicle_service_category=service_category,
                     hearing_impairment_capable=p.hearing_impairment_capable,
                     service_animal_friendly=p.service_animal_friendly,
+                    visual_assistance_capable=p.visual_assistance_capable,
                 )
             )
 
         # Sort: distance ASC, rating DESC as baseline.
         # Soft accessibility preferences: capable drivers are promoted to the
-        # front when the rider signals a need.  Non-capable drivers remain in
-        # the list as fallback so a match is always attempted.
-        if rider_hearing_impairment and rider_has_service_animal:
+        # front for each active rider need.  Non-capable drivers remain as
+        # fallback so no rider ever gets stranded.  The compound key handles
+        # any combination of the three soft-preference flags cleanly: each
+        # dimension contributes 0 (don't care) or bool (capable=False=0 sorts
+        # before incapable=True=1) so all eight flag combinations are covered.
+        if rider_hearing_impairment or rider_has_service_animal or rider_visual_impairment:
             candidates.sort(
                 key=lambda c: (
-                    not c.hearing_impairment_capable,
-                    not c.service_animal_friendly,
-                    c.distance_km,
-                    -c.rating_avg,
-                )
-            )
-        elif rider_hearing_impairment:
-            candidates.sort(
-                key=lambda c: (
-                    not c.hearing_impairment_capable,  # False (capable) sorts first
-                    c.distance_km,
-                    -c.rating_avg,
-                )
-            )
-        elif rider_has_service_animal:
-            candidates.sort(
-                key=lambda c: (
-                    not c.service_animal_friendly,  # False (friendly) sorts first
+                    not c.hearing_impairment_capable if rider_hearing_impairment else 0,
+                    not c.service_animal_friendly if rider_has_service_animal else 0,
+                    not c.visual_assistance_capable if rider_visual_impairment else 0,
                     c.distance_km,
                     -c.rating_avg,
                 )
@@ -447,6 +442,8 @@ class MatchingEngine:
         dropoff_lat: float | None = None,
         dropoff_lng: float | None = None,
         rider_hearing_impairment: bool = False,
+        rider_has_service_animal: bool = False,
+        rider_visual_impairment: bool = False,
     ) -> DriverCandidate | None:
         candidates = await self.find_candidates(
             pickup_lat,
@@ -458,6 +455,8 @@ class MatchingEngine:
             dropoff_lat=dropoff_lat,
             dropoff_lng=dropoff_lng,
             rider_hearing_impairment=rider_hearing_impairment,
+            rider_has_service_animal=rider_has_service_animal,
+            rider_visual_impairment=rider_visual_impairment,
         )
         if not candidates:
             logger.info("No drivers found for ride %d", ride.id)

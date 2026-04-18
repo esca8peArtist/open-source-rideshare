@@ -23,6 +23,7 @@ class RidePreferenceUpdate(BaseModel):
     accessibility_vehicle_needed: bool | None = None
     hearing_impairment: bool | None = None
     has_service_animal: bool | None = None
+    visual_impairment: bool | None = None
     pool_opt_out: bool | None = None
     notes: str | None = Field(None, max_length=200)
 
@@ -39,6 +40,7 @@ class RidePreferenceResponse(BaseModel):
     accessibility_vehicle_needed: bool
     hearing_impairment: bool
     has_service_animal: bool
+    visual_impairment: bool
     pool_opt_out: bool
     notes: str | None
     updated_at: datetime

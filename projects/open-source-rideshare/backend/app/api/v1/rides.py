@@ -358,6 +358,7 @@ async def _match_ride_background(
         rider_prefs = await get_preferences_for_ride(db, rider_user_id)
         hearing_impairment = rider_prefs.hearing_impairment if rider_prefs else False
         has_service_animal = rider_prefs.has_service_animal if rider_prefs else False
+        visual_impairment = rider_prefs.visual_impairment if rider_prefs else False
 
         candidates = await engine.find_candidates(
             pickup_lat, pickup_lng, db,
@@ -365,6 +366,7 @@ async def _match_ride_background(
             vehicle_type_preference=vehicle_type_preference,
             rider_hearing_impairment=hearing_impairment,
             rider_has_service_animal=has_service_animal,
+            rider_visual_impairment=visual_impairment,
         )
         if not candidates:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
@@ -374,6 +376,9 @@ async def _match_ride_background(
             ride, pickup_lat, pickup_lng, db,
             accessibility_required=accessibility_required,
             vehicle_type_preference=vehicle_type_preference,
+            rider_hearing_impairment=hearing_impairment,
+            rider_has_service_animal=has_service_animal,
+            rider_visual_impairment=visual_impairment,
         )
         if not matched:
             await notify_ride_status(rider_user_id, ride_id, "no_drivers")
@@ -384,6 +389,7 @@ async def _match_ride_background(
             dropoff_address, estimated_fare, matched.distance_km,
             rider_hearing_impairment=hearing_impairment,
             rider_has_service_animal=has_service_animal,
+            rider_visual_impairment=visual_impairment,
         )
 
         ride.driver_id = matched.user_id
