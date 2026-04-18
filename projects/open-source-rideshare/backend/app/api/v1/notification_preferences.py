@@ -30,6 +30,8 @@ from app.schemas.notification_preference import (
     NotificationPreferenceResponse,
     SetPreferenceRequest,
     UserPreferencesResponse,
+    _VALID_CHANNELS,
+    _VALID_NOTIFICATION_TYPES,
 )
 from app.services.notification_preferences import (
     bulk_set_preferences,
@@ -41,29 +43,6 @@ from app.services.notification_preferences import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users/me/notification-preferences", tags=["notification-preferences"])
-
-# Valid values used for path-parameter validation
-_VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
-    {
-        "ride_matched",
-        "ride_cancelled",
-        "ride_completed",
-        "driver_en_route",
-        "driver_arrived",
-        "payment_received",
-        "sos_alert",
-        "rating_received",
-        "account_verification",
-        "payout_completed",
-        "ride_reminder",
-        "fare_split_request",
-        "promo_applied",
-        "background_check_approved",
-        "background_check_action_required",
-    }
-)
-
-_VALID_CHANNELS: frozenset[str] = frozenset({"push", "sms", "email"})
 
 
 def _validate_type_and_channel(notification_type: str, channel: str) -> None:
@@ -91,11 +70,11 @@ async def get_preferences(
     """Get all notification preferences for the current user.
 
     Returns the complete matrix of (notification_type x channel) with the
-    effective enabled value.  Combinations that have no explicit DB record
-    are returned as enabled=True (the default opt-in state).
+    effective enabled value, grouped by role (rider vs driver).  Combinations
+    that have no explicit DB record are returned as enabled=True (opt-in default).
     """
     prefs = await get_user_preferences(db, user.id)
-    return UserPreferencesResponse(preferences=prefs)
+    return UserPreferencesResponse(rider=prefs["rider"], driver=prefs["driver"])
 
 
 @router.put("/bulk", response_model=list[NotificationPreferenceResponse])

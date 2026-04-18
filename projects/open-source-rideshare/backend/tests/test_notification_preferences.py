@@ -32,10 +32,14 @@ from app.schemas.notification_preference import (
     UserPreferencesResponse,
     _VALID_CHANNELS,
     _VALID_NOTIFICATION_TYPES,
+    _RIDER_NOTIFICATION_TYPES as _SCHEMA_RIDER_TYPES,
+    _DRIVER_NOTIFICATION_TYPES as _SCHEMA_DRIVER_TYPES,
 )
 from app.services.notification_preferences import (
     _ALL_CHANNELS,
     _ALL_NOTIFICATION_TYPES,
+    _RIDER_NOTIFICATION_TYPES,
+    _DRIVER_NOTIFICATION_TYPES,
     bulk_set_preferences,
     get_user_preferences,
     is_channel_enabled,
@@ -218,10 +222,46 @@ class TestNotificationPreferenceResponseSchema:
 
 
 class TestUserPreferencesResponseSchema:
-    def test_wraps_dict(self):
-        prefs = {"ride_matched": {"push": True, "sms": False, "email": True}}
-        resp = UserPreferencesResponse(preferences=prefs)
-        assert resp.preferences["ride_matched"]["sms"] is False
+    def test_has_rider_and_driver_fields(self):
+        rider = {"ride_matched": {"push": True, "sms": False, "email": True}}
+        driver = {"ride_assigned": {"push": True, "sms": True, "email": True}}
+        resp = UserPreferencesResponse(rider=rider, driver=driver)
+        assert resp.rider["ride_matched"]["sms"] is False
+        assert resp.driver["ride_assigned"]["push"] is True
+
+    def test_rider_and_driver_are_separate(self):
+        rider = {"ride_matched": {"push": False, "sms": True, "email": True}}
+        driver = {"route_deviation": {"push": True, "sms": False, "email": True}}
+        resp = UserPreferencesResponse(rider=rider, driver=driver)
+        assert "ride_matched" not in resp.driver
+        assert "route_deviation" not in resp.rider
+
+
+class TestNotificationTypeGrouping:
+    """Schema-level rider/driver split is consistent and non-overlapping."""
+
+    def test_valid_types_is_union_of_rider_and_driver(self):
+        assert _VALID_NOTIFICATION_TYPES == _SCHEMA_RIDER_TYPES | _SCHEMA_DRIVER_TYPES
+
+    def test_no_type_in_both_groups(self):
+        overlap = _SCHEMA_RIDER_TYPES & _SCHEMA_DRIVER_TYPES
+        assert overlap == frozenset(), f"Types appear in both groups: {overlap}"
+
+    def test_rider_types_pass_schema_validation(self):
+        for nt in _SCHEMA_RIDER_TYPES:
+            req = SetPreferenceRequest(notification_type=nt, channel="push", enabled=True)
+            assert req.notification_type == nt
+
+    def test_driver_types_pass_schema_validation(self):
+        for nt in _SCHEMA_DRIVER_TYPES:
+            req = SetPreferenceRequest(notification_type=nt, channel="push", enabled=True)
+            assert req.notification_type == nt
+
+    def test_service_rider_types_match_schema(self):
+        assert set(_RIDER_NOTIFICATION_TYPES) == _SCHEMA_RIDER_TYPES
+
+    def test_service_driver_types_match_schema(self):
+        assert set(_DRIVER_NOTIFICATION_TYPES) == _SCHEMA_DRIVER_TYPES
 
 
 # ===========================================================================
@@ -239,10 +279,14 @@ class TestGetUserPreferences:
 
         prefs = await get_user_preferences(db, user_id=1)
 
-        for notif_type in _ALL_NOTIFICATION_TYPES:
-            assert notif_type in prefs
+        for notif_type in _RIDER_NOTIFICATION_TYPES:
+            assert notif_type in prefs["rider"]
             for channel in _ALL_CHANNELS:
-                assert prefs[notif_type][channel] is True
+                assert prefs["rider"][notif_type][channel] is True
+        for notif_type in _DRIVER_NOTIFICATION_TYPES:
+            assert notif_type in prefs["driver"]
+            for channel in _ALL_CHANNELS:
+                assert prefs["driver"][notif_type][channel] is True
 
     @pytest.mark.asyncio
     async def test_all_types_and_channels_present(self):
@@ -253,9 +297,23 @@ class TestGetUserPreferences:
 
         prefs = await get_user_preferences(db, user_id=1)
 
-        assert set(prefs.keys()) == set(_ALL_NOTIFICATION_TYPES)
-        for ch_map in prefs.values():
+        assert set(prefs["rider"].keys()) == set(_RIDER_NOTIFICATION_TYPES)
+        assert set(prefs["driver"].keys()) == set(_DRIVER_NOTIFICATION_TYPES)
+        for ch_map in prefs["rider"].values():
             assert set(ch_map.keys()) == set(_ALL_CHANNELS)
+        for ch_map in prefs["driver"].values():
+            assert set(ch_map.keys()) == set(_ALL_CHANNELS)
+
+    @pytest.mark.asyncio
+    async def test_response_has_rider_and_driver_keys(self):
+        db = _mock_db()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = []
+        db.execute = AsyncMock(return_value=mock_result)
+
+        prefs = await get_user_preferences(db, user_id=1)
+
+        assert set(prefs.keys()) == {"rider", "driver"}
 
     @pytest.mark.asyncio
     async def test_stored_disabled_pref_overrides_default(self):
@@ -267,10 +325,10 @@ class TestGetUserPreferences:
 
         prefs = await get_user_preferences(db, user_id=42)
 
-        assert prefs["promo_applied"]["email"] is False
+        assert prefs["rider"]["promo_applied"]["email"] is False
         # other channels still default to True
-        assert prefs["promo_applied"]["push"] is True
-        assert prefs["promo_applied"]["sms"] is True
+        assert prefs["rider"]["promo_applied"]["push"] is True
+        assert prefs["rider"]["promo_applied"]["sms"] is True
 
     @pytest.mark.asyncio
     async def test_multiple_stored_prefs(self):
@@ -285,9 +343,9 @@ class TestGetUserPreferences:
 
         prefs = await get_user_preferences(db, user_id=5)
 
-        assert prefs["ride_matched"]["sms"] is False
-        assert prefs["ride_completed"]["push"] is False
-        assert prefs["ride_matched"]["push"] is True
+        assert prefs["rider"]["ride_matched"]["sms"] is False
+        assert prefs["rider"]["ride_completed"]["push"] is False
+        assert prefs["rider"]["ride_matched"]["push"] is True
 
 
 # ===========================================================================
@@ -700,8 +758,10 @@ class TestNotificationPreferencesEndpoints:
         mock_user.id = 42
         mock_db = AsyncMock()
 
-        full_map = {nt: {ch: True for ch in _ALL_CHANNELS} for nt in _ALL_NOTIFICATION_TYPES}
-        full_map["promo_applied"]["email"] = False
+        rider_map = {nt: {ch: True for ch in _ALL_CHANNELS} for nt in _RIDER_NOTIFICATION_TYPES}
+        rider_map["promo_applied"]["email"] = False
+        driver_map = {nt: {ch: True for ch in _ALL_CHANNELS} for nt in _DRIVER_NOTIFICATION_TYPES}
+        full_map = {"rider": rider_map, "driver": driver_map}
 
         app.dependency_overrides[get_current_user] = lambda: mock_user
         app.dependency_overrides[get_db] = lambda: mock_db
@@ -715,8 +775,9 @@ class TestNotificationPreferencesEndpoints:
 
         assert resp.status_code == 200
         body = resp.json()
-        assert "preferences" in body
-        assert body["preferences"]["promo_applied"]["email"] is False
+        assert "rider" in body
+        assert "driver" in body
+        assert body["rider"]["promo_applied"]["email"] is False
 
     @pytest.mark.asyncio
     async def test_put_single_preference(self):
@@ -1039,7 +1100,7 @@ class TestDriverTypesSchemaValidation:
 
 
 class TestDriverTypesInPreferencesMap:
-    """get_user_preferences must include all driver-specific types in the returned map."""
+    """get_user_preferences must include all driver-specific types under the 'driver' key."""
 
     @pytest.mark.asyncio
     async def test_driver_types_present_in_empty_db(self):
@@ -1051,9 +1112,9 @@ class TestDriverTypesInPreferencesMap:
         prefs = await get_user_preferences(db, user_id=99)
 
         for dt in _DRIVER_TYPES:
-            assert dt in prefs, f"'{dt}' missing from preferences map"
+            assert dt in prefs["driver"], f"'{dt}' missing from driver preferences map"
             for ch in ("push", "sms", "email"):
-                assert prefs[dt][ch] is True, f"'{dt}/{ch}' should default to True"
+                assert prefs["driver"][dt][ch] is True, f"'{dt}/{ch}' should default to True"
 
     @pytest.mark.asyncio
     async def test_driver_type_stored_disabled_is_reflected(self):
@@ -1065,8 +1126,8 @@ class TestDriverTypesInPreferencesMap:
 
         prefs = await get_user_preferences(db, user_id=42)
 
-        assert prefs["ride_assigned"]["push"] is False
-        assert prefs["ride_assigned"]["sms"] is True  # other channels still default on
+        assert prefs["driver"]["ride_assigned"]["push"] is False
+        assert prefs["driver"]["ride_assigned"]["sms"] is True  # other channels still default on
 
     @pytest.mark.asyncio
     async def test_driver_performance_warning_stored_disabled(self):
@@ -1080,8 +1141,34 @@ class TestDriverTypesInPreferencesMap:
 
         prefs = await get_user_preferences(db, user_id=7)
 
-        assert prefs["driver_performance_warning"]["email"] is False
-        assert prefs["driver_performance_warning"]["push"] is True
+        assert prefs["driver"]["driver_performance_warning"]["email"] is False
+        assert prefs["driver"]["driver_performance_warning"]["push"] is True
+
+    @pytest.mark.asyncio
+    async def test_rider_types_in_rider_group_not_driver(self):
+        db = _mock_db()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = []
+        db.execute = AsyncMock(return_value=mock_result)
+
+        prefs = await get_user_preferences(db, user_id=1)
+
+        for rt in _RIDER_NOTIFICATION_TYPES:
+            assert rt in prefs["rider"], f"'{rt}' missing from rider group"
+            assert rt not in prefs["driver"], f"'{rt}' should not appear in driver group"
+
+    @pytest.mark.asyncio
+    async def test_driver_types_not_in_rider_group(self):
+        db = _mock_db()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = []
+        db.execute = AsyncMock(return_value=mock_result)
+
+        prefs = await get_user_preferences(db, user_id=1)
+
+        for dt in _DRIVER_NOTIFICATION_TYPES:
+            assert dt in prefs["driver"], f"'{dt}' missing from driver group"
+            assert dt not in prefs["rider"], f"'{dt}' should not appear in rider group"
 
 
 class TestDriverTypeSendNotificationPreferenceRespected:

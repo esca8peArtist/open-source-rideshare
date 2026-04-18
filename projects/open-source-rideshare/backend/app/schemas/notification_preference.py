@@ -9,9 +9,8 @@ from pydantic import BaseModel, field_validator
 # Valid values — kept in sync with NotificationType and NotificationChannel enums.
 # Importing the enums directly would create a circular import through the service
 # layer, so we maintain the allowed sets here explicitly.
-_VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
+_RIDER_NOTIFICATION_TYPES: frozenset[str] = frozenset(
     {
-        # Rider-facing
         "ride_matched",
         "ride_cancelled",
         "ride_completed",
@@ -29,7 +28,11 @@ _VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
         "background_check_approved",
         "background_check_action_required",
         "geofence_exit",
-        # Driver-facing
+    }
+)
+
+_DRIVER_NOTIFICATION_TYPES: frozenset[str] = frozenset(
+    {
         "ride_in_progress",
         "ride_assigned",
         "ride_completed_driver",
@@ -43,6 +46,8 @@ _VALID_NOTIFICATION_TYPES: frozenset[str] = frozenset(
         "driver_geofence_exit",
     }
 )
+
+_VALID_NOTIFICATION_TYPES: frozenset[str] = _RIDER_NOTIFICATION_TYPES | _DRIVER_NOTIFICATION_TYPES
 
 _VALID_CHANNELS: frozenset[str] = frozenset({"push", "sms", "email"})
 
@@ -92,11 +97,18 @@ class BulkSetPreferenceRequest(BaseModel):
 
 
 class UserPreferencesResponse(BaseModel):
-    """Full preference map for a user.
+    """Full preference map for a user, grouped by role.
 
-    Structure: {notification_type: {channel: enabled}}
+    Structure::
+
+        {
+            "rider": {notification_type: {channel: enabled}},
+            "driver": {notification_type: {channel: enabled}},
+        }
+
     All type/channel combinations are included; missing DB records are
     represented as enabled=True (the default opt-in state).
     """
 
-    preferences: dict[str, dict[str, bool]]
+    rider: dict[str, dict[str, bool]]
+    driver: dict[str, dict[str, bool]]

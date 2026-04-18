@@ -29,8 +29,7 @@ logger = logging.getLogger(__name__)
 
 # All valid notification types and channels — mirrored from the enums to avoid
 # circular imports.
-_ALL_NOTIFICATION_TYPES: list[str] = [
-    # Rider-facing
+_RIDER_NOTIFICATION_TYPES: list[str] = [
     "ride_matched",
     "ride_cancelled",
     "ride_completed",
@@ -48,7 +47,9 @@ _ALL_NOTIFICATION_TYPES: list[str] = [
     "background_check_approved",
     "background_check_action_required",
     "geofence_exit",
-    # Driver-facing
+]
+
+_DRIVER_NOTIFICATION_TYPES: list[str] = [
     "ride_in_progress",
     "ride_assigned",
     "ride_completed_driver",
@@ -62,18 +63,23 @@ _ALL_NOTIFICATION_TYPES: list[str] = [
     "driver_geofence_exit",
 ]
 
+_ALL_NOTIFICATION_TYPES: list[str] = _RIDER_NOTIFICATION_TYPES + _DRIVER_NOTIFICATION_TYPES
+
 _ALL_CHANNELS: list[str] = ["push", "sms", "email"]
 
 
 async def get_user_preferences(
     db: AsyncSession,
     user_id: int,
-) -> dict[str, dict[str, bool]]:
-    """Return the full preference map for a user.
+) -> dict[str, dict[str, dict[str, bool]]]:
+    """Return the full preference map for a user, grouped by role.
 
     Returns a nested dict of the form::
 
-        {notification_type: {channel: enabled}}
+        {
+            "rider": {notification_type: {channel: enabled}},
+            "driver": {notification_type: {channel: enabled}},
+        }
 
     All type/channel combinations are present.  Combinations without a DB
     record default to True (enabled).
@@ -88,14 +94,19 @@ async def get_user_preferences(
         (row.notification_type, row.channel): row.enabled for row in rows
     }
 
-    # Construct the full map, filling defaults
-    preferences: dict[str, dict[str, bool]] = {}
-    for notif_type in _ALL_NOTIFICATION_TYPES:
-        preferences[notif_type] = {}
-        for channel in _ALL_CHANNELS:
-            preferences[notif_type][channel] = stored.get((notif_type, channel), True)
+    def _build_group(types: list[str]) -> dict[str, dict[str, bool]]:
+        group: dict[str, dict[str, bool]] = {}
+        for notif_type in types:
+            group[notif_type] = {
+                channel: stored.get((notif_type, channel), True)
+                for channel in _ALL_CHANNELS
+            }
+        return group
 
-    return preferences
+    return {
+        "rider": _build_group(_RIDER_NOTIFICATION_TYPES),
+        "driver": _build_group(_DRIVER_NOTIFICATION_TYPES),
+    }
 
 
 async def set_preference(
