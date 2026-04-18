@@ -28,6 +28,7 @@ from app.models.payment import Payment, PaymentStatus, PaymentType
 from app.schemas.feedback import DisputeResolve
 from app.schemas.admin import (
     AdminBulkSetPreferenceRequest,
+    AdminScheduledRidesListResponse,
     AdminDisputeListResponse,
     AdminDisputeResponse,
     AdminDriverResponse,
@@ -110,6 +111,7 @@ def _ride_to_response(ride: Ride) -> AdminRideResponse:
         started_at=ride.started_at,
         completed_at=ride.completed_at,
         cancelled_at=ride.cancelled_at,
+        scheduled_for=ride.scheduled_for,
     )
 
 
@@ -2707,3 +2709,62 @@ async def admin_reset_user_notification_preference(
 
     await reset_preference(db, user_id, notification_type, channel)
     await db.commit()
+
+
+# ---- Scheduled Rides ----
+
+
+@router.get("/rides/scheduled", response_model=AdminScheduledRidesListResponse)
+async def list_scheduled_rides_admin(
+    rider_id: int | None = Query(None, description="Filter by rider ID"),
+    from_date: datetime | None = Query(None, description="Only rides scheduled at or after this time (UTC)"),
+    to_date: datetime | None = Query(None, description="Only rides scheduled at or before this time (UTC)"),
+    include_past: bool = Query(False, description="Include rides scheduled in the past (default: upcoming only)"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+    _admin=Depends(require_admin),
+) -> AdminScheduledRidesListResponse:
+    """List all SCHEDULED rides with optional filters. Admin only.
+
+    By default returns upcoming scheduled rides (scheduled_for > now).
+    Set include_past=true to include all historical scheduled rides regardless
+    of whether they were dispatched. Supports pagination.
+    """
+    now = datetime.now(timezone.utc)
+
+    filters = [Ride.status == RideStatus.SCHEDULED]
+
+    if not include_past:
+        filters.append(Ride.scheduled_for > now)
+
+    if rider_id is not None:
+        filters.append(Ride.rider_id == rider_id)
+
+    if from_date is not None:
+        filters.append(Ride.scheduled_for >= from_date)
+
+    if to_date is not None:
+        filters.append(Ride.scheduled_for <= to_date)
+
+    total_result = await db.execute(
+        select(func.count()).select_from(Ride).where(*filters)
+    )
+    total = total_result.scalar() or 0
+
+    rides_result = await db.execute(
+        select(Ride)
+        .options(joinedload(Ride.rider), joinedload(Ride.driver))
+        .where(*filters)
+        .order_by(Ride.scheduled_for.asc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
+    rides = rides_result.scalars().all()
+
+    return AdminScheduledRidesListResponse(
+        rides=[_ride_to_response(r) for r in rides],
+        total=total,
+        page=page,
+        per_page=per_page,
+    )

@@ -31,6 +31,7 @@ class AdminRideResponse(BaseModel):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     cancelled_at: datetime | None = None
+    scheduled_for: datetime | None = None
 
     model_config = {"from_attributes": True}
 
@@ -38,6 +39,13 @@ class AdminRideResponse(BaseModel):
 class RidesListResponse(BaseModel):
     rides: list[AdminRideResponse]
     pagination: PaginationResponse
+
+
+class AdminScheduledRidesListResponse(BaseModel):
+    rides: list[AdminRideResponse]
+    total: int
+    page: int
+    per_page: int
 
 
 class AdminDriverResponse(BaseModel):

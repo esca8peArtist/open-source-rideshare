@@ -87,6 +87,21 @@ class ScheduleRideRequest(BaseModel):
     accessibility_required: bool = False
 
 
+class ScheduleRideUpdate(BaseModel):
+    """Partial update for a SCHEDULED ride before it's dispatched.
+
+    All fields are optional — only provided fields are applied.
+    If pickup or dropoff coordinates are provided, pickup_address or
+    dropoff_address must also be provided, and the fare is recalculated.
+    """
+
+    scheduled_for: datetime | None = None
+    pickup: LocationPoint | None = None
+    pickup_address: str | None = None
+    dropoff: LocationPoint | None = None
+    dropoff_address: str | None = None
+
+
 class RideResponse(BaseModel):
     id: int
     status: str

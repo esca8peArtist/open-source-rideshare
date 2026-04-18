@@ -304,3 +304,272 @@ class TestCancelScheduledRide:
         await cancel_scheduled_ride(ride_id=1, user=user, db=db)
         assert ride.cancelled_at is not None
         assert ride.cancellation_reason == "Cancelled by rider before dispatch"
+
+
+# ---------------------------------------------------------------------------
+# PATCH /rides/scheduled/{ride_id}
+# ---------------------------------------------------------------------------
+
+class TestUpdateScheduledRide:
+    """Tests for PATCH /rides/scheduled/{ride_id}."""
+
+    def _mock_db_for_patch(self, ride, coord_rows=None):
+        """DB mock that returns `ride` on scalar_one_or_none and coord_rows on .one()."""
+        db = AsyncMock()
+
+        ride_result = MagicMock()
+        ride_result.scalar_one_or_none.return_value = ride
+        # overlap query: no existing scheduled times
+        ride_result.all.return_value = []
+
+        if coord_rows is not None:
+            coord_result = MagicMock()
+            coord_result.one.return_value = coord_rows
+            db.execute.side_effect = [ride_result, ride_result, coord_result]
+        else:
+            db.execute.return_value = ride_result
+
+        async def fake_refresh(obj):
+            pass
+
+        db.refresh = fake_refresh
+        return db
+
+    @pytest.mark.asyncio
+    async def test_update_scheduled_time_success(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        new_time = datetime.now(timezone.utc) + timedelta(hours=3)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10)
+        db = self._mock_db_for_patch(ride)
+
+        req = ScheduleRideUpdate(scheduled_for=new_time)
+
+        with patch("app.api.v1.rides.validate_schedule_time") as mock_val, \
+             patch("app.api.v1.rides.check_overlap") as mock_overlap:
+            mock_val.return_value = MagicMock(valid=True, reason="OK")
+            mock_overlap.return_value = MagicMock(valid=True, reason="OK")
+
+            result = await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+
+        assert ride.scheduled_for == new_time
+        assert result.status == "scheduled"
+
+    @pytest.mark.asyncio
+    async def test_update_not_found(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        db = _mock_db(scalar_return=None)
+        req = ScheduleRideUpdate(scheduled_for=datetime.now(timezone.utc) + timedelta(hours=3))
+
+        with pytest.raises(HTTPException) as exc_info:
+            await update_scheduled_ride(ride_id=999, req=req, user=user, db=db)
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_update_not_authorized(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=99)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10)
+        db = _mock_db(scalar_return=ride)
+        req = ScheduleRideUpdate(scheduled_for=datetime.now(timezone.utc) + timedelta(hours=3))
+
+        with pytest.raises(HTTPException) as exc_info:
+            await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+        assert exc_info.value.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_update_wrong_status(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10)
+        ride.status = RideStatus.REQUESTED
+        db = _mock_db(scalar_return=ride)
+        req = ScheduleRideUpdate(scheduled_for=datetime.now(timezone.utc) + timedelta(hours=3))
+
+        with pytest.raises(HTTPException) as exc_info:
+            await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+        assert exc_info.value.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_update_time_too_soon(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10)
+        db = self._mock_db_for_patch(ride)
+        req = ScheduleRideUpdate(scheduled_for=datetime.now(timezone.utc) + timedelta(minutes=5))
+
+        with patch("app.api.v1.rides.validate_schedule_time") as mock_val:
+            mock_val.return_value = MagicMock(
+                valid=False, reason="Must schedule at least 30 minutes in advance"
+            )
+            with pytest.raises(HTTPException) as exc_info:
+                await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+        assert exc_info.value.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_update_time_overlap(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10)
+        db = self._mock_db_for_patch(ride)
+        req = ScheduleRideUpdate(scheduled_for=datetime.now(timezone.utc) + timedelta(hours=2))
+
+        with patch("app.api.v1.rides.validate_schedule_time") as mock_val, \
+             patch("app.api.v1.rides.check_overlap") as mock_overlap:
+            mock_val.return_value = MagicMock(valid=True, reason="OK")
+            mock_overlap.return_value = MagicMock(
+                valid=False, reason="You already have a ride scheduled within 30 minutes"
+            )
+            with pytest.raises(HTTPException) as exc_info:
+                await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+        assert exc_info.value.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_update_pickup_address_recalculates_fare(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import LocationPoint, ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10, estimated_fare=18.50)
+
+        coord_mock = MagicMock()
+        coord_mock.plat = 40.7128
+        coord_mock.plng = -74.0060
+        coord_mock.dlat = 40.7580
+        coord_mock.dlng = -73.9855
+
+        db = self._mock_db_for_patch(ride, coord_rows=coord_mock)
+
+        req = ScheduleRideUpdate(
+            pickup=LocationPoint(lat=40.7200, lng=-74.0100),
+            pickup_address="789 New St",
+        )
+
+        with patch("app.api.v1.rides.get_route", new_callable=AsyncMock) as mock_route, \
+             patch("app.api.v1.rides.calculate_fare", return_value=22.00), \
+             patch("app.api.v1.rides.ST_MakePoint") as mock_point:
+            mock_route.return_value = {"distance_km": 10.0, "duration_min": 20.0}
+            mock_point.return_value = MagicMock()
+
+            result = await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+
+        assert ride.estimated_fare == 22.00
+        assert ride.pickup_address == "789 New St"
+
+    @pytest.mark.asyncio
+    async def test_update_no_fields_is_noop(self):
+        from app.api.v1.rides import update_scheduled_ride
+        from app.schemas.ride import ScheduleRideUpdate
+
+        user = _make_user(user_id=10)
+        ride = _make_scheduled_ride(ride_id=1, rider_id=10, estimated_fare=18.50)
+        original_fare = ride.estimated_fare
+        original_time = ride.scheduled_for
+        db = self._mock_db_for_patch(ride)
+
+        req = ScheduleRideUpdate()
+
+        result = await update_scheduled_ride(ride_id=1, req=req, user=user, db=db)
+        assert ride.estimated_fare == original_fare
+        assert ride.scheduled_for == original_time
+        assert result.status == "scheduled"
+
+
+# ---------------------------------------------------------------------------
+# GET /admin/rides/scheduled
+# ---------------------------------------------------------------------------
+
+class TestAdminListScheduledRides:
+    """Tests for GET /admin/rides/scheduled."""
+
+    @pytest.mark.asyncio
+    async def test_returns_upcoming_by_default(self):
+        from app.api.v1.admin import list_scheduled_rides_admin
+
+        ride1 = _make_scheduled_ride(ride_id=1, rider_id=10)
+        ride1.driver_id = None
+        ride1.tip_amount = 0.0
+        ride1.distance_km = 8.5
+        ride1.duration_min = 15.0
+        ride1.actual_fare = None
+        ride1.rider_rating = None
+        ride1.driver_rating = None
+        ride1.cancellation_reason = None
+        ride1.matched_at = None
+        ride1.started_at = None
+        ride1.completed_at = None
+        ride1.cancelled_at = None
+        ride1.scheduled_for = datetime.now(timezone.utc) + timedelta(hours=2)
+        ride1.rider = MagicMock()
+        ride1.rider.name = "Test Rider"
+        ride1.driver = None
+
+        db = AsyncMock()
+        count_result = MagicMock()
+        count_result.scalar.return_value = 1
+        rides_result = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = [ride1]
+        rides_result.scalars.return_value = scalars_mock
+        db.execute.side_effect = [count_result, rides_result]
+
+        result = await list_scheduled_rides_admin(
+            rider_id=None, from_date=None, to_date=None,
+            include_past=False, page=1, per_page=50, db=db,
+        )
+        assert result.total == 1
+        assert len(result.rides) == 1
+        assert result.rides[0].status == "scheduled"
+
+    @pytest.mark.asyncio
+    async def test_empty_result(self):
+        from app.api.v1.admin import list_scheduled_rides_admin
+
+        db = AsyncMock()
+        count_result = MagicMock()
+        count_result.scalar.return_value = 0
+        rides_result = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = []
+        rides_result.scalars.return_value = scalars_mock
+        db.execute.side_effect = [count_result, rides_result]
+
+        result = await list_scheduled_rides_admin(
+            rider_id=None, from_date=None, to_date=None,
+            include_past=False, page=1, per_page=50, db=db,
+        )
+        assert result.total == 0
+        assert result.rides == []
+
+    @pytest.mark.asyncio
+    async def test_pagination_fields_returned(self):
+        from app.api.v1.admin import list_scheduled_rides_admin
+
+        db = AsyncMock()
+        count_result = MagicMock()
+        count_result.scalar.return_value = 0
+        rides_result = MagicMock()
+        scalars_mock = MagicMock()
+        scalars_mock.all.return_value = []
+        rides_result.scalars.return_value = scalars_mock
+        db.execute.side_effect = [count_result, rides_result]
+
+        result = await list_scheduled_rides_admin(
+            rider_id=None, from_date=None, to_date=None,
+            include_past=False, page=2, per_page=25, db=db,
+        )
+        assert result.page == 2
+        assert result.per_page == 25

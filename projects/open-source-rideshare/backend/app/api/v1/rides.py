@@ -30,6 +30,7 @@ from app.schemas.ride import (
     RideResponse,
     RouteDeviationStatusResponse,
     ScheduleRideRequest,
+    ScheduleRideUpdate,
 )
 from app.schemas.eta import DriverETAResponse, DriverLocationResponse, TripETAResponse
 from app.schemas.feedback import (
@@ -525,6 +526,106 @@ async def cancel_scheduled_ride(
     await db.commit()
 
     return {"status": "cancelled", "cancellation_fee": 0.0}
+
+
+@router.patch("/scheduled/{ride_id}", response_model=RideResponse)
+async def update_scheduled_ride(
+    ride_id: int,
+    req: ScheduleRideUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update a scheduled ride before it has been dispatched.
+
+    Allowed fields: scheduled_for, pickup+pickup_address, dropoff+dropoff_address.
+    If coordinates change the fare is recalculated from the new route.
+    Returns 404 if the ride doesn't exist, 403 if not the owner,
+    409 if the ride is no longer in SCHEDULED status.
+    """
+    result = await db.execute(select(Ride).where(Ride.id == ride_id))
+    ride = result.scalar_one_or_none()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    if ride.rider_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if ride.status != RideStatus.SCHEDULED:
+        raise HTTPException(status_code=409, detail="Only scheduled rides can be updated")
+
+    if req.scheduled_for is not None:
+        validation = validate_schedule_time(req.scheduled_for)
+        if not validation.valid:
+            raise HTTPException(status_code=422, detail=validation.reason)
+
+        # Check overlap excluding this ride itself
+        existing_q = await db.execute(
+            select(Ride.scheduled_for).where(
+                Ride.rider_id == user.id,
+                Ride.status == RideStatus.SCHEDULED,
+                Ride.scheduled_for.isnot(None),
+                Ride.id != ride_id,
+            )
+        )
+        existing_times = [row[0] for row in existing_q.all()]
+        overlap = check_overlap(req.scheduled_for, existing_times)
+        if not overlap.valid:
+            raise HTTPException(status_code=409, detail=overlap.reason)
+
+        ride.scheduled_for = req.scheduled_for
+
+    locations_changed = req.pickup is not None or req.dropoff is not None
+    if locations_changed:
+        pickup_lat = req.pickup.lat if req.pickup else None
+        pickup_lng = req.pickup.lng if req.pickup else None
+        dropoff_lat = req.dropoff.lat if req.dropoff else None
+        dropoff_lng = req.dropoff.lng if req.dropoff else None
+
+        # Need both sides' coords to recalculate route — fall back to existing if not provided
+        from geoalchemy2.functions import ST_X, ST_Y
+        coord_result = await db.execute(
+            select(
+                ST_Y(Ride.pickup_location).label("plat"),
+                ST_X(Ride.pickup_location).label("plng"),
+                ST_Y(Ride.dropoff_location).label("dlat"),
+                ST_X(Ride.dropoff_location).label("dlng"),
+            ).where(Ride.id == ride_id)
+        )
+        coords = coord_result.one()
+        if pickup_lat is None:
+            pickup_lat, pickup_lng = float(coords.plat), float(coords.plng)
+        if dropoff_lat is None:
+            dropoff_lat, dropoff_lng = float(coords.dlat), float(coords.dlng)
+
+        try:
+            route = await get_route(pickup_lat, pickup_lng, dropoff_lat, dropoff_lng)
+        except RoutingError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+
+        fare = calculate_fare(route["distance_km"], route["duration_min"])
+        ride.estimated_fare = round(fare, 2)
+        ride.distance_km = round(route["distance_km"], 2)
+        ride.duration_min = round(route["duration_min"], 1)
+
+        if req.pickup is not None:
+            ride.pickup_location = ST_MakePoint(req.pickup.lng, req.pickup.lat, 4326)
+        if req.pickup_address is not None:
+            ride.pickup_address = req.pickup_address
+        if req.dropoff is not None:
+            ride.dropoff_location = ST_MakePoint(req.dropoff.lng, req.dropoff.lat, 4326)
+        if req.dropoff_address is not None:
+            ride.dropoff_address = req.dropoff_address
+
+    await db.commit()
+    await db.refresh(ride)
+
+    return RideResponse(
+        id=ride.id,
+        status=ride.status.value,
+        pickup_address=ride.pickup_address,
+        dropoff_address=ride.dropoff_address,
+        estimated_fare=ride.estimated_fare,
+        scheduled_for=ride.scheduled_for,
+        requested_at=ride.requested_at,
+    )
 
 
 @router.get("/history", response_model=list[RideResponse])
