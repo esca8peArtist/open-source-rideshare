@@ -504,17 +504,27 @@ class TestCompleteRide:
         driver = _make_user(user_id=20, role=UserRole.DRIVER)
         ride = _make_ride(driver_id=20, status=RideStatus.IN_PROGRESS, estimated_fare=15.50)
 
-        # complete_ride does two db.execute calls: one for ride, one for driver profile
+        # complete_ride does four db.execute calls:
+        # 1. ride lookup, 2. completed ride count, 3. rider lookup, 4. driver profile
         profile = MagicMock()
         profile.total_trips = 50
 
         ride_result = MagicMock()
         ride_result.scalar_one_or_none.return_value = ride
+
+        count_result = MagicMock()
+        count_result.scalar.return_value = 0  # not first ride — skip credit path
+
+        rider_obj = MagicMock()
+        rider_obj.referred_by = None
+        rider_result = MagicMock()
+        rider_result.scalar_one_or_none.return_value = rider_obj
+
         profile_result = MagicMock()
         profile_result.scalar_one_or_none.return_value = profile
 
         db = AsyncMock()
-        db.execute.side_effect = [ride_result, profile_result]
+        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result]
 
         result = await complete_ride(ride_id=1, driver=driver, db=db)
         assert result == {"status": "completed", "fare": 15.50}
@@ -542,11 +552,20 @@ class TestCompleteRide:
 
         ride_result = MagicMock()
         ride_result.scalar_one_or_none.return_value = ride
+
+        count_result = MagicMock()
+        count_result.scalar.return_value = 0
+
+        rider_obj = MagicMock()
+        rider_obj.referred_by = None
+        rider_result = MagicMock()
+        rider_result.scalar_one_or_none.return_value = rider_obj
+
         profile_result = MagicMock()
         profile_result.scalar_one_or_none.return_value = profile
 
         db = AsyncMock()
-        db.execute.side_effect = [ride_result, profile_result]
+        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result]
 
         with patch(
             "app.services.rider_safety.send_trusted_contact_notifications",
@@ -579,11 +598,20 @@ class TestCompleteRide:
 
         ride_result = MagicMock()
         ride_result.scalar_one_or_none.return_value = ride
+
+        count_result = MagicMock()
+        count_result.scalar.return_value = 0
+
+        rider_obj = MagicMock()
+        rider_obj.referred_by = None
+        rider_result = MagicMock()
+        rider_result.scalar_one_or_none.return_value = rider_obj
+
         profile_result = MagicMock()
         profile_result.scalar_one_or_none.return_value = profile
 
         db = AsyncMock()
-        db.execute.side_effect = [ride_result, profile_result]
+        db.execute.side_effect = [ride_result, count_result, rider_result, profile_result]
 
         with patch(
             "app.services.rider_safety.send_trusted_contact_notifications",

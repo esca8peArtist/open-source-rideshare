@@ -5,12 +5,15 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import AsyncClient
 
-from app.models.promo import PromoCode, PromoRedemption, PromoType, generate_referral_code
+from app.models.promo import PromoCode, PromoRedemption, PromoType, ReferralCredit, generate_referral_code
 from app.models.ride import Ride, RideStatus
 from app.models.user import User
 from app.services.promos import (
     _calculate_discount,
+    award_referral_credit,
+    consume_referral_credits,
     create_referral_promo,
+    get_referral_credit_balance,
     get_referral_promo_for_user,
     redeem_promo,
     validate_promo,
@@ -642,3 +645,187 @@ class TestRegistrationWithReferral:
         assert resp.status_code == 201
         data = resp.json()
         assert "access_token" in data
+
+
+# --- Referral Credit service tests ---
+
+
+class TestReferralCreditService:
+    @pytest.mark.anyio
+    async def test_award_creates_credit(self, db, rider, driver_user):
+        ride = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride)
+        await db.flush()
+
+        credit = await award_referral_credit(driver_user.id, rider.id, ride.id, db)
+        await db.flush()
+
+        assert credit.referrer_id == driver_user.id
+        assert credit.referee_id == rider.id
+        assert credit.amount == 10.0
+        assert credit.is_used is False
+
+    @pytest.mark.anyio
+    async def test_balance_sums_unused_credits(self, db, rider, driver_user):
+        ride = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride)
+        await db.flush()
+
+        # Award two credits
+        await award_referral_credit(driver_user.id, rider.id, ride.id, db)
+        await award_referral_credit(driver_user.id, rider.id, ride.id, db, amount=5.0)
+        await db.flush()
+
+        balance = await get_referral_credit_balance(driver_user.id, db)
+        assert balance == 15.0
+
+    @pytest.mark.anyio
+    async def test_balance_excludes_used_credits(self, db, rider, driver_user):
+        ride = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride)
+        await db.flush()
+
+        credit = await award_referral_credit(driver_user.id, rider.id, ride.id, db)
+        credit.is_used = True
+        await db.flush()
+
+        balance = await get_referral_credit_balance(driver_user.id, db)
+        assert balance == 0.0
+
+    @pytest.mark.anyio
+    async def test_consume_marks_credits_used(self, db, rider, driver_user):
+        ride = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride)
+        await db.flush()
+
+        await award_referral_credit(driver_user.id, rider.id, ride.id, db)
+        await db.flush()
+
+        consumed = await consume_referral_credits(driver_user.id, ride.id, 10.0, db)
+        assert consumed == 10.0
+
+        balance = await get_referral_credit_balance(driver_user.id, db)
+        assert balance == 0.0
+
+    @pytest.mark.anyio
+    async def test_consume_respects_max_amount(self, db, rider, driver_user):
+        ride = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride)
+        await db.flush()
+
+        # Award $10 credit but cap consumption at $6
+        await award_referral_credit(driver_user.id, rider.id, ride.id, db)
+        await db.flush()
+
+        consumed = await consume_referral_credits(driver_user.id, ride.id, 6.0, db)
+        assert consumed == 6.0
+
+
+# --- Referral Credit endpoint tests ---
+
+
+@pytest.mark.anyio
+class TestReferralCreditEndpoint:
+    async def test_my_credits_empty(self, client: AsyncClient, rider_token):
+        resp = await client.get("/api/v1/promos/my-credits", headers=auth_header(rider_token))
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["balance"] == 0.0
+        assert data["credits"] == []
+
+    async def test_my_credits_shows_balance(self, client: AsyncClient, rider_token, db, rider, driver_user):
+        ride = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride)
+        await db.flush()
+        await award_referral_credit(rider.id, driver_user.id, ride.id, db)
+        await db.flush()
+
+        resp = await client.get("/api/v1/promos/my-credits", headers=auth_header(rider_token))
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["balance"] == 10.0
+        assert len(data["credits"]) == 1
+        assert data["credits"][0]["is_used"] is False
+
+    async def test_my_credits_requires_auth(self, client: AsyncClient):
+        resp = await client.get("/api/v1/promos/my-credits")
+        assert resp.status_code == 401
+
+
+# --- Ride request with referral credits ---
+
+
+@pytest.mark.anyio
+class TestRideRequestWithReferralCredits:
+    async def test_credits_reduce_fare(self, client: AsyncClient, rider_token, db, rider, driver_user):
+        ride_setup = Ride(
+            rider_id=rider.id, driver_id=driver_user.id,
+            status=RideStatus.COMPLETED,
+            pickup_location="SRID=4326;POINT(-73.9857 40.7484)",
+            dropoff_location="SRID=4326;POINT(-73.9712 40.7831)",
+            pickup_address="A", dropoff_address="B",
+            estimated_fare=20.0,
+        )
+        db.add(ride_setup)
+        await db.flush()
+        await award_referral_credit(rider.id, driver_user.id, ride_setup.id, db)
+        await db.flush()
+
+        with patch("app.api.v1.rides.get_route", new_callable=AsyncMock) as mock_route:
+            mock_route.return_value = {"distance_km": 10.0, "duration_min": 15.0}
+
+            resp = await client.post(
+                "/api/v1/rides/request",
+                json={
+                    "pickup": {"lat": 40.7484, "lng": -73.9857},
+                    "dropoff": {"lat": 40.7831, "lng": -73.9712},
+                    "pickup_address": "Penn Station",
+                    "dropoff_address": "Central Park",
+                },
+                headers=auth_header(rider_token),
+            )
+        assert resp.status_code == 201
+        # Base fare 21.25 minus $10 credit = 11.25
+        assert resp.json()["estimated_fare"] == 11.25

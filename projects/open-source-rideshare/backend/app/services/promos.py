@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.promo import PromoCode, PromoRedemption, PromoType
+from app.models.promo import PromoCode, PromoRedemption, PromoType, ReferralCredit
 from app.models.ride import Ride, RideStatus
 
 logger = logging.getLogger(__name__)
@@ -144,6 +144,81 @@ async def get_referral_promo_for_user(
         )
     )
     return result.scalar_one_or_none()
+
+
+REFERRAL_CREDIT_AMOUNT = 10.0  # dollars awarded to referrer per successful first-ride referral
+
+
+async def award_referral_credit(
+    referrer_id: int,
+    referee_id: int,
+    triggering_ride_id: int,
+    db: AsyncSession,
+    amount: float = REFERRAL_CREDIT_AMOUNT,
+) -> ReferralCredit:
+    """Award a credit to the referrer when their referred user completes their first ride."""
+    credit = ReferralCredit(
+        referrer_id=referrer_id,
+        referee_id=referee_id,
+        triggering_ride_id=triggering_ride_id,
+        amount=amount,
+    )
+    db.add(credit)
+    await db.flush()
+    logger.info(
+        "Referral credit $%.2f awarded to user %d (referee=%d, ride=%d)",
+        amount, referrer_id, referee_id, triggering_ride_id,
+    )
+    return credit
+
+
+async def get_referral_credit_balance(user_id: int, db: AsyncSession) -> float:
+    """Return the total unused referral credit balance for a user."""
+    result = await db.execute(
+        select(func.coalesce(func.sum(ReferralCredit.amount), 0.0)).where(
+            ReferralCredit.referrer_id == user_id,
+            ReferralCredit.is_used == False,  # noqa: E712
+        )
+    )
+    return round(float(result.scalar() or 0.0), 2)
+
+
+async def consume_referral_credits(
+    user_id: int,
+    ride_id: int,
+    max_amount: float,
+    db: AsyncSession,
+) -> float:
+    """Consume unused referral credits up to max_amount and link them to a ride.
+
+    Returns the total amount consumed.
+    """
+    if max_amount <= 0:
+        return 0.0
+
+    result = await db.execute(
+        select(ReferralCredit).where(
+            ReferralCredit.referrer_id == user_id,
+            ReferralCredit.is_used == False,  # noqa: E712
+        ).order_by(ReferralCredit.created_at)
+    )
+    credits = result.scalars().all()
+
+    now = datetime.now(timezone.utc)
+    consumed = 0.0
+    for credit in credits:
+        if consumed >= max_amount:
+            break
+        credit.is_used = True
+        credit.used_on_ride_id = ride_id
+        credit.used_at = now
+        consumed += credit.amount
+
+    consumed = round(min(consumed, max_amount), 2)
+    await db.flush()
+    if consumed > 0:
+        logger.info("Consumed $%.2f referral credits for user %d on ride %d", consumed, user_id, ride_id)
+    return consumed
 
 
 async def create_referral_promo(

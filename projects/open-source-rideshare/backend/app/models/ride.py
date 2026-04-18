@@ -69,6 +69,7 @@ class Ride(Base):
     tip_amount: Mapped[float] = mapped_column(default=0.0)
     promo_code_id: Mapped[int | None] = mapped_column(nullable=True, index=True)
     promo_discount: Mapped[float] = mapped_column(default=0.0)
+    referral_credit_discount: Mapped[float] = mapped_column(default=0.0)
 
     scheduled_for: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

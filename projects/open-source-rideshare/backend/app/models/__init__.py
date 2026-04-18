@@ -30,3 +30,4 @@ from app.models.driver_shift import DriverShift  # noqa: F401
 from app.models.driver_earnings_goal import DriverEarningsGoal  # noqa: F401
 from app.models.driver_escalation import DriverEscalation  # noqa: F401
 from app.models.payment_method import RiderPaymentMethod  # noqa: F401
+from app.models.promo import PromoCode, PromoRedemption, ReferralCredit  # noqa: F401

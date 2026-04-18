@@ -2,7 +2,7 @@ import enum
 import secrets
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -54,6 +54,25 @@ class PromoRedemption(Base):
     promo_code = relationship("PromoCode", back_populates="redemptions")
     user = relationship("User")
     ride = relationship("Ride")
+
+
+class ReferralCredit(Base):
+    """Credit awarded to a referrer when a referred user completes their first ride."""
+
+    __tablename__ = "referral_credits"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    referrer_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    referee_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    triggering_ride_id: Mapped[int] = mapped_column(ForeignKey("rides.id"), index=True)
+    amount: Mapped[float] = mapped_column(default=10.0)
+    is_used: Mapped[bool] = mapped_column(Boolean, default=False)
+    used_on_ride_id: Mapped[int | None] = mapped_column(ForeignKey("rides.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    referrer = relationship("User", foreign_keys=[referrer_id])
+    referee = relationship("User", foreign_keys=[referee_id])
 
 
 def generate_referral_code() -> str:

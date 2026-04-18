@@ -111,3 +111,20 @@ class PromoStats(BaseModel):
     non_referral_redemptions: int
     top_promos_by_usage: list[PromoTopEntry]
     top_promos_by_discount: list[PromoTopEntry]
+
+
+class ReferralCreditEntry(BaseModel):
+    id: int
+    referee_id: int
+    amount: float
+    is_used: bool
+    used_on_ride_id: int | None
+    created_at: datetime
+    used_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class ReferralCreditBalanceResponse(BaseModel):
+    balance: float
+    credits: list[ReferralCreditEntry]

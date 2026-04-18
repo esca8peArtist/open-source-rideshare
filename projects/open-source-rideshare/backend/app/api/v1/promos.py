@@ -8,6 +8,7 @@ from app.api.deps import get_current_user, require_admin
 from app.db.database import get_db
 from app.models.promo import PromoCode, PromoRedemption, PromoType, generate_referral_code
 from app.models.user import User
+from app.models.promo import ReferralCredit
 from app.schemas.promo import (
     ApplyPromoRequest,
     ApplyPromoResponse,
@@ -16,9 +17,11 @@ from app.schemas.promo import (
     PromoRedemptionResponse,
     PromoStats,
     PromoTopEntry,
+    ReferralCreditBalanceResponse,
+    ReferralCreditEntry,
     UpdatePromoCodeRequest,
 )
-from app.services.promos import validate_promo
+from app.services.promos import get_referral_credit_balance, validate_promo
 
 router = APIRouter(prefix="/promos", tags=["promos"])
 
@@ -407,6 +410,28 @@ async def generate_my_referral_code(
         "total_referrals": promo.total_uses,
         "is_active": promo.is_active,
     }
+
+
+@router.get("/my-credits", response_model=ReferralCreditBalanceResponse)
+async def get_my_credits(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get the current user's referral credit balance and history."""
+    balance = await get_referral_credit_balance(user.id, db)
+
+    result = await db.execute(
+        select(ReferralCredit)
+        .where(ReferralCredit.referrer_id == user.id)
+        .order_by(ReferralCredit.created_at.desc())
+        .limit(50)
+    )
+    credits = result.scalars().all()
+
+    return ReferralCreditBalanceResponse(
+        balance=balance,
+        credits=[ReferralCreditEntry.model_validate(c) for c in credits],
+    )
 
 
 def _promo_to_response(promo: PromoCode) -> PromoCodeResponse:

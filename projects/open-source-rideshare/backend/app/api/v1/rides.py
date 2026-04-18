@@ -244,6 +244,12 @@ async def request_ride(
             promo_discount = validation.discount
             promo_code_id = validation.promo_code_id
 
+    # Check available referral credits
+    from app.services.promos import get_referral_credit_balance
+    credit_balance = await get_referral_credit_balance(user.id, db)
+    fare_after_promo = round(fare - promo_discount, 2)
+    credit_applied = round(min(credit_balance, fare_after_promo), 2)
+
     ride = Ride(
         rider_id=user.id,
         status=RideStatus.REQUESTED,
@@ -251,11 +257,12 @@ async def request_ride(
         dropoff_location=ST_MakePoint(dropoff.lng, dropoff.lat, 4326),
         pickup_address=pickup_address,
         dropoff_address=dropoff_address,
-        estimated_fare=round(fare - promo_discount, 2),
+        estimated_fare=round(fare_after_promo - credit_applied, 2),
         distance_km=round(route["distance_km"], 2),
         duration_min=round(route["duration_min"], 1),
         promo_code_id=promo_code_id,
         promo_discount=promo_discount,
+        referral_credit_discount=credit_applied,
         accessibility_required=req.accessibility_required,
         vehicle_type_preference=req.vehicle_type_preference,
     )
@@ -276,6 +283,12 @@ async def request_ride(
     # Record promo redemption if a promo was applied
     if promo_code_id:
         await redeem_promo(promo_code_id, user.id, ride.id, promo_discount, db)
+        await db.commit()
+
+    # Consume referral credits applied to this ride
+    if credit_applied > 0:
+        from app.services.promos import consume_referral_credits
+        await consume_referral_credits(user.id, ride.id, credit_applied, db)
         await db.commit()
 
     from app.services.audit_events import audit_ride_requested
@@ -903,6 +916,19 @@ async def complete_ride(
     if ride.status != RideStatus.IN_PROGRESS:
         raise HTTPException(status_code=409, detail="Ride is not in progress")
 
+    # Check referral credit eligibility before changing status (count excludes current ride)
+    completed_count_result = await db.execute(
+        select(func.count(Ride.id)).where(
+            Ride.rider_id == ride.rider_id,
+            Ride.status == RideStatus.COMPLETED,
+        )
+    )
+    is_first_completed = (completed_count_result.scalar() or 0) == 0
+
+    # Load rider to check referred_by
+    rider_result = await db.execute(select(User).where(User.id == ride.rider_id))
+    rider = rider_result.scalar_one_or_none()
+
     ride.status = RideStatus.COMPLETED
     ride.completed_at = datetime.now(timezone.utc)
     ride.actual_fare = ride.estimated_fare
@@ -914,6 +940,16 @@ async def complete_ride(
     profile = profile_result.scalar_one_or_none()
     if profile:
         profile.total_trips += 1
+
+    # Award referral credit to referrer on referred rider's first completed ride
+    if is_first_completed and rider and rider.referred_by:
+        from app.services.promos import award_referral_credit
+        await award_referral_credit(
+            referrer_id=rider.referred_by,
+            referee_id=ride.rider_id,
+            triggering_ride_id=ride.id,
+            db=db,
+        )
 
     await db.commit()
 
