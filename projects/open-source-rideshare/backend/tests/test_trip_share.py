@@ -63,13 +63,16 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.schemas.trip_share import TripShareLinkResponse, TripShareView
+from app.schemas.trip_share import AdminTripShareEntry, AdminTripShareListResponse, TripShareLinkResponse, TripShareView
 from app.services.trip_share import (
     _links,
     _reset_store,
+    admin_revoke_by_token,
     create_trip_share_link,
     get_active_link_for_ride,
+    get_link_by_token,
     get_trip_share_view,
+    list_trip_share_links,
     revoke_trip_share_link,
 )
 
@@ -474,3 +477,241 @@ class TestStoreReset:
     def test_reset_between_tests_provides_isolation(self):
         # After autouse fixture runs _reset_store, store should be empty
         assert len(_links) == 0
+
+
+# ---------------------------------------------------------------------------
+# Schema tests — admin
+# ---------------------------------------------------------------------------
+
+
+class TestAdminTripShareSchemas:
+    def test_entry_has_required_fields(self):
+        now = datetime.now(tz=timezone.utc)
+        entry = AdminTripShareEntry(
+            id=1,
+            token="tok",
+            share_url="/api/v1/trip-share/tok",
+            rider_id=5,
+            ride_id=10,
+            is_active=True,
+            expires_at=now + timedelta(hours=24),
+            created_at=now,
+        )
+        assert entry.rider_id == 5
+        assert entry.ride_id == 10
+        assert entry.is_active is True
+
+    def test_list_response_shape(self):
+        now = datetime.now(tz=timezone.utc)
+        entry = AdminTripShareEntry(
+            id=1, token="t", share_url="/s", rider_id=1, ride_id=2,
+            is_active=True, expires_at=now, created_at=now,
+        )
+        resp = AdminTripShareListResponse(total=1, skip=0, limit=50, items=[entry])
+        assert resp.total == 1
+        assert len(resp.items) == 1
+
+
+# ---------------------------------------------------------------------------
+# Service: list_trip_share_links
+# ---------------------------------------------------------------------------
+
+
+class TestListTripShareLinks:
+    def test_returns_empty_when_no_links(self):
+        assert list_trip_share_links() == []
+
+    def test_returns_all_links(self):
+        create_trip_share_link(rider_id=1, ride_id=10)
+        create_trip_share_link(rider_id=2, ride_id=20)
+        result = list_trip_share_links()
+        assert len(result) == 2
+
+    def test_newest_first_ordering(self):
+        create_trip_share_link(rider_id=1, ride_id=10)
+        create_trip_share_link(rider_id=1, ride_id=11)
+        result = list_trip_share_links()
+        assert result[0]["ride_id"] == 11
+        assert result[1]["ride_id"] == 10
+
+    def test_filter_by_rider_id(self):
+        create_trip_share_link(rider_id=1, ride_id=10)
+        create_trip_share_link(rider_id=2, ride_id=20)
+        result = list_trip_share_links(rider_id=1)
+        assert len(result) == 1
+        assert result[0]["rider_id"] == 1
+
+    def test_filter_by_is_active_true(self):
+        create_trip_share_link(rider_id=1, ride_id=10)
+        create_trip_share_link(rider_id=1, ride_id=11)
+        revoke_trip_share_link(rider_id=1, ride_id=10)
+        result = list_trip_share_links(is_active=True)
+        assert len(result) == 1
+        assert result[0]["ride_id"] == 11
+
+    def test_filter_by_is_active_false(self):
+        create_trip_share_link(rider_id=1, ride_id=10)
+        revoke_trip_share_link(rider_id=1, ride_id=10)
+        create_trip_share_link(rider_id=1, ride_id=11)
+        result = list_trip_share_links(is_active=False)
+        assert len(result) == 1
+        assert result[0]["is_active"] is False
+
+    def test_pagination_skip_and_limit(self):
+        for i in range(5):
+            create_trip_share_link(rider_id=1, ride_id=i)
+        result = list_trip_share_links(skip=2, limit=2)
+        assert len(result) == 2
+
+
+# ---------------------------------------------------------------------------
+# Service: get_link_by_token
+# ---------------------------------------------------------------------------
+
+
+class TestGetLinkByToken:
+    def test_returns_record_for_known_token(self):
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+        found = get_link_by_token(record["token"])
+        assert found["id"] == record["id"]
+
+    def test_raises_lookup_error_for_unknown_token(self):
+        with pytest.raises(LookupError):
+            get_link_by_token("no-such-token")
+
+
+# ---------------------------------------------------------------------------
+# Service: admin_revoke_by_token
+# ---------------------------------------------------------------------------
+
+
+class TestAdminRevokeByToken:
+    def test_sets_is_active_false(self):
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+        admin_revoke_by_token(record["token"])
+        assert _links[record["id"]]["is_active"] is False
+
+    def test_can_revoke_any_riders_link(self):
+        r1 = create_trip_share_link(rider_id=99, ride_id=10)
+        admin_revoke_by_token(r1["token"])
+        assert _links[r1["id"]]["is_active"] is False
+
+    def test_raises_lookup_error_for_unknown_token(self):
+        with pytest.raises(LookupError):
+            admin_revoke_by_token("bad-token")
+
+
+# ---------------------------------------------------------------------------
+# Router: admin endpoints
+# ---------------------------------------------------------------------------
+
+
+def _make_admin(user_id: int = 99) -> MagicMock:
+    admin = MagicMock()
+    admin.id = user_id
+    admin.role = MagicMock()
+    admin.role.value = "admin"
+    admin.is_active = True
+    admin.is_admin = True
+    return admin
+
+
+@pytest.fixture()
+def admin_client():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.api.deps import require_admin, get_current_user
+
+    admin = _make_admin()
+    app.dependency_overrides[require_admin] = lambda: admin
+    app.dependency_overrides[get_current_user] = lambda: admin
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def rider_client():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.api.deps import require_rider, get_current_user
+
+    rider = _make_user(user_id=10, role="rider")
+    app.dependency_overrides[require_rider] = lambda: rider
+    app.dependency_overrides[get_current_user] = lambda: rider
+    with TestClient(app) as c:
+        yield c
+    app.dependency_overrides.clear()
+
+
+class TestAdminListTripShares:
+    def test_returns_200_and_empty_list(self, admin_client):
+        resp = admin_client.get("/api/v1/admin/trip-shares")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 0
+        assert data["items"] == []
+
+    def test_returns_all_links(self, admin_client):
+        create_trip_share_link(rider_id=10, ride_id=10)
+        create_trip_share_link(rider_id=10, ride_id=20)
+        resp = admin_client.get("/api/v1/admin/trip-shares")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 2
+        assert len(data["items"]) == 2
+
+    def test_filter_by_rider_id(self, admin_client):
+        create_trip_share_link(rider_id=10, ride_id=10)
+        create_trip_share_link(rider_id=99, ride_id=20)
+        resp = admin_client.get("/api/v1/admin/trip-shares?rider_id=10")
+        data = resp.json()
+        assert data["total"] == 1
+        for item in data["items"]:
+            assert item["rider_id"] == 10
+
+    def test_filter_by_is_active_false(self, admin_client):
+        r = create_trip_share_link(rider_id=10, ride_id=10)
+        revoke_trip_share_link(rider_id=10, ride_id=10)
+        resp = admin_client.get("/api/v1/admin/trip-shares?is_active=false")
+        data = resp.json()
+        assert data["total"] == 1
+        assert data["items"][0]["is_active"] is False
+
+    def test_response_includes_rider_and_ride_id(self, admin_client):
+        create_trip_share_link(rider_id=10, ride_id=42)
+        resp = admin_client.get("/api/v1/admin/trip-shares")
+        item = resp.json()["items"][0]
+        assert "rider_id" in item
+        assert item["ride_id"] == 42
+
+    def test_admin_list_requires_admin(self, client):
+        """Non-admin (rider) cannot access the admin list endpoint."""
+        resp = client.get("/api/v1/admin/trip-shares")
+        assert resp.status_code == 403
+
+class TestAdminRevokeTripShare:
+    def test_revoke_returns_204(self, admin_client):
+        record = create_trip_share_link(rider_id=10, ride_id=10)
+        token = record["token"]
+        resp = admin_client.delete(f"/api/v1/admin/trip-shares/{token}")
+        assert resp.status_code == 204
+
+    def test_revoked_link_returns_410_publicly(self, admin_client):
+        record = create_trip_share_link(rider_id=10, ride_id=10)
+        token = record["token"]
+        admin_client.delete(f"/api/v1/admin/trip-shares/{token}")
+        # Public endpoint check using the same client (no auth required)
+        resp = admin_client.get(f"/api/v1/trip-share/{token}")
+        assert resp.status_code == 410
+
+    def test_revoke_unknown_token_returns_404(self, admin_client):
+        resp = admin_client.delete("/api/v1/admin/trip-shares/no-such-token")
+        assert resp.status_code == 404
+
+    def test_admin_revoke_requires_admin(self, client):
+        """Non-admin (rider) cannot revoke a trip share via the admin endpoint."""
+        record = create_trip_share_link(rider_id=10, ride_id=10)
+        resp = client.delete(f"/api/v1/admin/trip-shares/{record['token']}")
+        assert resp.status_code == 403
+

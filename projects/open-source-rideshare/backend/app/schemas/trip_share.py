@@ -5,6 +5,24 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class AdminTripShareEntry(BaseModel):
+    id: int
+    token: str
+    share_url: str
+    rider_id: int
+    ride_id: int
+    is_active: bool
+    expires_at: datetime
+    created_at: datetime
+
+
+class AdminTripShareListResponse(BaseModel):
+    total: int
+    skip: int
+    limit: int
+    items: list[AdminTripShareEntry]
+
+
 class TripShareLinkResponse(BaseModel):
     token: str
     share_url: str

@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.api.deps import require_rider
+from app.api.deps import require_admin, require_rider
 from app.models.user import User
-from app.schemas.trip_share import TripShareLinkResponse, TripShareView
+from app.schemas.trip_share import AdminTripShareEntry, AdminTripShareListResponse, TripShareLinkResponse, TripShareView
 from app.services.trip_share import (
+    admin_revoke_by_token,
     create_trip_share_link,
     get_active_link_for_ride,
     get_trip_share_view,
+    list_trip_share_links,
     revoke_trip_share_link,
 )
 
@@ -85,3 +87,45 @@ async def view_trip_share(token: str):
             detail="Share link has expired or been revoked",
         )
     return TripShareView(**view)
+
+
+# ---------------------------------------------------------------------------
+# Admin endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/admin/trip-shares",
+    response_model=AdminTripShareListResponse,
+)
+async def admin_list_trip_shares(
+    rider_id: int | None = Query(None, description="Filter by rider user ID"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    _admin: User = Depends(require_admin),
+):
+    """List all trip share links.  Optionally filter by rider or active status."""
+    items = list_trip_share_links(rider_id=rider_id, is_active=is_active, skip=skip, limit=limit)
+    total = len(list_trip_share_links(rider_id=rider_id, is_active=is_active, skip=0, limit=10_000))
+    return AdminTripShareListResponse(
+        total=total,
+        skip=skip,
+        limit=limit,
+        items=[AdminTripShareEntry(**r) for r in items],
+    )
+
+
+@router.delete(
+    "/admin/trip-shares/{token}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def admin_revoke_trip_share(
+    token: str,
+    _admin: User = Depends(require_admin),
+):
+    """Revoke a trip share link by token regardless of ownership."""
+    try:
+        admin_revoke_by_token(token)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

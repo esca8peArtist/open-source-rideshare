@@ -84,6 +84,49 @@ def revoke_trip_share_link(rider_id: int, ride_id: int) -> None:
     raise LookupError("No active share link found for this ride")
 
 
+def list_trip_share_links(
+    rider_id: int | None = None,
+    is_active: bool | None = None,
+    skip: int = 0,
+    limit: int = 50,
+) -> list[dict]:
+    """Return a filtered, paginated list of share links, newest-first."""
+    results = []
+    for record in _links.values():
+        if rider_id is not None and record["rider_id"] != rider_id:
+            continue
+        if is_active is not None and record["is_active"] != is_active:
+            continue
+        results.append(record)
+    results.sort(key=lambda r: r["created_at"], reverse=True)
+    return results[skip : skip + limit]
+
+
+def get_link_by_token(token: str) -> dict:
+    """Return the record for the given token.
+
+    Raises:
+        LookupError: if no record with this token exists.
+    """
+    for record in _links.values():
+        if record["token"] == token:
+            return record
+    raise LookupError("Share link not found")
+
+
+def admin_revoke_by_token(token: str) -> None:
+    """Revoke a share link by token regardless of rider ownership.
+
+    Raises:
+        LookupError: if no record with this token exists.
+    """
+    for record in _links.values():
+        if record["token"] == token:
+            record["is_active"] = False
+            return
+    raise LookupError("Share link not found")
+
+
 def get_trip_share_view(token: str) -> dict:
     """Return a public-facing view for the given share token.
 
