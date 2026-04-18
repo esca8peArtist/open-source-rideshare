@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 321)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 332)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 321: **Admin Safety Report Stats + Safe Arrival Confirmation** COMPLETE (commit `10ed745`, 89 tests) — GET `/admin/safety-reports/stats` (total/by_status/by_category/escalation_rate/last-7d/last-30d/avg_resolution_hours); POST/GET `/riders/me/rides/{ride_id}/safe-arrival` (SafeArrival model, migration s3t4u5v6w7x8). 4,063 tests passing. Branch: feature/rider-emergency-safety, pushed to GitHub. **Next**: Continue rider safety features OR open new branch.
+**Current focus**: Session 332: **Admin Notification Preferences COMPLETE** (commit `490f490`, 26 tests) — 4 new admin endpoints (GET/PUT/DELETE) for viewing and overriding any user's notification preferences; supports both single and bulk updates. Also fixed `promo_expiring` missing from schema validators. **Next**: Ride scheduling improvements, or driver welfare dashboard enhancements.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

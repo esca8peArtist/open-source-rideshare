@@ -9,7 +9,191 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313–321
+**Sessions run**: 313–332
+
+### Accomplished (Session 332 — orchestrator)
+
+#### open-source-rideshare — Admin Notification Preferences COMPLETE (commit `490f490`)
+
+Support staff can now view and override any user's notification preferences from the admin panel — critical for diagnosing "why isn't this user getting notifications?" tickets.
+
+**4 new admin endpoints** in `GET/PUT/DELETE /admin/users/{id}/notification-preferences/...`:
+- `GET /admin/users/{id}/notification-preferences` — full type×channel matrix with effective enabled state (missing records shown as `true` — the default opt-in)
+- `PUT /admin/users/{id}/notification-preferences/{type}/{channel}` — single preference override; returns full updated map
+- `PUT /admin/users/{id}/notification-preferences` — bulk override; validates every type+channel before writing anything
+- `DELETE /admin/users/{id}/notification-preferences/{type}/{channel}` — resets to default by deleting the explicit record; 204 whether or not a record existed
+
+All endpoints: 404 on unknown user_id, 422 on invalid `notification_type` or `channel`, admin-only via `require_admin`.
+
+**Bug fix**: `promo_expiring` was missing from `_VALID_NOTIFICATION_TYPES` in the notification preference Pydantic schema (it existed in the service layer but schema validators would reject it with 422 — any bulk preference set including `promo_expiring` would have silently failed).
+
+**26 new tests** (schema: 5, GET: 3, PUT single: 5, PUT bulk: 5, DELETE: 8). **4,251 tests passing** (was 4,225). 0 regressions. Pushed to rideshare remote.
+
+---
+
+### Accomplished (Session 331 — orchestrator)
+
+#### open-source-rideshare — Promo Expiry Notifications COMPLETE (commit `30baa75`)
+
+Riders with remaining uses on a promo code now receive a push+SMS notification when the promo is expiring within 48 hours.
+
+**New `PromoCode.expiry_notif_sent_at` field** — DateTime nullable column. Acts as an idempotency guard: once a promo's batch has fired, `expiry_notif_sent_at` is set and the promo is never re-queried.
+
+**New `NotificationType.PROMO_EXPIRING`** — added to the enum, wired into the `promo_updates` preference category (users can opt out with the existing `promo_updates` toggle), and registered in the template system.
+
+**New `promo_expiring` template** — push+SMS channels. Body: `"Your promo code 'SUMMER10' expires in 23 hours! Use it on your next ride before it's gone."` `hours_left` floored at 1 so copy never says "0 hours".
+
+**New `notify_expiring_promos()` scheduler function** in `dispatch_scheduler.py`:
+- Queries promos: `is_active=True`, `expires_at` within next 48h, `expiry_notif_sent_at IS NULL`
+- For each promo: finds users who have redemptions but `count < max_uses_per_user` (still have remaining uses)
+- Sends via `send_notification_with_preferences` (respects per-user channel preferences)
+- Marks `promo.expiry_notif_sent_at = now` and commits after each promo batch
+- Individual notification failures are caught and logged — one bad push doesn't abort the rest
+
+**Wired into `_scheduler_loop`** alongside ride reminders, dispatch, retry, and no-show detection.
+
+**6 new tests** (38 total in scheduler test file): no promos → 0, user with remaining uses notified with correct args, promo with no redemptions marks notified with 0 sends, multiple users all notified, hours_left floored at 1 when expiry imminent, notification exception doesn't abort batch.
+
+**4,225 tests passing** (was 4,219). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 330 — orchestrator)
+
+#### open-source-rideshare — Ride Receipt Referral Credit Line Item COMPLETE (commit `22763cd`)
+
+The referral credits feature is now fully closed — riders can see their applied referral credit directly on the ride receipt.
+
+**Schema**: Added `referral_credit_discount: float` to `RideReceiptResponse`.
+
+**Endpoint update** (`GET /rides/{id}/receipt`): pulls `ride.referral_credit_discount`, includes it in the response, and applies it to the subtotal calculation: `subtotal = max(actual_fare - promo_discount - referral_credit_discount, 0.0)`. Flooring at zero prevents a very large credit from producing a negative subtotal.
+
+**4 new tests**: referral credit reduces subtotal, credit cannot push subtotal negative (floors at 0), credit=0 default (no change to existing rides), schema serialisation.
+
+**4,219 tests passing** (was 4,215). 0 regressions. Pushed to `rideshare` remote.
+
+---
+
+### Accomplished (Session 329 — orchestrator)
+
+#### open-source-rideshare — Driver Referral Credits COMPLETE (commit `8c13a0a`)
+
+When a referred rider completes their first ride, the referrer now receives a **$10 account credit** automatically.
+
+**New model: `ReferralCredit`** — tracks each credit with: `referrer_id`, `referee_id`, `triggering_ride_id` (the first-ride trigger), `amount`, `is_used`, `used_on_ride_id`, `created_at`, `used_at`. Registered in `models/__init__.py`.
+
+**New `Ride.referral_credit_discount` column** — records how much credit was applied at ride request time (mirrors existing `promo_discount` pattern).
+
+**Three service functions** in `services/promos.py`:
+- `award_referral_credit(referrer_id, referee_id, triggering_ride_id, db)` — creates the credit record
+- `get_referral_credit_balance(user_id, db)` — sums unused credit for a user
+- `consume_referral_credits(user_id, ride_id, max_amount, db)` — marks oldest unused credits as used, returns amount consumed
+
+**`complete_ride()` hook** — before setting status, counts the rider's prior completed rides. If zero (this is their first), and `rider.referred_by` is set, awards $10 to the referrer. Atomic: inside the same commit as the status update.
+
+**Ride request auto-apply** — on `POST /rides/request`, checks the rider's referral credit balance and auto-applies it against the fare (after any promo discount). Credits are consumed immediately when the ride is created.
+
+**New endpoint: `GET /promos/my-credits`** — returns balance (float) + last 50 credit records (is_used, used_on_ride_id, amounts). Auth required (401 without token).
+
+**13 new tests**: award creates record, balance sums unused, balance excludes used, consume marks used, consume respects max_amount, endpoint empty state, endpoint shows balance, endpoint auth, credits reduce ride fare. Updated 3 `TestCompleteRide` unit tests to supply the 2 new `db.execute` mock entries (count query + rider load).
+
+**4,215 tests passing** (was 4,215 — count unchanged because integration tests skip without DB). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 328 — orchestrator)
+
+#### open-source-rideshare — Promo routing bug fix + POST /my-referral (commit `9b30fa6`)
+
+**Bug fixed**: `GET /promos/admin/stats` was declared after `GET /admin/{promo_id}` in the router. FastAPI processes routes in declaration order; with `promo_id: int`, the string "stats" fails integer validation and always returned 422. Fixed by moving `/admin/stats` before the parametric `/{promo_id}` routes.
+
+**New endpoint**: `POST /promos/my-referral` — idempotent referral code generation. On first call, generates a unique 8-char code and creates the referral promo ($5 off first ride). On repeat calls, returns the existing code unchanged. Includes a 5-attempt collision retry loop.
+
+**9 new tests**: generate creates code with correct shape, idempotency (two POSTs return same code), returns pre-existing code, requires authentication (401), and `GET /admin/stats` returns 200 (regression guard for the routing fix).
+
+Pushed to `rideshare` remote.
+
+---
+
+### Accomplished (Session 327 — orchestrator)
+
+#### open-source-rideshare — Admin Bulk Driver Actions COMPLETE (commit `2c368f8`)
+
+Three new endpoints for admin efficiency when managing large driver populations:
+
+- `POST /admin/drivers/bulk-approve` — approve up to 100 driver profiles in one call
+- `POST /admin/drivers/bulk-suspend` — suspend up to 100 drivers with a reason (sets is_approved=False, is_online=False, user.is_active=False)
+- `POST /admin/drivers/bulk-reactivate` — reactivate up to 100 suspended drivers
+
+All three return `BulkActionResult`: `succeeded` list, `not_found` list (IDs missing from DB), `total_requested`, `total_succeeded`. Partial success is supported — the call doesn't fail if some IDs don't exist. Each action writes a single audit log entry covering the whole batch.
+
+Also fixed: `reactivate_driver` (single-driver endpoint) was missing `require_admin` dependency — now fixed.
+
+**12 new tests → 4,215 total passing.** 0 regressions. Pushed to `rideshare` remote.
+
+---
+
+### Accomplished (Session 326 — agent)
+
+#### open-source-rideshare — Emergency Contact PATCH endpoint COMPLETE (commit `46b3156`)
+
+Implemented the last missing CRUD operation for the emergency contacts system.
+
+**New endpoint:**
+- `PATCH /safety/contacts/{id}` — partial update; name, phone, and relationship_label are all optional; returns updated EmergencyContactResponse
+
+**Changes:**
+- `EmergencyContactUpdate` schema added to `schemas/safety.py` (all fields optional)
+- `update_emergency_contact(contact_id, user_id, db, ...)` service function in `services/safety.py` — ownership check (404 on missing or wrong owner), applies only non-None fields, flush
+- Route added to `api/v1/safety.py` — imports new schema + service, 404 on ValueError from service
+
+**6 new tests** in `tests/test_safety_endpoints.py` covering: name-only patch, phone-only patch, multi-field patch, relationship-label patch, not-found 404, and wrong-owner 404.
+
+**4,203 total tests passing** (was 4,197). 0 regressions. Branch pushed to GitHub (`rideshare` remote).
+
+---
+
+### Accomplished (Session 325 — orchestrator)
+
+#### open-source-rideshare — Feedback & Disputes API COMPLETE (commit `dbec72a`)
+
+Feedback and disputes had full models, schemas, services, and tests but no HTTP router files. Now wired up:
+
+**Feedback endpoints:**
+- `POST /rides/{ride_id}/feedback` — rider or driver submits 1-5 star rating with optional comment + categories (9 categories: safety, cleanliness, navigation, professionalism, vehicle_condition, communication, pricing, timeliness, other)
+- `GET  /rides/{ride_id}/feedback` — list all feedback for a ride (accessible to participants + admin)
+- `GET  /me/feedback` — paginated list of my submitted feedback
+
+**Dispute endpoints (rider/driver):**
+- `POST /rides/{ride_id}/disputes` — file a dispute on completed/cancelled ride (9 types: fare, route, driver_behavior, rider_behavior, safety_concern, property_damage, lost_item, cancellation_fee, other)
+- `GET  /rides/{ride_id}/disputes` — list disputes for a ride
+- `GET  /me/disputes` — paginated list of my disputes
+- `GET  /me/disputes/{id}` — get a specific dispute I filed (404 if wrong owner)
+
+**Admin dispute endpoints:**
+- `GET   /admin/disputes` — list all with optional status filter
+- `PATCH /admin/disputes/{id}/review` — move to UNDER_REVIEW
+- `POST  /admin/disputes/{id}/resolve` — resolve with status, notes, optional refund
+
+Admin cannot submit feedback (403). Only ride participants may file disputes (403 if not rider/driver on the ride). Duplicate dispute (one open per user per ride) → 409.
+
+**35 new tests → 4,197 total passing.** 0 regressions. Branch pushed to GitHub.
+
+---
+
+### Accomplished (Session 324 — orchestrator)
+
+#### open-source-rideshare — Rider-to-Driver Ratings COMPLETE (commit `8da6d97`)
+
+Riders can now rate their driver after a completed trip — the last major gap in the ratings system.
+
+**New endpoints:**
+- `POST /rides/{ride_id}/driver-rating` — rider submits 1-5 star rating with optional comment
+- `GET  /rides/{ride_id}/driver-rating` — rider retrieves their submitted rating
+
+14 new tests → 4,162 total passing. 0 regressions. Branch pushed to GitHub.
+
+---
 
 ### Accomplished (Session 321 — orchestrator)
 
@@ -111,7 +295,7 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
 **open-source-rideshare — branch review queue**
-`feature/rider-emergency-safety` (25+ commits, 4,021 tests) pushed to GitHub. Branch covers: panic button, trusted contacts, safety history, safety reports, shift management, ride receipts, and more.
+`feature/rider-emergency-safety` (32+ commits) pushed to GitHub. Branch covers: panic button, trusted contacts, safety history, safety reports, shift management, ride receipts, saved payment methods, rider-to-driver ratings, feedback & disputes API, emergency contact PATCH, admin bulk driver actions, promo routing fix, referral code generation, and **referral credits**.
 
 **stockbot — Paper Trading Dashboard is live**
 Go to `/paper-trading` in the web app to monitor your 4 sessions. Equity curve, per-session P&L, and cycle log all there. Auto-refreshes every 30s.
@@ -124,7 +308,7 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ### Suggested Priorities (Next Session)
 1. **resistance-research**: **April 20 monitoring brief** — CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing). **Op-ed submission deadline April 22** — file `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. **~April 23-24: ballroom SCOTUS/D.C. Circuit watch window**.
 2. **mfg-farm**: Test print action (still user-gated — all files ready).
-3. **open-source-rideshare**: Continue features on `feature/rider-emergency-safety` OR open new branch.
+3. **open-source-rideshare**: Next candidates: promo expiry notifications (notify rider when a promo they have is about to expire), notification preferences admin view, or ride cost breakdown in receipt (show referral credit line item).
 4. **stockbot**: No specific features queued — check paper trading performance.
 
 ---

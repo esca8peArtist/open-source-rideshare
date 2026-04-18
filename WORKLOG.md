@@ -4,6 +4,205 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 332 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — admin notification preferences view
+
+### open-source-rideshare — Admin Notification Preferences COMPLETE (commit `490f490`)
+- **Bug fix**: `promo_expiring` was missing from `_VALID_NOTIFICATION_TYPES` in `notification_preference.py` schema (was in service but schema validators didn't accept it — bulk set with `promo_expiring` would have returned 422 for users)
+- **4 new admin endpoints** in `admin.py`:
+  - `GET /admin/users/{id}/notification-preferences` — full pref map for any user (all type×channel combinations with effective enabled value)
+  - `PUT /admin/users/{id}/notification-preferences/{type}/{channel}` — single override; returns updated full map
+  - `PUT /admin/users/{id}/notification-preferences` — bulk override; validates each type+channel before writing
+  - `DELETE /admin/users/{id}/notification-preferences/{type}/{channel}` — reset to default (delete explicit record); 204 whether or not record existed
+- **3 new admin schemas**: `AdminUserPreferencesResponse`, `AdminSetPreferenceRequest`, `AdminBulkSetPreferenceRequest`
+- All endpoints: 404 on unknown user, 422 on invalid notification_type or channel, admin-only via `require_admin`
+- **26 new tests**: schema tests (5), GET (3), PUT single (5), PUT bulk (5), DELETE (8)
+- 4,251 passing (was 4,225). 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 331 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — promo expiry notifications
+
+### open-source-rideshare — Promo Expiry Notifications COMPLETE (commit 30baa75)
+- **New field**: `PromoCode.expiry_notif_sent_at` (DateTime, nullable) — per-promo idempotency guard
+- **New enum value**: `NotificationType.PROMO_EXPIRING = "promo_expiring"` 
+- **Category filter**: `PROMO_EXPIRING` added to `promo_updates` preference check in `filter_channels_by_preferences`
+- **New template**: `promo_expiring(code, hours_left)` → push+SMS; wired into TEMPLATES registry
+- **Preference registry**: `"promo_expiring"` added to `_ALL_NOTIFICATION_TYPES` in `notification_preferences.py`
+- **Scheduler function**: `notify_expiring_promos(now, hours_ahead=48)` — finds promos expiring within 48h, targets riders with remaining uses (redemption_count < max_uses_per_user), sends via `send_notification_with_preferences`, marks promo notified after batch
+- **Wired into loop**: runs every scheduler cycle alongside ride reminders, dispatch, retry, no-show detection
+- **6 new tests**: no promos → 0, user with remaining uses notified, promo with no redemptions marks notified with 0 user sends, multiple users all notified, hours_left floored at 1, exception in one notification doesn't abort batch
+- 4,225 passing (was 4,219). 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 330 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — ride receipt referral credit line item
+
+### open-source-rideshare — Ride Receipt Referral Credit Line Item COMPLETE (commit 22763cd)
+- **Schema**: Added `referral_credit_discount: float` to `RideReceiptResponse`
+- **Endpoint**: `GET /rides/{id}/receipt` now pulls `ride.referral_credit_discount`, includes it in response, and applies it to subtotal calc: `max(actual_fare - promo_discount - referral_credit_discount, 0.0)`
+- **4 new tests**: credit reduces subtotal, credit cannot push subtotal negative (floors at 0), credit=0 default, schema serialisation
+- 4,219 passing (was 4,215), 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 329 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — driver referral credits (reward referrer when referred user completes first ride)
+
+### open-source-rideshare — Driver Referral Credits COMPLETE (commit 8c13a0a)
+- **New model**: `ReferralCredit` — referrer_id, referee_id, triggering_ride_id, amount ($10), is_used, used_on_ride_id, created_at, used_at
+- **New column**: `Ride.referral_credit_discount` (float, default 0.0)
+- **3 service functions**: `award_referral_credit()`, `get_referral_credit_balance()`, `consume_referral_credits()`
+- **complete_ride() hook**: before status change, counts prior completed rides for rider; if first and `rider.referred_by` set, awards $10 to referrer atomically
+- **Ride request auto-apply**: checks balance, applies up to fare amount, calls `consume_referral_credits` after ride creation
+- **GET /promos/my-credits**: balance + last 50 credit records, auth required
+- **13 new tests** + 3 TestCompleteRide unit tests updated (new mock entries for count + rider queries)
+- 4,215 passing, 0 regressions. Pushed to rideshare remote.
+
+---
+
+## Session 328 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features; mfg-farm: blocked on test print; resistance-research: April 20 pass not yet actionable
+- Selected: open-source-rideshare — promo routing bug + referral code generation endpoint
+
+### open-source-rideshare — Promo routing fix + POST /my-referral COMPLETE (commit 9b30fa6)
+- **Bug fixed**: `GET /admin/stats` was declared after `GET /admin/{promo_id}` — FastAPI tried to parse "stats" as int, always 422. Moved stats route before parametric route.
+- **New endpoint**: `POST /promos/my-referral` — idempotent; generates a user's referral code on first call; returns existing code on repeat calls; collision retry loop for code generation
+- **9 new tests**: generate creates code, idempotency, returns pre-existing code, requires auth, and /admin/stats returns 200 not 422
+- Tests pass (sync suite); integration tests skip (test DB not running this session). Pushed to rideshare remote.
+
+---
+
+## Session 327 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no queued features
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 mandatory pass not yet actionable (2 days out)
+- Selected: open-source-rideshare — admin bulk driver actions (approve/suspend/reactivate multiple drivers at once)
+
+### open-source-rideshare — Admin Bulk Driver Actions COMPLETE (commit 2c368f8)
+- `POST /admin/drivers/bulk-approve` — approve up to 100 drivers in one call
+- `POST /admin/drivers/bulk-suspend` — suspend up to 100 drivers with reason (sets is_approved=False, is_online=False, user.is_active=False)
+- `POST /admin/drivers/bulk-reactivate` — reactivate up to 100 suspended drivers
+- All three return `BulkActionResult` with `succeeded`, `not_found`, `total_requested`, `total_succeeded`
+- Partial success supported — IDs not in DB appear in `not_found` list
+- Each action emits single audit log entry covering full batch
+- Also fixed missing `require_admin` dependency on single-driver `reactivate_driver` endpoint
+- 12 new tests → 4,215 total passing. 0 regressions. Pushed to rideshare remote.
+
+## Session 326 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 mandatory pass not yet actionable (2 days out)
+- mfg-farm: blocked on user test print
+- stockbot: paper trading live, no queued features
+- Selected: open-source-rideshare — PATCH /safety/contacts/{id} (emergency contact update, only missing CRUD in safety contacts)
+
+### open-source-rideshare — Emergency Contact Update COMPLETE (commit 46b3156)
+- `PATCH /safety/contacts/{contact_id}` — rider updates existing emergency contact
+- Patchable fields: `name`, `phone`, `relationship_label` (all optional; only non-None fields written)
+- Ownership enforced: contact queried by both id AND user_id → 404 if not found or belongs to another rider (no ownership leak)
+- Schema: `EmergencyContactUpdate` added to schemas/safety.py
+- Service: `update_emergency_contact()` added to services/safety.py
+- Route: added to api/v1/safety.py
+- 6 new tests (name-only, phone-only, multi-field, relationship-label, not-found 404, wrong-owner 404)
+- 4,197 → 4,203 tests passing. 0 regressions. Pushed to rideshare remote.
+
+## Session 325 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- Priority: open-source-rideshare (highest active with work available)
+- Selected: feedback + disputes — models/services/schemas/tests exist but NO API router files; wiring them up now
+
+### open-source-rideshare — Feedback & Disputes API COMPLETE (commit dbec72a)
+- `POST /rides/{ride_id}/feedback` — rider or driver submits 1-5 star rating with optional comment + categories
+- `GET  /rides/{ride_id}/feedback` — list feedback for a ride (participant or admin)
+- `GET  /me/feedback` — paginated list of my submitted feedback
+- `POST /rides/{ride_id}/disputes` — file a dispute on completed/cancelled ride (9 dispute types)
+- `GET  /rides/{ride_id}/disputes` — list disputes for a ride
+- `GET  /me/disputes` — paginated list of my disputes
+- `GET  /me/disputes/{dispute_id}` — get a specific dispute I filed
+- `PATCH /admin/disputes/{id}/review` — admin moves dispute to under_review
+- `POST  /admin/disputes/{id}/resolve` — admin resolves with status, notes, optional refund
+- Categories parsed from DB comma-string to list in API response (service stores comma-sep)
+- Admin cannot submit feedback (403); only ride participants may file disputes (403/409)
+- 35 new tests → 4,197 total passing. 0 regressions. Pushed to GitHub (rideshare remote).
+
+## Session 324 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 mandatory pass not yet actionable (2 days out)
+- mfg-farm: blocked on user test print
+- stockbot: paper trading live, monitoring-only
+- Selected: open-source-rideshare — surveyed rider feature gaps; identified rider-to-driver ratings as highest-value missing feature (driver rating history endpoint existed but had no way for riders to submit ratings)
+
+### open-source-rideshare — Rider-to-Driver Ratings COMPLETE (commit 8da6d97)
+- `POST /rides/{ride_id}/driver-rating` — rider submits 1-5 star rating for their driver
+- `GET  /rides/{ride_id}/driver-rating` — rider retrieves their submitted rating
+- Stored in `RideFeedback` (role="rider") — feeds automatically into existing `GET /drivers/me/ratings` driver history endpoint; no changes to that endpoint needed
+- `Ride.driver_rating` updated as denormalized copy for aggregate queries
+- No migration needed — both tables existed
+- Validation: ride must be COMPLETED (409), only the ride's rider may submit (403), one rating per ride (409 on duplicate), 403 for driver-role callers
+- 14 new tests (7 service unit, 7 endpoint) → 4,162 total passing. 0 regressions. Pushed to GitHub.
+
+---
+
+## Session 322 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: April 20 mandatory pass not yet actionable (2 days out)
+- mfg-farm: blocked on user test print
+- stockbot: paper trading live, monitoring-only, no queued features
+- Selected: open-source-rideshare — surveyed feature gaps; payment method management identified as clearest missing feature
+
+### open-source-rideshare — Rider Saved Payment Methods COMPLETE (commit 8a1f1e7)
+- `POST /riders/me/payment-methods/setup-intent` — create Stripe SetupIntent; degrades to stub when Stripe unconfigured
+- `POST /riders/me/payment-methods` — attach a confirmed PaymentMethod; 409 on duplicate; first method auto-defaults
+- `GET /riders/me/payment-methods` — list all methods newest-first with total count
+- `DELETE /riders/me/payment-methods/{id}` — remove method; 404 on wrong owner; auto-promotes oldest remaining when default deleted
+- `PUT /riders/me/payment-methods/{id}/default` — set new default; clears all others; 404 on wrong owner
+- `RiderPaymentMethod` SQLAlchemy model + migration `t4u5v6w7x8y9`
+- In-memory store service (consistent with codebase pattern for newer rider services)
+- `card_last4` validated to exactly 4 digits; `require_rider` on all endpoints (403 for drivers)
+- 45 new tests → 4,108 total passing. Pushed to GitHub.
+
 ## Session 320 — 2026-04-18
 
 ### Orient
@@ -5823,6 +6022,29 @@ stockbot: Paper Trading Dashboard page
   - 47 new tests in tests/test_safe_arrival.py (new file)
 - Total new tests: 89 — 4,063 passing, 507 skipped, 0 regressions
 - Pushed to GitHub: feature/rider-emergency-safety
+
+### Session end
+- Updating CHECKIN.md and PROJECTS.md
+
+## Session 323 — 2026-04-18 (evening)
+
+### Orient
+- INBOX: No new items.
+- BLOCKED: No active blocks.
+- Priority: stockbot(#1) in monitoring mode, mfg-farm(#2) blocked on user action, resistance-research(#3) no pass due until April 20. Selected open-source-rideshare (#4).
+
+### open-source-rideshare: Trip Share Links COMPLETE (commit 9fd42b5)
+- New safety feature: riders generate a shareable public URL for their active ride
+- Anyone with the link can view read-only ride info (driver, vehicle, status, ETA) with no login required
+- Token: UUID4, 24-hour expiry; only one active link per ride (new creation revokes prior)
+- Endpoints:
+  - POST /api/v1/riders/me/rides/{ride_id}/share-link → create link (201)
+  - GET /api/v1/riders/me/rides/{ride_id}/share-link → get active link (200/404)
+  - DELETE /api/v1/riders/me/rides/{ride_id}/share-link → revoke (204)
+  - GET /api/v1/trip-share/{token} → public view (200/404/410)
+- Files: schemas/trip_share.py, services/trip_share.py, api/v1/trip_share.py, models/trip_share.py, migration u5v6w7x8y9z0
+- 40 new tests; 4,148 total passing, 507 skipped, 0 regressions
+- Pushed to GitHub: feature/rider-emergency-safety (rideshare remote)
 
 ### Session end
 - Updating CHECKIN.md and PROJECTS.md
