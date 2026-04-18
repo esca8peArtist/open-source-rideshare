@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 313)
+> **Last updated by**: orchestrator on 2026-04-18 (Session 315)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 313: Confirmed DRIVER_EN_ROUTE notification, ETA endpoints (`/rides/{ride_id}/eta`, `/rides/{ride_id}/trip-eta`), and receipt endpoint (`GET /rides/{ride_id}/receipt`) all already implemented in prior sessions. **Total: 3,729 unit-passing tests**. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety (20 commits ahead of master). **Next**: Surge-active status endpoint `GET /surge/current?lat={lat}&lng={lng}` (lightweight rider check without full fare preview), OR driver earnings breakdown per ride from driver's perspective, OR transition to a new feature branch.
+**Current focus**: Session 315: `GET /rides/{ride_id}/driver-earnings` COMPLETE (commit `bc3cf89`). Driver-scoped per-ride earnings breakdown — base/distance/time components, platform fee, net fare, tip, total. Components scaled to actual_fare for exact arithmetic. 403/404/409 guards. **Total: 3,764 unit-passing tests**. **4 branches awaiting review**: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety (22 commits ahead of master, pushed to GitHub). **Next**: New feature branch OR additional driver earnings features (e.g. total deductions view, payout schedule estimate).
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

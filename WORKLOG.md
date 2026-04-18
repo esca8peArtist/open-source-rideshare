@@ -4,6 +4,82 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 315 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 monitoring pass is 2 days out — nothing actionable yet
+- Selected: open-source-rideshare — driver per-ride earnings breakdown endpoint
+
+### open-source-rideshare — Driver per-ride earnings breakdown COMPLETE
+
+**Commit**: `bc3cf89`
+
+**Feature**: `GET /rides/{ride_id}/driver-earnings` — driver-scoped endpoint showing how a completed ride's fare decomposes from the driver's perspective.
+
+**Response shape**:
+- `base_fare`, `distance_earnings`, `time_earnings` — components scaled to match `actual_fare` (surge/demand multipliers not stored per-ride; scaling ensures exact arithmetic)
+- `subtotal` — pre-platform-fee amount
+- `platform_fee` — deducted by platform; derived as `actual_fare / (1 + pct/100)`
+- `net_fare` — what the driver nets from the fare
+- `tip` — rider tip
+- `total_driver_earnings` — net_fare + tip
+
+**Authorization**: `require_driver` dependency + `ride.driver_id == driver.id` check. Returns 403 for wrong driver, 404 for missing ride, 409 for non-completed or fare-not-yet-recorded rides.
+
+**New components**:
+- `app/schemas/driver_ride_earnings.py` — `DriverRideEarnings` Pydantic schema
+- `app/services/driver_ride_earnings.py` — `compute_driver_ride_earnings()` pure function
+- `app/api/v1/driver_ride_earnings.py` — endpoint
+- `backend/tests/test_driver_ride_earnings.py` — 18 tests
+
+**Branch pushed**: `rideshare` remote → `feature/rider-emergency-safety`
+
+**New tests**: 18 → **3,764 total unit-passing**
+
+---
+
+## Session 314 — 2026-04-18
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: paper trading live, no cycle logs — no dev work
+- mfg-farm: blocked on user test print
+- resistance-research: April 20 monitoring pass is 2 days out — nothing actionable yet; op-ed is COMPLETE per session 313
+- Selected: open-source-rideshare — surge-active status endpoint (first suggested next task in PROJECTS.md)
+
+### open-source-rideshare — Surge status endpoint COMPLETE
+
+**Commit**: `f258f5c`
+
+**Feature**: `GET /surge/current?lat={lat}&lng={lng}` — lightweight rider-facing surge check.
+
+Cheaper than fare-preview: no route computation, no fare math. Just checks whether the rider's pickup point is currently in a surge zone or experiencing elevated demand. Designed for the rider app to show a "SURGE PRICING IN EFFECT" banner before the rider even enters a destination.
+
+**Response shape**:
+- `is_surge_active: bool`
+- `zone_multiplier: float` — from admin-defined surge zones
+- `demand_multiplier: float` — from real-time Redis demand data
+- `combined_multiplier: float` — zone × demand, rounded to 3dp
+- `zone_name: str | None` — which zone is active (if any)
+- `message: str` — plain-English explanation (e.g. "Surge pricing active: 30% above standard. Reasons: Stadium zone (+20%); high demand (+8%).")
+
+**Fallback behavior**: DB failure → zone_multiplier=1.0; Redis failure → demand_multiplier=1.0. Always returns 200, never errors.
+
+**New components**:
+- `app/api/v1/surge_status.py` — router + `_get_zone_multiplier()` helper
+- `backend/tests/test_surge_status.py` — 17 tests covering: no zones, active zone, inactive zone, out-of-zone, highest-multiplier selection, DB failure, no surge, zone only, demand only, both active, Redis fallback, DB fallback, no auth required, response shape, param validation (422)
+
+**Branch pushed**: `rideshare` remote → `feature/rider-emergency-safety`
+
+**New tests**: 17 → **3,746 total unit-passing**
+
+---
+
 ## Session 313 — 2026-04-18
 
 ### Orient

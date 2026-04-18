@@ -9,13 +9,46 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-18
-**Sessions run**: 313
+**Sessions run**: 313–315
+
+### Accomplished (Session 315)
+
+#### open-source-rideshare — Driver per-ride earnings breakdown COMPLETE (commit `bc3cf89`)
+
+New driver-scoped endpoint: `GET /rides/{ride_id}/driver-earnings` — shows how a completed ride's fare decomposes from the driver's perspective.
+
+**Response shape**:
+- `base_fare` / `distance_earnings` / `time_earnings` — fare components scaled to match `actual_fare` (surge/demand multipliers aren't stored per-ride; scaling keeps the math exact)
+- `subtotal` — pre-platform-deduction amount
+- `platform_fee` — platform's cut (derived from `actual_fare / (1 + pct/100)`)
+- `net_fare` — driver's take from the fare
+- `tip` — rider tip
+- `total_driver_earnings` — net_fare + tip
+
+Authorization: `require_driver` + ride must be assigned to the authenticated driver. Returns 403 for wrong driver, 404 for missing ride, 409 if ride is not completed or fare is missing.
+
+18 new tests. **3,764 total passing.** Branch pushed to GitHub.
+
+---
+
+### Accomplished (Session 314)
+
+#### open-source-rideshare — Surge status endpoint COMPLETE (commit `f258f5c`)
+
+New public endpoint: `GET /surge/current?lat={lat}&lng={lng}` — unauthenticated, designed for the rider app to show a surge banner before the rider enters a destination. Lighter than fare-preview: no route computation, no fare math. Checks two signals independently:
+
+- **Zone surge**: DB query against admin-defined zones (geography + time-of-day rules). Returns the highest applicable zone multiplier and zone name.
+- **Demand surge**: Redis real-time supply/demand ratio for the ~5 km geohash area.
+
+Response: `is_surge_active`, `zone_multiplier`, `demand_multiplier`, `combined_multiplier`, `zone_name`, `message` (plain-English explanation). Fallback-safe: DB failure → zone 1.0; Redis failure → demand 1.0. Always returns 200.
+
+17 new tests. **3,746 total passing.** Branch pushed to GitHub.
+
+---
 
 ### Accomplished (Session 313)
 
 #### resistance-research — April 18 monitoring brief COMPLETE (`monitoring/2026-04-18-results.md`)
-
-The April 17 ballroom deadline outcome was unconfirmed in project files. Researched and confirmed:
 
 **White House ballroom — Branch A materialized** (assessed as least likely in prior brief):
 - Leon issued clarification order April 16, before midnight stay expiry
@@ -29,8 +62,6 @@ The April 17 ballroom deadline outcome was unconfirmed in project files. Researc
 - Abrego Garcia / Xinis: DOJ brief April 20, hearing April 28 on schedule
 - Section 122 / CIT (Barnett panel): deliberating, no ruling
 - Nashville / Crenshaw: 3+ weeks of silence, no ruling
-
-**open-source-rideshare — audit**: Confirmed that DRIVER_EN_ROUTE notification, ETA endpoints, and ride receipt are all already fully implemented. Platform is at 3,729 unit-passing tests with 50 endpoint modules. New next candidates: surge-active status check, driver per-ride earnings breakdown.
 
 **Next mandatory monitoring passes**:
 - April 20: CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing)
@@ -195,8 +226,8 @@ Everything is ready: designs, listing copy, pricing, photo brief. The only gate 
 **op-ed submission — action needed by April 22 (5 days away)**
 "Six Weeks to Save Five Million People's Health Insurance" is ready. File: `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. Pitch paragraph is at the top. June 1 CMS deadline makes the timing real.
 
-**open-source-rideshare — GitHub push permission**
-`feature/rider-emergency-safety` now has 13 sessions of work locally (3,453 tests). Push via: (a) grant Pi GitHub write access, or (b) `git push origin feature/rider-emergency-safety` from a terminal where you have auth.
+**open-source-rideshare — branch review queue**
+`feature/rider-emergency-safety` (21 commits, 3,746 tests) pushed to GitHub. 4 branches total await PR review: feature/rider-fare-transparency, feature/platform-transparency, feature/driver-dispute-resolution, feature/rider-emergency-safety.
 
 **Stockbot — paper trading cycle logs (ongoing)**
 Paper trading live since April 14. Drop cycle logs or a Trading page screenshot in INBOX.md to unblock model performance assessment.
@@ -208,8 +239,8 @@ Paper trading live since April 14. Drop cycle logs or a Trading page screenshot 
 
 ### Suggested Priorities (Next Session)
 1. **mfg-farm**: User runs test print + photographs → Etsy listing goes live.
-2. **resistance-research**: Fill April 20 results framework (Apr 20 evening — CAPE Phase 1 + Abrego Garcia DOJ brief results). Today is Apr 18, so this is ready in 2 days.
-3. **open-source-rideshare**: Next feature — ride status push notifications to rider during driver en-route phase (DRIVER_EN_ROUTE status change triggers push+SMS "Your driver is on the way") OR ETA polling endpoint for rider to get driver ETA in seconds.
+2. **resistance-research**: Fill April 20 results framework (Apr 20 evening — CAPE Phase 1 + Abrego Garcia DOJ brief results). Tomorrow or Apr 20.
+3. **open-source-rideshare**: New feature branch OR extend current branch with payout schedule estimate / driver deductions view.
 4. **stockbot**: Share cycle logs to unblock model performance assessment.
 
 ---
