@@ -138,6 +138,16 @@ async def update_my_location(
     except Exception:
         logger.warning("Could not schedule geofence exit check for driver user %d", user.id)
 
+    # Best-effort speeding check — must not block the response.
+    try:
+        import asyncio
+        from app.services.speeding_alert import check_and_notify_speeding
+        asyncio.ensure_future(
+            check_and_notify_speeding(user_id=user.id, lat=req.lat, lng=req.lng, db=db)
+        )
+    except Exception:
+        logger.warning("Could not schedule speeding check for driver user %d", user.id)
+
     return DriverLocationResponse(
         lat=req.lat,
         lng=req.lng,

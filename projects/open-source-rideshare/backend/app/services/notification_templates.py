@@ -288,6 +288,14 @@ def driver_geofence_exit(**kw) -> TemplateResult:
     )
 
 
+def speeding_alert(**kw) -> TemplateResult:
+    return (
+        "Speed alert",
+        "Your driver appears to be travelling at an unsafe speed. Tap to check your trip or contact support.",
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -315,6 +323,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_SCHEDULED_DISPATCHED: scheduled_dispatched,
     NotificationType.GEOFENCE_EXIT: geofence_exit,
     NotificationType.DRIVER_GEOFENCE_EXIT: driver_geofence_exit,
+    NotificationType.SPEEDING_ALERT: speeding_alert,
 }
 
 

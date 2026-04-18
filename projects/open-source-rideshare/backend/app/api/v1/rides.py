@@ -29,6 +29,7 @@ from app.schemas.ride import (
     RideRatingRequest,
     RideResponse,
     RouteDeviationStatusResponse,
+    SpeedingStatusResponse,
     ScheduleRideRequest,
     ScheduleRideUpdate,
 )
@@ -1485,6 +1486,37 @@ async def get_route_deviation_status(
         ride_id=ride_id,
         deviation_detected=ride.route_deviation_flagged_at is not None,
         flagged_at=ride.route_deviation_flagged_at,
+    )
+
+
+@router.get(
+    "/{ride_id}/speeding-status",
+    response_model=SpeedingStatusResponse,
+    summary="Check speeding status for a ride",
+)
+async def get_speeding_status(
+    ride_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return whether the driver was flagged for exceeding the speed threshold.
+
+    The requesting user must be the rider or driver on the ride.
+    """
+    result = await db.execute(
+        select(Ride).where(Ride.id == ride_id)
+    )
+    ride = result.scalar_one_or_none()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+
+    if user.id not in (ride.rider_id, ride.driver_id):
+        raise HTTPException(status_code=403, detail="Not authorized to view this ride")
+
+    return SpeedingStatusResponse(
+        ride_id=ride_id,
+        speeding_detected=ride.speeding_flagged_at is not None,
+        flagged_at=ride.speeding_flagged_at,
     )
 
 

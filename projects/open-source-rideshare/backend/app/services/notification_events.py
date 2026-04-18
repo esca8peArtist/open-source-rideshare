@@ -336,6 +336,26 @@ async def notify_route_deviation(
         logger.exception("Failed to send route_deviation notification for ride %d", ride_id)
 
 
+async def notify_speeding_alert(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+) -> None:
+    """Notify rider that their driver is travelling at an unsafe speed."""
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.SPEEDING_ALERT,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+        )
+    except Exception:
+        logger.exception("Failed to send speeding_alert notification for ride %d", ride_id)
+
+
 async def notify_driver_no_show(
     db: AsyncSession,
     rider_id: int,

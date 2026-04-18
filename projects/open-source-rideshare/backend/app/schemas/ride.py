@@ -260,6 +260,14 @@ class RouteDeviationStatusResponse(BaseModel):
     flagged_at: datetime | None = None
 
 
+class SpeedingStatusResponse(BaseModel):
+    """Speeding status for an active or recently completed ride."""
+
+    ride_id: int
+    speeding_detected: bool
+    flagged_at: datetime | None = None
+
+
 class RiderStatsResponse(BaseModel):
     """Lifetime statistics summary for a rider."""
 

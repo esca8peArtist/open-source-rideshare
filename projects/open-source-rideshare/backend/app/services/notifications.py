@@ -58,6 +58,7 @@ class NotificationType(str, enum.Enum):
     ADMIN_BROADCAST = "admin_broadcast"
     GEOFENCE_EXIT = "geofence_exit"
     DRIVER_GEOFENCE_EXIT = "driver_geofence_exit"
+    SPEEDING_ALERT = "speeding_alert"
 
 
 @dataclass
@@ -250,7 +251,7 @@ async def filter_channels_by_preferences(
         NotificationType.DRIVER_ARRIVED, NotificationType.RIDE_REMINDER,
         NotificationType.RIDE_IN_PROGRESS, NotificationType.RIDE_ASSIGNED,
         NotificationType.RIDE_COMPLETED_DRIVER, NotificationType.ROUTE_DEVIATION,
-        NotificationType.RIDE_SCHEDULED_DISPATCHED,
+        NotificationType.RIDE_SCHEDULED_DISPATCHED, NotificationType.SPEEDING_ALERT,
     }
     payment_types = {
         NotificationType.PAYMENT_RECEIVED, NotificationType.PAYOUT_COMPLETED,

@@ -102,6 +102,9 @@ class Ride(Base):
     # Geofence exit — set once when driver leaves all active service areas during IN_PROGRESS
     geofence_exit_alerted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Speeding — set once when driver exceeds speed threshold during IN_PROGRESS
+    speeding_flagged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     # Pickup verification — rider confirms driver identity and vehicle plate before entering
     pickup_verification_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     driver_photo_confirmed: Mapped[bool | None] = mapped_column(nullable=True)
