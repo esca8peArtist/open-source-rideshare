@@ -7,6 +7,7 @@ from app.api.v1 import admin, admin_financials, analytics, audit, auth, backgrou
 from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, admin_analytics_router as surge_analytics_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api.v1.fare_preview import router as fare_preview_router
+from app.api.v1.surge_status import router as surge_status_router
 from app.api import websocket
 from app.config import settings
 from app.services.dispatch_scheduler import start_scheduler, stop_scheduler
@@ -91,6 +92,7 @@ app.include_router(rider_cancellation_stats.router, prefix="/api/v1")
 app.include_router(demand_heatmap.router, prefix="/api/v1")
 app.include_router(driver_location.router, prefix="/api/v1")
 app.include_router(fare_preview_router, prefix="/api/v1")
+app.include_router(surge_status_router, prefix="/api/v1")
 app.include_router(websocket.router)
 
 
