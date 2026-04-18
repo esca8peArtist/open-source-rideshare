@@ -233,11 +233,23 @@ async def create_payout(
 
     settlement = await calculate_settlement(driver_id, period_start, period_end, db)
 
+    # Auto-calculate earnings guarantee top-up for the period
+    actual_earnings = (
+        settlement["ride_earnings"]
+        + settlement["tip_earnings"]
+        + settlement["cancellation_fee_earnings"]
+    )
+    from app.services.incentives import evaluate_earnings_guarantee
+    guarantee_top_up = await evaluate_earnings_guarantee(
+        db, driver_id, period_start, period_end, actual_earnings
+    )
+
     total = (
         settlement["ride_earnings"]
         + settlement["tip_earnings"]
         + settlement["cancellation_fee_earnings"]
         + bonus_amount
+        + guarantee_top_up
         - deductions
     )
 
@@ -252,7 +264,7 @@ async def create_payout(
         ride_earnings=settlement["ride_earnings"],
         tip_earnings=settlement["tip_earnings"],
         cancellation_fee_earnings=settlement["cancellation_fee_earnings"],
-        bonus_amount=bonus_amount,
+        bonus_amount=round(bonus_amount + guarantee_top_up, 2),
         deductions=deductions,
         total_amount=round(total, 2),
         trip_count=settlement["trip_count"],
@@ -316,6 +328,24 @@ async def process_payout(payout_id: int, db: AsyncSession) -> DriverPayout:
             "Payout %d processed — transfer %s ($%.2f to driver %d)",
             payout.id, transfer.id, payout.total_amount, payout.driver_id,
         )
+
+        # Mark any completed incentive bonuses (including earnings guarantees) as paid
+        try:
+            from sqlalchemy import select as _select
+            from app.models.incentive import DriverIncentiveProgress, ProgressStatus as _PS
+            from app.services.incentives import mark_bonuses_paid
+            prog_result = await db.execute(
+                _select(DriverIncentiveProgress.program_id).where(
+                    DriverIncentiveProgress.driver_id == payout.driver_id,
+                    DriverIncentiveProgress.status == _PS.COMPLETED.value,
+                )
+            )
+            completed_program_ids = [row[0] for row in prog_result.all()]
+            if completed_program_ids:
+                await mark_bonuses_paid(db, payout.driver_id, completed_program_ids)
+                await db.commit()
+        except Exception:
+            logger.exception("Failed to mark incentive bonuses paid for payout %d", payout.id)
 
         # Notify driver that payout is complete
         try:

@@ -684,6 +684,15 @@ class TestCalculateSettlement:
 # ===========================================================================
 
 
+def _no_guarantee_result():
+    """Mock execute result returning an empty programs list (no earnings-guarantee programs)."""
+    scalars = MagicMock()
+    scalars.all.return_value = []
+    result = MagicMock()
+    result.scalars.return_value = scalars
+    return result
+
+
 class TestCreatePayout:
     @pytest.mark.asyncio
     async def test_creates_payout_for_driver(self):
@@ -708,7 +717,7 @@ class TestCreatePayout:
         cancel_result.scalar.return_value = 5.0
 
         mock_db.execute = AsyncMock(
-            side_effect=[bank_result, overlap_result, ride_result, cancel_result]
+            side_effect=[bank_result, overlap_result, ride_result, cancel_result, _no_guarantee_result()]
         )
 
         payout = await create_payout(
@@ -779,7 +788,7 @@ class TestCreatePayout:
         cancel_result.scalar.return_value = 0.0
 
         mock_db.execute = AsyncMock(
-            side_effect=[bank_result, overlap_result, ride_result, cancel_result]
+            side_effect=[bank_result, overlap_result, ride_result, cancel_result, _no_guarantee_result()]
         )
 
         with pytest.raises(PayoutError, match="must be positive"):
@@ -803,7 +812,7 @@ class TestCreatePayout:
         cancel_result.scalar.return_value = 0.0
 
         mock_db.execute = AsyncMock(
-            side_effect=[bank_result, overlap_result, ride_result, cancel_result]
+            side_effect=[bank_result, overlap_result, ride_result, cancel_result, _no_guarantee_result()]
         )
 
         payout = await create_payout(
@@ -1104,7 +1113,7 @@ class TestBulkCreatePayouts:
         accounts_scalars.all.return_value = [ba1, ba2]
         accounts_result.scalars.return_value = accounts_scalars
 
-        # For each driver: get_bank_account, overlap, ride query, cancel query
+        # For each driver: get_bank_account, overlap, ride query, cancel query, guarantee programs
         def make_sequence(ba, earnings, tips, trips, cancel):
             bank_r = MagicMock()
             bank_r.scalar_one_or_none.return_value = ba
@@ -1116,7 +1125,7 @@ class TestBulkCreatePayouts:
             )
             cancel_r = MagicMock()
             cancel_r.scalar.return_value = cancel
-            return [bank_r, overlap_r, ride_r, cancel_r]
+            return [bank_r, overlap_r, ride_r, cancel_r, _no_guarantee_result()]
 
         call_sequence = [accounts_result]
         call_sequence.extend(make_sequence(ba1, 100.0, 20.0, 5, 5.0))
@@ -1150,7 +1159,7 @@ class TestBulkCreatePayouts:
         cancel_r.scalar.return_value = 0.0
 
         mock_db.execute = AsyncMock(
-            side_effect=[accounts_result, bank_r, overlap_r, ride_r, cancel_r]
+            side_effect=[accounts_result, bank_r, overlap_r, ride_r, cancel_r, _no_guarantee_result()]
         )
 
         result = await bulk_create_payouts(

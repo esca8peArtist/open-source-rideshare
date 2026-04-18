@@ -13,6 +13,7 @@ from httpx import AsyncClient
 from app.models.incentive import DriverIncentiveProgress, IncentiveProgram, ProgressStatus, ProgramType
 from app.services.incentives import (
     create_or_get_progress,
+    evaluate_earnings_guarantee,
     get_active_programs,
     get_driver_progress,
     get_driver_summary,
@@ -656,3 +657,192 @@ class TestDriverEndpoints:
         data = resp.json()
         assert data["trips_completed"] == 1
         assert data["program_id"] == program.id
+
+
+# ---------------------------------------------------------------------------
+# Service: evaluate_earnings_guarantee (unit tests — mocked DB)
+# ---------------------------------------------------------------------------
+
+
+GPERIOD_START = date(2026, 4, 14)
+GPERIOD_END = date(2026, 4, 20)
+DRIVER_ID = 99
+
+
+def _make_guarantee_program(
+    program_id: int,
+    guarantee_floor: float,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    is_active: bool = True,
+) -> IncentiveProgram:
+    from unittest.mock import MagicMock
+    p = MagicMock(spec=IncentiveProgram)
+    p.id = program_id
+    p.is_active = is_active
+    p.program_type = ProgramType.EARNINGS_GUARANTEE.value
+    p.bonus_amount = guarantee_floor
+    p.start_date = start_date or GPERIOD_START
+    p.end_date = end_date
+    return p
+
+
+def _build_guarantee_db(programs: list, existing_progress=None):
+    """Build a mock async DB session for earnings guarantee tests.
+
+    First execute() returns the programs list result.
+    Subsequent execute() calls return existing_progress (or None) for progress queries.
+    db.add, db.flush are no-ops.
+    """
+    from unittest.mock import AsyncMock, MagicMock
+
+    prog_scalars = MagicMock()
+    prog_scalars.all.return_value = programs
+    prog_result = MagicMock()
+    prog_result.scalars.return_value = prog_scalars
+
+    def _progress_result(prog=existing_progress):
+        r = MagicMock()
+        r.scalar_one_or_none.return_value = prog
+        return r
+
+    db = AsyncMock()
+    # First call: list programs; subsequent: get_driver_progress per program
+    db.execute = AsyncMock(side_effect=[prog_result] + [_progress_result() for _ in programs])
+    db.add = MagicMock()
+    db.flush = AsyncMock()
+    return db
+
+
+class TestEvaluateEarningsGuarantee:
+    @pytest.mark.asyncio
+    async def test_below_floor_returns_top_up(self):
+        """Driver earned less than the floor: top-up = floor - actual."""
+        programs = [_make_guarantee_program(1, guarantee_floor=200.0)]
+        db = _build_guarantee_db(programs)
+
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=150.0
+        )
+
+        assert abs(top_up - 50.0) < 0.01
+
+    @pytest.mark.asyncio
+    async def test_at_floor_returns_zero(self):
+        """Driver earned exactly the floor: no top-up."""
+        programs = [_make_guarantee_program(2, guarantee_floor=200.0)]
+        db = _build_guarantee_db(programs)
+
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=200.0
+        )
+
+        assert top_up == 0.0
+
+    @pytest.mark.asyncio
+    async def test_above_floor_returns_zero(self):
+        """Driver earned more than the floor: no top-up."""
+        programs = [_make_guarantee_program(3, guarantee_floor=200.0)]
+        db = _build_guarantee_db(programs)
+
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=350.0
+        )
+
+        assert top_up == 0.0
+
+    @pytest.mark.asyncio
+    async def test_progress_record_added_to_db(self):
+        """A new DriverIncentiveProgress is added when none exists."""
+        programs = [_make_guarantee_program(4, guarantee_floor=100.0)]
+        db = _build_guarantee_db(programs, existing_progress=None)
+
+        await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=60.0
+        )
+
+        # db.add should have been called once (new progress record)
+        db.add.assert_called_once()
+        added = db.add.call_args[0][0]
+        assert isinstance(added, DriverIncentiveProgress)
+        assert abs(added.bonus_earned - 40.0) < 0.01
+        assert added.status == ProgressStatus.COMPLETED.value
+
+    @pytest.mark.asyncio
+    async def test_existing_completed_progress_is_idempotent(self):
+        """If progress already COMPLETED, returns its bonus_earned without touching the record."""
+        from unittest.mock import MagicMock
+        existing = MagicMock(spec=DriverIncentiveProgress)
+        existing.status = ProgressStatus.COMPLETED.value
+        existing.bonus_earned = 75.0
+
+        programs = [_make_guarantee_program(5, guarantee_floor=200.0)]
+        db = _build_guarantee_db(programs, existing_progress=existing)
+
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=125.0
+        )
+
+        assert abs(top_up - 75.0) < 0.01
+        db.add.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_multiple_programs_sums_top_ups(self):
+        """Two qualifying programs both fire; total is sum of their top-ups."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        programs = [
+            _make_guarantee_program(6, guarantee_floor=200.0),
+            _make_guarantee_program(7, guarantee_floor=150.0),
+        ]
+
+        prog_scalars = MagicMock()
+        prog_scalars.all.return_value = programs
+        prog_result = MagicMock()
+        prog_result.scalars.return_value = prog_scalars
+
+        def _none_result():
+            r = MagicMock()
+            r.scalar_one_or_none.return_value = None
+            return r
+
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=[prog_result, _none_result(), _none_result()])
+        db.add = MagicMock()
+        db.flush = AsyncMock()
+
+        # actual = 100 → floor1 = 200 → top-up 100; floor2 = 150 → top-up 50; total 150
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=100.0
+        )
+
+        assert abs(top_up - 150.0) < 0.01
+
+    @pytest.mark.asyncio
+    async def test_expired_program_skipped(self):
+        """Program whose end_date precedes the period start yields zero top-up."""
+        programs = [
+            _make_guarantee_program(
+                8, guarantee_floor=500.0,
+                end_date=GPERIOD_START - timedelta(days=1),
+            )
+        ]
+        db = _build_guarantee_db(programs)
+
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=0.0
+        )
+
+        assert top_up == 0.0
+
+    @pytest.mark.asyncio
+    async def test_no_programs_returns_zero(self):
+        """Empty program list returns 0.0 without any DB writes."""
+        db = _build_guarantee_db(programs=[])
+
+        top_up = await evaluate_earnings_guarantee(
+            db, DRIVER_ID, GPERIOD_START, GPERIOD_END, actual_earnings=0.0
+        )
+
+        assert top_up == 0.0
+        db.add.assert_not_called()

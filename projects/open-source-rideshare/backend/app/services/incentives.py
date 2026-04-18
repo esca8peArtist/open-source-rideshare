@@ -193,6 +193,83 @@ async def record_trip_completion(
     return updated
 
 
+async def evaluate_earnings_guarantee(
+    db: AsyncSession,
+    driver_id: int,
+    period_start: date,
+    period_end: date,
+    actual_earnings: float,
+) -> float:
+    """Evaluate earnings guarantee programs for a payout period.
+
+    For each active earnings_guarantee program whose date range overlaps the
+    payout period, checks whether the driver's actual earnings fell below the
+    guaranteed floor. Creates/updates progress records and returns the total
+    top-up amount to add to the payout.
+
+    Idempotent: skips progress records that are already COMPLETED or PAID.
+    """
+    today = date.today()
+    result = await db.execute(
+        select(IncentiveProgram).where(
+            IncentiveProgram.is_active == True,  # noqa: E712
+            IncentiveProgram.program_type == ProgramType.EARNINGS_GUARANTEE.value,
+            IncentiveProgram.start_date <= period_end,
+        )
+    )
+    programs = result.scalars().all()
+
+    total_top_up = 0.0
+
+    for program in programs:
+        # Skip expired programs that don't cover any part of the payout period
+        if program.end_date is not None and program.end_date < period_start:
+            continue
+
+        progress = await get_driver_progress(db, driver_id, program.id, period_start)
+
+        # Idempotent: already evaluated
+        if progress is not None and progress.status in (
+            ProgressStatus.COMPLETED.value,
+            ProgressStatus.PAID.value,
+        ):
+            total_top_up += progress.bonus_earned
+            continue
+
+        top_up = max(0.0, round(program.bonus_amount - actual_earnings, 2))
+
+        if progress is None:
+            progress = DriverIncentiveProgress(
+                driver_id=driver_id,
+                program_id=program.id,
+                period_start=period_start,
+                trips_completed=0,
+                bonus_earned=top_up,
+                status=ProgressStatus.COMPLETED.value,
+                completed_at=datetime.now(timezone.utc),
+            )
+            db.add(progress)
+        else:
+            progress.bonus_earned = top_up
+            progress.status = ProgressStatus.COMPLETED.value
+            progress.completed_at = datetime.now(timezone.utc)
+
+        total_top_up += top_up
+        if top_up > 0:
+            logger.info(
+                "Earnings guarantee top-up $%.2f for driver %d on program %d (earned $%.2f, floor $%.2f)",
+                top_up, driver_id, program.id, actual_earnings, program.bonus_amount,
+            )
+        else:
+            logger.info(
+                "Driver %d exceeded earnings guarantee on program %d (earned $%.2f >= floor $%.2f)",
+                driver_id, program.id, actual_earnings, program.bonus_amount,
+            )
+
+    await db.flush()
+    return round(total_top_up, 2)
+
+
 async def get_driver_summary(
     db: AsyncSession,
     driver_id: int,
