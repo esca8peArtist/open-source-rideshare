@@ -4,6 +4,27 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## Session 317 — 2026-04-18 (continued)
+
+### open-source-rideshare — Rider spending summary COMPLETE
+
+**Commit**: `4699fd0` | **Branch**: `feature/rider-emergency-safety` | **Pushed**: `rideshare` remote
+
+**Feature**: `GET /riders/me/spending-summary` — rider-side mirror of driver earnings summary.
+
+**Response**: today/this_week/this_month/lifetime buckets each with `total_spent`, `trip_count`, `avg_fare`; plus `total_tips_given`, `total_promo_savings`, `most_frequent_route` (top pickup→dropoff pair by count, or null).
+
+**New files**:
+- `schemas/rider_spending_summary.py` — `SpendingPeriod`, `FrequentRoute`, `RiderSpendingSummary` Pydantic models
+- `services/rider_spending_summary.py` — `get_rider_spending_summary()` async service; single DB query, period bucketing in Python
+- `api/v1/rider_spending_summary.py` — FastAPI router, gated by `require_rider`
+- `app/api/deps.py` — added `require_rider()` dependency (mirror of `require_driver()`)
+- `tests/test_rider_spending_summary.py` — 18 tests
+
+**Tests**: 18 new → **3,830 total passing**. 0 regressions.
+
+---
+
 ## Session 317 — 2026-04-18
 
 ### Orient
