@@ -9,36 +9,82 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-23
-**Sessions run**: 378–392
+**Sessions run**: 378–398
 
-### Accomplished (Session 392 — orchestrator)
+### Accomplished (Session 398 — orchestrator)
 
-#### open-source-rideshare — Account Management (commit `b748850`)
+#### open-source-rideshare — Admin Safety Dashboard (commit `be2063b`)
 
-Two missing account management endpoints are now live: password change and account deactivation. These were the last obvious gap in the auth layer — the User model had `is_active` and `password_hash` but no user-facing way to update either.
+New endpoint: `GET /api/v1/admin/safety/dashboard`
 
-**What's new**:
-- `ChangePasswordRequest` schema — `current_password` + `new_password` (min 8 chars, enforced at schema level)
-- `DeactivateAccountRequest` schema — password confirmation
-- `POST /auth/me/change-password` — verifies current password, hashes and stores new; 400 on wrong current password
-- `POST /auth/me/deactivate` — password confirmation + active-ride guard; returns 409 if any ride in REQUESTED/MATCHED/DRIVER_EN_ROUTE/ARRIVED/IN_PROGRESS state; sets `is_active=False` on success (soft delete, reversible by admin)
-- **20 new tests** in `test_account_management.py` — schema validation, success/error paths, all 5 active ride statuses parametrized
+Consolidated admin-only view of all active safety events across the platform — the "command center" view for safety ops.
 
-**5,750 total tests passing** (was 5,730), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+- **Active SOS alerts**: all SOS events with `status = ACTIVE` (rider/driver emergencies)
+- **Route deviation flags**: all IN_PROGRESS rides where the driver has deviated significantly from the direct path
+- **Speeding flags**: all IN_PROGRESS rides where the driver exceeded the speed threshold
+- **Expired check-ins**: rider check-in timers that expired without confirmation (last 24 hours)
+- All four queries run in parallel via `asyncio.gather`
+- Response includes per-category lists plus summary counts (`total_active_sos`, `total_route_deviations`, `total_speeding_flags`, `total_expired_check_ins`)
+- Admin-only (`require_admin`)
+
+**15 new tests** (10 unit, 5 integration). **5,900 total passing** (was 5,890). 0 regressions. Pushed to `rideshare` remote.
+
+#### resistance-research — April 23 monitoring brief (completed earlier this session)
+
+`monitoring/2026-04-23-results.md` (268 lines) — comprehensive results pass covering April 18–23 window: Ballroom/Leon DC Circuit stay through June 5 (GREEN), Abrego Garcia/Xinis "bad faith" finding + depositions due today (CODE RED), Nashville/Crenshaw 9-week silence (AMBER), CIT Section 122 tariffs still pending (AMBER), May Day coalition 200+ orgs confirmed (AMBER/GREEN), Boasberg contempt probe terminated by DC Circuit April 14 (CODE RED structural).
+
+### Accomplished (Session 397 — orchestrator)
+
+#### open-source-rideshare — Admin Ride Force-Cancel (commit `97ffb1c`)
+
+New endpoint: `POST /api/v1/admin/rides/{ride_id}/cancel` — force-cancel any non-terminal ride for safety incident response. 17 new tests. 5,890 total.
+
+### Accomplished (Session 396 — orchestrator)
+
+#### open-source-rideshare — Admin Driver Earnings Report (commit `21c993a`)
+
+Admin earnings report across ALL active drivers. Paginated, sortable, date-filtered. 27 new tests. 5,873 total.
 
 ### Needs Your Input
 
+#### open-source-rideshare — PR: feature/admin-user-management (ready to merge)
+
+**Branch**: `feature/admin-user-management`
+**Base**: `master` (branched from `feature/rider-emergency-safety`)
+**Commit**: `2724912`
+
+**What it adds** — four admin-only endpoints for managing rider/driver accounts:
+
+- `GET /api/v1/admin/users` — paginated list with `role` (rider/driver/all), `status` (active/suspended/all), and `search` (name/email) filters; excludes admin accounts from results
+- `GET /api/v1/admin/users/{user_id}` — full profile: all user fields, verification status, ride stats (total/completed/cancelled rides + average rating received)
+- `POST /api/v1/admin/users/{user_id}/suspend` — body `{ "reason": str, "notify_user": bool }` — sets status to SUSPENDED, records reason, optionally sends notification; returns 409 if already suspended
+- `POST /api/v1/admin/users/{user_id}/activate` — body `{ "reason": str, "notify_user": bool }` — reactivates account, clears suspension reason; returns 409 if already active
+
+**Model change**: Added `UserStatus` enum (ACTIVE/SUSPENDED) and two new columns to the `users` table — `status` (default ACTIVE, migration-compatible) and `suspension_reason`. Existing records are unaffected.
+
+**Notifications**: Fire-and-forget via the existing `ACCOUNT_VERIFICATION` template (push + email). Failures are logged, never raised.
+
+**Tests**: 30 tests — 14 service unit tests (all pass), 16 API integration tests (skip without test DB, consistent with all other admin endpoint tests). Zero regressions across the full 5,914-test suite.
+
+**Files changed**:
+- `app/models/user.py` — UserStatus enum + status/suspension_reason columns
+- `app/schemas/admin_user_management.py` — new (request/response schemas)
+- `app/services/admin_user_management.py` — new (business logic, paginated queries, ride stats)
+- `app/api/v1/admin_user_management.py` — new (FastAPI router, input validation)
+- `app/main.py` — router registered
+- `tests/test_admin_user_management.py` — new (30 tests)
+
 #### open-source-rideshare — PR: feature/rider-emergency-safety
 
-Branch now includes the full rider-emergency-safety sprint plus all subsequent notification work, plus account management. Ready to merge to `master` whenever you want to review.
+Branch is now very complete: notifications, account management, driver check-in timer, admin driver earnings report, admin ride force-cancel, and admin safety dashboard. The branch is ready to merge to `master` whenever you want to review.
 
 ---
 
 ### What's Next / Suggested Priorities
 
-1. **resistance-research — April 28 (mandatory)**: Xinis contempt hearing results brief → `monitoring/2026-04-28-results.md`. April 29: May Day Mass Call report. May 1: May Day actions brief.
-2. **open-source-rideshare**: Account management started — natural next additions are phone number change (with re-verification flow) or GDPR data export (`GET /auth/me/data-export`).
-3. **stockbot**: No code task actionable; awaiting your input on stacker paper trading performance after Jetson deploy.
+1. **resistance-research — April 28 (mandatory)**: Xinis contempt hearing results brief → `monitoring/2026-04-28-results.md`. April 29: May Day Mass Call. May 1: May Day actions.
+2. **open-source-rideshare**: Safety sprint is comprehensive. Good next: start a new feature branch (e.g., driver-side navigation, admin user management, or fare dispute workflow).
+3. **stockbot**: No code task actionable; awaiting your input on stacker paper trading performance post-Jetson deploy.
 4. **mfg-farm**: Still blocked on test print — when you've printed the ModRun clip/rail, let me know and I can prep the Etsy listing workflow.
 
 ---
@@ -46,11 +92,12 @@ Branch now includes the full rider-emergency-safety sprint plus all subsequent n
 ## History
 
 **Period**: 2026-04-23 (earlier sessions)
-**Sessions run**: 378–392
+**Sessions run**: 378–395
 
+- **Session 395**: Driver safety check-in timer (commit `53faafc`). 69 tests. 5,856 passing.
+- **Session 394**: Email change endpoint (commit `b90cabb`). 13 tests. 5,787 passing.
+- **Session 393**: Phone number change + GDPR data export (commit `0a8dcc2`). 24 tests. 5,774 passing.
 - **Session 392**: Account management — password change + account deactivation (commit `b748850`). 20 tests. 5,750 passing.
-- **Session 391**: 24h feedback reminder if no rating submitted (commit `c26fde8`). 51 tests. 5,730 passing.
-
 - **Session 391**: 24h feedback reminder if no rating submitted (commit `c26fde8`). 51 tests. 5,730 passing.
 - **Session 390**: Cancellation confirmation to cancelling party (commit `4e1eb49`). 31 tests. 5,679 passing.
 - **Session 389**: Cancellation category in RIDE_CANCELLED notifications (commit `6f3222f`). 30 tests. 5,648 passing.
