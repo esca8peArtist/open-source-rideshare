@@ -541,6 +541,24 @@ def driver_suspended(driver_name: str = "", reason: str = "", **kw) -> TemplateR
     )
 
 
+def feedback_prompt_rider(driver_name: str = "your driver", ride_id: int | str = "", **kw) -> TemplateResult:
+    ride_part = f" (Ride #{ride_id})" if ride_id else ""
+    return (
+        "Rate your ride",
+        f"How was your ride with {driver_name}?{ride_part} Your rating helps us maintain quality service.",
+        _PUSH_SMS,
+    )
+
+
+def feedback_prompt_driver(rider_name: str = "your rider", ride_id: int | str = "", **kw) -> TemplateResult:
+    ride_part = f" (Ride #{ride_id})" if ride_id else ""
+    return (
+        "Rate your rider",
+        f"How was {rider_name}?{ride_part} Your feedback helps keep the platform safe for everyone.",
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -584,6 +602,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.BACKGROUND_CHECK_ACTION_REQUIRED: background_check_action_required,
     NotificationType.DRIVER_ACTIVATED: driver_activated,
     NotificationType.DRIVER_SUSPENDED: driver_suspended,
+    NotificationType.FEEDBACK_PROMPT_RIDER: feedback_prompt_rider,
+    NotificationType.FEEDBACK_PROMPT_DRIVER: feedback_prompt_driver,
 }
 
 

@@ -984,3 +984,47 @@ async def notify_driver_suspended(db: AsyncSession, driver_user_id: int, reason:
         await send_notification(notification, db=db, phone=phone, email=email)
     except Exception:
         logger.exception("Failed to send driver suspension notification for user %d", driver_user_id)
+
+
+async def notify_feedback_prompt_rider(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+    driver_name: str = "",
+) -> None:
+    """Prompt rider to rate their driver after ride completion."""
+    try:
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.FEEDBACK_PROMPT_RIDER,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            driver_name=driver_name,
+        )
+    except Exception:
+        logger.exception("Failed to send feedback_prompt_rider notification for ride %d", ride_id)
+
+
+async def notify_feedback_prompt_driver(
+    db: AsyncSession,
+    driver_id: int,
+    ride_id: int,
+    rider_name: str = "",
+) -> None:
+    """Prompt driver to rate their rider after ride completion."""
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        await send_ride_notification(
+            user_id=driver_id,
+            type=NotificationType.FEEDBACK_PROMPT_DRIVER,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            rider_name=rider_name,
+        )
+    except Exception:
+        logger.exception("Failed to send feedback_prompt_driver notification for ride %d", ride_id)

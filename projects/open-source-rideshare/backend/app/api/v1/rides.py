@@ -1121,6 +1121,13 @@ async def complete_ride(
         await notify_driver_earnings(db, driver_id=driver.id, ride_id=ride.id)
     except Exception:
         pass  # never block ride completion on driver earnings email failure
+    try:
+        from app.services.notification_events import notify_feedback_prompt_rider, notify_feedback_prompt_driver
+        rider_name = rider.name if rider else ""
+        await notify_feedback_prompt_rider(db, rider_id=ride.rider_id, ride_id=ride.id, driver_name=driver.name or "")
+        await notify_feedback_prompt_driver(db, driver_id=driver.id, ride_id=ride.id, rider_name=rider_name)
+    except Exception:
+        pass  # never block ride completion on feedback prompt failure
 
     from app.services.audit_events import audit_ride_completed
     await audit_ride_completed(

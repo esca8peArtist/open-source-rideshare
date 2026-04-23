@@ -72,6 +72,8 @@ class NotificationType(str, enum.Enum):
     DRIVER_EARNINGS = "driver_earnings"
     DRIVER_ACTIVATED = "driver_activated"
     DRIVER_SUSPENDED = "driver_suspended"
+    FEEDBACK_PROMPT_RIDER = "feedback_prompt_rider"
+    FEEDBACK_PROMPT_DRIVER = "feedback_prompt_driver"
 
 
 @dataclass
