@@ -8,6 +8,7 @@ from app.db.database import get_db
 from app.models.user import User, UserRole
 from app.api.deps import get_current_user
 from app.schemas.auth import (
+    ChangeEmailRequest,
     ChangePasswordRequest,
     ChangePhoneRequest,
     DeactivateAccountRequest,
@@ -214,6 +215,31 @@ async def change_phone(
     user.phone_verified = False
     await db.commit()
     return {"status": "phone updated"}
+
+
+@router.post("/me/change-email", status_code=status.HTTP_200_OK)
+async def change_email(
+    req: ChangeEmailRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Change the authenticated user's email address.
+
+    Requires password confirmation. The new address must not already be registered.
+    """
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+
+    if req.new_email == user.email:
+        raise HTTPException(status_code=400, detail="New email is the same as current")
+
+    existing = await db.execute(select(User).where(User.email == req.new_email))
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="Email address already in use")
+
+    user.email = req.new_email
+    await db.commit()
+    return {"status": "email updated"}
 
 
 @router.get("/me/data-export")
