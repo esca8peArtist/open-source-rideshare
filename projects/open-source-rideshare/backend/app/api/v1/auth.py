@@ -9,6 +9,7 @@ from app.models.user import User, UserRole
 from app.api.deps import get_current_user
 from app.schemas.auth import (
     ChangePasswordRequest,
+    ChangePhoneRequest,
     DeactivateAccountRequest,
     LoginRequest,
     RegisterRequest,
@@ -186,3 +187,40 @@ async def deactivate_account(
     user.is_active = False
     await db.commit()
     return {"status": "account deactivated"}
+
+
+@router.post("/me/change-phone", status_code=status.HTTP_200_OK)
+async def change_phone(
+    req: ChangePhoneRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Change the authenticated user's phone number.
+
+    Requires password confirmation. The new number must not already be registered.
+    Sets phone_verified=False — the new number must be re-verified.
+    """
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+
+    if req.new_phone == user.phone:
+        raise HTTPException(status_code=400, detail="New phone number is the same as current")
+
+    existing = await db.execute(select(User).where(User.phone == req.new_phone))
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="Phone number already in use")
+
+    user.phone = req.new_phone
+    user.phone_verified = False
+    await db.commit()
+    return {"status": "phone updated"}
+
+
+@router.get("/me/data-export")
+async def data_export(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """GDPR data export — returns all personal data stored for the authenticated user."""
+    from app.services.account_data_export import export_user_data
+    return await export_user_data(user.id, db)

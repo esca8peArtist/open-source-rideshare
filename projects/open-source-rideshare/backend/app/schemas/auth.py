@@ -55,3 +55,8 @@ class ChangePasswordRequest(BaseModel):
 
 class DeactivateAccountRequest(BaseModel):
     password: str
+
+
+class ChangePhoneRequest(BaseModel):
+    password: str
+    new_phone: str = Field(min_length=5, max_length=20)
