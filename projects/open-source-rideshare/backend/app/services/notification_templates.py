@@ -17,6 +17,7 @@ _PUSH = [NotificationChannel.PUSH]
 _PUSH_SMS = [NotificationChannel.PUSH, NotificationChannel.SMS]
 _PUSH_EMAIL = [NotificationChannel.PUSH, NotificationChannel.EMAIL]
 _ALL = [NotificationChannel.PUSH, NotificationChannel.SMS, NotificationChannel.EMAIL]
+_SMS = [NotificationChannel.SMS]
 
 
 def ride_matched(driver_name: str = "your driver", eta_minutes: int | None = None, **kw) -> TemplateResult:
@@ -353,6 +354,22 @@ def streak_lost(program_name: str = "streak", **kw) -> TemplateResult:
     )
 
 
+def emergency_contact_sos(
+    user_name: str = "Someone",
+    ride_id: int | str = "",
+    latitude: float | str = "",
+    longitude: float | str = "",
+    **kw,
+) -> TemplateResult:
+    location_part = f" Location: {latitude}, {longitude}" if latitude and longitude else ""
+    ride_part = f" Ride #{ride_id}" if ride_id else ""
+    return (
+        "Emergency SOS Alert",
+        f"{user_name} has triggered an emergency SOS alert.{ride_part}{location_part} Please check on them immediately.",
+        _SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -388,6 +405,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.DISPUTE_RESPONSE_RECEIVED: dispute_response_received,
     NotificationType.STREAK_COMPLETED: streak_completed,
     NotificationType.STREAK_LOST: streak_lost,
+    NotificationType.EMERGENCY_CONTACT_SOS: emergency_contact_sos,
 }
 
 

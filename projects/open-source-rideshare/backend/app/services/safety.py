@@ -39,12 +39,29 @@ async def trigger_sos(
     db.add(alert)
     await db.flush()
 
-    # Send SOS notification via SMS/email
+    # Notify user (admin alert) and all emergency contacts
     try:
         from app.services.notification_events import notify_sos_alert
         await notify_sos_alert(db, user_id=user_id, ride_id=ride_id)
     except Exception:
-        pass  # SOS creation must not fail due to notification issues
+        pass
+
+    try:
+        from app.services.notification_events import notify_emergency_contacts_sos
+        from app.models.user import User
+        from sqlalchemy import select as _select
+        user_result = await db.execute(_select(User.name).where(User.id == user_id))
+        user_name = user_result.scalar_one_or_none() or ""
+        await notify_emergency_contacts_sos(
+            db,
+            user_id=user_id,
+            user_name=user_name,
+            ride_id=ride_id,
+            latitude=latitude,
+            longitude=longitude,
+        )
+    except Exception:
+        pass
 
     return alert
 
