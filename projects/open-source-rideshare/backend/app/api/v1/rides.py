@@ -1090,6 +1090,15 @@ async def complete_ride(
             db=db,
         )
 
+    # Advance incentive program progress for the driver
+    try:
+        from app.services.incentives import record_trip_completion
+        await record_trip_completion(
+            db, driver_id=driver.id, ride_id=ride.id, completed_at=ride.completed_at
+        )
+    except Exception:
+        pass  # never block ride completion on incentive failure
+
     await db.commit()
 
     from app.services.driver_fatigue import log_ride_event as _log_fatigue
