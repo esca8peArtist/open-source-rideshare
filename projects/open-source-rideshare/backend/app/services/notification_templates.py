@@ -354,6 +354,19 @@ def streak_lost(program_name: str = "streak", **kw) -> TemplateResult:
     )
 
 
+def safe_arrival_contact(
+    user_name: str = "Someone",
+    ride_id: int | str = "",
+    **kw,
+) -> TemplateResult:
+    ride_part = f" (Ride #{ride_id})" if ride_id else ""
+    return (
+        "Safe Arrival Confirmed",
+        f"{user_name} has confirmed they arrived safely.{ride_part} No action needed.",
+        _SMS,
+    )
+
+
 def emergency_contact_sos(
     user_name: str = "Someone",
     ride_id: int | str = "",
@@ -406,6 +419,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.STREAK_COMPLETED: streak_completed,
     NotificationType.STREAK_LOST: streak_lost,
     NotificationType.EMERGENCY_CONTACT_SOS: emergency_contact_sos,
+    NotificationType.SAFE_ARRIVAL_CONTACT: safe_arrival_contact,
 }
 
 

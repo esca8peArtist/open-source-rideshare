@@ -67,6 +67,7 @@ class NotificationType(str, enum.Enum):
     STREAK_COMPLETED = "streak_completed"
     STREAK_LOST = "streak_lost"
     EMERGENCY_CONTACT_SOS = "emergency_contact_sos"
+    SAFE_ARRIVAL_CONTACT = "safe_arrival_contact"
 
 
 @dataclass

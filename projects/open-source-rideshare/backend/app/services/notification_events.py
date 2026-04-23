@@ -245,6 +245,43 @@ async def notify_emergency_contacts_sos(
         logger.exception("Failed to notify emergency contacts for user %d", user_id)
 
 
+async def notify_safe_arrival_contacts(
+    db: AsyncSession,
+    user_id: int,
+    user_name: str = "",
+    ride_id: int | None = None,
+) -> None:
+    """Send a safe-arrival SMS to each of the user's emergency contacts."""
+    try:
+        from sqlalchemy import select
+        from app.models.safety import EmergencyContact
+
+        result = await db.execute(
+            select(EmergencyContact).where(EmergencyContact.user_id == user_id)
+        )
+        contacts = list(result.scalars().all())
+
+        for contact in contacts:
+            try:
+                await send_ride_notification(
+                    user_id=user_id,
+                    type=NotificationType.SAFE_ARRIVAL_CONTACT,
+                    ride_id=ride_id or 0,
+                    db=db,
+                    phone=contact.phone,
+                    email=None,
+                    user_name=user_name,
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to send safe-arrival notification to %s for user %d",
+                    contact.phone,
+                    user_id,
+                )
+    except Exception:
+        logger.exception("Failed to notify emergency contacts of safe arrival for user %d", user_id)
+
+
 async def notify_rating_received(
     db: AsyncSession,
     user_id: int,

@@ -660,6 +660,25 @@ async def confirm_safe_arrival(
         "Safe arrival confirmed — rider=%s ride=%s id=%s",
         user_id, ride_id, record_id,
     )
+
+    try:
+        from app.models.user import User
+        from sqlalchemy import select as sa_select
+        from app.services.notification_events import notify_safe_arrival_contacts
+
+        user_name_result = await db.execute(
+            sa_select(User.name).where(User.id == user_id)
+        )
+        user_name = user_name_result.scalar_one_or_none() or ""
+        await notify_safe_arrival_contacts(
+            db=db,
+            user_id=user_id,
+            user_name=user_name,
+            ride_id=ride_id,
+        )
+    except Exception:
+        logger.exception("Failed to send safe-arrival contact notifications for user %d", user_id)
+
     return dict(record)
 
 
