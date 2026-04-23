@@ -76,6 +76,8 @@ class NotificationType(str, enum.Enum):
     FEEDBACK_PROMPT_DRIVER = "feedback_prompt_driver"
     DOCUMENT_EXPIRY_WARNING = "document_expiry_warning"
     DOCUMENT_EXPIRED = "document_expired"
+    CANCELLATION_CONFIRMATION_RIDER = "cancellation_confirmation_rider"
+    CANCELLATION_CONFIRMATION_DRIVER = "cancellation_confirmation_driver"
 
 
 @dataclass

@@ -1196,7 +1196,7 @@ async def cancel_ride(
         await notify_ride_status(ride.rider_id, ride.id, "cancelled", **cancel_extra)
 
     # Send SMS/email cancellation notifications
-    from app.services.notification_events import notify_ride_cancelled
+    from app.services.notification_events import notify_cancellation_confirmation, notify_ride_cancelled
     category_val = ride.cancellation_category.value if ride.cancellation_category else ""
     if ride.driver_id and user.id != ride.driver_id:
         await notify_ride_cancelled(
@@ -1208,6 +1208,11 @@ async def cancel_ride(
             db, user_id=ride.rider_id, ride_id=ride.id,
             cancelled_by=cancelled_by, cancellation_category=category_val,
         )
+    # Confirm cancellation back to the cancelling party
+    await notify_cancellation_confirmation(
+        db, user_id=user.id, ride_id=ride.id,
+        cancelled_by=cancelled_by, fee=policy.fee if policy.fee > 0 else "",
+    )
 
     from app.services.audit_events import audit_ride_cancelled
     await audit_ride_cancelled(

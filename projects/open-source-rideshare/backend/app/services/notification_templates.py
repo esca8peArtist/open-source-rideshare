@@ -634,6 +634,23 @@ def feedback_prompt_driver(rider_name: str = "your rider", ride_id: int | str = 
     )
 
 
+def cancellation_confirmation_rider(fee: float | str = "", **kw) -> TemplateResult:
+    fee_part = f" A cancellation fee of ${fee} has been applied." if fee else ""
+    return (
+        "Ride cancelled",
+        f"Your ride has been cancelled.{fee_part}",
+        _PUSH_SMS,
+    )
+
+
+def cancellation_confirmation_driver(**kw) -> TemplateResult:
+    return (
+        "Ride cancelled",
+        "You've cancelled this ride. The cancellation has been recorded.",
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -681,6 +698,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.FEEDBACK_PROMPT_DRIVER: feedback_prompt_driver,
     NotificationType.DOCUMENT_EXPIRY_WARNING: document_expiry_warning,
     NotificationType.DOCUMENT_EXPIRED: document_expired,
+    NotificationType.CANCELLATION_CONFIRMATION_RIDER: cancellation_confirmation_rider,
+    NotificationType.CANCELLATION_CONFIRMATION_DRIVER: cancellation_confirmation_driver,
 }
 
 

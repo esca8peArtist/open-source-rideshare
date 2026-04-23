@@ -91,6 +91,35 @@ async def notify_ride_cancelled(
         logger.exception("Failed to send ride_cancelled notification for ride %d", ride_id)
 
 
+async def notify_cancellation_confirmation(
+    db: AsyncSession,
+    user_id: int,
+    ride_id: int,
+    cancelled_by: str,
+    fee: float | str = "",
+) -> None:
+    """Notify the cancelling party that their cancellation went through."""
+    from app.services.notifications import NotificationType
+    notification_type = (
+        NotificationType.CANCELLATION_CONFIRMATION_RIDER
+        if cancelled_by == "rider"
+        else NotificationType.CANCELLATION_CONFIRMATION_DRIVER
+    )
+    try:
+        phone, email = await _get_user_contact(db, user_id)
+        await send_ride_notification(
+            user_id=user_id,
+            type=notification_type,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            fee=fee,
+        )
+    except Exception:
+        logger.exception("Failed to send cancellation_confirmation notification for ride %d", ride_id)
+
+
 async def notify_ride_completed(
     db: AsyncSession,
     rider_id: int,
