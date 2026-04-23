@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.driver_availability import DriverOnlineStatus, DriverSchedule
 from app.schemas.driver_availability import ScheduleSlotCreate
+from app.services.driver_document_expiry import has_valid_documents
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +134,10 @@ async def set_driver_online(
     current UTC time.  Transitioning to offline leaves ``went_online_at``
     unchanged so the duration can be calculated later.
 
+    Raises ``ValueError`` when a driver attempts to go online but does not hold
+    all three required, non-expired, approved documents (license, vehicle
+    registration, and insurance).  The API layer maps this to HTTP 403.
+
     Parameters
     ----------
     db:        Active async database session.
@@ -143,6 +148,10 @@ async def set_driver_online(
     -------
     The upserted DriverOnlineStatus ORM object.
     """
+    if is_online:
+        if not await has_valid_documents(db, driver_id):
+            raise ValueError("Driver has expired or missing required documents")
+
     result = await db.execute(
         select(DriverOnlineStatus).where(DriverOnlineStatus.driver_id == driver_id)
     )

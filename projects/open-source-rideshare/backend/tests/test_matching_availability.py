@@ -394,7 +394,8 @@ class TestFindCandidatesAvailabilityFilter:
             [],              # Vehicle
         )
 
-        with patch("app.services.matching.settings") as mock_settings:
+        with patch("app.services.matching.settings") as mock_settings, \
+             patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
             mock_settings.driver_search_initial_radius_km = 5.0
             mock_settings.driver_search_radius_km = 20.0
             mock_settings.driver_location_ttl_seconds = 300
@@ -421,7 +422,8 @@ class TestFindCandidatesAvailabilityFilter:
             [],         # Vehicle
         )
 
-        with patch("app.services.matching.settings") as mock_settings:
+        with patch("app.services.matching.settings") as mock_settings, \
+             patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
             mock_settings.driver_search_initial_radius_km = 5.0
             mock_settings.driver_search_radius_km = 20.0
             mock_settings.driver_location_ttl_seconds = 300
@@ -430,7 +432,8 @@ class TestFindCandidatesAvailabilityFilter:
 
         assert len(result) == 1
         assert result[0].driver_id == driver_id
-        # Verify exactly 2 DB execute calls (profile + vehicle, no availability)
+        # 2 DB execute calls (profile + vehicle); has_valid_documents is patched so
+        # it does not add additional execute calls.
         assert db.execute.call_count == 2
 
     @pytest.mark.asyncio

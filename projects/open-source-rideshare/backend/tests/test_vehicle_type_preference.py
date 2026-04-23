@@ -164,7 +164,8 @@ async def test_find_candidates_no_preference_returns_all_vehicle_types(engine, m
 
     db.execute = AsyncMock(side_effect=[profiles_result, vehicles_result])
 
-    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2, 3})):
+    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2, 3})), \
+         patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
         candidates = await engine.find_candidates(
             pickup_lat=40.7, pickup_lng=-74.0, db=db,
             vehicle_type_preference=None,
@@ -198,7 +199,8 @@ async def test_find_candidates_standard_preference_filters_others(engine, mock_r
 
     db.execute = AsyncMock(side_effect=[profiles_result, vehicles_result])
 
-    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2})):
+    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2})), \
+         patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
         candidates = await engine.find_candidates(
             pickup_lat=40.7, pickup_lng=-74.0, db=db,
             vehicle_type_preference=VehicleServiceCategory.STANDARD,
@@ -229,7 +231,8 @@ async def test_find_candidates_xl_preference_filters_others(engine, mock_redis):
 
     db.execute = AsyncMock(side_effect=[profiles_result, vehicles_result])
 
-    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2})):
+    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2})), \
+         patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
         candidates = await engine.find_candidates(
             pickup_lat=40.7, pickup_lng=-74.0, db=db,
             vehicle_type_preference=VehicleServiceCategory.XL,
@@ -260,7 +263,8 @@ async def test_find_candidates_wav_preference_filters_others(engine, mock_redis)
 
     db.execute = AsyncMock(side_effect=[profiles_result, vehicles_result])
 
-    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2})):
+    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1, 2})), \
+         patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
         candidates = await engine.find_candidates(
             pickup_lat=40.7, pickup_lng=-74.0, db=db,
             vehicle_type_preference=VehicleServiceCategory.WAV,
@@ -318,7 +322,8 @@ async def test_match_ride_passes_vehicle_type_preference(engine, mock_redis):
 
     db.execute = AsyncMock(side_effect=[profiles_result, vehicles_result])
 
-    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1})):
+    with patch.object(engine, "_get_availability_eligible_driver_ids", new=AsyncMock(return_value={1})), \
+         patch("app.services.matching.has_valid_documents", new=AsyncMock(return_value=True)):
         result = await engine.match_ride(
             mock_ride, 40.7, -74.0, db,
             vehicle_type_preference=VehicleServiceCategory.COMFORT,

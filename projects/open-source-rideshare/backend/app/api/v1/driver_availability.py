@@ -157,9 +157,18 @@ async def set_online_status(
 
     Setting ``is_online=true`` stamps ``went_online_at`` with the current
     timestamp if the driver was previously offline.
+
+    Returns HTTP 403 if the driver attempts to go online but has expired or
+    missing required documents (license, vehicle registration, insurance).
     """
     profile = await _get_driver_profile(db, user)
-    status_row = await set_driver_online(db, profile.id, req.is_online)
+    try:
+        status_row = await set_driver_online(db, profile.id, req.is_online)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        )
     return OnlineStatusResponse.model_validate(status_row)
 
 

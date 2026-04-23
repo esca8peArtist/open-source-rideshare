@@ -146,6 +146,88 @@ async def get_expiring_documents(
     return results
 
 
+async def has_valid_documents(db: AsyncSession, driver_id: int) -> bool:
+    """Return True if the driver holds all three required, non-expired, approved documents.
+
+    The three requirements are:
+      - At least one APPROVED DriverLicense whose expiry_date >= today (or is None).
+      - At least one APPROVED VehicleRegistration whose expiry_date >= today (or is None).
+      - At least one APPROVED DriverInsuranceDocument whose policy_end_date >= today
+        (or is None).
+
+    A None expiry date is treated as "no expiry known" — the document is considered
+    valid because requiring a date that the data model marks non-nullable would
+    incorrectly block drivers with data inserted before any nullable migration.
+    In practice, the ORM columns are currently non-nullable so the None branch is
+    a defensive safeguard for future schema changes.
+
+    Returns False if any of the three document types is absent, expired, or not yet
+    approved.  Uses ``date.today()`` (not datetime) for comparisons.
+
+    Args:
+        db: SQLAlchemy async session.
+        driver_id: ID of the DriverProfile (not the User) whose documents to check.
+
+    Returns:
+        True when all three document requirements are satisfied, False otherwise.
+    """
+    from sqlalchemy import and_, or_, select
+    from app.models.driver_documents import DocumentStatus, DriverLicense, VehicleRegistration
+    from app.models.driver_insurance import DriverInsuranceDocument, InsuranceDocumentStatus
+
+    today = date.today()
+
+    # --- Driver's license ---
+    lic_result = await db.execute(
+        select(DriverLicense).where(
+            and_(
+                DriverLicense.driver_id == driver_id,
+                DriverLicense.status == DocumentStatus.APPROVED,
+                or_(
+                    DriverLicense.expiry_date.is_(None),
+                    DriverLicense.expiry_date >= today,
+                ),
+            )
+        ).limit(1)
+    )
+    if lic_result.scalars().first() is None:
+        return False
+
+    # --- Vehicle registration ---
+    reg_result = await db.execute(
+        select(VehicleRegistration).where(
+            and_(
+                VehicleRegistration.driver_id == driver_id,
+                VehicleRegistration.status == DocumentStatus.APPROVED,
+                or_(
+                    VehicleRegistration.expiry_date.is_(None),
+                    VehicleRegistration.expiry_date >= today,
+                ),
+            )
+        ).limit(1)
+    )
+    if reg_result.scalars().first() is None:
+        return False
+
+    # --- Vehicle insurance ---
+    ins_result = await db.execute(
+        select(DriverInsuranceDocument).where(
+            and_(
+                DriverInsuranceDocument.driver_id == driver_id,
+                DriverInsuranceDocument.status == InsuranceDocumentStatus.APPROVED,
+                or_(
+                    DriverInsuranceDocument.policy_end_date.is_(None),
+                    DriverInsuranceDocument.policy_end_date >= today,
+                ),
+            )
+        ).limit(1)
+    )
+    if ins_result.scalars().first() is None:
+        return False
+
+    return True
+
+
 async def send_document_expiry_notifications(
     db: AsyncSession,
     days_ahead: int = 30,

@@ -17,6 +17,7 @@ from app.services.driver_destination import (
     dropoff_within_filter,
     get_active_filters_for_drivers,
 )
+from app.services.driver_document_expiry import has_valid_documents
 
 # How old a heartbeat can be before the driver is considered unreachable.
 # Must match HEARTBEAT_STALE_MINUTES in services/driver_availability.py.
@@ -290,6 +291,29 @@ class MatchingEngine:
                     len(profiles),
                     before,
                 )
+
+        # --- Document validity filter: exclude drivers with expired or missing
+        #     required documents (license, registration, insurance).
+        #     Drivers are silently excluded rather than raising an error so that
+        #     one driver with bad documents never blocks the entire candidate pool.
+        if profiles:
+            valid_profiles = []
+            for p in profiles:
+                try:
+                    if await has_valid_documents(db, p.id):
+                        valid_profiles.append(p)
+                except Exception:
+                    logger.exception(
+                        "Document validity check failed for driver_id=%d; excluding from pool",
+                        p.id,
+                    )
+            before_doc_check = len(profiles)
+            profiles = valid_profiles
+            logger.debug(
+                "Document filter: %d/%d driver profiles remain after document validity check",
+                len(profiles),
+                before_doc_check,
+            )
 
         # Load active vehicle info for WAV filtering
         profile_ids = [p.id for p in profiles]
