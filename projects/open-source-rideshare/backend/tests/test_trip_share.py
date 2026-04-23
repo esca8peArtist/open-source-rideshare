@@ -390,46 +390,34 @@ def _make_profile_row(
 
 
 class TestGetTripShareLiveView:
-    def test_raises_lookup_error_for_unknown_token(self):
-        import asyncio
-
+    @pytest.mark.asyncio
+    async def test_raises_lookup_error_for_unknown_token(self):
         db = _make_null_db()
         with pytest.raises(LookupError):
-            asyncio.get_event_loop().run_until_complete(
-                get_trip_share_live_view(db, "no-such-token")
-            )
+            await get_trip_share_live_view(db, "no-such-token")
 
-    def test_raises_value_error_when_revoked(self):
-        import asyncio
-
+    @pytest.mark.asyncio
+    async def test_raises_value_error_when_revoked(self):
         record = create_trip_share_link(rider_id=1, ride_id=10)
         revoke_trip_share_link(rider_id=1, ride_id=10)
         db = _make_null_db()
         with pytest.raises(ValueError, match="expired"):
-            asyncio.get_event_loop().run_until_complete(
-                get_trip_share_live_view(db, record["token"])
-            )
+            await get_trip_share_live_view(db, record["token"])
 
-    def test_raises_value_error_when_expired(self):
-        import asyncio
-
+    @pytest.mark.asyncio
+    async def test_raises_value_error_when_expired(self):
         record = create_trip_share_link(rider_id=1, ride_id=10)
         for r in _links.values():
             r["expires_at"] = datetime.now(tz=timezone.utc) - timedelta(seconds=1)
         db = _make_null_db()
         with pytest.raises(ValueError, match="expired"):
-            asyncio.get_event_loop().run_until_complete(
-                get_trip_share_live_view(db, record["token"])
-            )
+            await get_trip_share_live_view(db, record["token"])
 
-    def test_fallback_when_ride_not_in_db(self):
-        import asyncio
-
+    @pytest.mark.asyncio
+    async def test_fallback_when_ride_not_in_db(self):
         record = create_trip_share_link(rider_id=1, ride_id=10)
         db = _make_null_db()
-        view = asyncio.get_event_loop().run_until_complete(
-            get_trip_share_live_view(db, record["token"])
-        )
+        view = await get_trip_share_live_view(db, record["token"])
         assert view["token"] == record["token"]
         assert view["ride_id"] == 10
         assert view["status"] == "unknown"
@@ -439,8 +427,8 @@ class TestGetTripShareLiveView:
         assert view["eta_minutes"] is None
         assert view["expires_at"] == record["expires_at"]
 
-    def test_returns_real_ride_data_when_db_has_ride(self):
-        import asyncio
+    @pytest.mark.asyncio
+    async def test_returns_real_ride_data_when_db_has_ride(self):
         from unittest.mock import AsyncMock, MagicMock
 
         record = create_trip_share_link(rider_id=1, ride_id=10)
@@ -473,9 +461,7 @@ class TestGetTripShareLiveView:
         db = AsyncMock()
         db.execute = AsyncMock(side_effect=execute_side_effect)
 
-        view = asyncio.get_event_loop().run_until_complete(
-            get_trip_share_live_view(db, record["token"])
-        )
+        view = await get_trip_share_live_view(db, record["token"])
 
         assert view["ride_id"] == 10
         assert view["status"] == "in_progress"
@@ -491,8 +477,8 @@ class TestGetTripShareLiveView:
         assert view["eta_minutes"] is not None
         assert view["eta_minutes"] >= 1
 
-    def test_eta_none_when_driver_has_no_location(self):
-        import asyncio
+    @pytest.mark.asyncio
+    async def test_eta_none_when_driver_has_no_location(self):
         from unittest.mock import AsyncMock, MagicMock
 
         record = create_trip_share_link(rider_id=1, ride_id=10)
@@ -521,17 +507,15 @@ class TestGetTripShareLiveView:
 
         db = AsyncMock()
         db.execute = AsyncMock(side_effect=execute_side_effect)
-        view = asyncio.get_event_loop().run_until_complete(
-            get_trip_share_live_view(db, record["token"])
-        )
+        view = await get_trip_share_live_view(db, record["token"])
 
         assert view["driver_lat"] is None
         assert view["driver_lng"] is None
         assert view["eta_minutes"] is None
 
-    def test_driver_first_name_only(self):
+    @pytest.mark.asyncio
+    async def test_driver_first_name_only(self):
         """Multi-word driver name: only first word is returned."""
-        import asyncio
         from unittest.mock import AsyncMock, MagicMock
 
         record = create_trip_share_link(rider_id=1, ride_id=10)
@@ -558,14 +542,12 @@ class TestGetTripShareLiveView:
 
         db = AsyncMock()
         db.execute = AsyncMock(side_effect=execute_side_effect)
-        view = asyncio.get_event_loop().run_until_complete(
-            get_trip_share_live_view(db, record["token"])
-        )
+        view = await get_trip_share_live_view(db, record["token"])
         assert view["driver_first_name"] == "Maria"
 
-    def test_no_driver_assigned_returns_nulls(self):
+    @pytest.mark.asyncio
+    async def test_no_driver_assigned_returns_nulls(self):
         """Ride exists but driver_id is None — all driver fields are null."""
-        import asyncio
         from unittest.mock import AsyncMock, MagicMock
 
         record = create_trip_share_link(rider_id=1, ride_id=10)
@@ -576,9 +558,7 @@ class TestGetTripShareLiveView:
         result_mock.one_or_none = MagicMock(return_value=ride_row)
         db.execute = AsyncMock(return_value=result_mock)
 
-        view = asyncio.get_event_loop().run_until_complete(
-            get_trip_share_live_view(db, record["token"])
-        )
+        view = await get_trip_share_live_view(db, record["token"])
         assert view["driver_first_name"] is None
         assert view["vehicle_make"] is None
         assert view["driver_lat"] is None
