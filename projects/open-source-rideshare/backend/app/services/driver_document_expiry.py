@@ -146,6 +146,100 @@ async def get_expiring_documents(
     return results
 
 
+async def get_expiring_documents_for_driver(
+    db: AsyncSession,
+    driver_id: int,
+    days_ahead: int = 60,
+) -> list[ExpiringDocument]:
+    """Return expiring or expired documents for a single driver.
+
+    Mirrors :func:`get_expiring_documents` but scoped to one driver so the
+    driver-facing endpoint avoids scanning the entire document table.
+
+    Args:
+        db: SQLAlchemy async session.
+        driver_id: User ID of the driver (``users.id`` — same FK used by
+            DriverLicense, VehicleRegistration, and DriverInsuranceDocument).
+        days_ahead: Look-ahead window in days.  Documents expiring on or before
+            ``today + days_ahead`` are returned.  Pass 0 to get only documents
+            that expire today or are already past due.
+
+    Returns:
+        List of :class:`ExpiringDocument` sorted by days_remaining ascending
+        (most urgent first).
+    """
+    from sqlalchemy import and_, select
+    from app.models.driver_documents import DocumentStatus, DriverLicense, VehicleRegistration
+    from app.models.driver_insurance import DriverInsuranceDocument, InsuranceDocumentStatus
+
+    today = date.today()
+    cutoff = today + timedelta(days=days_ahead)
+    results: list[ExpiringDocument] = []
+
+    lic_result = await db.execute(
+        select(DriverLicense).where(
+            and_(
+                DriverLicense.driver_id == driver_id,
+                DriverLicense.status == DocumentStatus.APPROVED,
+                DriverLicense.expiry_date <= cutoff,
+            )
+        )
+    )
+    for lic in lic_result.scalars().all():
+        results.append(
+            ExpiringDocument(
+                driver_id=lic.driver_id,
+                document_type="license",
+                expiry_date=lic.expiry_date,
+                document_id=lic.id,
+                days_remaining=(lic.expiry_date - today).days,
+            )
+        )
+
+    reg_result = await db.execute(
+        select(VehicleRegistration).where(
+            and_(
+                VehicleRegistration.driver_id == driver_id,
+                VehicleRegistration.status == DocumentStatus.APPROVED,
+                VehicleRegistration.expiry_date <= cutoff,
+            )
+        )
+    )
+    for reg in reg_result.scalars().all():
+        results.append(
+            ExpiringDocument(
+                driver_id=reg.driver_id,
+                document_type="vehicle_registration",
+                expiry_date=reg.expiry_date,
+                document_id=reg.id,
+                days_remaining=(reg.expiry_date - today).days,
+            )
+        )
+
+    ins_result = await db.execute(
+        select(DriverInsuranceDocument).where(
+            and_(
+                DriverInsuranceDocument.driver_id == driver_id,
+                DriverInsuranceDocument.status == InsuranceDocumentStatus.APPROVED,
+                DriverInsuranceDocument.policy_end_date <= cutoff,
+            )
+        )
+    )
+    for ins in ins_result.scalars().all():
+        results.append(
+            ExpiringDocument(
+                driver_id=ins.driver_id,
+                document_type="vehicle_insurance",
+                expiry_date=ins.policy_end_date,
+                document_id=ins.id,
+                days_remaining=(ins.policy_end_date - today).days,
+            )
+        )
+
+    results.sort(key=lambda d: d.days_remaining)
+    return results
+
+
 async def has_valid_documents(db: AsyncSession, driver_id: int) -> bool:
     """Return True if the driver holds all three required, non-expired, approved documents.
 
