@@ -930,3 +930,57 @@ async def notify_streak_lost(
         logger.exception(
             "Failed to send streak_lost notification to driver %d", driver_id
         )
+
+
+async def notify_driver_activated(db: AsyncSession, driver_user_id: int) -> None:
+    """Notify a driver that their account has been approved."""
+    try:
+        from app.services.notifications import Notification, NotificationType, send_notification
+        from app.services.notification_templates import render
+        from app.models.user import User
+        from sqlalchemy import select
+
+        result = await db.execute(select(User).where(User.id == driver_user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            return
+        phone, email = user.phone, user.email
+        driver_name = getattr(user, 'first_name', '') or user.name or ''
+        title, body, channels = render(NotificationType.DRIVER_ACTIVATED, driver_name=driver_name)
+        notification = Notification(
+            user_id=driver_user_id,
+            type=NotificationType.DRIVER_ACTIVATED,
+            title=title,
+            body=body,
+            channels=channels,
+        )
+        await send_notification(notification, db=db, phone=phone, email=email)
+    except Exception:
+        logger.exception("Failed to send driver activation notification for user %d", driver_user_id)
+
+
+async def notify_driver_suspended(db: AsyncSession, driver_user_id: int, reason: str = "") -> None:
+    """Notify a driver that their account has been suspended."""
+    try:
+        from app.services.notifications import Notification, NotificationType, send_notification
+        from app.services.notification_templates import render
+        from app.models.user import User
+        from sqlalchemy import select
+
+        result = await db.execute(select(User).where(User.id == driver_user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            return
+        phone, email = user.phone, user.email
+        driver_name = getattr(user, 'first_name', '') or user.name or ''
+        title, body, channels = render(NotificationType.DRIVER_SUSPENDED, driver_name=driver_name, reason=reason)
+        notification = Notification(
+            user_id=driver_user_id,
+            type=NotificationType.DRIVER_SUSPENDED,
+            title=title,
+            body=body,
+            channels=channels,
+        )
+        await send_notification(notification, db=db, phone=phone, email=email)
+    except Exception:
+        logger.exception("Failed to send driver suspension notification for user %d", driver_user_id)

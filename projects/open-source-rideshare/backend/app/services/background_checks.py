@@ -323,39 +323,32 @@ async def _notify_driver_check_result(
     from app.models.user import User
     from app.services.notifications import (
         Notification,
-        NotificationChannel,
         NotificationType,
         send_notification,
     )
+    from app.services.notification_templates import render
 
     user_result = await db.execute(select(User).where(User.id == profile.user_id))
     user = user_result.scalar_one_or_none()
     if not user:
         return
 
+    driver_name = getattr(user, 'first_name', '') or user.name or ""
+
     if check.status == BackgroundCheckStatus.CLEAR:
-        title = "Background check approved"
-        body = (
-            "Great news — your background check passed! Complete your remaining "
-            "requirements to start accepting rides."
-        )
         notification_type = NotificationType.BACKGROUND_CHECK_APPROVED
     elif check.status in {BackgroundCheckStatus.CONSIDER, BackgroundCheckStatus.SUSPENDED}:
-        title = "Background check requires attention"
-        body = (
-            "Your background check needs review before you can drive. "
-            "Log in for details or contact support with questions."
-        )
         notification_type = NotificationType.BACKGROUND_CHECK_ACTION_REQUIRED
     else:
         return  # CANCELLED, DISPUTE, PENDING — no driver notification
 
+    title, body, channels = render(notification_type, driver_name=driver_name)
     notification = Notification(
         user_id=profile.user_id,
         type=notification_type,
         title=title,
         body=body,
-        channels=[NotificationChannel.PUSH, NotificationChannel.SMS],
+        channels=channels,
         data={"check_id": check.id, "status": check.status.value},
     )
     try:

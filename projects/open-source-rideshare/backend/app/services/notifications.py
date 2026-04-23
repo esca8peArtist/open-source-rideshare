@@ -70,6 +70,8 @@ class NotificationType(str, enum.Enum):
     SAFE_ARRIVAL_CONTACT = "safe_arrival_contact"
     TRIP_RECEIPT = "trip_receipt"
     DRIVER_EARNINGS = "driver_earnings"
+    DRIVER_ACTIVATED = "driver_activated"
+    DRIVER_SUSPENDED = "driver_suspended"
 
 
 @dataclass

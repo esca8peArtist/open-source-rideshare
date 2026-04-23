@@ -24,8 +24,11 @@ list_incomplete(db, page, page_size)
     -> list[DriverOnboarding]  (missing one or more requirements)
 """
 
+import logging
 from datetime import date, datetime, timezone
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -367,6 +370,14 @@ async def activate_driver(
         profile.is_approved = True
 
     await db.flush()
+
+    try:
+        from app.services.notification_events import notify_driver_activated
+        if profile:
+            await notify_driver_activated(db, profile.user_id)
+    except Exception:
+        logger.exception("Failed to send activation notification for driver profile %d", driver_profile_id)
+
     return onboarding
 
 
@@ -399,6 +410,14 @@ async def suspend_driver(
     profile.is_online = False
 
     await db.flush()
+
+    try:
+        from app.services.notification_events import notify_driver_suspended
+        if profile:
+            await notify_driver_suspended(db, profile.user_id, reason=reason.strip())
+    except Exception:
+        logger.exception("Failed to send suspension notification for driver profile %d", driver_profile_id)
+
     return onboarding
 
 

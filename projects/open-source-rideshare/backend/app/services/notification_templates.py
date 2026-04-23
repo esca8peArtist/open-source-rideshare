@@ -504,6 +504,43 @@ def emergency_contact_sos(
     )
 
 
+def background_check_approved(driver_name: str = "", **kw) -> TemplateResult:
+    name = driver_name or "Your"
+    return (
+        "Background check approved",
+        f"Great news, {name}! Your background check passed. Complete your remaining requirements to start accepting rides.",
+        _PUSH_SMS,
+    )
+
+
+def background_check_action_required(driver_name: str = "", **kw) -> TemplateResult:
+    greeting = f"Hi {driver_name}," if driver_name else "Hi there,"
+    return (
+        "Background check requires attention",
+        f"{greeting} your background check needs review before you can drive. Log in for details or contact support with questions.",
+        _PUSH_SMS,
+    )
+
+
+def driver_activated(driver_name: str = "", **kw) -> TemplateResult:
+    name = driver_name or "there"
+    return (
+        "You're approved to drive!",
+        f"Congratulations {name}! Your account has been approved. You're ready to go online and start accepting rides.",
+        _PUSH_SMS,
+    )
+
+
+def driver_suspended(driver_name: str = "", reason: str = "", **kw) -> TemplateResult:
+    greeting = f"Hi {driver_name}," if driver_name else "Hi there,"
+    reason_part = f" Reason: {reason}." if reason else ""
+    return (
+        "Your account has been suspended",
+        f"{greeting} your driver account has been suspended.{reason_part} Please contact support for assistance.",
+        _PUSH_SMS,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -543,6 +580,10 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.SAFE_ARRIVAL_CONTACT: safe_arrival_contact,
     NotificationType.TRIP_RECEIPT: trip_receipt,
     NotificationType.DRIVER_EARNINGS: driver_earnings,
+    NotificationType.BACKGROUND_CHECK_APPROVED: background_check_approved,
+    NotificationType.BACKGROUND_CHECK_ACTION_REQUIRED: background_check_action_required,
+    NotificationType.DRIVER_ACTIVATED: driver_activated,
+    NotificationType.DRIVER_SUSPENDED: driver_suspended,
 }
 
 
