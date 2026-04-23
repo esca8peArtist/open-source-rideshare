@@ -150,23 +150,37 @@ class TestRenderDispatch:
 
 
 def _make_contact_db(phone: str | None = "+15550001111", email: str | None = "user@example.com"):
-    """Return an AsyncMock db whose execute() returns (phone, email)."""
+    """Return an AsyncMock db for the two-call dispatcher pattern.
+
+    Call 1 (feedback deduplication check): scalar_one_or_none() → None (no existing feedback).
+    Call 2 (contact info lookup): one_or_none() → row with phone/email.
+    """
     db = AsyncMock()
+
+    no_feedback_result = MagicMock()
+    no_feedback_result.scalar_one_or_none.return_value = None
+
     row = MagicMock()
     row.phone = phone
     row.email = email
-    result = MagicMock()
-    result.one_or_none.return_value = row
-    db.execute.return_value = result
+    contact_result = MagicMock()
+    contact_result.one_or_none.return_value = row
+
+    db.execute.side_effect = [no_feedback_result, contact_result]
     return db
 
 
 def _make_no_contact_db():
-    """Return an AsyncMock db whose execute() returns None row (user not found)."""
+    """Return an AsyncMock db where no feedback exists and the user has no contact info."""
     db = AsyncMock()
-    result = MagicMock()
-    result.one_or_none.return_value = None
-    db.execute.return_value = result
+
+    no_feedback_result = MagicMock()
+    no_feedback_result.scalar_one_or_none.return_value = None
+
+    contact_result = MagicMock()
+    contact_result.one_or_none.return_value = None
+
+    db.execute.side_effect = [no_feedback_result, contact_result]
     return db
 
 

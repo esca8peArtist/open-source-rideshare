@@ -986,14 +986,45 @@ async def notify_driver_suspended(db: AsyncSession, driver_user_id: int, reason:
         logger.exception("Failed to send driver suspension notification for user %d", driver_user_id)
 
 
+async def _feedback_already_submitted(db: AsyncSession, ride_id: int, user_id: int) -> bool:
+    """Return True if the user has already submitted feedback for this ride."""
+    try:
+        from sqlalchemy import select
+        from app.models.feedback import RideFeedback
+
+        result = await db.execute(
+            select(RideFeedback).where(
+                RideFeedback.ride_id == ride_id,
+                RideFeedback.user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+    except Exception:
+        logger.exception(
+            "Failed to check feedback status for ride %d user %d", ride_id, user_id
+        )
+        return False
+
+
 async def notify_feedback_prompt_rider(
     db: AsyncSession,
     rider_id: int,
     ride_id: int,
     driver_name: str = "",
 ) -> None:
-    """Prompt rider to rate their driver after ride completion."""
+    """Prompt rider to rate their driver after ride completion.
+
+    Skips silently if the rider has already submitted feedback for this ride,
+    making the dispatcher safe to call from retry or scheduled-reminder flows.
+    """
     try:
+        if await _feedback_already_submitted(db, ride_id, rider_id):
+            logger.debug(
+                "Skipping feedback_prompt_rider for ride %d — rider %d already rated",
+                ride_id,
+                rider_id,
+            )
+            return
         phone, email = await _get_user_contact(db, rider_id)
         await send_ride_notification(
             user_id=rider_id,
@@ -1014,8 +1045,19 @@ async def notify_feedback_prompt_driver(
     ride_id: int,
     rider_name: str = "",
 ) -> None:
-    """Prompt driver to rate their rider after ride completion."""
+    """Prompt driver to rate their rider after ride completion.
+
+    Skips silently if the driver has already submitted feedback for this ride,
+    making the dispatcher safe to call from retry or scheduled-reminder flows.
+    """
     try:
+        if await _feedback_already_submitted(db, ride_id, driver_id):
+            logger.debug(
+                "Skipping feedback_prompt_driver for ride %d — driver %d already rated",
+                ride_id,
+                driver_id,
+            )
+            return
         phone, email = await _get_user_contact(db, driver_id)
         await send_ride_notification(
             user_id=driver_id,
