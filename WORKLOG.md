@@ -4,6 +4,63 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## 2026-04-23 — Session 392 (current)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: awaiting paper trading data post-Jetson deploy
+- mfg-farm: blocked on user test print
+- resistance-research: next mandatory April 28 (Xinis hearing results)
+- open-source-rideshare: starting new feature area after notification sprint
+
+### open-source-rideshare — Account Management (commit `b748850`)
+
+Added `POST /auth/me/change-password` and `POST /auth/me/deactivate` — both were missing
+from the platform's account management surface. These are fundamental for any production
+privacy-respecting platform (per architecture doc: "Privacy-respecting — collect only what's needed").
+
+**What changed**:
+- `ChangePasswordRequest` schema — `current_password` + `new_password` (min 8 chars via Field)
+- `DeactivateAccountRequest` schema — password confirmation field
+- `POST /auth/me/change-password` endpoint — verifies current password, hashes + stores new
+- `POST /auth/me/deactivate` endpoint — verifies password, checks for active rides (409 if any
+  ride in REQUESTED/MATCHED/DRIVER_EN_ROUTE/ARRIVED/IN_PROGRESS), then sets `is_active=False`
+- **20 new tests** in `test_account_management.py` — schema validation, success paths,
+  wrong-password 400, active-ride 409, all 5 active status values parametrized
+
+**5,750 total tests passing** (was 5,730), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 391 (current)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: awaiting paper trading data post-Jetson deploy
+- mfg-farm: blocked on user test print
+- resistance-research: next mandatory April 28 (Xinis hearing)
+- open-source-rideshare: implementing 24h feedback reminder
+
+### open-source-rideshare — 24h Feedback Reminder COMPLETE (commit `c26fde8`)
+
+Riders and drivers who haven't submitted a rating 24+ hours after a completed ride now receive a push/SMS reminder.
+
+**What changed**:
+- `NotificationType.FEEDBACK_REMINDER_RIDER` and `FEEDBACK_REMINDER_DRIVER` enum values
+- `feedback_reminder_rider()` and `feedback_reminder_driver()` template functions (PUSH+SMS, include counterparty name and ride ID)
+- Both registered in `TEMPLATES` dict
+- `_feedback_reminder_already_sent()` helper — queries NotificationLog for a prior SENT reminder of given type for this ride+user
+- `notify_feedback_reminder_rider()` and `notify_feedback_reminder_driver()` dispatchers — double-guarded (skip if feedback already submitted OR reminder already sent); fire-and-forget
+- `send_feedback_reminders()` in dispatch_scheduler.py — queries COMPLETED rides with `completed_at` in 24h–7-day window; looks up user names; calls reminder dispatchers; returns count
+- Scheduler loop now calls `send_feedback_reminders()` each tick after `notify_expiring_promos`
+- **51 new tests** in `test_feedback_reminder_notifications.py`
+
+**5,730 total tests passing** (was 5,679), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
 ## 2026-04-23 — Session 389 (current)
 
 ### Orient

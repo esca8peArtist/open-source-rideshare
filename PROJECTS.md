@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-23 (Session 388)
+> **Last updated by**: orchestrator on 2026-04-23 (Session 392)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 390: **Cancellation confirmation notification COMPLETE** (commit `4e1eb49`, 31 new tests). Cancelling party (rider or driver) now receives push/SMS confirming their cancellation. Rider confirmation includes fee when policy.fee > 0. `CANCELLATION_CONFIRMATION_RIDER`/`DRIVER` NotificationTypes added; `notify_cancellation_confirmation()` dispatcher; `cancel_ride` endpoint wired. 5,679 tests passing. **Next**: review prompt re-remind feature (24h reminder if no rating submitted yet).
+**Current focus**: Session 392: **Account management COMPLETE** (commit `b748850`, 20 new tests). `POST /auth/me/change-password` (verifies current password, enforces 8-char minimum) and `POST /auth/me/deactivate` (password confirmation + active-ride guard, returns 409 if any ride in active state, sets `is_active=False`). 5,750 tests passing. **Next**: more account management (phone number change, GDPR data export) or move to another feature area.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

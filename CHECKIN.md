@@ -9,37 +9,35 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-23
-**Sessions run**: 378–390
+**Sessions run**: 378–392
 
-### Accomplished (Session 390 — orchestrator)
+### Accomplished (Session 392 — orchestrator)
 
-#### open-source-rideshare — Cancellation Confirmation Notification to Cancelling Party (commit `4e1eb49`)
+#### open-source-rideshare — Account Management (commit `b748850`)
 
-When a rider or driver cancels a ride, they now receive a push/SMS confirming the cancellation went through. Previously only the other party was notified; the canceller got silence. Riders with a cancellation fee also see the amount in the confirmation body.
+Two missing account management endpoints are now live: password change and account deactivation. These were the last obvious gap in the auth layer — the User model had `is_active` and `password_hash` but no user-facing way to update either.
 
 **What's new**:
-- `NotificationType.CANCELLATION_CONFIRMATION_RIDER` and `CANCELLATION_CONFIRMATION_DRIVER` added to enum
-- `cancellation_confirmation_rider(fee)` template — "Your ride has been cancelled. A cancellation fee of $X has been applied." (fee line only when policy.fee > 0); PUSH+SMS
-- `cancellation_confirmation_driver()` template — "You've cancelled this ride. The cancellation has been recorded."; PUSH+SMS
-- Both registered in `TEMPLATES` dict; `render()` dispatch works for both types
-- `notify_cancellation_confirmation(db, user_id, ride_id, cancelled_by, fee)` dispatcher — routes to rider or driver type; fire-and-forget, never propagates exceptions
-- `cancel_ride` endpoint — calls `notify_cancellation_confirmation` for `user.id` (the canceller) after notifying the other party; forwards `policy.fee` when > 0, empty string otherwise
-- **31 new tests** in `test_cancellation_confirmation_notifications.py`
+- `ChangePasswordRequest` schema — `current_password` + `new_password` (min 8 chars, enforced at schema level)
+- `DeactivateAccountRequest` schema — password confirmation
+- `POST /auth/me/change-password` — verifies current password, hashes and stores new; 400 on wrong current password
+- `POST /auth/me/deactivate` — password confirmation + active-ride guard; returns 409 if any ride in REQUESTED/MATCHED/DRIVER_EN_ROUTE/ARRIVED/IN_PROGRESS state; sets `is_active=False` on success (soft delete, reversible by admin)
+- **20 new tests** in `test_account_management.py` — schema validation, success/error paths, all 5 active ride statuses parametrized
 
-**5,679 total tests passing** (was 5,648), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+**5,750 total tests passing** (was 5,730), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
 
 ### Needs Your Input
 
 #### open-source-rideshare — PR: feature/rider-emergency-safety
 
-Branch contains the full rider-emergency-safety sprint plus all subsequent notification work (driver activation/suspension, post-ride feedback prompts, deduplication, document expiry, cancellation category, cancellation confirmation). Ready to merge to `master` whenever you want to review.
+Branch now includes the full rider-emergency-safety sprint plus all subsequent notification work, plus account management. Ready to merge to `master` whenever you want to review.
 
 ---
 
 ### What's Next / Suggested Priorities
 
 1. **resistance-research — April 28 (mandatory)**: Xinis contempt hearing results brief → `monitoring/2026-04-28-results.md`. April 29: May Day Mass Call report. May 1: May Day actions brief.
-2. **open-source-rideshare**: Review prompt re-remind feature (24h reminder if no rating submitted yet).
+2. **open-source-rideshare**: Account management started — natural next additions are phone number change (with re-verification flow) or GDPR data export (`GET /auth/me/data-export`).
 3. **stockbot**: No code task actionable; awaiting your input on stacker paper trading performance after Jetson deploy.
 4. **mfg-farm**: Still blocked on test print — when you've printed the ModRun clip/rail, let me know and I can prep the Etsy listing workflow.
 
@@ -48,8 +46,13 @@ Branch contains the full rider-emergency-safety sprint plus all subsequent notif
 ## History
 
 **Period**: 2026-04-23 (earlier sessions)
-**Sessions run**: 378–389
+**Sessions run**: 378–392
 
+- **Session 392**: Account management — password change + account deactivation (commit `b748850`). 20 tests. 5,750 passing.
+- **Session 391**: 24h feedback reminder if no rating submitted (commit `c26fde8`). 51 tests. 5,730 passing.
+
+- **Session 391**: 24h feedback reminder if no rating submitted (commit `c26fde8`). 51 tests. 5,730 passing.
+- **Session 390**: Cancellation confirmation to cancelling party (commit `4e1eb49`). 31 tests. 5,679 passing.
 - **Session 389**: Cancellation category in RIDE_CANCELLED notifications (commit `6f3222f`). 30 tests. 5,648 passing.
 - **Session 388**: Feedback prompt deduplication (commit `d18d3ae`). 15 tests. 5,618 passing.
 - **Session 387**: Driver document expiry notifications (commit `b414f39`). 53 tests. 5,603 passing.
