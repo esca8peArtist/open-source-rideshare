@@ -7,6 +7,7 @@ from app.api.v1 import accessibility_ratings, admin, admin_driver_earnings_repor
 from app.api.v1.surge_zones import admin_router as surge_zones_admin_router, admin_analytics_router as surge_analytics_router, public_router as surge_zones_public_router
 from app.api.v1.surge_waitlist import rider_router as surge_waitlist_rider_router, public_router as surge_waitlist_public_router, admin_router as surge_waitlist_admin_router
 from app.api.v1.fare_preview import router as fare_preview_router
+from app.api.v1.fare_forecast import router as fare_forecast_router
 from app.api.v1.surge_status import router as surge_status_router
 from app.api.v1.eta_estimate import router as eta_estimate_router
 from app.api import websocket
@@ -106,6 +107,7 @@ app.include_router(rider_favorite_drivers.router, prefix="/api/v1")
 app.include_router(demand_heatmap.router, prefix="/api/v1")
 app.include_router(driver_location.router, prefix="/api/v1")
 app.include_router(fare_preview_router, prefix="/api/v1")
+app.include_router(fare_forecast_router, prefix="/api/v1")
 app.include_router(surge_status_router, prefix="/api/v1")
 app.include_router(drivers_nearby.router, prefix="/api/v1")
 app.include_router(eta_estimate_router, prefix="/api/v1")
