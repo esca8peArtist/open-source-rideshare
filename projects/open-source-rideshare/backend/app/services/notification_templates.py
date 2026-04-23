@@ -44,6 +44,7 @@ _CANCELLATION_CATEGORY_LABELS: dict[str, str] = {
     "emergency": "Emergency",
     "driver_other": "Other",
     "driver_no_show": "Driver no-show",
+    "admin_forced": "Administrative intervention",
 }
 
 

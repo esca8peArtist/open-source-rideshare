@@ -48,6 +48,9 @@ class CancellationCategory(str, enum.Enum):
     # System-initiated (automated or rider-reported driver no-show)
     DRIVER_NO_SHOW = "driver_no_show"
 
+    # Admin-initiated (safety intervention or platform override)
+    ADMIN_FORCED = "admin_forced"
+
 
 class Ride(Base):
     __tablename__ = "rides"
