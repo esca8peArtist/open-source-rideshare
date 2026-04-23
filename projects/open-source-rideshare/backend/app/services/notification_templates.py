@@ -550,6 +550,57 @@ def feedback_prompt_rider(driver_name: str = "your driver", ride_id: int | str =
     )
 
 
+def document_expiry_warning(
+    document_type: str = "document",
+    expiry_date: str = "",
+    days_remaining: int | None = None,
+    **kw,
+) -> TemplateResult:
+    """Advance warning that a driver document is expiring soon."""
+    doc_label = document_type.replace("_", " ").title()
+    if days_remaining == 1:
+        when = "tomorrow"
+    elif days_remaining is not None:
+        when = f"in {days_remaining} day{'s' if days_remaining != 1 else ''}"
+    else:
+        when = "soon"
+    expiry_part = f" (expires {expiry_date})" if expiry_date else ""
+    return (
+        f"{doc_label} expiring {when}",
+        (
+            f"Your {doc_label.lower()} expires {when}{expiry_part}. "
+            "Please upload an updated document in the app to keep your account active."
+        ),
+        _PUSH_SMS,
+    )
+
+
+def document_expired(
+    document_type: str = "document",
+    expiry_date: str = "",
+    days_overdue: int | None = None,
+    **kw,
+) -> TemplateResult:
+    """Alert that a driver document has already expired."""
+    doc_label = document_type.replace("_", " ").title()
+    if days_overdue == 0:
+        when = "today"
+    elif days_overdue is not None and days_overdue > 0:
+        when = f"{days_overdue} day{'s' if days_overdue != 1 else ''} ago"
+    else:
+        when = "recently"
+    expiry_part = f" on {expiry_date}" if expiry_date else ""
+    return (
+        f"{doc_label} expired",
+        (
+            f"Your {doc_label.lower()} expired {when}{expiry_part}. "
+            "You cannot accept new rides until you upload a valid document. "
+            "Please update it in the app immediately."
+        ),
+        _PUSH_SMS,
+    )
+
+
 def feedback_prompt_driver(rider_name: str = "your rider", ride_id: int | str = "", **kw) -> TemplateResult:
     ride_part = f" (Ride #{ride_id})" if ride_id else ""
     return (
@@ -604,6 +655,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.DRIVER_SUSPENDED: driver_suspended,
     NotificationType.FEEDBACK_PROMPT_RIDER: feedback_prompt_rider,
     NotificationType.FEEDBACK_PROMPT_DRIVER: feedback_prompt_driver,
+    NotificationType.DOCUMENT_EXPIRY_WARNING: document_expiry_warning,
+    NotificationType.DOCUMENT_EXPIRED: document_expired,
 }
 
 

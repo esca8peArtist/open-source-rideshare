@@ -1028,3 +1028,97 @@ async def notify_feedback_prompt_driver(
         )
     except Exception:
         logger.exception("Failed to send feedback_prompt_driver notification for ride %d", ride_id)
+
+
+async def notify_document_expiry_warning(
+    db: AsyncSession,
+    driver_id: int,
+    document_type: str,
+    expiry_date: str = "",
+    days_remaining: int | None = None,
+) -> None:
+    """Warn a driver that one of their compliance documents is expiring soon.
+
+    Args:
+        db: Database session.
+        driver_id: The user_id of the driver to notify.
+        document_type: Human-readable document type slug, e.g. "license",
+            "vehicle_registration", or "vehicle_insurance".
+        expiry_date: ISO-formatted expiry date string for the notification body.
+        days_remaining: Days until expiry (30, 14, 7, or 1).
+    """
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        from app.services.notifications import Notification, send_notification
+        from app.services.notification_templates import render
+
+        title, body, channels = render(
+            NotificationType.DOCUMENT_EXPIRY_WARNING,
+            document_type=document_type,
+            expiry_date=expiry_date,
+            days_remaining=days_remaining,
+        )
+        notification = Notification(
+            user_id=driver_id,
+            type=NotificationType.DOCUMENT_EXPIRY_WARNING,
+            title=title,
+            body=body,
+            channels=channels,
+            data={
+                "document_type": document_type,
+                "expiry_date": expiry_date,
+                "days_remaining": days_remaining,
+            },
+        )
+        await send_notification(notification, db=db, phone=phone, email=email)
+    except Exception:
+        logger.exception(
+            "Failed to send document_expiry_warning notification to driver %d", driver_id
+        )
+
+
+async def notify_document_expired(
+    db: AsyncSession,
+    driver_id: int,
+    document_type: str,
+    expiry_date: str = "",
+    days_overdue: int | None = None,
+) -> None:
+    """Notify a driver that one of their compliance documents has already expired.
+
+    Args:
+        db: Database session.
+        driver_id: The user_id of the driver to notify.
+        document_type: Human-readable document type slug, e.g. "license",
+            "vehicle_registration", or "vehicle_insurance".
+        expiry_date: ISO-formatted expiry date string for the notification body.
+        days_overdue: Number of days since expiry (0 means expired today).
+    """
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        from app.services.notifications import Notification, send_notification
+        from app.services.notification_templates import render
+
+        title, body, channels = render(
+            NotificationType.DOCUMENT_EXPIRED,
+            document_type=document_type,
+            expiry_date=expiry_date,
+            days_overdue=days_overdue,
+        )
+        notification = Notification(
+            user_id=driver_id,
+            type=NotificationType.DOCUMENT_EXPIRED,
+            title=title,
+            body=body,
+            channels=channels,
+            data={
+                "document_type": document_type,
+                "expiry_date": expiry_date,
+                "days_overdue": days_overdue,
+            },
+        )
+        await send_notification(notification, db=db, phone=phone, email=email)
+    except Exception:
+        logger.exception(
+            "Failed to send document_expired notification to driver %d", driver_id
+        )
