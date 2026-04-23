@@ -803,6 +803,71 @@ async def notify_trip_receipt(
         logger.exception("Failed to send trip receipt email for ride %d", ride_id)
 
 
+async def notify_driver_earnings(
+    db: AsyncSession,
+    driver_id: int,
+    ride_id: int,
+) -> None:
+    """Email the driver a detailed earnings summary after ride completion."""
+    try:
+        from app.services.notifications import Notification, NotificationType, NotificationChannel, send_notification
+        from app.services.notification_templates import render
+        from app.services.receipts import generate_receipt
+
+        _, email = await _get_user_contact(db, driver_id)
+        if not email:
+            return
+
+        receipt = await generate_receipt(ride_id=ride_id, user_id=driver_id, db=db)
+        if not receipt:
+            return
+
+        fare = receipt.get("fare_breakdown", {})
+        rider = receipt.get("rider") or {}
+        payment = receipt.get("payment") or {}
+
+        # Derive platform commission and net payout from payment data when available
+        platform_commission = payment.get("platform_fee", fare.get("platform_fee", ""))
+        net_payout = payment.get("driver_payout", "")
+
+        # Trip date from completed_at
+        trip_date = ""
+        if receipt.get("completed_at"):
+            try:
+                trip_date = receipt["completed_at"].strftime("%Y-%m-%d")
+            except Exception:
+                pass
+
+        title, body, channels = render(
+            NotificationType.DRIVER_EARNINGS,
+            ride_id=ride_id,
+            trip_date=trip_date,
+            pickup_address=receipt.get("pickup_address", "") or "",
+            dropoff_address=receipt.get("dropoff_address", "") or "",
+            fare_base=fare.get("base", ""),
+            fare_distance_comp=fare.get("distance", ""),
+            fare_time_comp=fare.get("time", ""),
+            surge_bonus=0,
+            tip=receipt.get("tip", 0),
+            platform_commission=platform_commission,
+            net_payout=net_payout,
+            rider_name=rider.get("name", ""),
+            rider_rating_given=receipt.get("rider_rating_given", ""),
+        )
+        notification = Notification(
+            user_id=driver_id,
+            type=NotificationType.DRIVER_EARNINGS,
+            title=title,
+            body=body,
+            channels=channels,
+            data={"ride_id": ride_id},
+            ride_id=ride_id,
+        )
+        await send_notification(notification, db=db, email=email)
+    except Exception:
+        logger.exception("Failed to send driver earnings email for ride %d", ride_id)
+
+
 async def notify_streak_completed(
     db: AsyncSession,
     driver_id: int,

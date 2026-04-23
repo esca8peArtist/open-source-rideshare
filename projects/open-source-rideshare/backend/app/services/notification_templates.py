@@ -423,6 +423,71 @@ def trip_receipt(
     )
 
 
+def driver_earnings(
+    ride_id: int | str = "",
+    trip_date: str = "",
+    pickup_address: str = "",
+    dropoff_address: str = "",
+    fare_base: float | str = "",
+    fare_distance_comp: float | str = "",
+    fare_time_comp: float | str = "",
+    surge_bonus: float | str = 0,
+    tip: float | str = 0,
+    platform_commission: float | str = "",
+    net_payout: float | str = "",
+    rider_name: str = "",
+    rider_rating_given: float | str = "",
+    total_rides_today: int | str = "",
+    total_earnings_today: float | str = "",
+    **kw,
+) -> TemplateResult:
+    lines = ["Here's your earnings summary for this trip.\n"]
+    if trip_date:
+        date_line = f"Date: {trip_date}"
+        if ride_id:
+            date_line += f"  |  Ride #{ride_id}"
+        lines.append(date_line)
+    elif ride_id:
+        lines.append(f"Ride #{ride_id}")
+    if pickup_address and dropoff_address:
+        lines.append(f"Route: {pickup_address} → {dropoff_address}")
+    lines.append("")
+    lines.append("Earnings breakdown:")
+    if fare_base:
+        lines.append(f"  Base fare:           ${fare_base}")
+    if fare_distance_comp:
+        lines.append(f"  Distance earnings:   ${fare_distance_comp}")
+    if fare_time_comp:
+        lines.append(f"  Time earnings:       ${fare_time_comp}")
+    if surge_bonus and float(surge_bonus) > 0:
+        lines.append(f"  Surge/Bonus:         ${surge_bonus}")
+    if tip and float(tip) > 0:
+        lines.append(f"  Tip:                 ${tip}")
+    if platform_commission:
+        lines.append(f"  Platform commission: -${platform_commission}")
+    if net_payout:
+        lines.append(f"  Net payout:          ${net_payout}")
+    if rider_name:
+        lines.append("")
+        rider_line = f"Rider: {rider_name}"
+        if rider_rating_given:
+            rider_line += f"  ★ {rider_rating_given} (rating you received)"
+        lines.append(rider_line)
+    if total_rides_today or total_earnings_today:
+        lines.append("")
+        today_parts = []
+        if total_rides_today:
+            today_parts.append(f"Rides today: {total_rides_today}")
+        if total_earnings_today:
+            today_parts.append(f"Total earned today: ${total_earnings_today}")
+        lines.append("  |  ".join(today_parts))
+    return (
+        f"Your earnings summary — Ride #{ride_id}" if ride_id else "Your trip earnings summary",
+        "\n".join(lines),
+        [NotificationChannel.EMAIL],
+    )
+
+
 def emergency_contact_sos(
     user_name: str = "Someone",
     ride_id: int | str = "",
@@ -477,6 +542,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.EMERGENCY_CONTACT_SOS: emergency_contact_sos,
     NotificationType.SAFE_ARRIVAL_CONTACT: safe_arrival_contact,
     NotificationType.TRIP_RECEIPT: trip_receipt,
+    NotificationType.DRIVER_EARNINGS: driver_earnings,
 }
 
 
