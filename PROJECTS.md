@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-18 (Session 372)
+> **Last updated by**: orchestrator on 2026-04-23 (Session 388)
 
 ---
 
@@ -42,7 +42,7 @@
 **Status**: Active
 **Visibility**: Private — local only, no GitHub push
 **Working dir**: `projects/resistance-research/`
-**Current focus**: Session 320 (late pass): **April 18 evening update COMPLETE** (`monitoring/2026-04-18-results.md`, addendum appended). Evening search confirmed no new developments after morning brief — no SCOTUS application filed in ballroom case, no D.C. Circuit action, no CIT ruling, no Crenshaw ruling, no new Xinis activity. All threads unchanged. Ballroom SCOTUS watch window remains open through ~April 23-24. **Three critical deadlines converging**: (1) ~April 23-24 — Leon stay expires; if no SCOTUS or D.C. Circuit stay by then, above-ground halt reinstates and contempt clock restarts. (2) April 20 — DOJ brief due before Xinis; content is the next read-on-filing trigger. (3) Crenshaw/Nashville — any day; ruling imminent per April 11 reporting. **Next mandatory pass**: April 20 (CAPE Phase 1 launch + DOJ Abrego Garcia brief), then ~April 23-24 (Leon stay expiry / SCOTUS watch), then April 28 (Xinis hearing).
+**Current focus**: Session 384: **May Day 2026 Action Guide COMPLETE** (`mayday-2026-action-guide.md`, 669 lines) — comprehensive participant guide covering historical context, coalition/demands, graded participation ladder, legal rights and employment risks, outcomes framework, and post-May-Day organizing path. **Next mandatory passes**: April 28 (Xinis hearing — results brief → `monitoring/2026-04-28-results.md`), April 29 (May Day Mass Call), May 1 (May Day actions).
 **Blocked on**: —
 **Notes**: Ongoing research and monitoring project. Existing files cover ICE detention, litigation tracking, case studies, civic action. When no specific task is queued, extend existing threads, find new angles, and monitor developments. Democratic renewal proposal is comprehensive at 22 domains; remaining work is quality deepening and publication preparation.
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 372: **Service animal support COMPLETE** (commit `ddd2d10`, 38 new tests). `has_service_animal` on rider preferences; `service_animal_friendly` on driver profiles + GET/PUT /drivers/me/accessibility. Matching engine soft preference (same pattern as hearing impairment — friendly drivers sorted first, non-friendly still in pool). WebSocket offer includes `rider_has_service_animal` flag. Also fixed latent bug: rider prefs were loaded after matching so hearing-impairment soft preference was never influencing candidate ranking — now loaded before. 5,149 tests passing. **Next**: additional accessibility/safety feature (e.g. visual impairment support, communication preferences, or accessibility ratings).
+**Current focus**: Session 390: **Cancellation confirmation notification COMPLETE** (commit `4e1eb49`, 31 new tests). Cancelling party (rider or driver) now receives push/SMS confirming their cancellation. Rider confirmation includes fee when policy.fee > 0. `CANCELLATION_CONFIRMATION_RIDER`/`DRIVER` NotificationTypes added; `notify_cancellation_confirmation()` dispatcher; `cancel_ride` endpoint wired. 5,679 tests passing. **Next**: review prompt re-remind feature (24h reminder if no rating submitted yet).
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

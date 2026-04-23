@@ -8,8 +8,138 @@
 
 ## Since Last Check-in
 
+**Period**: 2026-04-23
+**Sessions run**: 378–390
+
+### Accomplished (Session 390 — orchestrator)
+
+#### open-source-rideshare — Cancellation Confirmation Notification to Cancelling Party (commit `4e1eb49`)
+
+When a rider or driver cancels a ride, they now receive a push/SMS confirming the cancellation went through. Previously only the other party was notified; the canceller got silence. Riders with a cancellation fee also see the amount in the confirmation body.
+
+**What's new**:
+- `NotificationType.CANCELLATION_CONFIRMATION_RIDER` and `CANCELLATION_CONFIRMATION_DRIVER` added to enum
+- `cancellation_confirmation_rider(fee)` template — "Your ride has been cancelled. A cancellation fee of $X has been applied." (fee line only when policy.fee > 0); PUSH+SMS
+- `cancellation_confirmation_driver()` template — "You've cancelled this ride. The cancellation has been recorded."; PUSH+SMS
+- Both registered in `TEMPLATES` dict; `render()` dispatch works for both types
+- `notify_cancellation_confirmation(db, user_id, ride_id, cancelled_by, fee)` dispatcher — routes to rider or driver type; fire-and-forget, never propagates exceptions
+- `cancel_ride` endpoint — calls `notify_cancellation_confirmation` for `user.id` (the canceller) after notifying the other party; forwards `policy.fee` when > 0, empty string otherwise
+- **31 new tests** in `test_cancellation_confirmation_notifications.py`
+
+**5,679 total tests passing** (was 5,648), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+### Needs Your Input
+
+#### open-source-rideshare — PR: feature/rider-emergency-safety
+
+Branch contains the full rider-emergency-safety sprint plus all subsequent notification work (driver activation/suspension, post-ride feedback prompts, deduplication, document expiry, cancellation category, cancellation confirmation). Ready to merge to `master` whenever you want to review.
+
+---
+
+### What's Next / Suggested Priorities
+
+1. **resistance-research — April 28 (mandatory)**: Xinis contempt hearing results brief → `monitoring/2026-04-28-results.md`. April 29: May Day Mass Call report. May 1: May Day actions brief.
+2. **open-source-rideshare**: Review prompt re-remind feature (24h reminder if no rating submitted yet).
+3. **stockbot**: No code task actionable; awaiting your input on stacker paper trading performance after Jetson deploy.
+4. **mfg-farm**: Still blocked on test print — when you've printed the ModRun clip/rail, let me know and I can prep the Etsy listing workflow.
+
+---
+
+## History
+
+**Period**: 2026-04-23 (earlier sessions)
+**Sessions run**: 378–389
+
+- **Session 389**: Cancellation category in RIDE_CANCELLED notifications (commit `6f3222f`). 30 tests. 5,648 passing.
+- **Session 388**: Feedback prompt deduplication (commit `d18d3ae`). 15 tests. 5,618 passing.
+- **Session 387**: Driver document expiry notifications (commit `b414f39`). 53 tests. 5,603 passing.
+- **Session 386**: Post-ride feedback prompt notifications (commit `e51cc5d`). 34 tests. 5,550 passing.
+- **Session 385**: Driver activation/suspension notifications (commit `0b0809d`). 40 tests. 5,516 passing.
+- **Session 384**: Driver earnings email (commit `0a3d9a3`). 28 tests. 5,476 passing. May Day 2026 Action Guide (resistance-research, 669 lines).
+- **Session 383**: Trip receipt email. 26 tests. 5,448 passing.
+- **Session 382**: Safe arrival contact notifications. 18 tests. 5,422 passing.
+- **Session 381**: resistance-research April 28 watch brief + emergency contact SOS. 20 tests. 5,404 passing.
+- **Session 380**: Streak completion/loss notifications. 22 tests. 5,384 passing.
+- **Session 379**: Incentive progress wiring fix. 7 tests. 5,362 passing.
+- **Session 378**: Rider incident flag. 43 tests. Resistance-research April 23 monitoring.
+
+---
+
 **Period**: 2026-04-18
-**Sessions run**: 313–372
+**Sessions run**: 313–376
+
+### Accomplished (Session 376 — orchestrator)
+
+#### open-source-rideshare — Driver Safety Report (commit `8ed74bd`)
+
+Closes the driver↔rider safety reporting symmetry gap. Riders could already file post-ride safety reports about drivers (Sessions prior); now **drivers can file post-ride safety reports about riders**.
+
+**What's new:**
+- `DriverSafetyReportCreate/Response/ListResponse/Stats/AdminReview` schemas — `DriverReportCategory` (7 values: threatening_behavior, physical_assault, property_damage, harassment, fraud, dangerous_behavior, other); `DriverReportStatus` (pending/reviewed/escalated/closed)
+- 6 endpoints:
+  - `POST /drivers/me/safety-reports` — driver files (COMPLETED rides only, one per ride)
+  - `GET /drivers/me/safety-reports` — driver's own report history, paginated
+  - `GET /drivers/me/safety-reports/{report_id}` — get specific report
+  - `GET /admin/driver-safety-reports` — admin list all, filter by status/category
+  - `GET /admin/driver-safety-reports/stats` — aggregate stats (by status, by category, escalation rate, rolling 7d/30d counts, avg resolution hours)
+  - `POST /admin/driver-safety-reports/{report_id}/review` — admin transitions PENDING → REVIEWED/ESCALATED/CLOSED
+
+**55 new tests** in `tests/test_driver_safety_report.py`. **5,317 total tests passing** (was 5,262). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 375 — orchestrator)
+
+#### open-source-rideshare — Accessibility Ratings (commit `0895f5d`)
+
+Riders can now rate how well their accessibility needs were accommodated after a completed ride. Closes the feedback loop on the 5-session accessibility sprint (Sessions 368–375: WAV auto-apply, hearing impairment, driver capability flags, service animal, visual impairment, communication preference, and now ratings).
+
+**What's new:**
+- `AccessibilityRating` model — 1-5 star rating, optional `accommodation_type` (hearing_impairment | visual_impairment | service_animal | communication_preference | general), optional comment; UniqueConstraint (one per ride per rider)
+- 4 endpoints:
+  - `POST /rides/{id}/accessibility-rating` — rider submits (COMPLETED rides only, one per ride)
+  - `GET /rides/{id}/accessibility-rating` — rider or admin views
+  - `GET /me/accessibility-ratings` — rider's history, paginated
+  - `GET /admin/accessibility-ratings/summary` — platform-wide accommodation quality stats by type
+- Migration `a1b2c3d4e5f6` — backward-safe; adds `accessibility_ratings` table
+
+**38 new tests** in `tests/test_accessibility_rating.py`. **5,262 total tests passing** (was 5,224). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 374 — orchestrator)
+
+#### open-source-rideshare — Communication Preference (commit `d32df7b`)
+
+Riders can now declare their preferred contact method for drivers: **no_preference**, **text** (SMS), **app** (in-app message), or **verbal**. Informational only — shown to the driver when the ride starts; no matching engine impact.
+
+**What's new:**
+- `CommunicationPreference` enum on the model: `no_preference | text | app | verbal`
+- `ride_preferences.communication_preference` — rider flag via existing GET/PUT `/me/ride-preferences`
+- `RidePreferenceUpdate` + `RidePreferenceResponse`: new `communication_preference` field
+- Migration `f6a7b8c9d0e1` — backward-safe, `server_default=no_preference`
+
+**31 new tests** in `tests/test_communication_preference.py`. **5,224 total tests passing** (was 5,193). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+### Accomplished (Session 373 — orchestrator)
+
+#### open-source-rideshare — Visual Impairment Support (commit `1f26a8a`)
+
+Full-stack visual impairment support: riders can declare visual impairment; drivers declare visual-assistance capability via the accessibility API; the matching engine prefers capable drivers (soft preference — no rider gets stranded).
+
+**What's new:**
+- `ride_preferences.visual_impairment` — rider flag; GET/PUT via existing preferences endpoint
+- `driver_profiles.visual_assistance_capable` — driver capability flag; `GET/PUT /drivers/me/accessibility` now covers all four flags (hearing, sign_language, service_animal, visual)
+- Matching engine: compound sort key replaces the old 4-branch if-elif chain — handles all 8 combinations of the three soft-preference flags in a single, extensible key
+- `match_ride()` now also passes `rider_has_service_animal` and `rider_visual_impairment` — the service_animal flag was previously missing from `match_ride` even though `find_candidates` supported it
+- WebSocket `ride_offer` message: now includes `rider_visual_impairment` so driver app can show an accommodation notice
+- Migration `e5f6a7b8c9d0` — backward-safe, `server_default=false`
+
+**44 new tests** in `tests/test_visual_impairment_support.py`. **5,193 total tests passing** (was 5,149). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
 
 ### Accomplished (Session 372 — orchestrator)
 
@@ -1154,12 +1284,17 @@ April 20 events: CAPE Phase 1 launch, DOJ Abrego Garcia brief due. Drop results 
 ### Suggested Priorities (Next Session)
 1. **resistance-research**: **April 20 monitoring brief** — CAPE Phase 1 launch + DOJ Abrego Garcia brief (read on filing). **Op-ed submission deadline April 22** — file `projects/resistance-research/publications/op-ed-healthcare-june2026-deadline.md`. **~April 23-24: ballroom SCOTUS/D.C. Circuit watch window**.
 2. **mfg-farm**: Test print action (still user-gated — all files ready).
-3. **open-source-rideshare**: Accessibility loop complete. Next: trip dispute enhancements, or another safety/UX feature.
+3. **open-source-rideshare**: Accessibility sprint is now fully closed (ratings in place). Next directions: (a) driver safety report feedback loop, or (b) ride-status push notifications (riders notified when driver en route, arrives, starts trip).
 4. **stockbot**: Ensemble stacker deployed to Jetson — monitor stacker performance in paper trading. No new features queued.
 
 ---
 
 ### History
+
+#### Accomplished (Sessions 317–374)
+- **resistance-research**: April 18 evening monitoring pass — confirmed no new developments, ballroom SCOTUS watch window open through ~April 23-24.
+- **open-source-rideshare (Sessions 317–374)**: Accessibility sprint — WAV auto-apply + hearing impairment (368), driver accessibility capability flags (369), service animal support (372), visual impairment + matching engine compound sort key (373), communication preference (374). Dispute system — respondent reply + notifications (370), driver dispute visibility (371). Admin safety dashboard consolidation — speeding incidents (363), route deviation incidents (364), safety overview (365). Carpool passenger roster + pool-join notification + trip share view notification (366). Pool opt-out preference (367). Pre-ride boarding verification (361). Driver upcoming scheduled rides (360). Fatigue check in ride acceptance (359). Running total: 5,224 → 5,262 tests.
+- **stockbot**: Ensemble Return Stacker complete + DEPLOY_READY triggered (362).
 
 #### Accomplished (Sessions 313–316)
 - **resistance-research**: April 18 monitoring brief — Branch A (ballroom halted above-ground, permitted below-ground), Leon stay ~April 23-24, D.C. Circuit appeal filed.

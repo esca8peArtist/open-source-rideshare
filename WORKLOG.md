@@ -4,6 +4,450 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## 2026-04-23 — Session 389 (current)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: DEPLOY_READY created, no new code work
+- mfg-farm: blocked on user test print
+- resistance-research: next mandatory April 28 (Xinis hearing)
+- open-source-rideshare: implementing cancellation category surfacing in RIDE_CANCELLED notifications
+
+### open-source-rideshare — Cancellation Category in Notifications COMPLETE (commit `6f3222f`)
+
+`cancellation_category` was stored on the Ride at cancel time but never forwarded to PUSH/SMS notification body. The other party now sees a human-readable label ("Plans changed", "Vehicle issue", etc.) instead of a bare "Ride cancelled" message.
+
+**What changed**:
+- `_CANCELLATION_CATEGORY_LABELS` dict mapping all 14 CancellationCategory values to display strings
+- `ride_cancelled()` template accepts `cancellation_category` kwarg; category label takes precedence over freetext reason; unknown category falls back to freetext reason; no reason part if neither provided
+- `notify_ride_cancelled()` dispatcher forwards `cancellation_category`
+- `cancel_ride` endpoint extracts `.value` from the enum (or `""` for None) before passing to both driver and rider notification calls
+- 30 new tests in `test_cancellation_category_notifications.py`
+
+**5,648 total tests passing** (was 5,618), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+## 2026-04-23 — Session 387 (current)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: monitoring/2026-04-23-results.md already written — next mandatory April 28
+- open-source-rideshare: implementing feedback prompt deduplication (guard dispatchers, don't re-prompt if already rated)
+
+### open-source-rideshare — Feedback Prompt Deduplication COMPLETE (commit `d18d3ae`)
+
+Added `_feedback_already_submitted()` helper + deduplication guard to both `notify_feedback_prompt_rider` and `notify_feedback_prompt_driver`. Fail-open on DB error (returns False, never raises). 15 new tests in `test_feedback_prompt_deduplication.py`. Updated `_make_contact_db` / `_make_no_contact_db` in existing test file to handle new two-call dispatch pattern. 5,618 total tests passing (was 5,603). Pushed to `rideshare` remote.
+
+## 2026-04-23 — Session 386 (current)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot, mfg-farm: no actionable work today
+- resistance-research: next mandatory action April 28 (Xinis hearing results)
+- open-source-rideshare: post-ride feedback prompt is natural next after driver activation/suspension notifications
+
+### open-source-rideshare — Post-Ride Feedback Prompt Notifications COMPLETE (commit `e51cc5d`)
+
+Rider and driver are now prompted to rate each other after every completed ride.
+
+**What was added**:
+- `NotificationType.FEEDBACK_PROMPT_RIDER` and `FEEDBACK_PROMPT_DRIVER` enum entries
+- `feedback_prompt_rider()` and `feedback_prompt_driver()` template functions — PUSH+SMS, include name of counterparty
+- Both registered in `TEMPLATES` registry
+- `notify_feedback_prompt_rider()` and `notify_feedback_prompt_driver()` dispatchers in `notification_events.py`
+- `complete_ride()` wired to call both dispatchers after trip receipt and driver earnings; fire-and-forget, failure never blocks
+- **34 new tests** in `tests/test_feedback_prompt_notifications.py` — enum, templates, render dispatch, dispatchers (sends, correct user, correct type, ride_id stored, channels, PUSH fires even without phone/email, failure resilience), 4 wiring tests
+
+**5,550 total tests passing** (was 5,516), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 385 (current)
+
+### open-source-rideshare — Driver Onboarding Approval/Suspension Notifications COMPLETE (commit `0b0809d`)
+
+Implemented end-to-end notifications for driver onboarding approval and suspension events.
+
+**What was added**:
+- `NotificationType.DRIVER_ACTIVATED` and `DRIVER_SUSPENDED` enum entries
+- 4 template functions: `background_check_approved`, `background_check_action_required`, `driver_activated`, `driver_suspended` — all PUSH+SMS channels
+- All 4 registered in `TEMPLATES` registry (background_check types were in enum but unregistered)
+- `_notify_driver_check_result` in `background_checks.py` refactored to use `render()` instead of inline strings
+- `notify_driver_activated()` and `notify_driver_suspended()` dispatchers in `notification_events.py`
+- `activate_driver()` and `suspend_driver()` in `driver_onboarding.py` now fire notifications (fire-and-forget, failure never blocks)
+
+**40 new tests** in `tests/test_driver_onboarding_notifications.py`.
+
+**5,516 total tests passing** (was 5,476), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 384 (current)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: DEPLOY_READY already created, paper trading monitoring — no code work available
+- mfg-farm: blocked on user test print — no work available
+- resistance-research: April 28 watch brief complete; May Day 8 days out — wrote May Day 2026 Action Guide
+- open-source-rideshare: natural next after trip receipt email — driver earnings email
+
+### Work started
+- resistance-research: `mayday-2026-action-guide.md` — comprehensive participant guide for May Day 2026; 8 days before the action (669 lines)
+- open-source-rideshare: driver earnings email — mirror of trip receipt email for drivers; NotificationType.DRIVER_EARNINGS, template, dispatcher, complete_ride wiring, tests
+
+### resistance-research — May Day 2026 Action Guide COMPLETE
+
+Wrote `mayday-2026-action-guide.md` (669 lines) — a comprehensive, evidence-grounded participant guide for May Day 2026, 8 days before the action.
+
+**What the guide covers**:
+- Historical context: Haymarket 1886, May Day as American (not European) in origin
+- 2026-specific framing: institutional failures (Boasberg contempt ended, court orders unenforced), why this moment is different
+- Demands and coalition: honest about AFL-CIO national-call gap; civic coalition vs. general strike distinction
+- Graded participation ladder: PTO/sick day → negotiate with employer → demonstrate → digital solidarity
+- Consumer boycott economic theory: concentrated one-day measurable drop is the signal
+- Know Before You Go: NLRA protection limits (purely political walkouts may not be protected), federal employee prohibition, no-strike clause risk; First Amendment rights at demonstrations
+- Outcomes framework: organizational growth > turnout peak; why a smaller turnout that generates infrastructure is a better outcome than a large crowd that evaporates
+- After May Day: UAW 2028, DSA multi-year frame — converting moment into movement
+
+Sources confirmed via WebSearch (maydaystrong.org, NEA toolkit, Payday Report, Fisher Phillips employer FAQ, ACLU, NLRB, ABA 3.5% analysis).
+
+### open-source-rideshare — Driver Earnings Email COMPLETE (commit `0a3d9a3`)
+
+Implemented post-ride driver earnings email sent to drivers when a ride completes.
+
+**What was added**:
+- `NotificationType.DRIVER_EARNINGS` enum entry
+- `driver_earnings()` template — EMAIL-only, body includes fare breakdown (base/distance/time, surge/bonus, tip, platform commission, net payout), pickup→dropoff route, rider name and rating received, today-totals where available. Zero-value surge/tip omitted.
+- Registered in `TEMPLATES` registry
+- `notify_driver_earnings(db, driver_id, ride_id)` dispatcher — silent skip if no email or receipt unavailable, failure never propagates
+- `complete_ride()` wired to call dispatcher after trip receipt call; wrapped in try/except
+
+**28 new tests** in `tests/test_driver_earnings_email.py`: enum, template (channels, title, body fields, zero-value omission), dispatcher (sends email, correct type, ride_id, email-only channel, no-email skip, None receipt skip, failure resilience), wiring.
+
+**5,476 total tests passing** (was 5,448), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — open-source-rideshare — Session 383
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- Continued from Session 382 (safe arrival notifications); natural next: trip receipt email
+
+### Work done
+
+**open-source-rideshare — Trip Receipt Email** (commit `53c2795`)
+
+Implemented post-ride trip receipt email sent to riders when a ride completes.
+
+**What was added**:
+- `NotificationType.TRIP_RECEIPT` enum entry in `notifications.py`
+- `trip_receipt()` template in `notification_templates.py` — EMAIL-only, multi-line plain-text body with fare breakdown (base, distance, time, promo, tip, total), driver name/rating/vehicle, route (pickup → dropoff), receipt number
+- Registered in `TEMPLATES` registry
+- `notify_trip_receipt()` dispatcher in `notification_events.py` — calls `generate_receipt()` to assemble all data from DB, skips silently if rider has no email or receipt unavailable, failure never propagates
+- `complete_ride()` in `rides.py` wired to call dispatcher after ride completion; wrapped in try/except so receipt email failure never blocks the completion response
+
+**26 new tests** in `tests/test_trip_receipt_email.py`: enum membership, template (channels, title, body fields, zero-value omission), dispatcher (sends email, correct type, ride_id attribution, email-only channel, no-email skip, None receipt skip, failure resilience), wiring (complete_ride calls dispatcher, failure doesn't block completion).
+
+**5,448 total tests passing** (was 5,422), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — open-source-rideshare — Session 382
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- Continued from Session 381 (emergency contact SOS complete); natural next: safe arrival → contact notifications
+
+### Work done
+
+**open-source-rideshare — Safe Arrival Notifications** (commit `9c76a53`)
+
+Completed the companion to the SOS notification system. When a rider confirms safe arrival, all registered emergency contacts now receive an SMS.
+
+**What was added**:
+- `NotificationType.SAFE_ARRIVAL_CONTACT` enum entry in `notifications.py`
+- `safe_arrival_contact()` template in `notification_templates.py` — SMS-only, includes rider name and ride ID
+- Registered in `TEMPLATES` registry
+- `notify_safe_arrival_contacts()` dispatcher in `notification_events.py` — mirrors `notify_emergency_contacts_sos`: fetches all emergency contacts, one SMS per contact, individual failures isolated
+- `confirm_safe_arrival()` in `rider_safety.py` wired to call dispatcher after creating the record; notification failure never blocks the confirmation
+
+**18 new tests** in `tests/test_safe_arrival_notifications.py`: enum membership, template rendering (title, body, channels, ride ID inclusion/omission), dispatcher (per-contact SMS, phone routing, zero contacts, type attribution, user_id attribution, individual failure isolation, DB failure resilience), wiring (confirm_safe_arrival calls dispatcher, failure doesn't block confirmation).
+
+**5,422 total tests passing** (was 5,404), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 381
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: monitoring only (not actionable from Pi); mfg-farm: user-gated
+- resistance-research: April 28 Xinis hearing is a hard deadline — watch brief prepared
+- Selected: resistance-research (watch brief) → open-source-rideshare (emergency contact SOS)
+
+### Work done
+
+**resistance-research — April 28 Watch Brief** (`monitoring/2026-04-28-watch.md`)
+
+Prepared a pre-hearing intelligence brief for the April 28 Xinis/Abrego Garcia contempt hearing. Covers:
+- Pre-hearing state: deposition deadline outcomes (unconfirmed), Liberia demand unchanged, Boasberg DC Circuit precedent (criminal contempt, circuit-level)
+- Hearing watch list: deposition outcome admission, civil contempt timeline (show cause vs. direct finding vs. filing order), Boasberg argument by DOJ, Liberia retreat or maintain, Fourth Circuit emergency appeal trigger
+- Escalation scenarios table: 7 scenarios from critical (contempt order) to low (no movement)
+- Nashville/Crenshaw structural linkage to April 28
+- May Day Workers Memorial Day context
+- Section 122/CIT background watch
+- Sources for post-hearing follow-up (Courthouse News, Hill, CNN, PACER)
+
+**open-source-rideshare — Emergency Contact SOS Notifications** (commit `4264297`)
+
+Completed the missing half of the emergency contacts feature. The CRUD endpoints (add/list/update/delete contacts) already existed. What was missing: when SOS fires, those contacts receive nothing.
+
+Gap: `trigger_sos` called `notify_sos_alert` (admin alert only) — emergency contacts never notified.
+
+**What was added**:
+- `NotificationType.EMERGENCY_CONTACT_SOS` — new type for outbound contact notifications
+- `_SMS` channel list in notification_templates — SMS-only (contacts are external, no push tokens)
+- `emergency_contact_sos` template — rider name + ride ID + GPS location in body
+- `notify_emergency_contacts_sos` dispatcher in `notification_events.py` — fetches user's emergency contacts, sends one SMS per contact; individual contact failures logged but never block others
+- `trigger_sos` wired to call `notify_emergency_contacts_sos` alongside existing admin alert; contact notification failures never block SOS creation
+
+**20 new tests** in `tests/test_emergency_contact_sos.py`: enum membership, template rendering (title, body, channels, location inclusion/omission), dispatcher (per-contact SMS, phone routing, zero contacts, type attribution, user_id attribution, individual failure isolation, DB failure resilience), wiring (trigger_sos calls dispatcher, failure doesn't block SOS).
+
+**5,404 tests passing** (was 5,384), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — open-source-rideshare — Session 380
+
+### Orient
+- INBOX: empty
+- BLOCKED.md: no active blocks
+- stockbot: monitoring only (not actionable from Pi); mfg-farm: user-gated; resistance-research: next pass April 28
+- Selected: open-source-rideshare — streak notifications gap identified
+
+### Work done
+
+**open-source-rideshare — streak notifications (commit `214c94b`)**
+
+Gap: `record_trip_completion` in `incentives.py` mutates streak status (COMPLETED, EXPIRED) but never notified the driver. Drivers had no feedback when they earned a bonus or lost their streak to a cancellation.
+
+**Files changed**:
+- `notifications.py`: added `STREAK_COMPLETED`, `STREAK_LOST` to `NotificationType`
+- `notification_templates.py`: added `streak_completed()` (push+email, mentions program name + bonus), `streak_lost()` (push, mentions cancellation reset), registered both in TEMPLATES
+- `notification_events.py`: added `notify_streak_completed(db, driver_id, program_name, bonus_amount, program_id)` and `notify_streak_lost(db, driver_id, program_name, program_id)` — both fire-and-forget, try/except, lazy local import to avoid circular deps
+- `incentives.py`: wired notifications after streak state transitions; also fixed pre-existing bug: `Ride.updated_at` (non-existent column) replaced with `Ride.cancelled_at`, scoped to `cancelled_by == "driver"`
+
+**22 new tests** in `tests/test_streak_notifications.py`: NotificationType enum membership, template rendering (title, body, channels), dispatcher dispatch (type, data, failure resilience), wiring (notification fires on streak complete, fires on streak lost, notification failure doesn't block incentive logic).
+
+**5,384 passing** (was 5,362), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — open-source-rideshare — Session 379
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: "Monitor paper trading" — not actionable from Pi; mfg-farm: user-gated on test print
+- Selected: open-source-rideshare — ride-status push notifications already complete (wired in all status transitions per existing notification_events.py + rides.py); moved to driver earnings/incentive gap
+
+### Work done
+
+**open-source-rideshare — incentive progress wiring (commit `2deca1a`)**
+
+Found critical gap: `record_trip_completion` existed in `services/incentives.py` but was never called when a ride completed. Quest, streak, and peak-hours bonuses were silently accumulating 0 progress for every ride.
+
+**Fix**: Added `record_trip_completion` call inside `complete_ride` (rides.py) immediately before `db.commit()`, after referral credit logic. Wrapped in try/except — incentive failures never block ride operations. Single call handles all three program types (quest, streak, peak-hours) atomically within the existing transaction.
+
+**Tests**: 7 new tests in `tests/test_incentive_ride_integration.py`:
+- 2 unit tests (mock DB): wiring verified — `record_trip_completion` called with correct driver_id/ride_id/completed_at; error resilience confirmed
+- 5 integration tests (require PostgreSQL, skipped on Pi, consistent with existing suite): quest increments, quest completes at target, driver isolation, peak-hours accumulation, pending earnings API
+
+**Counts**: 5,362 passing (was 5,360), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+## 2026-04-23 — open-source-rideshare + resistance-research — Session 378
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- Session 377 left rider_incident_flag partially complete: schema/service/api/driver_safety_report.py all written, but test file missing and router not registered in main.py
+- Today is April 23 — mandatory resistance-research monitoring window (Leon stay expiry / SCOTUS watch)
+
+### Work done
+
+**open-source-rideshare — completed rider incident flag feature**:
+- Added `app.include_router(rider_incident_flag.router, prefix="/api/v1")` to main.py (was imported but not registered)
+- Created `tests/test_rider_incident_flag.py` — 43 tests: schemas, service (check/flag/list/review), router (3 endpoints), end-to-end
+- All 43 new tests pass; full suite 5,360 passing (was 5,317), 0 regressions
+- Commit `6bc38d5`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+**resistance-research — April 23 mandatory monitoring pass**:
+- Results in `monitoring/2026-04-23-results.md`
+- Ballroom/Leon: GREEN — D.C. Circuit stay issued April 18 through June 5 oral argument; above-ground construction proceeding; April 23-24 expiry watch is moot
+- Abrego Garcia/Xinis: CODE RED — DOJ maintained Liberia demand; Xinis found "willful and bad faith" non-compliance; depositions of 4 officials ordered by April 23; April 28 hearing on
+- Boasberg contempt: NEW — D.C. Circuit (Rao+Walker) terminated Boasberg criminal contempt inquiry April 14; sets circuit precedent limiting courts' criminal contempt against admin officials for deportation defiance; admin will invoke this against Xinis April 28
+- Nashville/Crenshaw: no ruling, 9 weeks silence
+- Section 122/CIT: no ruling, 13 days post-argument
+- May Day: 200+ orgs, April 29 Mass Call confirmed 7:30pm
+- Next mandatory passes: April 28 (Xinis), April 29 (May Day call), May 1 (strike)
+
+## 2026-04-18 — open-source-rideshare — Rider Incident Flag (Session 377)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: deploy triggered last session, monitoring; mfg-farm: user-gated; resistance-research: next pass April 20
+- Selected: open-source-rideshare — driver incident threshold (auto-flag riders who accumulate safety reports)
+
+### Work plan
+Building `rider_incident_flag` feature: when driver safety reports about a rider reach
+INCIDENT_THRESHOLD (3 reports in 90 days), the rider is auto-flagged for admin review.
+
+Files to create:
+- `schemas/rider_incident_flag.py`
+- `services/rider_incident_flag.py`
+- `api/v1/rider_incident_flag.py`
+- `tests/test_rider_incident_flag.py`
+
+Files to modify:
+- `services/driver_safety_report.py` — call `check_and_flag_rider` after `create_report`
+- `main.py` — import + register new router
+
+## 2026-04-18 — open-source-rideshare — Accessibility Ratings (Session 375)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: monitoring; mfg-farm: user-gated; resistance-research: next pass April 20
+- Selected: open-source-rideshare — accessibility ratings (closes the feedback loop on 4-session accessibility sprint)
+
+### Work done
+
+**Feature: accessibility accommodation ratings — riders rate driver accommodation quality post-ride**
+
+Adds `AccessibilityRating` model: rider-submitted 1-5 star rating of how well their
+accessibility needs were accommodated on a completed ride. One rating per ride per rider.
+Optional `accommodation_type` (hearing_impairment | visual_impairment | service_animal |
+communication_preference | general) and free-text comment.
+
+**Files created**:
+- `models/accessibility_rating.py` — `AccommodationType` enum + `AccessibilityRating` model;
+  UniqueConstraint(ride_id, rider_id) + CheckConstraint(rating 1-5)
+- `schemas/accessibility_rating.py` — Create/Response/Summary schemas
+- `services/accessibility_ratings.py` — submit, get, list, admin summary
+- `api/v1/accessibility_ratings.py` — 4 endpoints (submit, view, list, admin stats)
+- `db/migrations/versions/a1b2c3d4e5f6_add_accessibility_ratings.py` — backward-safe migration
+- `tests/test_accessibility_rating.py` — 38 tests covering model, schema, service
+
+**main.py**: import + router registered
+
+**38 new tests**. Total: **5,262** (was 5,224). 0 regressions.
+
+- Commit: `0895f5d`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
+## 2026-04-18 — open-source-rideshare — Communication Preference (Session 374)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: monitoring mode; mfg-farm: user-gated; resistance-research: next pass April 20
+- Selected: open-source-rideshare — communication preference (next accessibility feature)
+
+### Work done
+
+**Feature: communication preference (rider informs driver of preferred contact method)**
+
+Adds a `CommunicationPreference` enum (`no_preference | text | app | verbal`) as a
+rider-settable flag on `ride_preferences`. This is informational — the driver sees the
+rider's preferred contact style when the ride starts. No matching engine impact.
+
+**Model** (`ride_preference.py`):
+- New `CommunicationPreference` enum: `no_preference`, `text`, `app`, `verbal`
+- `RidePreference.communication_preference` column (Enum, default `no_preference`, NOT NULL)
+
+**Schema** (`schemas/ride_preference.py`):
+- `RidePreferenceUpdate`: `communication_preference: CommunicationPreference | None = None`
+- `RidePreferenceResponse`: `communication_preference: CommunicationPreference` (required)
+
+**Service** (`services/ride_preferences.py`):
+- `_DEFAULTS` updated with `communication_preference: CommunicationPreference.NO_PREFERENCE`
+
+**Migration** `f6a7b8c9d0e1`:
+- `ALTER TABLE ride_preferences ADD COLUMN communication_preference ENUM ... DEFAULT 'no_preference'`
+- Backward-safe; `server_default="no_preference"` for existing rows
+
+**Test fixes** (4 pre-existing test files):
+- `_make_ride_preference` helpers in `test_service_animal_support.py`, `test_visual_impairment_support.py`,
+  `test_ride_preferences.py`, `test_accessibility_features.py`, and `test_pool_opt_out.py`
+  now set `communication_preference = "no_preference"` to pass Pydantic enum validation
+
+**Tests**: 31 new tests in `tests/test_communication_preference.py`. Total: **5,224** (was 5,193), 0 regressions.
+
+- Commit: `d32df7b`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
+## 2026-04-18 — open-source-rideshare — Visual Impairment Support (Session 373)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: monitoring mode (Jetson deploy pending); mfg-farm: user-gated; resistance-research: next pass April 20
+- Selected: open-source-rideshare — visual impairment support (next accessibility feature)
+
+### Work done
+
+**Feature: visual impairment support (rider flag + driver capability + matching soft preference)**
+
+Completed the accessibility triad alongside hearing impairment and service animal support.
+Follows the exact established pattern: rider flags their need, driver declares capability,
+matching engine prefers capable drivers (soft preference — non-capable remain as fallback).
+
+**Migration** (`e5f6a7b8c9d0`):
+- `ride_preferences.visual_impairment` — boolean, default false (backward-safe)
+- `driver_profiles.visual_assistance_capable` — boolean, default false (backward-safe)
+
+**Model updates**:
+- `RidePreference.visual_impairment` (nullable=False, default False)
+- `DriverProfile.visual_assistance_capable` (nullable=False, default False)
+
+**Schema updates**:
+- `RidePreferenceUpdate` + `RidePreferenceResponse`: new `visual_impairment` field
+- `DriverAccessibilityUpdate` + `DriverAccessibilityResponse`: new `visual_assistance_capable` field
+  (GET/PUT /drivers/me/accessibility now handles all four accessibility capability flags)
+
+**Matching engine** (`matching.py`):
+- `DriverCandidate` dataclass: `visual_assistance_capable: bool = False`
+- `find_candidates()`: new `rider_visual_impairment: bool = False` parameter
+- `match_ride()`: now passes all three soft-preference flags (hearing + service_animal + visual)
+  through to `find_candidates` — was previously missing rider_has_service_animal too
+- Replaced 4-branch sort logic with a compound key that handles all 8 flag combinations:
+  `(not hearing_capable if hearing_flag else 0, not sa_friendly if sa_flag else 0, not visual_capable if visual_flag else 0, distance, -rating)`
+  Mathematically equivalent to the old branches but extensible without exponential branching
+
+**WebSocket** (`websocket.py`):
+- `send_ride_offer()`: new `rider_visual_impairment: bool = False` — included in offer payload
+  so driver app can show "rider has visual impairment" accommodation notice
+
+**rides.py** (`_match_ride_background`):
+- Loads `visual_impairment` from rider prefs before matching
+- Passes to both `find_candidates` and `match_ride` alongside the existing flags
+
+**Tests**: 44 new tests in `tests/test_visual_impairment_support.py`. Total: **5,193** (was 5,149), 0 regressions.
+
+- Commit: `1f26a8a`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
 ## 2026-04-18 — open-source-rideshare — Service Animal Support (Session 372)
 
 ### Orient
@@ -7076,3 +7520,101 @@ Riders can flag hearing impairment via `PUT /me/ride-preferences`. When matched,
 - Total tests: 5,038 (was 5,019), 0 regressions
 
 ---
+
+## 2026-04-18 — open-source-rideshare — Driver Safety Reports (Session 376)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: monitoring mode; mfg-farm: user-gated; resistance-research: next pass April 20
+- Selected: open-source-rideshare — driver safety report (symmetric to rider_safety_report; drivers can now file post-ride reports about riders)
+
+### Work in progress
+
+### Work done
+
+**Feature: driver safety report — symmetric to rider_safety_report; drivers file post-ride reports about riders**
+
+Drivers can now file a post-ride safety report about a rider's concerning behaviour
+(threats, assault, property damage, fraud, harassment, dangerous behaviour). One
+report per driver per ride. Routes to admin review (PENDING → REVIEWED/ESCALATED/CLOSED).
+
+**Files created**:
+- `schemas/driver_safety_report.py` — `DriverReportCategory` (7 values: threatening_behavior,
+  physical_assault, property_damage, harassment, fraud, dangerous_behavior, other),
+  `DriverReportStatus`, Create/Response/List/Stats/AdminReview schemas
+- `services/driver_safety_report.py` — in-memory store; create, get, list_driver_reports,
+  admin_list, admin_review, stats (rolling windows + avg resolution hours)
+- `api/v1/driver_safety_report.py` — 6 endpoints:
+    POST /drivers/me/safety-reports
+    GET  /drivers/me/safety-reports
+    GET  /drivers/me/safety-reports/{report_id}
+    GET  /admin/driver-safety-reports
+    GET  /admin/driver-safety-reports/stats
+    POST /admin/driver-safety-reports/{report_id}/review
+- `tests/test_driver_safety_report.py` — 55 tests (schemas, service, router, end-to-end)
+
+**main.py**: import + router registered
+
+**55 new tests**. Total: **5317** (was 5262). 0 regressions.
+
+- Commit: `8ed74bd`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
+---
+
+## 2026-04-23 — open-source-rideshare — Driver Document Expiry Notifications (Session 387)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research April 23 monitoring pass already complete (`monitoring/2026-04-23-results.md`)
+- stockbot: monitoring mode, awaiting Jetson paper trading data
+- mfg-farm: blocked on user test print
+- Selected: open-source-rideshare — driver document expiry notifications
+
+### Work done
+
+**Feature: driver document expiry notifications — warns drivers 30/14/7/1 days before and on expiry**
+
+- `NotificationType.DOCUMENT_EXPIRY_WARNING` and `DOCUMENT_EXPIRED` added to enum
+- Templates: `document_expiry_warning()` (days remaining + upload CTA) and `document_expired()` ("expired today" vs "N days ago" + cannot accept rides warning); PUSH+SMS; registered in TEMPLATES dict
+- Dispatchers: `notify_document_expiry_warning()` and `notify_document_expired()` in `notification_events.py`
+- New service `driver_document_expiry.py`: `ExpiringDocument` dataclass, `get_expiring_documents(db, days_ahead)` queries DriverLicense/VehicleRegistration/DriverInsuranceDocument tables, `send_document_expiry_notifications(db, days_ahead=30)` cron entry-point
+
+**53 new tests** in `tests/test_driver_document_expiry_notifications.py`. Total: **5,603** (was 5,550). 0 regressions.
+
+- Commit: `b414f39`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
+## 2026-04-23 — open-source-rideshare — Cancellation Confirmation Notifications (Session 390)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- Resistance-research next mandatory pass April 28 (not yet)
+- Stockbot: monitoring mode
+- mfg-farm: blocked on user test print
+- Selected: open-source-rideshare — cancellation confirmation notification to the cancelling party
+
+### Work done
+
+**Feature: cancellation confirmation notification to the cancelling party**
+
+When a rider or driver cancels a ride, they now receive a push/SMS confirmation.
+Previously only the other party was notified. Riders with a cancellation fee see
+the fee amount in the confirmation body.
+
+**Changes**:
+- `NotificationType.CANCELLATION_CONFIRMATION_RIDER` and `CANCELLATION_CONFIRMATION_DRIVER` added to enum
+- `cancellation_confirmation_rider(fee)`: "Your ride has been cancelled. A cancellation fee of $X has been applied." (fee only when > 0)
+- `cancellation_confirmation_driver()`: "You've cancelled this ride. The cancellation has been recorded."
+- Both registered in TEMPLATES dict
+- `notify_cancellation_confirmation(db, user_id, ride_id, cancelled_by, fee)` dispatcher in `notification_events.py`
+- `cancel_ride` endpoint: calls `notify_cancellation_confirmation` for `user.id` (the canceller) after notifying the other party; forwards `policy.fee` when > 0
+
+**31 new tests** in `tests/test_cancellation_confirmation_notifications.py`. Total: **5,679** (was 5,648). 0 regressions.
+
+- Commit: `4e1eb49`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
