@@ -336,6 +336,23 @@ def dispute_response_received(**kw) -> TemplateResult:
     )
 
 
+def streak_completed(program_name: str = "streak", bonus_amount: float | str = "", **kw) -> TemplateResult:
+    bonus_part = f" Bonus: ${bonus_amount}" if bonus_amount else ""
+    return (
+        "Streak bonus earned!",
+        f"You completed your {program_name}!{bonus_part} It will be included in your next payout.",
+        _PUSH_EMAIL,
+    )
+
+
+def streak_lost(program_name: str = "streak", **kw) -> TemplateResult:
+    return (
+        "Streak reset",
+        f"Your {program_name} was reset due to a cancellation. Start fresh — complete your next rides without cancelling to earn the bonus.",
+        _PUSH,
+    )
+
+
 # Registry mapping NotificationType to template functions
 TEMPLATES: dict[str, callable] = {
     NotificationType.RIDE_MATCHED: ride_matched,
@@ -369,6 +386,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.DISPUTE_FILED: dispute_filed,
     NotificationType.DISPUTE_RESOLVED: dispute_resolved,
     NotificationType.DISPUTE_RESPONSE_RECEIVED: dispute_response_received,
+    NotificationType.STREAK_COMPLETED: streak_completed,
+    NotificationType.STREAK_LOST: streak_lost,
 }
 
 

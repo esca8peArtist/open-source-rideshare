@@ -667,3 +667,67 @@ async def notify_dispute_response_received(
             filer_id,
             ride_id,
         )
+
+
+async def notify_streak_completed(
+    db: AsyncSession,
+    driver_id: int,
+    program_name: str = "streak",
+    bonus_amount: float = 0.0,
+    program_id: int | None = None,
+) -> None:
+    """Notify driver that they earned a streak bonus."""
+    from app.services.notifications import Notification, send_notification
+    from app.services.notification_templates import render
+
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        title, body, channels = render(
+            NotificationType.STREAK_COMPLETED,
+            program_name=program_name,
+            bonus_amount=bonus_amount,
+        )
+        notification = Notification(
+            user_id=driver_id,
+            type=NotificationType.STREAK_COMPLETED,
+            title=title,
+            body=body,
+            channels=channels,
+            data={"program_name": program_name, "bonus_amount": bonus_amount, "program_id": program_id},
+        )
+        await send_notification(notification, db=db, phone=phone, email=email)
+    except Exception:
+        logger.exception(
+            "Failed to send streak_completed notification to driver %d", driver_id
+        )
+
+
+async def notify_streak_lost(
+    db: AsyncSession,
+    driver_id: int,
+    program_name: str = "streak",
+    program_id: int | None = None,
+) -> None:
+    """Notify driver that their streak was reset due to a cancellation."""
+    from app.services.notifications import Notification, send_notification
+    from app.services.notification_templates import render
+
+    try:
+        phone, email = await _get_user_contact(db, driver_id)
+        title, body, channels = render(
+            NotificationType.STREAK_LOST,
+            program_name=program_name,
+        )
+        notification = Notification(
+            user_id=driver_id,
+            type=NotificationType.STREAK_LOST,
+            title=title,
+            body=body,
+            channels=channels,
+            data={"program_name": program_name, "program_id": program_id},
+        )
+        await send_notification(notification, db=db, phone=phone, email=email)
+    except Exception:
+        logger.exception(
+            "Failed to send streak_lost notification to driver %d", driver_id
+        )

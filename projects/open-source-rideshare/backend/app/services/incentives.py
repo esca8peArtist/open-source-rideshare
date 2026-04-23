@@ -166,7 +166,10 @@ async def record_trip_completion(
                 select(Ride).where(
                     Ride.driver_id == driver_id,
                     Ride.status == RideStatus.CANCELLED,
-                    Ride.updated_at >= datetime.combine(progress.period_start, datetime.min.time()),
+                    Ride.cancelled_by == "driver",
+                    Ride.cancelled_at >= datetime.combine(
+                        progress.period_start, datetime.min.time(), timezone.utc
+                    ),
                 )
             )
             cancellation = cancel_result.scalar_one_or_none()
@@ -174,6 +177,11 @@ async def record_trip_completion(
                 progress.status = ProgressStatus.EXPIRED.value
                 logger.info("Driver %d streak %d expired due to cancellation", driver_id, program.id)
                 updated.append(progress)
+                try:
+                    from app.services.notification_events import notify_streak_lost
+                    await notify_streak_lost(db, driver_id=driver_id, program_name=program.name, program_id=program.id)
+                except Exception:
+                    logger.exception("Failed to send streak_lost notification for driver %d", driver_id)
                 continue
 
             progress.trips_completed += 1
@@ -185,6 +193,14 @@ async def record_trip_completion(
                     "Driver %d completed streak %d — bonus $%.2f",
                     driver_id, program.id, program.bonus_amount,
                 )
+                try:
+                    from app.services.notification_events import notify_streak_completed
+                    await notify_streak_completed(
+                        db, driver_id=driver_id, program_name=program.name,
+                        bonus_amount=program.bonus_amount, program_id=program.id,
+                    )
+                except Exception:
+                    logger.exception("Failed to send streak_completed notification for driver %d", driver_id)
             updated.append(progress)
 
         # earnings_guarantee is evaluated at payout time, not per-trip
