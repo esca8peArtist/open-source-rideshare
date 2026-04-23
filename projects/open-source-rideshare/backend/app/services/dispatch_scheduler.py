@@ -462,6 +462,79 @@ async def notify_expiring_promos(*, now: datetime | None = None, hours_ahead: in
     return sent
 
 
+async def send_feedback_reminders(*, now: datetime | None = None) -> int:
+    """Send 24h feedback reminders for completed rides with no rating yet.
+
+    Targets COMPLETED rides where completed_at is between 24h and 7 days ago.
+    Sends a reminder to the rider if rider_rating is None, and to the driver
+    if driver_rating is None. Each reminder is sent at most once per party per
+    ride — the dispatcher guards against duplicates via NotificationLog.
+
+    Returns the number of reminders sent.
+    """
+    from app.db.database import async_session
+    from app.models.ride import RideStatus
+    from app.models.user import User
+    from app.services.notification_events import (
+        notify_feedback_reminder_driver,
+        notify_feedback_reminder_rider,
+    )
+
+    if now is None:
+        now = datetime.now(timezone.utc)
+
+    window_start = now - timedelta(days=7)
+    window_end = now - timedelta(hours=24)
+    sent = 0
+
+    async with async_session() as db:
+        result = await db.execute(
+            select(Ride).where(
+                Ride.status == RideStatus.COMPLETED,
+                Ride.completed_at.isnot(None),
+                Ride.completed_at >= window_start,
+                Ride.completed_at <= window_end,
+            )
+        )
+        rides = result.scalars().all()
+
+        for ride in rides:
+            if ride.rider_rating is None:
+                driver_name = ""
+                if ride.driver_id:
+                    driver_result = await db.execute(select(User).where(User.id == ride.driver_id))
+                    driver = driver_result.scalar_one_or_none()
+                    if driver:
+                        driver_name = driver.name
+                try:
+                    await notify_feedback_reminder_rider(
+                        db=db,
+                        rider_id=ride.rider_id,
+                        ride_id=ride.id,
+                        driver_name=driver_name,
+                    )
+                    sent += 1
+                except Exception:
+                    logger.exception("Failed to send rider feedback reminder for ride %d", ride.id)
+
+            if ride.driver_id and ride.driver_rating is None:
+                rider_result = await db.execute(select(User).where(User.id == ride.rider_id))
+                rider = rider_result.scalar_one_or_none()
+                rider_name = rider.name if rider else ""
+                try:
+                    await notify_feedback_reminder_driver(
+                        db=db,
+                        driver_id=ride.driver_id,
+                        ride_id=ride.id,
+                        rider_name=rider_name,
+                    )
+                    sent += 1
+                except Exception:
+                    logger.exception("Failed to send driver feedback reminder for ride %d", ride.id)
+
+    return sent
+
+
 async def _scheduler_loop() -> None:
     """Run the dispatch check on a fixed interval until cancelled."""
     interval = settings.dispatch_check_interval_seconds
@@ -511,6 +584,13 @@ async def _scheduler_loop() -> None:
                 logger.info("Promo expiry cycle complete: %d notification(s) sent", expiry_sent)
         except Exception:
             logger.exception("Promo expiry notification cycle failed")
+
+        try:
+            reminders_sent = await send_feedback_reminders()
+            if reminders_sent:
+                logger.info("Feedback reminder cycle complete: %d reminder(s) sent", reminders_sent)
+        except Exception:
+            logger.exception("Feedback reminder cycle failed")
 
         await asyncio.sleep(interval)
 

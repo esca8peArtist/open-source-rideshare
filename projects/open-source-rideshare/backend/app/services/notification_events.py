@@ -1103,6 +1103,92 @@ async def notify_feedback_prompt_driver(
         logger.exception("Failed to send feedback_prompt_driver notification for ride %d", ride_id)
 
 
+async def _feedback_reminder_already_sent(db: AsyncSession, ride_id: int, user_id: int, reminder_type: str) -> bool:
+    """Return True if a feedback reminder of reminder_type was already sent for this ride+user."""
+    try:
+        from sqlalchemy import select
+        from app.models.notification import NotificationLog, NotificationStatus
+
+        result = await db.execute(
+            select(NotificationLog).where(
+                NotificationLog.ride_id == ride_id,
+                NotificationLog.user_id == user_id,
+                NotificationLog.notification_type == reminder_type,
+                NotificationLog.status == NotificationStatus.SENT,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+    except Exception:
+        logger.exception(
+            "Failed to check reminder status for ride %d user %d type %s", ride_id, user_id, reminder_type
+        )
+        return False
+
+
+async def notify_feedback_reminder_rider(
+    db: AsyncSession,
+    rider_id: int,
+    ride_id: int,
+    driver_name: str = "",
+) -> None:
+    """Send a 24h reminder to a rider who hasn't rated their driver yet.
+
+    Skips if the rider has already submitted feedback or if the reminder
+    was already sent, making this safe to call on every scheduler tick.
+    """
+    try:
+        if await _feedback_already_submitted(db, ride_id, rider_id):
+            return
+        if await _feedback_reminder_already_sent(
+            db, ride_id, rider_id, NotificationType.FEEDBACK_REMINDER_RIDER.value
+        ):
+            return
+        phone, email = await _get_user_contact(db, rider_id)
+        await send_ride_notification(
+            user_id=rider_id,
+            type=NotificationType.FEEDBACK_REMINDER_RIDER,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            driver_name=driver_name,
+        )
+    except Exception:
+        logger.exception("Failed to send feedback_reminder_rider notification for ride %d", ride_id)
+
+
+async def notify_feedback_reminder_driver(
+    db: AsyncSession,
+    driver_id: int,
+    ride_id: int,
+    rider_name: str = "",
+) -> None:
+    """Send a 24h reminder to a driver who hasn't rated their rider yet.
+
+    Skips if the driver has already submitted feedback or if the reminder
+    was already sent, making this safe to call on every scheduler tick.
+    """
+    try:
+        if await _feedback_already_submitted(db, ride_id, driver_id):
+            return
+        if await _feedback_reminder_already_sent(
+            db, ride_id, driver_id, NotificationType.FEEDBACK_REMINDER_DRIVER.value
+        ):
+            return
+        phone, email = await _get_user_contact(db, driver_id)
+        await send_ride_notification(
+            user_id=driver_id,
+            type=NotificationType.FEEDBACK_REMINDER_DRIVER,
+            ride_id=ride_id,
+            db=db,
+            phone=phone,
+            email=email,
+            rider_name=rider_name,
+        )
+    except Exception:
+        logger.exception("Failed to send feedback_reminder_driver notification for ride %d", ride_id)
+
+
 async def notify_document_expiry_warning(
     db: AsyncSession,
     driver_id: int,

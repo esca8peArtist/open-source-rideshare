@@ -634,6 +634,24 @@ def feedback_prompt_driver(rider_name: str = "your rider", ride_id: int | str = 
     )
 
 
+def feedback_reminder_rider(driver_name: str = "your driver", ride_id: int | str = "", **kw) -> TemplateResult:
+    ride_part = f" (Ride #{ride_id})" if ride_id else ""
+    return (
+        "Don't forget to rate your ride",
+        f"You still haven't rated your ride with {driver_name}.{ride_part} It only takes a second!",
+        _PUSH_SMS,
+    )
+
+
+def feedback_reminder_driver(rider_name: str = "your rider", ride_id: int | str = "", **kw) -> TemplateResult:
+    ride_part = f" (Ride #{ride_id})" if ride_id else ""
+    return (
+        "Don't forget to rate your rider",
+        f"You still haven't rated {rider_name}.{ride_part} Your feedback keeps the platform safe.",
+        _PUSH_SMS,
+    )
+
+
 def cancellation_confirmation_rider(fee: float | str = "", **kw) -> TemplateResult:
     fee_part = f" A cancellation fee of ${fee} has been applied." if fee else ""
     return (
@@ -700,6 +718,8 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.DOCUMENT_EXPIRED: document_expired,
     NotificationType.CANCELLATION_CONFIRMATION_RIDER: cancellation_confirmation_rider,
     NotificationType.CANCELLATION_CONFIRMATION_DRIVER: cancellation_confirmation_driver,
+    NotificationType.FEEDBACK_REMINDER_RIDER: feedback_reminder_rider,
+    NotificationType.FEEDBACK_REMINDER_DRIVER: feedback_reminder_driver,
 }
 
 

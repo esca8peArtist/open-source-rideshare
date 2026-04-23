@@ -74,6 +74,8 @@ class NotificationType(str, enum.Enum):
     DRIVER_SUSPENDED = "driver_suspended"
     FEEDBACK_PROMPT_RIDER = "feedback_prompt_rider"
     FEEDBACK_PROMPT_DRIVER = "feedback_prompt_driver"
+    FEEDBACK_REMINDER_RIDER = "feedback_reminder_rider"
+    FEEDBACK_REMINDER_DRIVER = "feedback_reminder_driver"
     DOCUMENT_EXPIRY_WARNING = "document_expiry_warning"
     DOCUMENT_EXPIRED = "document_expired"
     CANCELLATION_CONFIRMATION_RIDER = "cancellation_confirmation_rider"
