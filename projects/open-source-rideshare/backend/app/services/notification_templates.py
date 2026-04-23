@@ -367,6 +367,62 @@ def safe_arrival_contact(
     )
 
 
+def trip_receipt(
+    receipt_number: str = "",
+    pickup_address: str = "",
+    dropoff_address: str = "",
+    distance_km: float | str = "",
+    duration_min: float | str = "",
+    fare_base: float | str = "",
+    fare_distance_comp: float | str = "",
+    fare_time_comp: float | str = "",
+    promo_discount: float | str = 0,
+    tip: float | str = 0,
+    total_charged: float | str = "",
+    driver_name: str = "",
+    driver_rating: float | str = "",
+    driver_vehicle: str = "",
+    **kw,
+) -> TemplateResult:
+    lines = ["Thanks for riding with OpenRide!\n"]
+    if pickup_address and dropoff_address:
+        lines.append(f"Route: {pickup_address} → {dropoff_address}")
+    if distance_km:
+        dist_line = f"Distance: {distance_km} km"
+        if duration_min:
+            dist_line += f"  |  Duration: {duration_min} min"
+        lines.append(dist_line)
+    lines.append("")
+    lines.append("Fare breakdown:")
+    if fare_base:
+        lines.append(f"  Base fare:  ${fare_base}")
+    if fare_distance_comp:
+        lines.append(f"  Distance:   ${fare_distance_comp}")
+    if fare_time_comp:
+        lines.append(f"  Time:       ${fare_time_comp}")
+    if promo_discount and float(promo_discount) > 0:
+        lines.append(f"  Promo:     -${promo_discount}")
+    if tip and float(tip) > 0:
+        lines.append(f"  Tip:        ${tip}")
+    if total_charged:
+        lines.append(f"  Total:      ${total_charged}")
+    if driver_name:
+        lines.append("")
+        driver_line = f"Driver: {driver_name}"
+        if driver_rating:
+            driver_line += f"  ★ {driver_rating}"
+        lines.append(driver_line)
+        if driver_vehicle:
+            lines.append(f"Vehicle: {driver_vehicle}")
+    if receipt_number:
+        lines.append(f"\nReceipt #{receipt_number}")
+    return (
+        f"Your trip receipt{' — ' + receipt_number if receipt_number else ''}",
+        "\n".join(lines),
+        [NotificationChannel.EMAIL],
+    )
+
+
 def emergency_contact_sos(
     user_name: str = "Someone",
     ride_id: int | str = "",
@@ -420,6 +476,7 @@ TEMPLATES: dict[str, callable] = {
     NotificationType.STREAK_LOST: streak_lost,
     NotificationType.EMERGENCY_CONTACT_SOS: emergency_contact_sos,
     NotificationType.SAFE_ARRIVAL_CONTACT: safe_arrival_contact,
+    NotificationType.TRIP_RECEIPT: trip_receipt,
 }
 
 

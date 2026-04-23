@@ -1110,9 +1110,13 @@ async def complete_ride(
     from app.api.websocket import notify_ride_status
     await notify_ride_status(ride.rider_id, ride.id, "completed", fare=ride.actual_fare)
 
-    from app.services.notification_events import notify_ride_completed, notify_ride_completed_driver
+    from app.services.notification_events import notify_ride_completed, notify_ride_completed_driver, notify_trip_receipt
     await notify_ride_completed(db, rider_id=ride.rider_id, ride_id=ride.id, fare=ride.actual_fare)
     await notify_ride_completed_driver(db, driver_id=driver.id, ride_id=ride.id, fare=ride.actual_fare)
+    try:
+        await notify_trip_receipt(db, rider_id=ride.rider_id, ride_id=ride.id)
+    except Exception:
+        pass  # never block ride completion on receipt email failure
 
     from app.services.audit_events import audit_ride_completed
     await audit_ride_completed(
