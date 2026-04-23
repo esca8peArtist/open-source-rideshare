@@ -26,6 +26,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.driver_safety_report import DriverReportCategory, DriverReportStatus
+from app.services import rider_incident_flag as _incident_flag_svc
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,14 @@ async def create_report(
         "Driver safety report filed — driver=%s ride=%s rider=%s category=%s report=%s",
         driver_id, ride_id, rider_id, category.value, report_id,
     )
+
+    # Auto-flag the rider if they've hit the incident threshold.
+    await _incident_flag_svc.check_and_flag_rider(
+        db=db,
+        rider_id=rider_id,
+        all_reports=list(_driver_safety_reports.values()),
+    )
+
     return dict(report)
 
 
