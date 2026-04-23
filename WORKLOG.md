@@ -4,6 +4,171 @@
 > Never delete entries. The orchestrator and the user read this to understand what happened.
 > Format: `## YYYY-MM-DD HH:MM — [Project] — [Summary]`
 
+## 2026-04-23 — Session 400
+
+### open-source-rideshare — Driver Navigation (commit `dcc0e81`, branch `feature/driver-navigation`)
+
+Created new branch `feature/driver-navigation` from `feature/admin-user-management`.
+
+**What was built**:
+- `app/schemas/driver_navigation.py` — `StopType`, `StopStatus`, `NavigationStop`, `NavigationStateResponse`, `NavigationPositionUpdate`
+- `app/services/driver_navigation.py` — pure math helpers (haversine, cross-track distance, ETA), `build_stops()`, `find_next_stop()`, `total_remaining()`, `is_deviation()`, `get_navigation_state()`, `update_navigation_position()`
+- `app/api/v1/driver_navigation.py` — 2 driver-only endpoints
+- `app/main.py` — router registered
+- `tests/test_driver_navigation.py` — 28 tests (21 unit + 7 service, 6 API integration skipped per project pattern)
+
+**Endpoints**:
+- `GET /api/v1/rides/{ride_id}/navigation` — ordered stop list (pickup → waypoints → dropoff) with ETA and distance to each pending stop from driver's last known position; driver-only
+- `POST /api/v1/rides/{ride_id}/navigation/position` — driver submits GPS `{ lat, lng }`; distances/ETAs refreshed; route deviation auto-flagged (cross-track > 500 m) once; integrates with existing `route_deviation_flagged_at` on Ride model
+
+**Deviation detection**: Standard cross-track distance formula (great-circle path). Fires once, does not overwrite. Visible on admin safety dashboard.
+
+**5,942 total tests passing** (was 5,914). 0 regressions. Pushed to `rideshare` remote on `feature/driver-navigation`.
+
+---
+
+## 2026-04-23 — Session 399
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: awaiting paper trading data post-Jetson deploy — no actionable code task
+- mfg-farm: blocked on user test print
+- resistance-research: April 23 monitoring brief already complete (file exists, comprehensive); next mandatory April 28
+- open-source-rideshare: safety sprint complete, branch ready to merge; task = new feature branch
+
+### open-source-rideshare — Admin User Management (commit `2724912`)
+
+Created new branch `feature/admin-user-management` from `feature/rider-emergency-safety`.
+
+**What was built**:
+- `app/models/user.py` — added `UserStatus` enum (ACTIVE/SUSPENDED), `status` column (default ACTIVE), and `suspension_reason` column; migration-safe defaults
+- `app/schemas/admin_user_management.py` — `UserSummary`, `UserDetailResponse`, `UserRideStats`, `SuspendUserRequest`, `ActivateUserRequest`, `UserStatusChangeResponse`
+- `app/services/admin_user_management.py` — `list_users()` (paginated, role/status/search filters), `get_user_detail()` (full profile + ride stats), `suspend_user()`, `activate_user()`
+- `app/api/v1/admin_user_management.py` — 4 routes, all admin-only
+- `app/main.py` — router registered
+- `tests/test_admin_user_management.py` — 30 tests (14 service unit pass, 16 API integration skip per existing pattern)
+
+**Endpoints**:
+- `GET /admin/users` — paginated list with role/status/search filters (excludes admin accounts)
+- `GET /admin/users/{user_id}` — full profile + ride stats (total/completed/cancelled + avg rating)
+- `POST /admin/users/{user_id}/suspend` — suspend with reason, optional notification; 409 if already suspended
+- `POST /admin/users/{user_id}/activate` — reactivate, clears suspension_reason; 409 if already active
+
+**5,914 total tests passing** (was 5,900). 0 regressions.
+
+---
+
+## 2026-04-23 — Session 398
+
+### open-source-rideshare — Admin Safety Dashboard (commit `be2063b`)
+
+Built consolidated admin safety event dashboard: `GET /api/v1/admin/safety/dashboard`.
+
+**What was built**:
+- `app/schemas/admin_safety_dashboard.py` — `SOSAlertRow`, `RouteDeviationRow`, `SpeedingFlagRow`, `ExpiredCheckInRow`, `AdminSafetyDashboard`
+- `app/services/admin_safety_dashboard.py` — `get_safety_dashboard()`: 4 parallel queries via `asyncio.gather`; expired timers limited to last 24 hours
+- `app/api/v1/admin_safety_dashboard.py` — `GET /admin/safety/dashboard` (admin-only)
+- `tests/test_admin_safety_dashboard.py` — 15 tests (10 service unit, 5 API integration)
+- `app/main.py` — router registered
+
+**Business logic**:
+- Active SOS: status=ACTIVE only (RESOLVED/FALSE_ALARM excluded)
+- Route deviation: IN_PROGRESS rides with `route_deviation_flagged_at IS NOT NULL`
+- Speeding: IN_PROGRESS rides with `speeding_flagged_at IS NOT NULL`
+- Expired check-ins: EXPIRED timers within last 24 hours (older ones omitted to keep list actionable)
+- Summary counts always match list lengths
+
+**5,900 total tests passing** (was 5,890). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 397
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: no actionable code task; awaiting paper trading data post-Jetson deploy
+- mfg-farm: blocked on user test print
+- resistance-research: next mandatory April 28 (Xinis hearing results)
+- open-source-rideshare: discovered surge pricing backend already complete; explored existing safety features to find genuine gap
+
+### open-source-rideshare — Admin Ride Force-Cancel (commit `97ffb1c`)
+
+Discovered through systematic gap analysis that admins had no way to directly cancel
+in-progress rides — a critical safety workflow gap (e.g., admin responding to an SOS
+cannot stop the ride from the backend).
+
+**What was built**:
+- `app/models/ride.py` — added `ADMIN_FORCED = "admin_forced"` to `CancellationCategory` enum
+- `app/services/notification_templates.py` — added label for `admin_forced` category
+- `app/schemas/admin_ride_cancel.py` — `AdminRideCancelRequest`, `AdminRideCancelResponse`
+- `app/services/admin_ride_cancel.py` — `admin_force_cancel_ride()`: validates, cancels, refunds payment, notifies parties (fire-and-forget)
+- `app/api/v1/admin_ride_cancel.py` — `POST /admin/rides/{ride_id}/cancel` (admin-only; 404/409 errors)
+- `app/main.py` — router registered
+- `tests/test_admin_ride_cancel.py` — 28 tests (17 service unit, 11 integration skipped/no real DB)
+
+**Business rules**:
+- Works on SCHEDULED, REQUESTED, MATCHED, DRIVER_EN_ROUTE, ARRIVED, IN_PROGRESS
+- Full rider refund: COMPLETED/PENDING payment → REFUNDED
+- Notifies both rider and driver via RIDE_CANCELLED (suppressible with notify_parties=false)
+- cancellation_reason records "Admin <id>: <reason>" for audit trail
+
+**5,890 tests passing** (was 5,873). 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 396
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: awaiting paper trading data post-Jetson deploy
+- mfg-farm: blocked on user test print
+- resistance-research: next mandatory April 28 (Xinis hearing results)
+- open-source-rideshare: driver safety check-in timer complete; next = admin driver earnings aggregation
+
+### open-source-rideshare — Admin Driver Earnings Report (commit `21c993a`)
+
+New `GET /api/v1/admin/drivers/earnings-report` endpoint — admin-only paginated view of
+earnings aggregated per driver for a configurable date range.
+
+This fills the gap between `GET /admin/stats/top-earners` (top N only) and the per-driver
+`GET /driver/me/earnings-summary` (self-view only) — admins now have a full compliance/payroll
+oversight view across ALL active drivers.
+
+**What was built**:
+- `app/schemas/admin_driver_earnings_report.py` — `PlatformTotals`, `DriverEarningsRow`, `AdminDriverEarningsReport`
+- `app/services/admin_driver_earnings_report.py` — `get_driver_earnings_report()` function; same gross/net/fee formula as driver_earnings_summary.py; pending_payout computed from uncovered rides
+- `app/api/v1/admin_driver_earnings_report.py` — router at `/admin/drivers/earnings-report`; validates dates, sort_by, sort_dir, page/page_size (max 100)
+- `tests/test_admin_driver_earnings_report.py` — 27 tests (17 service unit tests passing, 10 API integration tests)
+- `app/main.py` updated to register the new router
+
+**5873 total tests passing** (was 5856), 0 regressions. Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
+## 2026-04-23 — Session 394
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- stockbot: awaiting paper trading data post-Jetson deploy
+- mfg-farm: blocked on user test print
+- resistance-research: April 28 watch brief already prepared; next mandatory April 28
+- open-source-rideshare: email change endpoint next after phone/GDPR (Session 393)
+
+### open-source-rideshare — Email Change Endpoint COMPLETE (commit `b90cabb`)
+
+`POST /auth/me/change-email` completes the auth self-service account management set.
+Password confirmation required, EmailStr validation, same-email 400, taken-email 409.
+Supports users with no existing email setting one for the first time.
+
+**13 new tests** in `test_email_change.py`. 5,787 total tests passing (was 5,774), 0 regressions.
+Pushed to `rideshare` remote on `feature/rider-emergency-safety`.
+
+---
+
 ## 2026-04-23 — Session 392 (current)
 
 ### Orient
@@ -7675,3 +7840,171 @@ the fee amount in the confirmation body.
 **31 new tests** in `tests/test_cancellation_confirmation_notifications.py`. Total: **5,679** (was 5,648). 0 regressions.
 
 - Commit: `4e1eb49`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
+## 2026-04-23 — open-source-rideshare — Phone Number Change + GDPR Data Export (Session 393)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: next mandatory pass April 28 (5 days out — no action today)
+- stockbot: monitoring mode, awaiting Jetson paper trading data
+- mfg-farm: blocked on user test print
+- Selected: open-source-rideshare — account management continuation (phone change + GDPR export)
+
+### Work done
+
+**Feature: phone number change (`POST /auth/me/change-phone`)**
+
+Riders, drivers, and admins can now change their phone number via password-confirmed request.
+
+- `ChangePhoneRequest(password, new_phone)` schema added — `new_phone` min_length=5, max_length=20
+- Endpoint `POST /auth/me/change-phone`:
+  - Verifies password (400 if wrong)
+  - Rejects if new phone equals current (400)
+  - Rejects if new phone already registered to another account (409)
+  - Updates `user.phone`, resets `user.phone_verified = False` (new number must be re-verified)
+  - Returns `{"status": "phone updated"}`
+
+**Feature: GDPR data export (`GET /auth/me/data-export`)**
+
+Returns a structured JSON payload of all personal data stored for the authenticated user.
+
+- New service `services/account_data_export.py` — `export_user_data(user_id, db)`:
+  - Queries: User profile, rides as rider (100 most recent), rides as driver (100 most recent),
+    saved locations, ride preferences (None if not set), notification logs (50 most recent, non-deleted)
+  - Geometry columns excluded; addresses included instead
+  - Datetimes serialised as ISO strings
+  - Returns empty dict if user not found (defensive)
+- Endpoint `GET /auth/me/data-export` — authenticated, delegates to service
+
+**Tests**: 24 new tests in `tests/test_phone_change_gdpr_export.py`. Total: **5,774** (was 5,750). 0 regressions.
+
+- Commit: `0a8dcc2`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+---
+
+## 2026-04-23 — open-source-rideshare — Driver Safety Check-In Timer (Session 395)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: next mandatory pass April 28 (5 days out — no action today)
+- stockbot: monitoring mode, awaiting Jetson paper trading data
+- mfg-farm: blocked on user test print
+- Selected: open-source-rideshare — safety feature (driver check-in timer)
+
+### Work done
+
+**Feature: driver safety check-in timer**
+
+Drivers can start a countdown (5–120 min) when feeling unsafe. If they do not
+confirm safety before expiry, their emergency contacts are automatically
+notified. Mirrors the existing rider check-in timer feature.
+
+**New files**:
+- `app/schemas/driver_check_in_timer.py` — `StartDriverCheckInTimerRequest`, `DriverCheckInTimerResponse`, `DriverCheckInTimerStatus` enum
+- `app/services/driver_check_in_timer.py` — in-memory store + full service layer: `start_timer`, `get_active_timer`, `confirm_timer`, `cancel_timer`, `expire_if_due`, `list_timers`
+- `app/api/v1/driver_check_in_timer.py` — 5 endpoints under `/drivers/me/check-in-timer`:
+  - `POST /drivers/me/check-in-timer` — start (201; 409 if already active; 422 invalid duration)
+  - `GET /drivers/me/check-in-timer` — get active (lazy expiry; 404 if none)
+  - `POST /drivers/me/check-in-timer/confirm` — ACTIVE → CONFIRMED
+  - `DELETE /drivers/me/check-in-timer` — ACTIVE → CANCELLED
+  - `GET /drivers/me/check-in-timer/history` — paginated history
+- `tests/test_driver_check_in_timer.py` — 69 tests covering schemas, all 6 service functions, and all 5 router endpoints
+
+**`app/main.py`**: added `driver_check_in_timer` import and `app.include_router(driver_check_in_timer.router, prefix="/api/v1")`
+
+**69 new tests** in `tests/test_driver_check_in_timer.py`. Total: **5,856** (was 5,787). 0 regressions.
+
+- Commit: `53faafc`; pushed to `rideshare` remote on `feature/rider-emergency-safety`
+
+
+---
+
+## 2026-04-23 — open-source-rideshare — Fare Forecast Endpoint (Session 401)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research: next mandatory pass April 28 (5 days out — no action today)
+- stockbot: monitoring mode, DEPLOY_READY triggered on last session; awaiting Jetson paper trading data
+- mfg-farm: blocked on user test print (hardware, user action required)
+- Selected: open-source-rideshare — rider-facing feature
+
+### Task selected
+Rider-facing pricing transparency: surge forecasting. All surge infrastructure already exists
+(surge_status, surge_waitlist, surge_zones). Built new `GET /api/v1/pricing/fare-forecast` 
+endpoint — a cooperative differentiator Uber/Lyft don't offer.
+
+### Work done
+
+**Feature: fare forecast (`GET /api/v1/pricing/fare-forecast`)**
+
+Public endpoint (no auth). Given origin/dest coordinates and optional `lookahead_hours`
+(default 4, max 12), returns 6 fare estimates at evenly-spaced future time slots.
+
+Key design decisions:
+- Surge zone multipliers computed using existing `is_zone_active_now` with future datetimes — no new logic needed
+- Demand multiplier uses pure time-of-day heuristic (morning/evening rush ×1.3, bar close ×1.2, off-peak ×1.0) since Redis can't be queried for future state; labelled `demand_is_heuristic: true`
+- Cheapest slot flagged with `is_cheapest: true`; plain-English `recommendation` string generated
+- Haversine distance (no OSRM) — appropriate for forecasts
+
+**New files**:
+- `app/schemas/fare_forecast.py` — `ForecastSlot`, `FareForecastResponse`
+- `app/services/fare_forecast.py` — `demand_heuristic`, `build_recommendation`, `get_fare_forecast`
+- `app/api/v1/fare_forecast.py` — router, single GET with Query validation
+- `tests/test_fare_forecast.py` — 58 tests
+
+**Modified**: `app/main.py` — router registered
+
+**58 new tests**. Total: **6,000** (was 5,942). 0 regressions.
+
+- Commit: `957a934`; pushed to `rideshare` remote on `feature/driver-navigation`
+
+---
+
+## 2026-04-23 — open-source-rideshare — Pool Fare Ladder Endpoint (Session 402)
+
+### Orient
+- INBOX: empty — nothing to process
+- BLOCKED.md: no active blocks
+- resistance-research monitoring files (2026-04-23-results.md, 2026-04-28-watch.md) were untracked; committed them
+- stockbot: monitoring mode
+- mfg-farm: blocked on user test print
+- Selected: open-source-rideshare — pool ride cost-split preview
+
+### Task selected
+Pre-booking pool pricing transparency. Emergency contacts already exist in safety.py.
+Fare splitting also already exists (fare_splits.py). Built new
+`GET /api/v1/pricing/pool-fare-ladder` — shows fare at each pool size so riders can
+decide whether to pool before booking.
+
+### Work done
+
+**Feature: pool fare ladder (`GET /api/v1/pricing/pool-fare-ladder`)**
+
+Public endpoint (no auth). Given pickup/dropoff coordinates, returns a tier table
+showing the fare, discount %, and savings at each pool size (solo, 2 riders, 3 riders).
+Includes a plain-English recommendation and the max wait time for a pool match.
+
+Key design decisions:
+- Placed under `/pricing` prefix (same as fare_forecast) — groups pre-booking pricing tools
+- Uses existing `DISCOUNT_BY_RIDERS` table from pool_matching.py — single source of truth for discounts
+- Uses existing `calculate_pool_fare` and haversine+estimate_duration pattern — no new business logic
+- Recommended tier = smallest pool size with positive savings (fewest riders = most available)
+- Short-trip recommendation path (<$8 solo fare) acknowledges that savings are modest
+
+**New files**:
+- `app/schemas/pool_fare_ladder.py` — `FareTier`, `PoolFareLadderResponse`
+- `app/services/pool_fare_ladder.py` — `_build_recommendation`, `get_pool_fare_ladder`
+- `app/api/v1/pool_fare_ladder.py` — router, single GET endpoint
+- `tests/test_pool_fare_ladder.py` — 55 tests
+
+**Modified**: `app/main.py` — router imported and registered
+
+**55 new tests**. Total: **6,055** (was 6,000). 0 regressions.
+
+- Commit: `46b5854`; pushed to `rideshare` remote on `feature/driver-navigation`
+- Resistance-research monitoring files committed: `d04b6e8`

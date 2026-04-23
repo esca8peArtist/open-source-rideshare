@@ -4,7 +4,7 @@
 > The orchestrator reads this file at the start of every session.
 > Update priorities, status, and current focus as work progresses.
 >
-> **Last updated by**: orchestrator on 2026-04-23 (Session 392)
+> **Last updated by**: orchestrator on 2026-04-23 (Session 402)
 
 ---
 
@@ -66,7 +66,7 @@
 **Status**: Active — early stage
 **Visibility**: Public — push to feature branches on GitHub freely. Hold on main push for user approval.
 **Working dir**: `projects/open-source-rideshare/`
-**Current focus**: Session 392: **Account management COMPLETE** (commit `b748850`, 20 new tests). `POST /auth/me/change-password` (verifies current password, enforces 8-char minimum) and `POST /auth/me/deactivate` (password confirmation + active-ride guard, returns 409 if any ride in active state, sets `is_active=False`). 5,750 tests passing. **Next**: more account management (phone number change, GDPR data export) or move to another feature area.
+**Current focus**: Session 402: **Pool Fare Ladder COMPLETE** (commit `46b5854`, 55 new tests, branch `feature/driver-navigation`). Public endpoint `GET /pricing/pool-fare-ladder` — given origin/dest coordinates, returns fare table for each pool size (solo, 2, 3 riders): fare, discount %, savings, is_solo flag. Plain-English `recommendation`. 6,055 tests passing. **Next**: rider-facing safety push — trip sharing live-location broadcast OR driver arrival countdown transparency.
 **Blocked on**: —
 **Notes**: This is the only public project. Higher standards for documentation, test coverage, and code quality since it's community-facing. Regulatory/safety/security solutions and growth strategy are in scope alongside the technical build.
 

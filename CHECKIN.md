@@ -9,7 +9,61 @@
 ## Since Last Check-in
 
 **Period**: 2026-04-23
-**Sessions run**: 378–398
+**Sessions run**: 378–402
+
+### Accomplished (Session 402 — orchestrator)
+
+#### open-source-rideshare — Pool Fare Ladder (commit `46b5854`, branch `feature/driver-navigation`)
+
+New public endpoint `GET /api/v1/pricing/pool-fare-ladder` — pre-booking pool pricing transparency. Shows riders exactly how much they save at each pool size before they commit to a pool request.
+
+- Query params: `pickup_lat`, `pickup_lng`, `dropoff_lat`, `dropoff_lng`
+- Returns 3 tiers (solo, 2 riders, 3 riders): fare, discount %, savings, is_solo flag
+- `recommended_tier` = smallest pool size with positive savings
+- Plain-English `recommendation` string (short-trip and long-trip paths)
+- `max_pool_wait_minutes` = 5 (from `MAX_POOL_WAIT_SECONDS` config)
+- No auth required — call it before the user signs in
+
+**55 new tests**. **6,055 total passing** (was 6,000). 0 regressions.
+
+#### resistance-research — Monitoring files committed (commit `d04b6e8`)
+
+`monitoring/2026-04-23-results.md` (267 lines) — coverage window April 18–23.
+`monitoring/2026-04-28-watch.md` (195 lines) — pre-brief for Xinis hearing April 28.
+
+### Accomplished (Session 401 — orchestrator)
+
+#### open-source-rideshare — Fare Forecast (commit `957a934`, branch `feature/driver-navigation`)
+
+New public endpoint `GET /api/v1/pricing/fare-forecast`. Shows riders fare estimates across 6 future time windows so they can pick the cheapest time to travel. **58 new tests**. **6,000 total passing** (was 5,942). 0 regressions.
+
+### Accomplished (Session 400 — orchestrator)
+
+#### open-source-rideshare — Driver Navigation (commit `dcc0e81`, branch `feature/driver-navigation`)
+
+New branch from `feature/admin-user-management`. Adds real-time navigation state for drivers during active rides.
+
+- `GET /api/v1/rides/{ride_id}/navigation` — driver-only; returns ordered stop list (pickup → waypoints → dropoff) with per-stop status, distance from driver's position, and ETA. Shows which stop is next.
+- `POST /api/v1/rides/{ride_id}/navigation/position` — driver submits GPS `{ lat, lng }`; all pending stop distances and ETAs are recalculated. If driver is >500 m off the direct corridor between last completed stop and next pending stop (cross-track distance), `route_deviation_flagged_at` is set on the ride once. This surfaces immediately on the admin safety dashboard.
+
+Only active rides (DRIVER_EN_ROUTE, ARRIVED, IN_PROGRESS) accept position updates. Deviation flag is idempotent — set once, never overwritten.
+
+**28 new tests** (21 unit — math functions + build_stops + service, 6 API integration skipped per convention). **5,942 total passing** (was 5,914). 0 regressions. Pushed to `rideshare` remote on `feature/driver-navigation`.
+
+### Accomplished (Session 399 — orchestrator)
+
+#### open-source-rideshare — Admin User Management (commit `2724912`, branch `feature/admin-user-management`)
+
+New branch created from `feature/rider-emergency-safety`. Adds admin account management capabilities:
+
+- `GET /api/v1/admin/users` — paginated list of all riders/drivers; filters: `role`, `status` (active/suspended/all), `search` (name or email); admin accounts excluded
+- `GET /api/v1/admin/users/{user_id}` — full profile: all user fields, verification status, ride stats (total/completed/cancelled + avg rating received)
+- `POST /api/v1/admin/users/{user_id}/suspend` — body `{ "reason": str, "notify_user": bool }` — sets SUSPENDED, records reason; 409 if already suspended; fire-and-forget notification
+- `POST /api/v1/admin/users/{user_id}/activate` — reactivates account, clears suspension reason; 409 if already active
+
+**Model change**: `UserStatus` enum + `status` (default ACTIVE) + `suspension_reason` columns added to users table — migration-safe defaults, no impact on existing records.
+
+**30 new tests** (14 service unit pass, 16 API integration skip per project convention). **5,914 total passing** (was 5,900). 0 regressions.
 
 ### Accomplished (Session 398 — orchestrator)
 
@@ -47,6 +101,57 @@ Admin earnings report across ALL active drivers. Paginated, sortable, date-filte
 
 ### Needs Your Input
 
+#### open-source-rideshare — PR: feature/driver-navigation (updated — fare forecast added)
+
+**Branch**: `feature/driver-navigation`
+**Latest commit**: `957a934`
+**New since last check-in**: fare forecast endpoint
+
+**What was added** — `GET /api/v1/pricing/fare-forecast` (public, no auth):
+
+Returns fare estimates at 6 evenly-spaced time slots from now through `now + lookahead_hours` (default 4, range 1–12). This is a rider-facing cooperative differentiator: Uber/Lyft only show current pricing; we show the next several hours so riders can pick the cheapest window.
+
+Each slot includes: estimated fare, surge zone multiplier, demand multiplier (heuristic), combined multiplier, `is_surge_active`, `offset_minutes`, and UTC departure time. Exactly one slot is flagged `is_cheapest: true` (earliest wins on tie). A plain-English `recommendation` string tells riders when to book (e.g. "Cheapest fare in 80 minutes. Current fare is 35% higher than the best window.").
+
+**Design decisions**:
+- Surge zone data is queried live per slot via `list_zones` + `is_zone_active_now` — the existing time/day constraint mechanism works naturally for future datetimes.
+- Demand multipliers use a pure time-of-day heuristic (morning rush ×1.3, evening rush ×1.3, bar close ×1.2, off-peak ×1.0). No Redis dependency. Always labelled `demand_is_heuristic: true` in the response.
+- Distance uses Haversine (no OSRM) — forecasts are estimates, OSRM would be overkill and adds latency.
+- DB failure on zone lookup falls back gracefully to no-surge baseline.
+
+**Tests**: 58 tests — 15 `demand_heuristic` unit tests, 9 `build_recommendation` unit tests, 19 `get_fare_forecast` async service tests (mocked DB), 15 endpoint tests (validation, shape, auth). Zero regressions — full suite: 6,000 passed, 594 skipped.
+
+**Files changed**:
+- `app/schemas/fare_forecast.py` — new (`ForecastSlot`, `FareForecastResponse`)
+- `app/services/fare_forecast.py` — new (`demand_heuristic`, `build_recommendation`, `get_fare_forecast`)
+- `app/api/v1/fare_forecast.py` — new (router, single GET endpoint with Query validation)
+- `app/main.py` — router registered alongside `fare_preview_router`
+- `tests/test_fare_forecast.py` — new (58 tests)
+
+---
+
+#### open-source-rideshare — PR: feature/driver-navigation (original navigation feature — ready to merge)
+
+**Branch**: `feature/driver-navigation`
+**Base**: `master` (branched from `feature/admin-user-management`)
+**Commit**: `dcc0e81`
+
+**What it adds** — two driver-only endpoints for in-ride navigation:
+
+- `GET /api/v1/rides/{ride_id}/navigation` — returns ordered stop list (pickup → waypoints sorted by order → dropoff), each with type, address, lat/lng, status (pending/completed/skipped), arrived_at, departed_at. Pending stops also get distance_km and eta_minutes from driver's last known position (if available).
+- `POST /api/v1/rides/{ride_id}/navigation/position` — driver submits `{ lat, lng }`; all pending-stop distances and ETAs recalculate; if driver is >500 m cross-track from the straight-line path between their last completed stop and next pending stop, `route_deviation_flagged_at` is set once on the ride (visible on admin safety dashboard).
+
+**Deviation detection**: Uses the standard cross-track (perpendicular) distance formula — accurate great-circle math, no external routing API needed. Idempotent — fires once per ride, never overwrites.
+
+**Tests**: 28 tests — 12 pure math unit tests, 9 `build_stops`/helper tests, 7 service unit tests (mocked DB), 6 API integration tests (skipped without test DB). Zero regressions across full 5,942-test suite.
+
+**Files changed**:
+- `app/schemas/driver_navigation.py` — new (StopType, StopStatus, NavigationStop, NavigationStateResponse, NavigationPositionUpdate)
+- `app/services/driver_navigation.py` — new (haversine, cross-track, build_stops, find_next_stop, total_remaining, is_deviation, get_navigation_state, update_navigation_position)
+- `app/api/v1/driver_navigation.py` — new (2 endpoints, driver-only auth)
+- `app/main.py` — router registered
+- `tests/test_driver_navigation.py` — new (28 tests)
+
 #### open-source-rideshare — PR: feature/admin-user-management (ready to merge)
 
 **Branch**: `feature/admin-user-management`
@@ -83,7 +188,7 @@ Branch is now very complete: notifications, account management, driver check-in 
 ### What's Next / Suggested Priorities
 
 1. **resistance-research — April 28 (mandatory)**: Xinis contempt hearing results brief → `monitoring/2026-04-28-results.md`. April 29: May Day Mass Call. May 1: May Day actions.
-2. **open-source-rideshare**: Safety sprint is comprehensive. Good next: start a new feature branch (e.g., driver-side navigation, admin user management, or fare dispute workflow).
+2. **open-source-rideshare**: `feature/driver-navigation` branch growing — pool fare ladder, fare forecast, driver navigation, fare forecast all pushed. Next feature: trip sharing live-location broadcast (rider shares trip link; contacts see live map) or driver arrival countdown transparency.
 3. **stockbot**: No code task actionable; awaiting your input on stacker paper trading performance post-Jetson deploy.
 4. **mfg-farm**: Still blocked on test print — when you've printed the ModRun clip/rail, let me know and I can prep the Etsy listing workflow.
 
