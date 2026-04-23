@@ -7,7 +7,16 @@ from app.config import settings
 from app.db.database import get_db
 from app.models.user import User, UserRole
 from app.api.deps import get_current_user
-from app.schemas.auth import LoginRequest, RegisterRequest, RefreshRequest, TokenResponse, UserProfileResponse, UserProfileUpdate
+from app.schemas.auth import (
+    ChangePasswordRequest,
+    DeactivateAccountRequest,
+    LoginRequest,
+    RegisterRequest,
+    RefreshRequest,
+    TokenResponse,
+    UserProfileResponse,
+    UserProfileUpdate,
+)
 from app.services.auth import (
     create_access_token,
     create_refresh_token,
@@ -117,3 +126,63 @@ async def update_me(
     await db.commit()
     await db.refresh(user)
     return user
+
+
+@router.post("/me/change-password", status_code=status.HTTP_200_OK)
+async def change_password(
+    req: ChangePasswordRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Change the authenticated user's password.
+
+    Requires the current password for verification. The new password must be
+    at least 8 characters. All existing sessions remain valid (stateless JWTs).
+    """
+    if not verify_password(req.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    user.password_hash = hash_password(req.new_password)
+    await db.commit()
+    return {"status": "password updated"}
+
+
+@router.post("/me/deactivate", status_code=status.HTTP_200_OK)
+async def deactivate_account(
+    req: DeactivateAccountRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Deactivate the authenticated user's account (soft delete).
+
+    Requires password confirmation. Rejected if the user has any active rides.
+    Account can be reactivated by an admin.
+    """
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+
+    from app.models.ride import Ride, RideStatus
+    _ACTIVE = (
+        RideStatus.REQUESTED,
+        RideStatus.MATCHED,
+        RideStatus.DRIVER_EN_ROUTE,
+        RideStatus.ARRIVED,
+        RideStatus.IN_PROGRESS,
+    )
+    active_result = await db.execute(
+        select(Ride).where(
+            (
+                (Ride.rider_id == user.id) | (Ride.driver_id == user.id)
+            ),
+            Ride.status.in_(_ACTIVE),
+        )
+    )
+    if active_result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot deactivate account while an active ride is in progress",
+        )
+
+    user.is_active = False
+    await db.commit()
+    return {"status": "account deactivated"}

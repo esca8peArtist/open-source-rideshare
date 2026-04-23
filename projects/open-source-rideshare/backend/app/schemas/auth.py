@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class RegisterRequest(BaseModel):
@@ -46,3 +46,12 @@ class UserProfileResponse(BaseModel):
 class UserProfileUpdate(BaseModel):
     name: str | None = None
     email: str | None = None
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
+class DeactivateAccountRequest(BaseModel):
+    password: str
