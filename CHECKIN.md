@@ -6,10 +6,112 @@
 
 ---
 
+## Usage (updated each session)
+
+🔴 Usage this week: 30/20 sessions (150.0%) | today: 2/5 | rolling 7d: 46 | check: claude.ai → Settings → Usage & billing
+
+---
+
 ## Since Last Check-in
 
-**Period**: 2026-04-23
-**Sessions run**: 378–402
+**Period**: 2026-04-24
+**Sessions run**: 378–407
+
+### Accomplished (Session 407 — orchestrator)
+
+#### open-source-rideshare — Driver Document Expiry Status Endpoints (commit `c8cd00f`, branch `feature/driver-navigation`)
+
+Two new API endpoints give drivers and admins visibility into document expiry — the missing interface for the enforcement logic added in Session 406.
+
+**What was built**:
+- `get_expiring_documents_for_driver(db, driver_id, days_ahead)` — driver-scoped service query (avoids full-table scan)
+- `GET /api/v1/drivers/me/document-expiry` — driver self-check: expiring/expired docs with urgency labels (expired/critical/warning/ok), has_expired and has_warning flags; configurable look-ahead (default 60 days)
+- `GET /api/v1/admin/document-expiry` — admin fleet view: all drivers with expiring docs; supports `days_ahead` (default 30) and `expired_only` filters
+- 20 new tests covering service unit, driver API, and admin API paths
+
+**20 new tests**. **6,154 total passing** (was 6,134). 0 regressions. Pushed to `rideshare` remote.
+
+---
+
+### Accomplished (Session 406 — orchestrator)
+
+#### open-source-rideshare — Driver Document Expiry Enforcement (commit `e5fe75a`, branch `feature/driver-navigation`)
+
+Closed a compliance gap: the matching engine now excludes drivers with expired documents, and drivers cannot go online with expired license, insurance, or registration.
+
+**What was built**:
+- `has_valid_documents(db, driver_id) → bool` in `app/services/driver_document_expiry.py` — checks all three document types (DriverLicense, VehicleRegistration, DriverInsuranceDocument). APPROVED + non-expired required for each. None expiry_date → treated as always-valid.
+- `matching.py` `find_candidates()` — filters out invalid drivers after geo-filter; failures are caught and logged, never bubbled
+- `driver_availability.py` `set_driver_online()` — raises `ValueError` when docs expired (going offline never blocked)
+- `driver_availability.py` API layer — maps `ValueError` → HTTP 403
+- `tests/test_driver_document_expiry.py` — 17 new tests (has_valid_documents branches, go-online rejection, 403 mapping, matching exclusion)
+
+**17 new tests**. **6,134 total passing** (was 6,117). 0 regressions. 594 skipped. Pushed to `rideshare` remote.
+
+---
+
+### Accomplished (Session 405 — orchestrator)
+
+#### open-source-rideshare — Live-Status Polling Endpoint (commit `a199f86`, branch `feature/driver-navigation`)
+
+New consolidated endpoint designed for frontend polling: `GET /api/v1/rides/{ride_id}/live-status`
+
+**What it returns** (single call covers everything the client needs):
+- `status` — current RideStatus value (REQUESTED, MATCHED, DRIVER_EN_ROUTE, etc.)
+- `driver_lat / driver_lng` — nullable driver GPS position
+- `distance_to_pickup_m / eta_to_pickup_minutes` — null unless status is DRIVER_EN_ROUTE
+- `distance_to_dropoff_m / eta_to_dropoff_minutes` — null unless status is IN_PROGRESS
+- `requested_at / driver_matched_at / pickup_at / completed_at` — key lifecycle timestamps
+- `phase_message` — human-readable string per status (e.g. "Driver is 3 min away (1,200 m)")
+- `poll_interval_seconds` — advisory client hint: 5s during active states, 60s for terminal states
+
+**Auth model**: ride owner (rider), assigned driver, or admin. Unauthorized → 404 (prevents ride ID enumeration). Unlike `driver-arrival` which blocks drivers, this endpoint serves both sides.
+
+**29 new tests** — all 8 phase_message branches, GPS-fix/no-fix paths, auth guard cases, ETA math. **6,117 total passing** (was 6,088). 0 regressions. Pushed to `rideshare` remote.
+
+---
+
+### Accomplished (Session 404 — orchestrator)
+
+#### open-source-rideshare — Driver Arrival Countdown (commit `ac1145b`, branch `feature/driver-navigation`)
+
+New rider-facing endpoint: `GET /api/v1/rides/{ride_id}/driver-arrival`
+
+Riders can poll this during a booked ride to see how far away and how many minutes until the driver arrives at their pickup point.
+
+**What it returns**:
+- `driver_assigned`: bool — whether a driver has been matched yet
+- `driver_lat / driver_lng`: nullable — driver's current GPS position
+- `pickup_lat / pickup_lng`: pickup coordinates from the ride record
+- `distance_to_pickup_m`: haversine meters from driver's current position to the pickup point (null if no GPS fix)
+- `eta_minutes`: int estimate at 25 km/h urban speed (null if no GPS fix)
+- `message`: human-readable string for the current state — covers all transitions: no driver assigned, driver assigned but no GPS fix, driver en route (with distance/ETA), driver arrived, in progress, completed, cancelled
+
+**Auth model**: ride owner (rider) or admin. Drivers are explicitly blocked and sent to `/navigation`. PermissionError → 404 (prevents ride ID enumeration).
+
+**25 new tests** — 404/403 paths, all message states, distance/ETA math verification, GPS fix / no-fix. **6,088 total passing** (was 6,063). 0 regressions.
+
+---
+
+### Accomplished (Session 403 — orchestrator)
+
+#### open-source-rideshare — Trip Share Live Location (commit `75afb45`, branch `feature/driver-navigation`)
+
+`GET /api/v1/trip-share/{token}` (public, no auth) now returns real DB data instead of hardcoded stub values ("Alex", Toyota Camry, fixed SF coords).
+
+**What changed**: New `get_trip_share_live_view(db, token)` service function queries:
+- Ride → real status, pickup/dropoff addresses
+- User by driver_id → first name only
+- DriverProfile → vehicle make/model/color/plate + GPS coords via PostGIS ST_Y/ST_X
+- ETA = haversine distance to dropoff at 25 km/h urban speed (min 1 min)
+
+Driver/vehicle fields are nullable — returns valid response before driver is assigned. Token validation (revoked/expired) still fast-paths before any DB access.
+
+**Schema change**: `TripShareView` driver/vehicle fields now `str | None = None` — matches real-world state where a ride may not have an assigned driver yet.
+
+**8 new tests** (service unit): lookup/expired errors, fallback when no ride in DB, full live-data path (side_effect mock), no-GPS-fix case, first-name extraction, no-driver case. **6,063 total passing** (was 6,055). 0 regressions.
+
+---
 
 ### Accomplished (Session 402 — orchestrator)
 
@@ -101,11 +203,11 @@ Admin earnings report across ALL active drivers. Paginated, sortable, date-filte
 
 ### Needs Your Input
 
-#### open-source-rideshare — PR: feature/driver-navigation (updated — fare forecast added)
+#### open-source-rideshare — PR: feature/driver-navigation (updated — live status polling added)
 
 **Branch**: `feature/driver-navigation`
-**Latest commit**: `957a934`
-**New since last check-in**: fare forecast endpoint
+**Latest commit**: `a199f86`
+**New since last check-in**: live-status polling endpoint + driver arrival countdown + trip share live location + fare forecast + pool fare ladder
 
 **What was added** — `GET /api/v1/pricing/fare-forecast` (public, no auth):
 
@@ -188,13 +290,30 @@ Branch is now very complete: notifications, account management, driver check-in 
 ### What's Next / Suggested Priorities
 
 1. **resistance-research — April 28 (mandatory)**: Xinis contempt hearing results brief → `monitoring/2026-04-28-results.md`. April 29: May Day Mass Call. May 1: May Day actions.
-2. **open-source-rideshare**: `feature/driver-navigation` branch growing — pool fare ladder, fare forecast, driver navigation, fare forecast all pushed. Next feature: trip sharing live-location broadcast (rider shares trip link; contacts see live map) or driver arrival countdown transparency.
+2. **open-source-rideshare**: `feature/driver-navigation` now includes driver navigation, fare forecast, pool fare ladder, trip share live location, driver arrival countdown, live-status polling, and document expiry enforcement. Ready to review/merge whenever. Next session: open-repo data acquisition task (OpenFarm via Internet Archive) or continued rideshare compliance features.
 3. **stockbot**: No code task actionable; awaiting your input on stacker paper trading performance post-Jetson deploy.
 4. **mfg-farm**: Still blocked on test print — when you've printed the ModRun clip/rail, let me know and I can prep the Etsy listing workflow.
 
 ---
 
 ## History
+
+**Period**: 2026-04-23–24 (sessions 396–406)
+**Sessions run**: 396–406
+
+- **Session 406**: Driver document expiry enforcement (commit `e5fe75a`). 17 tests. 6,134 passing.
+- **Session 405**: Live-status polling endpoint (commit `a199f86`). 29 tests. 6,117 passing.
+- **Session 404**: Driver arrival countdown (commit `ac1145b`). 25 tests. 6,088 passing.
+- **Session 403**: Trip share live location wired to real DB data (commit `75afb45`). 8 tests. 6,063 passing.
+- **Session 402**: Pool fare ladder (commit `46b5854`). 55 tests. 6,055 passing. Resistance-research monitoring + April 28 watch brief.
+- **Session 401**: Fare forecast (commit `957a934`). 58 tests. 6,000 passing.
+- **Session 400**: Driver navigation (commit `dcc0e81`). 28 tests. 5,942 passing.
+- **Session 399**: Admin user management (commit `2724912`). 30 tests. 5,914 passing.
+- **Session 398**: Admin safety dashboard (commit `be2063b`). 15 tests. 5,900 passing.
+- **Session 397**: Admin ride force-cancel (commit `97ffb1c`). 28 tests. 5,890 passing.
+- **Session 396**: Admin driver earnings report (commit `21c993a`). 27 tests. 5,873 passing.
+
+---
 
 **Period**: 2026-04-23 (earlier sessions)
 **Sessions run**: 378–395

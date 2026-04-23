@@ -12,6 +12,17 @@
 ## New Items
 <!-- Add tasks here. Format: - [date] [description] -->
 
+<!-- Processed 2026-04-18 Session 362:
+- [2026-04-18] stockbot Ensemble Return Stacker — COMPLETE. All deliverables confirmed:
+  ensemble_stacker.py, 4 API endpoints, projected returns regressor fix, 10+ AAPL stackers
+  trained in models/ensemble_stackers/, frontend UI wired in ModelBuilderPage. DEPLOY_READY
+  created to trigger Jetson deploy. PROJECTS.md stockbot focus updated.
+-->
+
+<!-- Processed 2026-04-18 Session 316:
+- [2026-04-17] stockbot Projected Returns page — ALREADY DONE (commit 76a4142, Session prior to 316). Full frontend (ProjectedReturnsPage.tsx) + backend endpoint (/api/models/{id}/projected-returns) + sidebar routing all confirmed. No work needed. Confirmed stockbot is #1 priority. Next: Paper Trading Dashboard page (monitoring live sessions, equity curve, cycle log).
+-->
+
 <!-- Processed 2026-04-14 Session 106:
 - [15:56] Discord bot showing same status info → investigated and answered in CHECKIN.md
 -->
