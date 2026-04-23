@@ -12,7 +12,7 @@ from app.services.trip_share import (
     admin_revoke_by_token,
     create_trip_share_link,
     get_active_link_for_ride,
-    get_trip_share_view,
+    get_trip_share_live_view,
     list_trip_share_links,
     mark_first_view,
     revoke_trip_share_link,
@@ -85,7 +85,7 @@ async def view_trip_share(token: str, db: AsyncSession = Depends(get_db)):
     a push notification.
     """
     try:
-        view = get_trip_share_view(token)
+        view = await get_trip_share_live_view(db, token)
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     except ValueError:

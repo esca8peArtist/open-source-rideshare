@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 # ---------------------------------------------------------------------------
 # In-memory store (same pattern as other rider safety services)
@@ -141,6 +145,126 @@ def admin_revoke_by_token(token: str) -> None:
             record["is_active"] = False
             return
     raise LookupError("Share link not found")
+
+
+async def get_trip_share_live_view(db: "AsyncSession", token: str) -> dict:
+    """Return a public TripShareView dict backed by real DB data.
+
+    Raises LookupError if the token does not exist.
+    Raises ValueError("expired") if the link is revoked or expired.
+
+    Driver/vehicle fields fall back to None when:
+    - No ride record exists for the ride_id stored in the link, OR
+    - The ride has no assigned driver yet, OR
+    - The driver has not yet submitted a GPS location update.
+
+    ETA is estimated as haversine distance from the driver's current position
+    to the dropoff point at an assumed urban speed of 25 km/h.
+    """
+    from geoalchemy2.functions import ST_X, ST_Y
+    from sqlalchemy import select
+
+    from app.models.driver import DriverProfile
+    from app.models.ride import Ride
+    from app.models.user import User
+    from app.services.driver_location import haversine_m
+
+    link = get_link_by_token(token)
+
+    now = datetime.now(tz=timezone.utc)
+    if not link["is_active"] or link["expires_at"] <= now:
+        raise ValueError("expired")
+
+    ride_id = link["ride_id"]
+
+    driver_first_name: str | None = None
+    vehicle_make: str | None = None
+    vehicle_model: str | None = None
+    vehicle_color: str | None = None
+    vehicle_plate: str | None = None
+    pickup_address: str | None = None
+    dropoff_address: str | None = None
+    status = "unknown"
+    driver_lat: float | None = None
+    driver_lng: float | None = None
+    eta_minutes: int | None = None
+
+    ride_result = await db.execute(
+        select(
+            Ride.driver_id,
+            Ride.status,
+            Ride.pickup_address,
+            Ride.dropoff_address,
+            ST_Y(Ride.dropoff_location).label("dropoff_lat"),
+            ST_X(Ride.dropoff_location).label("dropoff_lng"),
+        ).where(Ride.id == ride_id)
+    )
+    ride_row = ride_result.one_or_none()
+
+    if ride_row is not None:
+        status = ride_row.status.value if ride_row.status else "unknown"
+        pickup_address = ride_row.pickup_address
+        dropoff_address = ride_row.dropoff_address
+
+        if ride_row.driver_id is not None:
+            name_result = await db.execute(
+                select(User.name).where(User.id == ride_row.driver_id)
+            )
+            raw_name = name_result.scalar_one_or_none()
+            if raw_name:
+                driver_first_name = raw_name.split()[0]
+
+            profile_result = await db.execute(
+                select(
+                    DriverProfile.vehicle_make,
+                    DriverProfile.vehicle_model,
+                    DriverProfile.vehicle_color,
+                    DriverProfile.license_plate,
+                    ST_Y(DriverProfile.current_location).label("lat"),
+                    ST_X(DriverProfile.current_location).label("lng"),
+                ).where(DriverProfile.user_id == ride_row.driver_id)
+            )
+            profile_row = profile_result.one_or_none()
+            if profile_row is not None:
+                vehicle_make = profile_row.vehicle_make
+                vehicle_model = profile_row.vehicle_model
+                vehicle_color = profile_row.vehicle_color
+                vehicle_plate = profile_row.license_plate
+                lat = float(profile_row.lat) if profile_row.lat is not None else None
+                lng = float(profile_row.lng) if profile_row.lng is not None else None
+                driver_lat = lat
+                driver_lng = lng
+
+                if (
+                    lat is not None
+                    and lng is not None
+                    and ride_row.dropoff_lat is not None
+                    and ride_row.dropoff_lng is not None
+                ):
+                    dist_m = haversine_m(
+                        lat, lng,
+                        float(ride_row.dropoff_lat),
+                        float(ride_row.dropoff_lng),
+                    )
+                    # 25 km/h urban speed estimate
+                    eta_minutes = max(1, round(dist_m / (25_000 / 60)))
+
+    return {
+        "token": link["token"],
+        "ride_id": ride_id,
+        "status": status,
+        "driver_first_name": driver_first_name,
+        "vehicle_make": vehicle_make,
+        "vehicle_model": vehicle_model,
+        "vehicle_color": vehicle_color,
+        "vehicle_plate": vehicle_plate,
+        "pickup_address": pickup_address,
+        "dropoff_address": dropoff_address,
+        "driver_lat": driver_lat,
+        "driver_lng": driver_lng,
+        "eta_minutes": eta_minutes,
+        "expires_at": link["expires_at"],
+    }
 
 
 def get_trip_share_view(token: str) -> dict:

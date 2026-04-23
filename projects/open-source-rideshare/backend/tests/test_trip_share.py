@@ -71,6 +71,7 @@ from app.services.trip_share import (
     create_trip_share_link,
     get_active_link_for_ride,
     get_link_by_token,
+    get_trip_share_live_view,
     get_trip_share_view,
     list_trip_share_links,
     revoke_trip_share_link,
@@ -329,6 +330,264 @@ class TestGetTripShareView:
 
 
 # ---------------------------------------------------------------------------
+# Service: get_trip_share_live_view
+# ---------------------------------------------------------------------------
+
+
+def _make_null_db():
+    """AsyncMock DB where all queries return no rows (None from one_or_none)."""
+    from unittest.mock import AsyncMock, MagicMock
+
+    db = AsyncMock()
+    result_mock = MagicMock()
+    result_mock.one_or_none = MagicMock(return_value=None)
+    result_mock.scalar_one_or_none = MagicMock(return_value=None)
+    db.execute = AsyncMock(return_value=result_mock)
+    return db
+
+
+def _make_ride_row(
+    driver_id=42,
+    status_value="in_progress",
+    pickup_address="123 Main St",
+    dropoff_address="456 Oak Ave",
+    dropoff_lat=37.7780,
+    dropoff_lng=-122.4100,
+):
+    """MagicMock row mimicking a Ride select result."""
+    from unittest.mock import MagicMock
+
+    row = MagicMock()
+    row.driver_id = driver_id
+    status_mock = MagicMock()
+    status_mock.value = status_value
+    row.status = status_mock
+    row.pickup_address = pickup_address
+    row.dropoff_address = dropoff_address
+    row.dropoff_lat = dropoff_lat
+    row.dropoff_lng = dropoff_lng
+    return row
+
+
+def _make_profile_row(
+    vehicle_make="Honda",
+    vehicle_model="Accord",
+    vehicle_color="Blue",
+    license_plate="ABC-999",
+    lat=37.7749,
+    lng=-122.4194,
+):
+    from unittest.mock import MagicMock
+
+    row = MagicMock()
+    row.vehicle_make = vehicle_make
+    row.vehicle_model = vehicle_model
+    row.vehicle_color = vehicle_color
+    row.license_plate = license_plate
+    row.lat = lat
+    row.lng = lng
+    return row
+
+
+class TestGetTripShareLiveView:
+    def test_raises_lookup_error_for_unknown_token(self):
+        import asyncio
+
+        db = _make_null_db()
+        with pytest.raises(LookupError):
+            asyncio.get_event_loop().run_until_complete(
+                get_trip_share_live_view(db, "no-such-token")
+            )
+
+    def test_raises_value_error_when_revoked(self):
+        import asyncio
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+        revoke_trip_share_link(rider_id=1, ride_id=10)
+        db = _make_null_db()
+        with pytest.raises(ValueError, match="expired"):
+            asyncio.get_event_loop().run_until_complete(
+                get_trip_share_live_view(db, record["token"])
+            )
+
+    def test_raises_value_error_when_expired(self):
+        import asyncio
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+        for r in _links.values():
+            r["expires_at"] = datetime.now(tz=timezone.utc) - timedelta(seconds=1)
+        db = _make_null_db()
+        with pytest.raises(ValueError, match="expired"):
+            asyncio.get_event_loop().run_until_complete(
+                get_trip_share_live_view(db, record["token"])
+            )
+
+    def test_fallback_when_ride_not_in_db(self):
+        import asyncio
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+        db = _make_null_db()
+        view = asyncio.get_event_loop().run_until_complete(
+            get_trip_share_live_view(db, record["token"])
+        )
+        assert view["token"] == record["token"]
+        assert view["ride_id"] == 10
+        assert view["status"] == "unknown"
+        assert view["driver_first_name"] is None
+        assert view["vehicle_make"] is None
+        assert view["driver_lat"] is None
+        assert view["eta_minutes"] is None
+        assert view["expires_at"] == record["expires_at"]
+
+    def test_returns_real_ride_data_when_db_has_ride(self):
+        import asyncio
+        from unittest.mock import AsyncMock, MagicMock
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+
+        ride_row = _make_ride_row()
+        profile_row = _make_profile_row(lat=37.7749, lng=-122.4194)
+
+        # side_effect: first call → ride, second call → driver name, third → profile
+        call_count = 0
+
+        def make_result(row, scalar=False):
+            mock = MagicMock()
+            mock.one_or_none = MagicMock(return_value=row if not scalar else None)
+            mock.scalar_one_or_none = MagicMock(return_value=row if scalar else None)
+            return mock
+
+        def execute_side_effect(stmt):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:  # ride query
+                return make_result(ride_row)
+            elif call_count == 2:  # user name query
+                name_mock = MagicMock()
+                name_mock.one_or_none = MagicMock(return_value=None)
+                name_mock.scalar_one_or_none = MagicMock(return_value="Jane Smith")
+                return name_mock
+            else:  # profile query
+                return make_result(profile_row)
+
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+
+        view = asyncio.get_event_loop().run_until_complete(
+            get_trip_share_live_view(db, record["token"])
+        )
+
+        assert view["ride_id"] == 10
+        assert view["status"] == "in_progress"
+        assert view["pickup_address"] == "123 Main St"
+        assert view["dropoff_address"] == "456 Oak Ave"
+        assert view["driver_first_name"] == "Jane"
+        assert view["vehicle_make"] == "Honda"
+        assert view["vehicle_model"] == "Accord"
+        assert view["vehicle_color"] == "Blue"
+        assert view["vehicle_plate"] == "ABC-999"
+        assert view["driver_lat"] == 37.7749
+        assert view["driver_lng"] == -122.4194
+        assert view["eta_minutes"] is not None
+        assert view["eta_minutes"] >= 1
+
+    def test_eta_none_when_driver_has_no_location(self):
+        import asyncio
+        from unittest.mock import AsyncMock, MagicMock
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+
+        ride_row = _make_ride_row()
+        # Profile row with no GPS fix
+        profile_row = _make_profile_row(lat=None, lng=None)
+
+        call_count = 0
+
+        def execute_side_effect(stmt):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                mock = MagicMock()
+                mock.one_or_none = MagicMock(return_value=ride_row)
+                return mock
+            elif call_count == 2:
+                mock = MagicMock()
+                mock.scalar_one_or_none = MagicMock(return_value="Bob Driver")
+                return mock
+            else:
+                mock = MagicMock()
+                mock.one_or_none = MagicMock(return_value=profile_row)
+                return mock
+
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        view = asyncio.get_event_loop().run_until_complete(
+            get_trip_share_live_view(db, record["token"])
+        )
+
+        assert view["driver_lat"] is None
+        assert view["driver_lng"] is None
+        assert view["eta_minutes"] is None
+
+    def test_driver_first_name_only(self):
+        """Multi-word driver name: only first word is returned."""
+        import asyncio
+        from unittest.mock import AsyncMock, MagicMock
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+
+        ride_row = _make_ride_row()
+
+        call_count = 0
+
+        def execute_side_effect(stmt):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                mock = MagicMock()
+                mock.one_or_none = MagicMock(return_value=ride_row)
+                return mock
+            elif call_count == 2:
+                mock = MagicMock()
+                mock.scalar_one_or_none = MagicMock(return_value="Maria García López")
+                return mock
+            else:
+                mock = MagicMock()
+                mock.one_or_none = MagicMock(return_value=None)
+                return mock
+
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=execute_side_effect)
+        view = asyncio.get_event_loop().run_until_complete(
+            get_trip_share_live_view(db, record["token"])
+        )
+        assert view["driver_first_name"] == "Maria"
+
+    def test_no_driver_assigned_returns_nulls(self):
+        """Ride exists but driver_id is None — all driver fields are null."""
+        import asyncio
+        from unittest.mock import AsyncMock, MagicMock
+
+        record = create_trip_share_link(rider_id=1, ride_id=10)
+        ride_row = _make_ride_row(driver_id=None)
+
+        db = AsyncMock()
+        result_mock = MagicMock()
+        result_mock.one_or_none = MagicMock(return_value=ride_row)
+        db.execute = AsyncMock(return_value=result_mock)
+
+        view = asyncio.get_event_loop().run_until_complete(
+            get_trip_share_live_view(db, record["token"])
+        )
+        assert view["driver_first_name"] is None
+        assert view["vehicle_make"] is None
+        assert view["driver_lat"] is None
+        assert view["eta_minutes"] is None
+        assert view["pickup_address"] == "123 Main St"
+        assert view["status"] == "in_progress"
+
+
+# ---------------------------------------------------------------------------
 # Router tests (via TestClient)
 # ---------------------------------------------------------------------------
 
@@ -348,7 +607,12 @@ def client(rider_user):
 
     async def mock_db():
         db = AsyncMock()
-        db.execute = AsyncMock(return_value=MagicMock())
+        # Return None from one_or_none / scalar_one_or_none so that the live
+        # view service falls through to the "ride not found" fallback path.
+        result_mock = MagicMock()
+        result_mock.one_or_none = MagicMock(return_value=None)
+        result_mock.scalar_one_or_none = MagicMock(return_value=None)
+        db.execute = AsyncMock(return_value=result_mock)
         yield db
 
     app.dependency_overrides[require_rider] = lambda: rider_user
@@ -417,10 +681,13 @@ class TestTripShareRouter:
         assert resp.status_code == 200
         data = resp.json()
         assert data["token"] == token
-        assert data["status"] == "IN_PROGRESS"
-        assert data["driver_first_name"] == "Alex"
-        assert data["vehicle_make"] == "Toyota"
-        assert data["eta_minutes"] == 8
+        # When ride is not in the DB (in-memory store only), live view returns
+        # "unknown" status and None for all driver/vehicle fields.
+        assert data["status"] == "unknown"
+        assert data["driver_first_name"] is None
+        assert data["vehicle_make"] is None
+        assert data["eta_minutes"] is None
+        assert data["ride_id"] == 42
 
     def test_public_get_404_for_unknown_token(self, client):
         resp = client.get("/api/v1/trip-share/does-not-exist")
@@ -454,21 +721,26 @@ class TestTripShareRouter:
         from app.api.deps import require_rider, get_current_user
         from app.db.database import get_db
 
-        async def mock_db():
-            db = AsyncMock()
-            db.execute = AsyncMock(return_value=MagicMock())
-            yield db
+        def _make_mock_db():
+            async def mock_db():
+                db = AsyncMock()
+                result_mock = MagicMock()
+                result_mock.one_or_none = MagicMock(return_value=None)
+                result_mock.scalar_one_or_none = MagicMock(return_value=None)
+                db.execute = AsyncMock(return_value=result_mock)
+                yield db
+            return mock_db
 
         app.dependency_overrides[require_rider] = lambda: rider
         app.dependency_overrides[get_current_user] = lambda: rider
-        app.dependency_overrides[get_db] = mock_db
+        app.dependency_overrides[get_db] = _make_mock_db()
         with TestClient(app) as authed:
             post_resp = authed.post("/api/v1/riders/me/rides/42/share-link")
         app.dependency_overrides.clear()
 
         token = post_resp.json()["token"]
         # Now hit the public endpoint with only the DB mock — no user auth overrides
-        app.dependency_overrides[get_db] = mock_db
+        app.dependency_overrides[get_db] = _make_mock_db()
         with TestClient(app) as public:
             resp = public.get(f"/api/v1/trip-share/{token}")
         app.dependency_overrides.clear()
