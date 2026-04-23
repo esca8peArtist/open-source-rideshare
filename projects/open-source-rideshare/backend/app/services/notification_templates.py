@@ -29,8 +29,32 @@ def ride_matched(driver_name: str = "your driver", eta_minutes: int | None = Non
     )
 
 
-def ride_cancelled(cancelled_by: str = "The ride", reason: str = "", **kw) -> TemplateResult:
-    reason_part = f" Reason: {reason}" if reason else ""
+_CANCELLATION_CATEGORY_LABELS: dict[str, str] = {
+    "wrong_pickup": "Wrong pickup location",
+    "wait_too_long": "Wait time too long",
+    "found_other_ride": "Found another ride",
+    "plans_changed": "Plans changed",
+    "driver_not_acceptable": "Driver not acceptable",
+    "price_too_high": "Price too high",
+    "safety_concern": "Safety concern",
+    "other": "Other",
+    "vehicle_issue": "Vehicle issue",
+    "rider_no_show": "Rider no-show",
+    "unable_to_locate": "Unable to locate rider",
+    "emergency": "Emergency",
+    "driver_other": "Other",
+    "driver_no_show": "Driver no-show",
+}
+
+
+def ride_cancelled(
+    cancelled_by: str = "The ride",
+    reason: str = "",
+    cancellation_category: str = "",
+    **kw,
+) -> TemplateResult:
+    category_label = _CANCELLATION_CATEGORY_LABELS.get(cancellation_category, "") if cancellation_category else ""
+    reason_part = f" Reason: {category_label}" if category_label else (f" Reason: {reason}" if reason else "")
     return (
         "Ride cancelled",
         f"{cancelled_by} has been cancelled.{reason_part}",

@@ -1197,10 +1197,17 @@ async def cancel_ride(
 
     # Send SMS/email cancellation notifications
     from app.services.notification_events import notify_ride_cancelled
+    category_val = ride.cancellation_category.value if ride.cancellation_category else ""
     if ride.driver_id and user.id != ride.driver_id:
-        await notify_ride_cancelled(db, user_id=ride.driver_id, ride_id=ride.id, cancelled_by=cancelled_by)
+        await notify_ride_cancelled(
+            db, user_id=ride.driver_id, ride_id=ride.id,
+            cancelled_by=cancelled_by, cancellation_category=category_val,
+        )
     if user.id != ride.rider_id:
-        await notify_ride_cancelled(db, user_id=ride.rider_id, ride_id=ride.id, cancelled_by=cancelled_by)
+        await notify_ride_cancelled(
+            db, user_id=ride.rider_id, ride_id=ride.id,
+            cancelled_by=cancelled_by, cancellation_category=category_val,
+        )
 
     from app.services.audit_events import audit_ride_cancelled
     await audit_ride_cancelled(

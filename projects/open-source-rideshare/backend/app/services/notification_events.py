@@ -71,6 +71,7 @@ async def notify_ride_cancelled(
     ride_id: int,
     cancelled_by: str = "",
     reason: str = "",
+    cancellation_category: str = "",
 ) -> None:
     """Notify a user that a ride has been cancelled."""
     try:
@@ -84,6 +85,7 @@ async def notify_ride_cancelled(
             email=email,
             cancelled_by=cancelled_by,
             reason=reason,
+            cancellation_category=cancellation_category,
         )
     except Exception:
         logger.exception("Failed to send ride_cancelled notification for ride %d", ride_id)
