@@ -19,12 +19,17 @@ import math
 from datetime import datetime, timezone
 from typing import Optional
 
-from geoalchemy2.functions import ST_X, ST_Y
+import logging
+
+from geoalchemy2.functions import ST_MakePoint, ST_X, ST_Y
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.driver import DriverProfile
 from app.models.ride import Ride, RideStatus
 from app.models.waypoint import RideWaypoint, WaypointStatus
+
+logger = logging.getLogger(__name__)
 from app.schemas.driver_navigation import (
     NavigationStateResponse,
     NavigationStop,
@@ -38,6 +43,14 @@ AVG_SPEED_KMH: float = 30.0
 # Cross-track deviation threshold.  If the driver is > 500 m off the straight-line
 # corridor between their last stop and their next stop, flag a deviation.
 DEVIATION_THRESHOLD_KM: float = 0.5
+
+# Speeding threshold.  Anything above this between consecutive navigation pings
+# is flagged on the ride (matches typical freeway speed limit).
+SPEED_LIMIT_KMH: float = 120.0
+
+# Minimum time between two pings before we trust the speed reading.
+# Very short intervals amplify GPS noise into absurd speeds.
+MIN_SPEED_SAMPLE_SECONDS: float = 2.0
 
 # Earth radius used in haversine and cross-track calculations (km).
 _EARTH_RADIUS_KM: float = 6371.0
@@ -94,6 +107,24 @@ def _eta_minutes(distance_km: float) -> int:
     if distance_km <= 0.0:
         return 1
     return max(1, math.ceil(distance_km / AVG_SPEED_KMH * 60.0))
+
+
+def compute_speed_kmh(
+    lat1: float,
+    lng1: float,
+    lat2: float,
+    lng2: float,
+    elapsed_seconds: float,
+) -> float:
+    """Return estimated speed in km/h between two GPS positions.
+
+    Returns 0.0 if elapsed_seconds is below MIN_SPEED_SAMPLE_SECONDS — GPS
+    updates that are too close together produce unreliable speed readings.
+    """
+    if elapsed_seconds < MIN_SPEED_SAMPLE_SECONDS:
+        return 0.0
+    dist_km = haversine_km(lat1, lng1, lat2, lng2)
+    return (dist_km / elapsed_seconds) * 3600.0
 
 
 # ---------------------------------------------------------------------------
@@ -312,8 +343,14 @@ async def update_navigation_position(
 ) -> NavigationStateResponse:
     """Process a driver position update and return updated navigation state.
 
-    Flags route deviation if the driver exceeds DEVIATION_THRESHOLD_KM from the direct
-    corridor between their last completed stop and next pending stop.
+    In addition to route deviation detection, this function:
+      - Reads the driver's previously stored GPS location and calculates speed.
+        If speed exceeds SPEED_LIMIT_KMH the ride is flagged (once only) and the
+        rider receives a speeding-alert notification.
+      - Updates DriverProfile.current_location with the new position so the
+        rider-facing live-status and driver-arrival endpoints see fresh coordinates.
+      - All DB mutations are batched into a single commit.
+
     Only active rides (DRIVER_EN_ROUTE, ARRIVED, IN_PROGRESS) accept position updates.
     Raises ValueError for ride not found or wrong status, PermissionError if not the driver.
     """
@@ -332,23 +369,79 @@ async def update_navigation_position(
             f"Position updates only accepted for active rides (got: {ride.status.value})"
         )
 
+    # ── Fetch previous stored driver location for speed detection ─────────────
+    profile_result = await db.execute(
+        select(
+            DriverProfile.id,
+            ST_Y(DriverProfile.current_location).label("prev_lat"),
+            ST_X(DriverProfile.current_location).label("prev_lng"),
+            DriverProfile.updated_at,
+        ).where(DriverProfile.user_id == driver_id)
+    )
+    profile_row = profile_result.one_or_none()
+    profile_id: Optional[int] = profile_row.id if profile_row is not None else None
+
+    speeding_now = False
+    if (
+        profile_row is not None
+        and profile_row.prev_lat is not None
+        and profile_row.prev_lng is not None
+        and profile_row.updated_at is not None
+        and ride.speeding_flagged_at is None
+    ):
+        now = datetime.now(timezone.utc)
+        prev_time = profile_row.updated_at
+        if prev_time.tzinfo is None:
+            prev_time = prev_time.replace(tzinfo=timezone.utc)
+        elapsed = (now - prev_time).total_seconds()
+        speed = compute_speed_kmh(
+            float(profile_row.prev_lat), float(profile_row.prev_lng),
+            lat, lng, elapsed,
+        )
+        if speed > SPEED_LIMIT_KMH:
+            speeding_now = True
+
+    # ── Build stops and check deviation ───────────────────────────────────────
     waypoints = await _fetch_waypoints(ride_id, db)
     stops = build_stops(
         ride, pickup_lat, pickup_lng, dropoff_lat, dropoff_lng,
         waypoints, lat, lng,
     )
+    deviation_now = ride.route_deviation_flagged_at is None and is_deviation(stops, lat, lng)
 
-    # Flag deviation if not already flagged
-    if ride.route_deviation_flagged_at is None and is_deviation(stops, lat, lng):
+    # ── Batch all DB writes ────────────────────────────────────────────────────
+    now = datetime.now(timezone.utc)
+    ride_values: dict = {}
+    if speeding_now:
+        ride_values["speeding_flagged_at"] = now
+    if deviation_now:
+        ride_values["route_deviation_flagged_at"] = now
+
+    if ride_values:
         await db.execute(
-            update(Ride)
-            .where(Ride.id == ride.id)
-            .values(route_deviation_flagged_at=datetime.now(timezone.utc))
+            update(Ride).where(Ride.id == ride.id).values(**ride_values)
         )
+
+    if profile_id is not None:
+        await db.execute(
+            update(DriverProfile)
+            .where(DriverProfile.id == profile_id)
+            .values(current_location=ST_MakePoint(lng, lat))
+        )
+
+    if ride_values or profile_id is not None:
         await db.commit()
-        deviation_flagged = True
-    else:
-        deviation_flagged = ride.route_deviation_flagged_at is not None
+
+    # ── Fire-and-forget speeding notification ─────────────────────────────────
+    if speeding_now:
+        try:
+            from app.services.notification_events import notify_speeding_alert
+            await notify_speeding_alert(db, rider_id=ride.rider_id, ride_id=ride_id)
+        except Exception:
+            logger.warning("Speed alert notification failed for ride %d", ride_id)
+
+    deviation_flagged = deviation_now or ride.route_deviation_flagged_at is not None
+    speeding_flagged = speeding_now or ride.speeding_flagged_at is not None
 
     ns = find_next_stop(stops)
     total_km, total_min = total_remaining(stops, lat, lng)
@@ -362,6 +455,7 @@ async def update_navigation_position(
         driver_lat=lat,
         driver_lng=lng,
         route_deviation_flagged=deviation_flagged,
+        speeding_flagged=speeding_flagged,
         total_remaining_km=total_km,
         total_remaining_minutes=total_min,
     )

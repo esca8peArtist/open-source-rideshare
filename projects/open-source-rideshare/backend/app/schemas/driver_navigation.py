@@ -47,6 +47,7 @@ class NavigationStateResponse(BaseModel):
     driver_lat: Optional[float] = None
     driver_lng: Optional[float] = None
     route_deviation_flagged: bool
+    speeding_flagged: bool = False
     total_remaining_km: float
     total_remaining_minutes: int
 

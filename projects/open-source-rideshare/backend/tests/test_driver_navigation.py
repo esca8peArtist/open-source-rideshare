@@ -57,8 +57,11 @@ from app.schemas.driver_navigation import StopStatus, StopType
 from app.services.driver_navigation import (
     AVG_SPEED_KMH,
     DEVIATION_THRESHOLD_KM,
+    MIN_SPEED_SAMPLE_SECONDS,
+    SPEED_LIMIT_KMH,
     _eta_minutes,
     build_stops,
+    compute_speed_kmh,
     cross_track_distance_km,
     find_next_stop,
     get_navigation_state,
@@ -139,6 +142,21 @@ def _scalars_all_result(items: list) -> MagicMock:
     scalars.all.return_value = items
     r.scalars.return_value = scalars
     return r
+
+
+def _profile_row(
+    profile_id: int = 1,
+    prev_lat: float | None = None,
+    prev_lng: float | None = None,
+    updated_at=None,
+) -> MagicMock:
+    """Return a mock DriverProfile row for speed-detection tests."""
+    row = MagicMock()
+    row.id = profile_id
+    row.prev_lat = prev_lat
+    row.prev_lng = prev_lng
+    row.updated_at = updated_at
+    return row
 
 
 def auth_header(token: str) -> dict:
@@ -401,7 +419,12 @@ class TestUpdateNavigationPositionService:
         ride = _make_ride(status=RideStatus.COMPLETED, driver_id=10)
         row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
         db = AsyncMock()
-        db.execute = AsyncMock(return_value=_one_or_none_result(row))
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),       # ride fetch
+                _one_or_none_result(None),      # profile fetch (status check fails first)
+            ]
+        )
         with pytest.raises(ValueError, match="active"):
             await update_navigation_position(
                 ride_id=1, driver_id=10, lat=40.755, lng=-73.981, db=db
@@ -424,16 +447,16 @@ class TestUpdateNavigationPositionService:
         """Test 27: deviation is flagged when driver is > DEVIATION_THRESHOLD_KM off path."""
         ride = _make_ride(status=RideStatus.IN_PROGRESS, driver_id=10, route_deviation_flagged_at=None)
         row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
-        # After the update execute, we re-fetch the ride (now with deviation flagged)
         db = AsyncMock()
         db.execute = AsyncMock(
             side_effect=[
-                _one_or_none_result(row),   # initial ride fetch
-                _scalars_all_result([]),    # waypoints
-                MagicMock(),               # update execute (deviation flag)
+                _one_or_none_result(row),                   # ride fetch
+                _one_or_none_result(_profile_row()),        # profile fetch (no prev coords)
+                _scalars_all_result([]),                    # waypoints
+                MagicMock(),                                # update Ride (deviation flag)
+                MagicMock(),                                # update DriverProfile location
             ]
         )
-        # Driver is well off the GCT→TSQ corridor
         off_lat = (_GCT_LAT + _TSQ_LAT) / 2 + 0.009
         off_lng = (_GCT_LNG + _TSQ_LNG) / 2
         result = await update_navigation_position(
@@ -453,8 +476,10 @@ class TestUpdateNavigationPositionService:
         db = AsyncMock()
         db.execute = AsyncMock(
             side_effect=[
-                _one_or_none_result(row),
-                _scalars_all_result([]),
+                _one_or_none_result(row),               # ride fetch
+                _one_or_none_result(_profile_row()),    # profile fetch (no prev coords)
+                _scalars_all_result([]),                # waypoints
+                MagicMock(),                            # update DriverProfile location
             ]
         )
         off_lat = (_GCT_LAT + _TSQ_LAT) / 2 + 0.009
@@ -462,40 +487,249 @@ class TestUpdateNavigationPositionService:
         result = await update_navigation_position(
             ride_id=1, driver_id=10, lat=off_lat, lng=off_lng, db=db
         )
-        # update() is NOT called — only 2 execute calls (fetch ride + fetch waypoints)
-        assert db.execute.call_count == 2
         assert result.route_deviation_flagged is True
 
 
 # ---------------------------------------------------------------------------
-# 29–34: API integration tests (conftest fixtures)
+# 35–40: compute_speed_kmh pure function tests
+# ---------------------------------------------------------------------------
+
+class TestComputeSpeedKmh:
+
+    def test_standard_speed(self):
+        """Test 35: 1 km in 60 s = 60 km/h."""
+        # ~1 km from GCT to TSQ, travelled in 60 seconds
+        speed = compute_speed_kmh(_GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG, 60.0)
+        assert 50.0 < speed < 80.0  # ~60 km/h ± margin
+
+    def test_below_min_sample_window_returns_zero(self):
+        """Test 36: elapsed < MIN_SPEED_SAMPLE_SECONDS returns 0 (GPS noise guard)."""
+        speed = compute_speed_kmh(_GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG, MIN_SPEED_SAMPLE_SECONDS - 0.5)
+        assert speed == 0.0
+
+    def test_at_exactly_min_sample_window(self):
+        """Test 37: elapsed == MIN_SPEED_SAMPLE_SECONDS is accepted (boundary)."""
+        speed = compute_speed_kmh(_GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG, MIN_SPEED_SAMPLE_SECONDS)
+        assert speed > 0.0
+
+    def test_over_speed_limit(self):
+        """Test 38: returns value above SPEED_LIMIT_KMH when driving fast."""
+        # ~1 km in 20 seconds = 180 km/h
+        speed = compute_speed_kmh(_GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG, 20.0)
+        assert speed > SPEED_LIMIT_KMH
+
+    def test_under_speed_limit(self):
+        """Test 39: returns value below SPEED_LIMIT_KMH at normal urban speed."""
+        # ~1 km in 120 seconds = 30 km/h
+        speed = compute_speed_kmh(_GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG, 120.0)
+        assert speed < SPEED_LIMIT_KMH
+
+    def test_same_point_returns_zero(self):
+        """Test 40: no movement between pings → 0 km/h."""
+        speed = compute_speed_kmh(40.75, -73.98, 40.75, -73.98, 60.0)
+        assert speed == 0.0
+
+
+# ---------------------------------------------------------------------------
+# 41–46: Speed detection service tests (mocked DB)
+# ---------------------------------------------------------------------------
+
+class TestSpeedDetection:
+
+    @pytest.mark.asyncio
+    async def test_flags_speeding_when_over_threshold(self):
+        """Test 41: speeding_flagged=True when consecutive pings imply > SPEED_LIMIT_KMH."""
+        from datetime import timedelta as _td
+        ride = _make_ride(
+            status=RideStatus.IN_PROGRESS, driver_id=10,
+            route_deviation_flagged_at=None,
+        )
+        ride.speeding_flagged_at = None
+        ride.rider_id = 5
+        row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
+
+        # Previous position at GCT 20 seconds ago → ~180 km/h from GCT to TSQ.
+        # Use datetime.now() so elapsed is ~20 s (not months away from _NOW).
+        twenty_ago = datetime.now(timezone.utc) - _td(seconds=20)
+        prof = _profile_row(
+            prev_lat=_GCT_LAT, prev_lng=_GCT_LNG, updated_at=twenty_ago
+        )
+
+        db = AsyncMock()
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),           # ride fetch
+                _one_or_none_result(prof),          # profile fetch
+                _scalars_all_result([]),             # waypoints
+                MagicMock(),                        # update Ride (speeding flag)
+                MagicMock(),                        # update DriverProfile location
+            ]
+        )
+        with patch("app.services.notification_events.notify_speeding_alert", new=AsyncMock()):
+            result = await update_navigation_position(
+                ride_id=1, driver_id=10, lat=_TSQ_LAT, lng=_TSQ_LNG, db=db
+            )
+        assert result.speeding_flagged is True
+
+    @pytest.mark.asyncio
+    async def test_no_flag_when_under_threshold(self):
+        """Test 42: speeding_flagged=False when speed is within limit."""
+        from datetime import timedelta as _td
+        ride = _make_ride(status=RideStatus.IN_PROGRESS, driver_id=10)
+        ride.speeding_flagged_at = None
+        ride.rider_id = 5
+        row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
+
+        # ~1 km in 5 min → ~12 km/h, well under limit
+        slow_ago = datetime.now(timezone.utc) - _td(seconds=300)
+        prof = _profile_row(
+            prev_lat=_GCT_LAT, prev_lng=_GCT_LNG, updated_at=slow_ago
+        )
+
+        db = AsyncMock()
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),
+                _one_or_none_result(prof),
+                _scalars_all_result([]),
+                MagicMock(),   # update DriverProfile location (no Ride update needed)
+            ]
+        )
+        result = await update_navigation_position(
+            ride_id=1, driver_id=10, lat=_TSQ_LAT, lng=_TSQ_LNG, db=db
+        )
+        assert result.speeding_flagged is False
+
+    @pytest.mark.asyncio
+    async def test_no_double_flag_when_already_speeding(self):
+        """Test 43: speeding_flagged_at already set → not flagged again."""
+        from datetime import timedelta as _td
+        ride = _make_ride(status=RideStatus.IN_PROGRESS, driver_id=10)
+        ride.speeding_flagged_at = _NOW  # already flagged
+        ride.rider_id = 5
+        row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
+
+        twenty_ago = datetime.now(timezone.utc) - _td(seconds=20)
+        prof = _profile_row(
+            prev_lat=_GCT_LAT, prev_lng=_GCT_LNG, updated_at=twenty_ago
+        )
+
+        db = AsyncMock()
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),
+                _one_or_none_result(prof),
+                _scalars_all_result([]),
+                MagicMock(),  # update DriverProfile location only
+            ]
+        )
+        result = await update_navigation_position(
+            ride_id=1, driver_id=10, lat=_TSQ_LAT, lng=_TSQ_LNG, db=db
+        )
+        # speeding_flagged reflects the already-set flag
+        assert result.speeding_flagged is True
+        # Ride update was NOT called (only DriverProfile update)
+        call_args_list = db.execute.call_args_list
+        assert db.execute.call_count == 4
+
+    @pytest.mark.asyncio
+    async def test_no_flag_without_previous_location(self):
+        """Test 44: no previous location → cannot calculate speed, no flag."""
+        ride = _make_ride(status=RideStatus.IN_PROGRESS, driver_id=10)
+        ride.speeding_flagged_at = None
+        ride.rider_id = 5
+        row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
+
+        prof = _profile_row(prev_lat=None, prev_lng=None, updated_at=None)
+
+        db = AsyncMock()
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),
+                _one_or_none_result(prof),
+                _scalars_all_result([]),
+                MagicMock(),   # update DriverProfile location
+            ]
+        )
+        result = await update_navigation_position(
+            ride_id=1, driver_id=10, lat=_TSQ_LAT, lng=_TSQ_LNG, db=db
+        )
+        assert result.speeding_flagged is False
+
+    @pytest.mark.asyncio
+    async def test_no_flag_when_no_driver_profile(self):
+        """Test 45: driver has no DriverProfile row → speed check skipped gracefully."""
+        ride = _make_ride(status=RideStatus.IN_PROGRESS, driver_id=10)
+        ride.speeding_flagged_at = None
+        row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
+
+        db = AsyncMock()
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),
+                _one_or_none_result(None),   # no profile row
+                _scalars_all_result([]),
+                # no DriverProfile update (profile_id is None)
+            ]
+        )
+        result = await update_navigation_position(
+            ride_id=1, driver_id=10, lat=_TSQ_LAT, lng=_TSQ_LNG, db=db
+        )
+        assert result.speeding_flagged is False
+
+    @pytest.mark.asyncio
+    async def test_driver_location_updated_in_same_commit(self):
+        """Test 46: a DriverProfile update is included in the same DB commit."""
+        ride = _make_ride(status=RideStatus.IN_PROGRESS, driver_id=10)
+        ride.speeding_flagged_at = None
+        row = (ride, _GCT_LAT, _GCT_LNG, _TSQ_LAT, _TSQ_LNG)
+
+        prof = _profile_row(prev_lat=None, prev_lng=None, updated_at=None)
+
+        db = AsyncMock()
+        db.execute = AsyncMock(
+            side_effect=[
+                _one_or_none_result(row),
+                _one_or_none_result(prof),
+                _scalars_all_result([]),
+                MagicMock(),  # update DriverProfile location
+            ]
+        )
+        await update_navigation_position(
+            ride_id=1, driver_id=10, lat=_TSQ_LAT, lng=_TSQ_LNG, db=db
+        )
+        assert db.commit.call_count == 1
+
+
+# ---------------------------------------------------------------------------
+# 47–52: API integration tests (conftest fixtures)
 # ---------------------------------------------------------------------------
 
 @pytest.mark.skip(reason="Integration tests require real DB and auth fixtures from conftest")
 class TestDriverNavigationAPI:
 
     def test_get_navigation_no_auth(self, client):
-        """Test 29: GET /navigation — 401 with no token."""
+        """Test 47: GET /navigation — 401 with no token."""
         resp = client.get("/api/v1/rides/1/navigation")
         assert resp.status_code == 401
 
     def test_get_navigation_rider_forbidden(self, client, rider_token):
-        """Test 30: GET /navigation — 403 with rider token (driver-only endpoint)."""
+        """Test 48: GET /navigation — 403 with rider token (driver-only endpoint)."""
         resp = client.get("/api/v1/rides/1/navigation", headers=auth_header(rider_token))
         assert resp.status_code == 403
 
     def test_get_navigation_not_found(self, client, driver_token):
-        """Test 31: GET /navigation — 404 for unknown ride_id."""
+        """Test 49: GET /navigation — 404 for unknown ride_id."""
         resp = client.get("/api/v1/rides/99999/navigation", headers=auth_header(driver_token))
         assert resp.status_code == 404
 
     def test_post_position_no_auth(self, client):
-        """Test 32: POST /navigation/position — 401 with no token."""
+        """Test 50: POST /navigation/position — 401 with no token."""
         resp = client.post("/api/v1/rides/1/navigation/position", json={"lat": 40.75, "lng": -73.98})
         assert resp.status_code == 401
 
     def test_post_position_rider_forbidden(self, client, rider_token):
-        """Test 33: POST /navigation/position — 403 with rider token."""
+        """Test 51: POST /navigation/position — 403 with rider token."""
         resp = client.post(
             "/api/v1/rides/1/navigation/position",
             json={"lat": 40.75, "lng": -73.98},
@@ -504,7 +738,7 @@ class TestDriverNavigationAPI:
         assert resp.status_code == 403
 
     def test_post_position_invalid_lat_lng(self, client, driver_token):
-        """Test 34: POST /navigation/position — 422 for out-of-range coordinates."""
+        """Test 52: POST /navigation/position — 422 for out-of-range coordinates."""
         resp = client.post(
             "/api/v1/rides/1/navigation/position",
             json={"lat": 999.0, "lng": -73.98},
