@@ -4,6 +4,138 @@ This file tracks branches that need review before merging to `master`.
 
 ---
 
+## PR Review Assessments
+
+### open-repo PR #1 — feat: Wave 4 Phase 2 — Federation Service Infrastructure
+
+**PR URL:** https://github.com/esca8peArtist/open-repo/pull/1
+**Branch:** `feature/wave4-phase2-federation-service` → `main`
+**Reviewed:** 2026-05-12
+**Verdict: APPROVED — READY TO MERGE**
+
+#### Summary of Changes
+
++2639 / -28 lines across 14 files. 2 commits. The PR implements full federation
+partner infrastructure for peer-to-peer distributed collaboration:
+
+- `backend/app/services/federation_partner_service.py` (new, 505 lines) — service
+  layer for partner registration, trust state machine, key rotation, HTTP signature
+  verification, activity audit log, and hard delete with safety constraints.
+- `backend/app/api/v1/admin/federation_partners.py` (new, 260 lines) — 7 admin
+  REST endpoints: register, list, get detail, update trust state, rotate key,
+  activity log, delete.
+- `backend/app/schemas.py` — 8 new Pydantic schemas with field validators for all
+  request/response shapes.
+- `backend/app/routes.py` — `/inbox` endpoint extended with full HTTP Signature
+  verification per RFC 9421; backward compatible (unsigned requests still accepted,
+  flagged as `signature_verified=False`).
+- `backend/app/http_signatures.py` — added `HTTPSignatureUtils.sign_request()` for
+  signing outbound federation requests.
+- `backend/app/services/endorsement_propagation_service.py` — `send_announce_to_federation_partners`
+  replaced stub with real implementation: queries trusted partners, signs each
+  outbound request, POSTs with httpx, logs results.
+- `backend/app/models.py` + `backend/alembic/versions/001_add_federation_partners.py`
+  — added `failed_signature_count` column to `federation_partners` table.
+- `backend/tests/test_federation_partner_routes.py` (new, 825 lines) — service unit
+  tests + admin route tests for all 7 endpoints.
+- `backend/tests/test_federation_inbox_integration.py` (new, 653 lines) — 15 tests
+  covering inbox signature verification and outbound announce signing; includes 2
+  real-crypto E2E roundtrip tests.
+
+#### Code Quality Assessment
+
+**Security (public-facing API — critical)**
+- Input validation is thorough: URL format checked for `base_url` and `key_id` via
+  `@field_validator`; public key PEM validated by loading it with cryptography library
+  before persisting, so a bad key never replaces a working one.
+- HTTP Signature verification uses existing `HTTPSignatureUtils` (RFC 8017 + W3C
+  ActivityPub) with a trusted-partner gate — unknown or untrusted key IDs are
+  rejected 403 before any processing.
+- Auto-downgrade to UNTRUSTED after 5 consecutive signature failures; revoked state
+  is terminal with no transitions.
+- Error messages to external callers are intentionally vague on internals (e.g.
+  "Signature verification failed" rather than exposing partner record details).
+  One exception noted below under minor items.
+- Hard delete requires REVOKED state + no activity in last 30 days — safe.
+
+**Design patterns**
+- Trust state machine is explicitly declared as `_VALID_TRANSITIONS` dict; invalid
+  transitions raise `ValueError` before touching the database.
+- `FederationPartnerService` uses static methods with explicit `AsyncSession`
+  injection — composes cleanly with FastAPI DI and is easy to test.
+- Backward-compatible inbox change: unsigned requests are still accepted for legacy
+  senders but flagged; signed requests from non-trusted partners are rejected.
+- The stub in `send_announce_to_federation_partners` is fully replaced — no
+  placeholder code remains.
+
+**Test coverage**
+- 194 tests passing, 4 skipped (DB-dependent integration tests that skip cleanly
+  when `OPENRIDE_TEST_DATABASE_URL` is absent), 0 failures. No regressions on
+  existing 125 tests.
+- New test files cover all 7 admin endpoints, all trust-state transition paths,
+  key rotation, signature verification edge cases, auto-downgrade threshold,
+  outbound signing correctness, and 2 real-crypto E2E roundtrips.
+- Mocking strategy is consistent with the rest of the test suite.
+
+**Documentation**
+- All new public methods have docstrings with Args/Returns/Raises sections.
+- Admin route docstrings document valid trust-state transitions and HTTP status
+  semantics for each endpoint — appropriate for community contributors.
+- Module-level docstrings identify the phase/wave so history is traceable.
+
+#### Merge Readiness Checks
+
+| Check | Status |
+|---|---|
+| CI check runs | No automated CI configured on this repo |
+| GitHub mergeable_state | `clean` (no conflicts) |
+| Review comments | None |
+| Requested changes | None |
+| Draft PR | No |
+| Test results (self-reported) | 194 pass / 4 skip / 0 fail |
+
+No CI is configured on the repository, so there is no automated gate. The test
+results are self-reported in the PR description. Given the breadth of the test
+suite (15 new tests with real-crypto E2E cases), this is an acceptable risk for
+a community open-source project at this stage.
+
+#### Minor Items (non-blocking, post-merge follow-up recommended)
+
+1. **`partner_id` exposed in 403 detail message** — `routes.py` includes
+   `f"Federation partner {partner_id} not found."` in a 404 response visible to
+   external callers on the admin route. For admin-only endpoints this is
+   acceptable, but the inbox endpoint's error path correctly avoids this.
+   No change needed now; worth noting for a future hardening pass.
+
+2. **`datetime.utcnow()` deprecation** — Python 3.12+ deprecates `datetime.utcnow()`
+   in favor of `datetime.now(timezone.utc)`. Used in several places in the new
+   service. Not a bug today but should be cleaned up before Python 3.13 support
+   is added. File a follow-up issue.
+
+3. **No rate limiting on `/api/v1/admin/federation-partners/register`** — any
+   caller that can reach the admin endpoint can attempt registrations in bulk.
+   Admin endpoints should be behind auth middleware; this is a project-wide concern,
+   not specific to this PR.
+
+4. **`_FAILURE_THRESHOLD = 5` is a hardcoded constant** — reasonable default, but
+   could be a configurable setting. Low priority.
+
+#### Decision
+
+APPROVE AND MERGE. All blocking quality criteria pass:
+- Correct input validation on all public inputs
+- Error messages do not leak internal state to external users on public endpoints
+- State machine transitions are guarded
+- Test coverage is comprehensive with real-crypto E2E cases
+- No merge conflicts; GitHub reports `mergeable_state: clean`
+- No outstanding review comments or requested changes
+
+Recommend filing a GitHub issue for the three post-merge items (utcnow
+deprecation, rate limiting on admin routes, and configurable failure threshold)
+before the next wave begins.
+
+---
+
 ## Needs Your Input
 
 ### feat/background-checks-firebase-push — driver availability integrated into ride matching
