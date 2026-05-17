@@ -58,8 +58,11 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      # NOTE: Binds to localhost only per CLAUDE.md security rules.
+      # For external access, run a reverse proxy (nginx, HAProxy) on the host
+      # listening on 0.0.0.0:80/443 and proxying to 127.0.0.1:80/443.
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -68,6 +71,12 @@ services:
       - api
     networks:
       - external
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
 volumes:
   pgdata:
