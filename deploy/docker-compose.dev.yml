@@ -6,19 +6,19 @@ services:
       POSTGRES_PASSWORD: openride
       POSTGRES_DB: openride
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
   osrm:
     image: osrm/osrm-backend:latest
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     volumes:
       - ./osrm:/data
     # Before first run, download and prepare OSM data:
