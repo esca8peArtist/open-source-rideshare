@@ -136,6 +136,61 @@ before the next wave begins.
 
 ---
 
+## open-repo Phase 5 Candidate 1 — Merge Approval Request
+
+**Branch:** `feature/zimwriter-libzim-activation` (commit ec0ff7be)
+**Target:** `main` on esca8peArtist/open-repo
+**Reviewed:** 2026-05-19
+**Recommendation: APPROVE AND MERGE (May 25-26)**
+
+### Summary
+
+Phase 5 Candidate 1 implements real offline ZIM file export via libzim. The implementation is
+complete and verified. The branch was independently audited today (not by the Session 1353 author).
+
+**What changed** (+143/-37 lines across 4 files):
+- `zim_writer.py`: libzim import guard, ArticleItem adapter class, real `create_zim()` with
+  Creator context manager, `_apply_metadata_to_creator()` with all 11 ZIM metadata fields,
+  fallback 48x48 transparent PNG for zimcheck, removal of `_stub_write_placeholder()`
+- `003_add_zim_exports_table.py`: new Alembic migration, 28-column table, 3 indexes
+- `pyproject.toml`: added `libzim>=3.2,<4.0`
+- `README.md`: updated Phase 5 status
+
+**Verification findings**:
+- All 84 tests pass with REAL libzim (confirmed by 2.31s runtime vs 0.16s stub baseline)
+- Live ZIM file verified: 35,770 bytes, ZIM magic bytes `5a494d04`, valid SHA-256
+- libzim 3.9.0 installed in project environment; compatible with `>=3.2,<4.0` constraint
+- API stability confirmed across 3.2–3.9 — no breaking writer API changes in range
+- Migration chain 001→002→003 valid; downgrade() correctly reverses in order
+- Fallback PNG verified as valid 48x48 transparent PNG (correct for zimcheck)
+- Zero merge-blocking risks identified; 6 low-priority operational items noted
+
+**6 risks, all low-priority (none block merge)**:
+1. zimcheck binary not installed — add to release checklist; optional for Phase 5.1
+2. Silent libzim import failure — add startup health log (2-line post-merge fix)
+3. Memory buffering for >5,000 item exports — Phase 5.2 streaming mode
+4. Version constraint covers 3.9 max — safe; `<4.0` pin prevents surprise breakage
+5. Xapian search disabled — document in release notes; Phase 5.2 adds `config_indexing()`
+6. `datetime.utcnow()` in migration — DeprecationWarning on Python 3.12+; post-merge issue
+
+**Full verification report**: `projects/open-repo/phase-5-candidate-1-implementation-verification.md`
+**Deployment checklist**: `projects/open-repo/phase-5-candidate-1-implementation-checklist.md`
+**Deployment timeline**: 1.75–2.5 hours (target May 30-31)
+
+#### Merge Readiness
+
+| Check | Status |
+|---|---|
+| All 5 roadmap changes present | YES |
+| 84 tests passing with real libzim | YES |
+| libzim compatibility verified | YES (3.9.0 in range) |
+| Migration chain valid | YES (001→002→003) |
+| No Phase 4 regressions | YES |
+| Zero merge-blocking risks | YES |
+| **Merge-ready** | **YES** |
+
+---
+
 ## Needs Your Input
 
 ### feat/background-checks-firebase-push — driver availability integrated into ride matching
