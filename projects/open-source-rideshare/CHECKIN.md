@@ -281,3 +281,33 @@ when `OPENRIDE_TEST_DATABASE_URL` is not available, consistent with all other te
   a follow-up to roll them into earnings totals once the migration is complete.
 
 ---
+
+### feat/phase-5.3-federation-architecture — Phase 5.3 Federation & Distributed Versioning Architecture
+
+**Branch:** `feature/phase-5.3-federation-architecture`
+**Author:** thorn
+**Date:** 2026-05-21
+**PR URL:** https://github.com/esca8peArtist/open-source-rideshare/pull/new/feature/phase-5.3-federation-architecture
+
+**Summary:**
+
+Three architectural design documents for Phase 5.3 — the federation milestone that enables libraries to be shared across communities with version control and collaborative updates. Predecessor work: Phase 5.1 (ZIM export, approved May 19) and Phase 5.2 (content domain candidates).
+
+**Files added:**
+- `docs/FEDERATION_ARCHITECTURE.md` (2,097 words) — distributed identity model using Ed25519 node IDs and self-sovereign keys; P2P and hub topologies; trust state machine (unknown / provisional / trusted / suspended / revoked); library sharing protocol (discovery, manifest format, integrity verification); peer reputation scoring; cryptographic signature and revocation mechanisms; case studies from IPFS archives, OAI-PMH scientific federation, and Wikipedia's project federation; Phase 5.4-5.6 implementation timeline
+- `docs/VERSIONING_STRATEGY.md` (1,740 words) — semantic versioning adapted for knowledge content (MAJOR / MINOR / PATCH with draft / reviewed / verified / deprecated labels); four-stage contribution lifecycle (DRAFT → REVIEW → STAGING → PUBLISHED); consensus gates for medical and safety-critical libraries (2 independent domain-expert reviews + officer sign-off); three-way merge and federation voting for genuine conflicts; branch strategy (main / staging / community / fork branches); deprecation urgency levels with operator prompts for critical content
+- `docs/DIFFERENTIAL_SYNC_PROTOCOL.md` (2,168 words) — block-level rsync analogue with 4 MB fixed blocks; Zstandard (zstd) compression with level negotiation; delta size estimation before transfer; resumable sync sessions with per-block acknowledgment and resume tokens; sync window scheduler for intermittent connections; offline-first serving; merkle tree integrity verification at block and file level; replay protection via nonce + timestamp; three conflict resolution strategies (last-write-wins, three-way merge, federation voting); Phase 5.4-5.7 implementation roadmap with acceptance criteria
+
+**Design decisions of note:**
+- Self-sovereign node identity (no registration, no central CA) — a community generates keys locally and is immediately able to participate
+- No IPFS DHT dependency — uses direct HTTP with resumable downloads; IPFS CID concept adopted for content addressing but not the DHT routing
+- Safety-critical content has hard consensus gates encoded in the protocol; a library marked `medical` cannot publish without two signed ReviewApproval activities from distinct reviewers
+- `critical`-urgency deprecations block content display to end users with an interstitial, not just an admin log entry
+- Rsync rolling-checksum approach defers to Phase 5.7 (bandwidth optimization); Phases 5.4-5.6 use a simpler but correct block-diff approach
+
+**Review notes:**
+- These are design documents, not implementation. No code changes. No migration required for merge.
+- The word counts run slightly over the 4,000-5,000 word target (6,005 total). The additional length covers edge cases (resumable sessions, voting quorum rules, rollback support) that would otherwise require a second document pass before implementation.
+- The three documents are mutually referencing and should be reviewed as a set.
+
+---
