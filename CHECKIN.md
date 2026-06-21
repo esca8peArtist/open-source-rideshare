@@ -4,6 +4,77 @@ This file tracks branches that need review before merging to `master`.
 
 ---
 
+## Needs Your Input
+
+### feature/compliance-engine-sprint1 — Phase 3 Sprint 1: Compliance Engine
+
+**Branch:** `feature/compliance-engine-sprint1`  
+**Author:** thorn (agent session 2026-06-21)  
+**Date:** 2026-06-21  
+**PR:** pending push (see below)
+
+#### Summary
+
+Sprint 1 of the Phase 3 MVP roadmap. Implements the compliance gate foundation
+that controls whether a driver is eligible to go online based on cooperative
+membership standing and document expiry.
+
+**No external credentials required.** All new code runs fully offline with
+mocked dependencies.
+
+#### Files Changed
+
+- `app/models/driver.py` — `MembershipStatus` enum + 7 new compliance columns
+  on `DriverProfile` (`membership_status`, `license_expiry`, `background_check_expiry`,
+  `vehicle_inspection_expiry`, `insurance_endorsement_expiry`,
+  `insurance_endorsement_verified_at`, `jurisdiction_id`)
+- `app/models/jurisdiction.py` — new `Jurisdiction` model (immutable per-city TNC config)
+- `app/models/__init__.py` — registered `Jurisdiction`
+- `app/services/compliance.py` — `check_driver_compliance()` gate + `run_nightly_compliance_check()` cron coroutine
+- `app/schemas/compliance.py` — Pydantic schemas: `ComplianceCheckResponse`,
+  `JurisdictionResponse`, `MembershipStatusUpdateRequest`, `ComplianceDocumentUpdate`
+- `app/api/v1/compliance.py` — 5 REST endpoints:
+  - `GET  /api/v1/compliance/check/{driver_id}` — driver eligibility check
+  - `GET  /api/v1/compliance/jurisdictions` — list active jurisdictions
+  - `GET  /api/v1/compliance/jurisdictions/{id}` — single jurisdiction config
+  - `POST /api/v1/admin/drivers/{driver_id}/membership-status` — admin status update
+  - `PATCH /api/v1/admin/drivers/{driver_id}/compliance-documents` — admin doc expiry update
+- `app/main.py` — registered compliance router
+- `app/db/migrations/versions/h2i3j4k5l6m7_add_compliance_engine.py` — Alembic migration:
+  jurisdictions table (+ Portland OR and Atlanta GA seed rows) + driver_profiles columns
+- `tests/test_compliance.py` — 38 new unit tests
+
+#### Test Results
+
+- New tests: 38 passed, 0 failed
+- Full suite: 2807 passed, 386 skipped, 0 failed (non-integration)
+
+#### Design Decisions
+
+- **Grace periods are per-jurisdiction.** Default: 14 days for license,
+  30 days for background check. Configurable via `Jurisdiction.license_grace_days`.
+- **Compliance hold requires manual reinstatement.** The nightly cron auto-places
+  drivers on hold when docs lapse, but restoring to `active` requires an admin action.
+  This is intentional — the cooperative should confirm a new document was uploaded.
+- **Missing expiry dates are treated as blocking** for license and background check
+  (we can't confirm currency without a date). Vehicle inspection and insurance are
+  not blocking when missing, to allow cooperatives to phase in collection.
+- **Error messages do not expose internal state.** The 403 response to a driver
+  includes a user-facing message (e.g. "Your license expired 3 days ago") but never
+  includes field names, database IDs, or stack traces.
+- **`probation` status is allowed online.** Only `suspended`, `terminated`, and
+  `compliance_hold` block go-online access.
+
+#### What's Not Yet Done (Next Steps)
+
+The compliance engine is complete but not yet wired to the go-online endpoint.
+See `SPRINT.md` for the full prioritized plan. Recommended next task:
+modify `POST /api/v1/driver/go-online` to call `check_driver_compliance()`.
+
+---
+
+---
+
 ## PR Review Assessments
 
 ### open-repo PR #1 — feat: Wave 4 Phase 2 — Federation Service Infrastructure
